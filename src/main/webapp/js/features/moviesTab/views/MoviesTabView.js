@@ -90,7 +90,7 @@ define([
 						movieId: movieModel.get('id')
 					}, function(res) {
 						movieModel.set('viewed', true);
-					});
+					}, false);
 				}
 
 				// display imdb preview
