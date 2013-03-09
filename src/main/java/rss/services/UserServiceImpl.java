@@ -18,10 +18,7 @@ import rss.services.movies.MovieService;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
+import java.util.*;
 
 /**
  * User: Michael Dikman
@@ -115,7 +112,7 @@ public class UserServiceImpl implements UserService {
 		return new UserResponse(entityConverter.toThinUser(user), tvShowsRssFeed, moviesRssFeed, sort(entityConverter.toThinShows(user.getShows())));
 	}
 
-	private ArrayList<ShowVO> sort(ArrayList<ShowVO> shows) {
+	private List<ShowVO> sort(List<ShowVO> shows) {
 		Collections.sort(shows, new Comparator<ShowVO>() {
 			@Override
 			public int compare(ShowVO o1, ShowVO o2) {

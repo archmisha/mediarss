@@ -8,6 +8,7 @@ import rss.entities.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -16,7 +17,7 @@ import java.util.Collection;
 @Service
 public class EntityConverter {
 
-	public ArrayList<ShowVO> toThinShows(Collection<Show> shows) {
+	public List<ShowVO> toThinShows(Collection<Show> shows) {
 		ArrayList<ShowVO> result = new ArrayList<>();
 		for (Show show : shows) {
 			result.add(new ShowVO().withId(show.getId()).withName(show.getName()));
@@ -24,9 +25,22 @@ public class EntityConverter {
 		return result;
 	}
 
+	public Collection<UserVO> toThinUser(Collection<User> users) {
+		ArrayList<UserVO> result = new ArrayList<>();
+		for (User user : users) {
+			result.add(toThinUser(user));
+		}
+		return result;
+	}
+
 	public UserVO toThinUser(User user) {
 		UserVO userVO = new UserVO()
-				.withEmail(user.getFirstName())
+				.withEmail(user.getEmail())
+				.withFirstName(user.getFirstName())
+				.withLastName(user.getLastName())
+				.withLastLogin(user.getLastLogin())
+				.withLastShowsFeedAccess(user.getLastShowsFeedGenerated())
+				.withLastMoviesFeedAccess(user.getLastMoviesFeedGenerated())
 				.withAdmin(user.isAdmin());
 		if (user.getSubtitles() == null) {
 			userVO.setSubtitles(null);

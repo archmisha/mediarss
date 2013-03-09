@@ -1,1 +1,0 @@
-<div class='jobs-list'></div>

@@ -3,6 +3,7 @@ package rss.controllers.vo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -48,7 +49,7 @@ public class EpisodeSearchResult {
 		return esr;
 	}
 
-	public void setDidYouMean(ArrayList<ShowVO> didYouMean) {
+	public void setDidYouMean(List<ShowVO> didYouMean) {
 		this.didYouMean = didYouMean;
 	}
 }

@@ -58,15 +58,6 @@ public class UserController extends BaseController {
 	private LogService logService;
 
 	@Autowired
-	private TVShowsTorrentEntriesDownloader torrentEntriesDownloader;
-
-	@Autowired
-	private TorrentDao torrentDao;
-
-	@Autowired
-	private UserTorrentDao userTorrentDao;
-
-	@Autowired
 	private MovieService movieService;
 
 	@RequestMapping(value = "/pre-login/{tab}", method = RequestMethod.GET)
@@ -92,7 +83,7 @@ public class UserController extends BaseController {
 		return initialData;
 	}
 
-	private ArrayList<ShowVO> sort(ArrayList<ShowVO> shows) {
+	private List<ShowVO> sort(List<ShowVO> shows) {
 		Collections.sort(shows, new Comparator<ShowVO>() {
 			@Override
 			public int compare(ShowVO o1, ShowVO o2) {

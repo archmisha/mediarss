@@ -25,46 +25,19 @@ import java.util.Date;
 public class MoviesController extends BaseController {
 
 	@Autowired
-	private UserService userService;
-
-	@Autowired
 	private UserDao userDao;
-
-	@Autowired
-	private EmailService emailService;
 
 	@Autowired
 	private SessionService sessionService;
 
 	@Autowired
-	private JobStatusDao jobStatusDao;
-
-	@Autowired
-	private ShowDao showDao;
-
-	@Autowired
-	private EntityConverter entityConverter;
-
-	@Autowired
-	private SettingsService settingsService;
-
-	@Autowired
 	private LogService logService;
-
-	@Autowired
-	private ShowService showService;
-
-	@Autowired
-	private SubtitlesService subtitlesService;
 
 	@Autowired
 	private MovieDao movieDao;
 
 	@Autowired
 	private PageDownloader pageDownloader;
-
-	@Autowired
-	private UserTorrentDao userTorrentDao;
 
 	@Autowired
 	private TorrentDao torrentDao;

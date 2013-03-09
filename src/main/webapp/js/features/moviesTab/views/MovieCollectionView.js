@@ -11,12 +11,6 @@ define([
 			itemView: MovieItemView,
 			className: 'movies-list',
 
-			onRender: function() {
-			},
-
-			onShow: function() {
-			},
-
 			constructor: function(options) {
 				this.itemViewOptions = { vent: options.vent };
 

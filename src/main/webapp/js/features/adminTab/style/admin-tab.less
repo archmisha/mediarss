@@ -2,14 +2,19 @@
   width: @tab-width;
 }
 
+.access-stats-list-container,
 .jobs-list {
   margin-left: 25px;
 }
 
+.access-stats-list-container {
+  font-size: 13px;
+  margin-top: 20px;
+}
+
 .admin-job {
   margin: 0px;
-  margin-top: 20px;
-//  display: inline-block;
+  margin-top: 20px; //  display: inline-block;
 }
 
 .admin-job li {
@@ -61,8 +66,13 @@
   color: red;
 }
 
+.admin-access-stats-section,
 .admin-notifications-section {
   margin-top: 50px;
+}
+
+.admin-access-stats {
+  width: 680px;
 }
 
 .admin-notifications {
@@ -74,6 +84,7 @@
   margin-top: 10px;
   height: 28px;
 }
+
 .notifications-post-button {
   float: right;
 }
@@ -84,4 +95,55 @@
 
 .notifications-textarea {
   width: 563px;
+  min-height: 150px;
+  min-width: 500px;
+}
+
+.access-stats-name-column-header,
+.username-column {
+  float: left;
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+}
+
+.last-login-column,
+.last-shows-feed-access-column,
+.last-movies-feed-access-column,
+.access-stats-last-login-column-header,
+.access-stats-last-shows-feed-access-column-header,
+.access-stats-last-movies-feed-access-column-header {
+  float: left;
+  margin-left: 20px;
+}
+
+.access-stats-list-header {
+  font-weight: bold;
+  height: 20px;
+  margin-bottom: 5px;
+}
+
+.access-stats-item {
+  height: 20px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.access-stats-last-login-column-header,
+.access-stats-last-shows-feed-access-column-header,
+.access-stats-last-movies-feed-access-column-header {
+  width: 105px;
+  white-space: nowrap;
+}
+
+.access-stats-list {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.stats-summary {
+  margin-bottom: 10px;
+  color: #808080;
 }

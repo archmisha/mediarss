@@ -1,7 +1,7 @@
 package rss.controllers.vo;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -13,11 +13,11 @@ public class UserResponse {
 	private UserVO user;
 	private String tvShowsRssFeed;
 	private String moviesRssFeed;
-	private ArrayList<UserMovieVO> movies;
+	private List<UserMovieVO> movies;
 	private Date moviesLastUpdated;
-	private ArrayList<ShowVO> shows;
+	private List<ShowVO> shows;
 
-	public UserResponse(UserVO user, String tvShowsRssFeed, String moviesRssFeed, ArrayList<ShowVO> shows) {
+	public UserResponse(UserVO user, String tvShowsRssFeed, String moviesRssFeed, List<ShowVO> shows) {
 		this.user = user;
 		this.tvShowsRssFeed = tvShowsRssFeed;
 		this.moviesRssFeed = moviesRssFeed;
@@ -36,11 +36,11 @@ public class UserResponse {
 		return moviesRssFeed;
 	}
 
-	public ArrayList<UserMovieVO> getMovies() {
+	public List<UserMovieVO> getMovies() {
 		return movies;
 	}
 
-	public UserResponse withMovies(ArrayList<UserMovieVO> movies) {
+	public UserResponse withMovies(List<UserMovieVO> movies) {
 		this.movies = movies;
 		return this;
 	}
@@ -54,7 +54,7 @@ public class UserResponse {
 		return moviesLastUpdated;
 	}
 
-	public ArrayList<ShowVO> getShows() {
+	public List<ShowVO> getShows() {
 		return shows;
 	}
 }
