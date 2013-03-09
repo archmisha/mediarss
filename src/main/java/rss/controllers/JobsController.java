@@ -6,14 +6,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import rss.NoPermissionsException;
 import rss.dao.JobStatusDao;
 import rss.dao.UserDao;
 import rss.entities.JobStatus;
 import rss.entities.User;
 import rss.services.JobRunner;
 import rss.services.SessionService;
-import rss.services.log.LogService;
+import rss.services.SettingsService;
 import rss.services.movies.MoviesScrabbler;
 import rss.services.shows.ShowsListDownloaderService;
 import rss.services.shows.ShowsScheduleDownloaderService;
@@ -24,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.InvalidParameterException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,6 +52,9 @@ public class JobsController extends BaseController {
 	@Autowired
 	private ShowsScheduleDownloaderService showsScheduleDownloaderService;
 
+	@Autowired
+	private SettingsService settingsService;
+
 	private Map<String, JobRunner> jobRunners = new HashMap<>();
 
 	@PostConstruct
@@ -68,12 +71,20 @@ public class JobsController extends BaseController {
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	@ResponseBody
-//	@Transactional(propagation = Propagation.REQUIRED)
 	public Collection<JobStatus> getAll() {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
-		return jobStatusDao.findAll();
+		List<JobStatus> jobs = jobStatusDao.findAll();
+
+		// if a job started before the server was up, then was a problem with a job and should mark it as stopped
+		for (JobStatus job : jobs) {
+			if (job.getEnd() == null && job.getStart() != null && job.getStart().before(settingsService.getDeploymentDate())) {
+				job.setEnd(settingsService.getDeploymentDate());
+			}
+		}
+
+		return jobs;
 	}
 
 	@RequestMapping(value = "/start", method = RequestMethod.POST)

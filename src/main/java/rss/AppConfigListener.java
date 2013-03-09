@@ -46,27 +46,13 @@ public class AppConfigListener implements ServletContextListener {
 	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
-
-	@Autowired
 	private Scheduler scheduler;
 
 	@Autowired
 	private SettingsService settingsService;
 
 	@Autowired
-	private ShowService showService;
-
-	@Autowired
-	private ShowsScheduleDownloaderService showsScheduleDownloaderService;
-
-	@Autowired
 	private OOTBContentLoader ootbContentLoader;
-
-	@Autowired
-	private PageDownloader pageDownloader;
-
-	private static Log log = LogFactory.getLog(AppConfigListener.class);
 
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
