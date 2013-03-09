@@ -20,7 +20,8 @@ define([
 			ui: {
 				imdbPreview: '.movies-imdb-preview',
 				imdbNoPreview: '.movies-imdb-no-preview',
-				imdbClickForPreview: '.movies-imdb-click-for-preview'
+				imdbClickForPreview: '.movies-imdb-click-for-preview',
+				imdbPreviewLoading: '.movies-imdb-preview-loading'
 			},
 
 			events: {
@@ -100,12 +101,15 @@ define([
 				var imdbUrl = movieModel.get('imdbUrl');
 				if (imdbUrl) {
 					this.ui.imdbNoPreview.hide();
+					this.ui.imdbPreviewLoading.show();
 
 					HttpUtils.get("rest/movies/imdb/" + movieModel.get('id'), function(res) {
+						that.ui.imdbPreviewLoading.hide();
 						that.ui.imdbPreview.show();
 						that.ui.imdbPreview.contents().find('body').html(res);
 					}, false);
 				} else {
+					this.ui.imdbPreviewLoading.hide();
 					this.ui.imdbPreview.hide();
 					this.ui.imdbNoPreview.show();
 				}
