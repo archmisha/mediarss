@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class AppConfigListener implements ServletContextListener {
 
-	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSS");
 
 	@Autowired
 	private Scheduler scheduler;
