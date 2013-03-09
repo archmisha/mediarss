@@ -1,0 +1,112 @@
+@list-height: 300px;
+@movies-list-width: 300px;
+@preview-width: 800px;
+@space-between-lists: 20px;
+@list-padding: 5px;
+
+.movies-list-container {
+  width: @movies-list-width;
+  height: @list-height;
+  min-height: @list-height;
+  float: left;
+  overflow: auto;
+  margin-right: @space-between-lists;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+  padding: @list-padding;
+}
+
+.movies-torrents-list-container { // 4 cuz left and right of each list
+  width: @preview-width - @movies-list-width - @space-between-lists - 4 * @list-padding;
+  float: left;
+  height: @list-height;
+  min-height: @list-height;
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+  padding: @list-padding;
+  overflow-y: auto;
+}
+
+.movies-list {
+  font-size: 13px;
+}
+
+@movie-item-padding: 5px;
+@movie-item-padding-left: 5px;
+.movie-torrent-item,
+.movie-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: @movie-item-padding;
+  padding-left: @movie-item-padding-left;
+}
+
+.movie-torrent-item:hover,
+.movie-item-selected,
+.movie-item:hover {
+  padding: @movie-item-padding - 1; /* minus 1 for the border */
+  padding-left: @movie-item-padding-left - 1;
+  border: 1px solid #dcdcdc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.movie-torrent-item:hover {
+  cursor: default;
+}
+
+.movie-item-selected,
+.movie-item:hover {
+  cursor: pointer;
+}
+
+.movie-torrent-item-not-viewed,
+.movie-item-not-viewed {
+  font-weight: bold;
+}
+
+.movies-imdb-preview {
+  height: 500px;
+  width: @preview-width;
+  display: none;
+  overflow-x: hidden;
+  box-shadow: 0px 5px 10px 5px #444;
+}
+
+.movies-imdb-no-preview {
+  display: none;
+}
+
+.movies-imdb-preview {
+  margin-top: 20px;
+  border: 0px;
+}
+
+.movies-imdb-no-preview,
+.movies-imdb-click-for-preview {
+  font-style: italic;
+  float: left;
+  margin-top: 20px;
+  margin-left: 9px;
+  font-size: 13px;
+  color: #808080;
+}
+
+.movie-torrent-item-download-image {
+  vertical-align: top;
+  margin-right: 3px;
+}
+
+.movie-torrent-item-download-image:hover {
+  cursor: pointer;
+}
+
+.movie-item-downloaded-image,
+.movie-item-scheduled-image,
+.movie-torrent-item-downloaded-image,
+.movie-torrent-item-scheduled-image {
+  display:none;
+  margin-right: 3px;
+}
+

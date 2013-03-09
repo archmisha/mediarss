@@ -1,0 +1,132 @@
+package rss.services.downloader;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+import rss.entities.Media;
+import rss.services.MediaRequest;
+import rss.entities.Torrent;
+import rss.services.SearchResult;
+import rss.services.log.LogService;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * User: Michael Dikman
+ * Date: 02/12/12
+ * Time: 23:49
+ */
+public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaRequest> {
+
+	public static final int MAX_CONCURRENT_EPISODES = 20;
+
+	@Autowired
+	protected LogService logService;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public DownloadResult<T, S> download(Collection<S> mediaRequests) {
+		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_EPISODES));
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public DownloadResult<T, S> download(Collection<S> mediaRequests, ExecutorService executorService) {
+		// copying to avoid UnsupportedOperationException if immutable collections is given
+		final Set<S> mediaRequestsCopy = new HashSet<>(mediaRequests);
+
+		// enriching the set before the cache query - maybe expanding full season request into parts
+		// modifying and enriching the set inside the method
+		preDownloadPhase(mediaRequestsCopy);
+
+		// first query the cache and those that are not found in cache divide between the threads
+		Collection<T> cachedTorrentEntries = removeCachedEntries(mediaRequestsCopy);
+
+		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
+		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
+		final Class aClass = getClass();
+		for (final S mediaRequest : mediaRequestsCopy) {
+			executorService.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+							@Override
+							protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+								final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+								long from = System.currentTimeMillis();
+								SearchResult<T> searchResult = downloadTorrent(mediaRequest);
+								Torrent searchResultTorrent = searchResult.getTorrent();
+								switch (searchResult.getSearchStatus()) {
+									case NOT_FOUND:
+										logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
+												mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
+												System.currentTimeMillis() - from));
+										missing.add(mediaRequest);
+										break;
+									case AWAITING_AGING:
+										logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
+												searchResultTorrent.getTitle(),
+												DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
+												System.currentTimeMillis() - from));
+										// do nothing - its not missing cuz no need to  email and not found
+										break;
+									case FOUND:
+										T media = onTorrentFound(mediaRequest, searchResult);
+										if (media != null) {
+											// printing the returned torrent and not the original , as it might undergone some transformations
+											logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
+													searchResultTorrent.getTitle(),
+													System.currentTimeMillis() - from,
+													searchResult.getSource()));
+											result.add(media);
+										}
+										break;
+								}
+							}
+						});
+					} catch (Exception e) {
+						logService.error(aClass, "Failed retrieving \"" + mediaRequest.toString() + "\": " + e.getMessage(), e);
+					}
+				}
+			});
+		}
+
+		executorService.shutdown();
+		try {
+			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			logService.error(getClass(), "Error waiting for download tasks to execute: " + e.getMessage(), e);
+		}
+
+		// add cached torrents to the list
+		result.addAll(cachedTorrentEntries);
+
+		DownloadResult<T, S> downloadResult = new DownloadResult<>();
+		downloadResult.getDownloaded().addAll(result);
+		downloadResult.getMissing().addAll(missing);
+		return downloadResult;
+	}
+
+	protected abstract void preDownloadPhase(Set<S> mediaRequestsCopy);
+
+	protected abstract Collection<T> removeCachedEntries(Set<S> requests);
+
+	protected abstract T onTorrentFound(S mediaRequest, SearchResult<T> searchResult);
+
+	protected abstract SearchResult<T> downloadTorrent(S request);
+
+	public abstract void emailMissingRequests(Collection<S> missingRequests);
+}

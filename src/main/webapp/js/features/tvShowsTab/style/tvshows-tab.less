@@ -1,0 +1,275 @@
+.tvshows-tab {
+  width: @tab-width;
+}
+
+.show-combobox {
+  height: 24px;
+  width: 300px;
+}
+
+.all-shows-combo {
+  float: left;
+  margin-right: 10px;
+}
+
+.all-shows-combo .select2-choice {
+  font-size: 13px;
+}
+
+.tracked-shows-section {
+  margin-top: @sections-margin;
+}
+
+.shows-search-button {
+  height: 25px;
+  margin-left: 7px;
+}
+
+.add-tracked-show-button {
+}
+
+.tracked-shows {
+  margin-top: 20px;
+  margin-left: @section-left-margin;
+}
+
+.tracked-shows-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 20px;
+  padding: 5px;
+  width: 345px;
+}
+
+.tracked-shows-list-non-empty {
+  border: 1px solid #CCCCCC;
+  border-radius: 5px;
+}
+
+@tracked-show-padding: 5px;
+@tracked-show-padding-left: 10px;
+.tracked-show {
+  font-size: 13px;
+  padding: @tracked-show-padding;
+  padding-left: @tracked-show-padding-left;
+}
+
+.tracked-show:hover {
+  padding: @tracked-show-padding - 1; /* minus 1 for the border */
+  padding-left: @tracked-show-padding-left - 1;
+  border: 1px solid #dcdcdc;
+  background-color: #f5f5f5;
+  cursor: default;
+
+  .tracked-show-image {
+    display: block;
+    cursor: pointer;
+  }
+}
+
+.tracked-show-image {
+  display: none;
+  float: right;
+  margin-top: 4px;
+  margin-right: 6px;
+}
+
+.shows-combobo-item {
+  font-size: 13px;
+}
+
+.search-shows {
+  margin-left: @section-left-margin;
+  font-size: 13px;
+  position: relative;
+}
+
+.shows-search-first-row {
+  margin-top: 20px;
+}
+
+.shows-search-second-row {
+  margin-top: 10px;
+}
+
+.shows-search-episode-label {
+  margin-left: 10px;
+}
+
+.shows-search-title {
+  width: 220px;
+}
+
+.shows-search-title-label,
+.shows-search-episode-label,
+.shows-search-season-label {
+  margin-right: 3px;
+}
+
+.show-search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  width: 100%;
+
+}
+
+@shows-search-result-item-padding: 5px;
+.shows-search-result-item {
+  padding: @shows-search-result-item-padding;
+  padding-left: @shows-search-result-item-padding+5;
+  position: relative;
+  height: 26px;
+  line-height: 26px;
+}
+
+@shows-search-result-item-download-button: 10px;
+@shows-search-results-download-all-button-right: 10px;
+.shows-search-result-item:hover {
+  padding: @shows-search-result-item-padding - 1; /* minus 1 for the border */
+  padding-left: @shows-search-result-item-padding+5-1; /* minus 1 for the border */
+  border: 1px solid #dcdcdc;
+  background-color: #f5f5f5;
+
+  .shows-search-result-item-download-button {
+    right: @shows-search-result-item-download-button - 1; /* minus 1 for the border */
+  }
+
+  .shows-search-result-item-downloaded-status {
+    right: @shows-search-result-item-download-button + 4 - 1; /* minus 1 for the border */
+  }
+}
+
+.shows-search-result-item-downloaded-status {
+  color: green;
+  position: absolute;
+  right: @shows-search-result-item-download-button + 4;
+}
+
+.shows-search-results-download-all-button,
+.shows-search-result-item-download-button {
+  height: 25px;
+  padding: 3px 6px;
+}
+
+.shows-search-results-header-title-container {
+  display: none;
+  height: 26px;
+  margin-top: 10px;
+}
+
+.shows-search-result-item-download-button {
+  position: absolute;
+  right: @shows-search-result-item-download-button;
+}
+
+.shows-search-results-download-all-button { //  right: @shows-search-results-download-all-button-right;
+  float: right;
+}
+
+.shows-search-results-download-all-button-with-scroll {
+  right: @shows-search-results-download-all-button-right + 20;
+}
+
+.shows-search-status-no-results {
+  color: black;
+  font-style: italic;
+  display: none;
+  position: absolute;
+  bottom: -25px;
+}
+
+.shows-search-results-header {
+//  display: none;
+  margin-left: 5px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.shows-search-results-showing-results-for-text,
+.shows-search-results-header-title-single,
+.shows-search-results-header-title-multiple {
+  font-weight: bold;
+}
+
+.shows-search-results-header-title-single,
+.shows-search-results-header-title-multiple {
+  width: 300px;
+  float: left;
+  margin-top: 5px;
+}
+
+.shows-search-results-showing-results-for {
+  font-style: italic;
+  margin-bottom: 5px;
+  display: none;
+}
+
+.shows-search-results-header-with-showing-results-for {
+
+  .shows-search-results-showing-results-for {
+    display: inherit;
+  }
+}
+
+.shows-search-results-did-you-mean {
+  display: none;
+  margin-top: 10px;
+}
+
+.shows-search-results-did-you-mean-item {
+  color: @theme-color;
+}
+
+.shows-search-results-did-you-mean-item:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tracked-shows-desc {
+  color: #808080;
+  font-size: 13px;
+}
+
+.tracked-shows-add-manually {
+  color: @theme-color;
+}
+
+.tracked-shows-add-manually:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tracked-shows-add-manually-box-content {
+  display: none;
+  font-size: 13px;
+}
+
+.tracked-shows-add-manually-label {
+  margin-top: 15px;
+}
+
+.tracked-shows-add-manually-box-title {
+  font-weight: bold;
+  font-size: 15px;
+  text-decoration: underline;
+}
+
+.tracked-shows-add-manually-input {
+  margin-top: 10px;
+  width: 362px;
+}
+
+.tracked-shows-add-manually-btn {
+  float: right;
+  margin-top: 20px;
+}
+
+.tracked-shows-add-manually-label-url {
+  font-style: italic;
+  margin-right: 2px;
+}
+
+// customizing select2 - added dummy option to display caption so now hiding it to prevent a weird selectable row
+.select2-results li:first-child {
+  display: none;
+}

@@ -1,0 +1,138 @@
+package rss.entities;
+
+import org.hibernate.annotations.Index;
+
+import javax.persistence.*;
+import java.util.Date;
+
+/**
+ * User: Michael Dikman
+ * Date: 24/11/12
+ * Time: 14:36
+ */
+@Entity
+@Table(name = "torrent")
+@org.hibernate.annotations.Table(appliesTo = "torrent",
+                                 indexes = {
+                                         @Index(name = "torrent_date_uploaded_idx", columnNames = {"date_uploaded"})
+                                 })
+@NamedQueries({
+		@NamedQuery(name = "Torrent.findByUrl",
+				query = "select b from Torrent as b where b.url = :url")
+})
+public class Torrent extends BaseEntity implements Comparable<Torrent> {
+
+    private static final long serialVersionUID = -8358871423354442763L;
+
+    @Column(name = "created")
+    private Date created;
+
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "url", length = 4000, unique = true)
+    private String url;
+
+    @Column(name = "date_uploaded")
+    private Date dateUploaded;
+
+    @Column(name = "quality")
+    private MediaQuality quality;
+
+	@Column(name = "hash")
+	private String hash;
+
+    // not stored in the database, because first it will become outdated and second it is only used while
+    // searching for a specific episode on the internet
+    @Transient
+    private int seeders;
+
+    @Transient
+    private String sourcePageUrl;
+
+    protected Torrent() {
+    }
+
+    public Torrent(String title, String url, Date dateUploaded, int seeders) {
+        this(title, url, dateUploaded, seeders, null);
+    }
+
+    public Torrent(String title, String url, Date dateUploaded, int seeders, String sourcePageUrl) {
+        created = new Date();
+        this.title = title;
+        this.url = url;
+        this.dateUploaded = dateUploaded;
+        this.seeders = seeders;
+        this.sourcePageUrl = sourcePageUrl;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Torrent");
+        sb.append("{title='").append(title).append('\'');
+        sb.append(", url='").append(url).append('\'');
+        sb.append(", dateUploaded=").append(dateUploaded);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public Date getDateUploaded() {
+        return dateUploaded;
+    }
+
+    public int getSeeders() {
+        return seeders;
+    }
+
+    public String getSourcePageUrl() {
+        return sourcePageUrl;
+    }
+
+    public void setSourcePageUrl(String sourcePageUrl) {
+        this.sourcePageUrl = sourcePageUrl;
+    }
+
+    @Override
+    public int compareTo(Torrent o) {
+        return title.compareTo(o.title);
+    }
+
+
+    public MediaQuality getQuality() {
+        return quality;
+    }
+
+    public void setQuality(MediaQuality quality) {
+        this.quality = quality;
+    }
+
+
+//    public void setMedia(Media media) {
+//        this.media = media;
+//    }
+
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+
+	public String getHash() {
+		return hash;
+	}
+}

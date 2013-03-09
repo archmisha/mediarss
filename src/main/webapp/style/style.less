@@ -1,0 +1,132 @@
+@import 'bootstrap.lite.less';
+
+@font-face {
+  font-family: headerFont;
+  src: url('JandaManateeSolid.ttf');
+}
+
+@font-face {
+  font-family: bodyFont;
+  src: url('Robot.woff') format('woff');
+}
+
+body {
+  font-family: bodyFont;
+  height: auto;
+}
+
+#main {
+  margin-left: auto;
+  margin-right: auto;
+  width: 900px;
+}
+
+//@theme-color: #0096d6;
+@theme-color: #097fe3;
+@tab-width: 600px;
+@sections-margin: 50px;
+@section-left-margin: 25px;
+
+.btn {
+  -webkit-border-radius: 3px 3px 3px 3px;
+  -moz-border-radius: 3px 3px 3px 3px;
+  border-radius: 3px 3px 3px 3px;
+
+  height: 30px;
+  background-color: @theme-color;
+  text-shadow: 0 1px 5px rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 13px;
+  line-height: 18px;
+  padding: 5px 14px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-small {
+  padding: 3px 8px;
+  height: 25px;
+}
+
+.btn:hover {
+  background-color: #0072a3;
+}
+
+.btn-disabled {
+  background-color: #808080;
+  cursor: default;
+}
+
+.btn-disabled:hover {
+  background-color: #808080;
+}
+
+textarea,
+input[type="text"],
+input[type="password"] {
+  border: 2px solid #cccccc;
+  border-radius: 5px;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+textarea {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.fancy-box-title {
+  position: absolute;
+  top: 0px;
+  bottom: auto;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.select2-result-label {
+  font-size: 13px;
+}
+
+.session-timeout-box-content {
+  display: none;
+  font-size: 13px;
+}
+
+.session-timeout-button-bar {
+  height: 20px;
+  margin-top: 20px;
+}
+
+.session-timeout-title {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-top: 5px;
+}
+
+.session-timeout-text-container {
+  margin-left: 40px;
+}
+
+.session-timeout-icon {
+  position: absolute;
+  left: 0px;
+}
+
+.session-timeout-button {
+  float: right;
+  margin-right: 15px;
+}
+
+@import 'jquery.fancybox.less';
+@import 'chosen.less';
+@import 'spinner.less';
+@import '../js/components/header/style/header.less';
+@import '../js/components/section/style/section.less';
+@import '../js/features/login/style/login.less';
+@import '../js/features/register/style/register.less';
+@import '../js/features/homeTab/style/home-tab.less';
+@import '../js/features/adminTab/style/admin-tab.less';
+@import '../js/features/tvShowsTab/style/tvshows-tab.less';
+@import '../js/features/home/style/home.less';
+@import '../js/features/moviesTab/style/movies-tab.less';

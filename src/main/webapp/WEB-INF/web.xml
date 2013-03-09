@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="UCMDB_browser" version="2.5"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            <![CDATA[
+    				/WEB-INF/*Context.xml
+    			]]>
+        </param-value>
+    </context-param>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <servlet>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RssFeedGeneratorServlet</servlet-name>
+        <servlet-class>rss.servlets.RssFeedGeneratorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RssFeedGeneratorServlet</servlet-name>
+        <url-pattern>/generate/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>TorrentTrackerServlet</servlet-name>
+        <servlet-class>rss.servlets.TorrentTrackerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TorrentTrackerServlet</servlet-name>
+        <url-pattern>/announce</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>rss.servlets.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/register/*</url-pattern>
+    </servlet-mapping>
+
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>rss.AppConfigListener</listener-class>
+    </listener>
+
+    <!-- Default page to serve -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <error-page>
+        <error-code>404</error-code>
+        <location>/ablankpage.html</location>
+    </error-page>
+
+</web-app>
