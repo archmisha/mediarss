@@ -1,5 +1,6 @@
 package rss.services;
 
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -22,6 +23,8 @@ public interface SettingsService {
 	int getTVComPagesToDownload();
 
 	String getTorrentWatchPath();
+
+	Collection<String> getAdmins();
 
 	String getAlternativeResourcesPath();
 

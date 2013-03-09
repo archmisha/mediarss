@@ -11,6 +11,7 @@ import rss.dao.UserTorrentDao;
 import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserTorrent;
+import rss.services.SettingsService;
 import rss.services.log.LogService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +30,9 @@ public class BaseController {
 
 	@Autowired
 	protected UserTorrentDao userTorrentDao;
+
+	@Autowired
+	private SettingsService settingsService;
 
 	protected LogService getLogService() {
 		return log;
@@ -99,7 +103,7 @@ public class BaseController {
 	}
 
 	protected void verifyAdminPermissions(User user) {
-		if (!user.isAdmin()) {
+		if (!settingsService.getAdmins().contains(user.getEmail())) {
 			String msg = "Detected impersonation of admin user. User: " + user.getEmail();
 			getLogService().error(getClass(), msg);
 			throw new NoPermissionsException(msg);

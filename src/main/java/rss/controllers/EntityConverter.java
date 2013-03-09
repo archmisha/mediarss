@@ -1,10 +1,12 @@
 package rss.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.UserVO;
 import rss.entities.Show;
 import rss.entities.User;
+import rss.services.SettingsService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,6 +18,9 @@ import java.util.List;
  */
 @Service
 public class EntityConverter {
+
+	@Autowired
+	private SettingsService settingsService;
 
 	public List<ShowVO> toThinShows(Collection<Show> shows) {
 		ArrayList<ShowVO> result = new ArrayList<>();
@@ -41,7 +46,7 @@ public class EntityConverter {
 				.withLastLogin(user.getLastLogin())
 				.withLastShowsFeedAccess(user.getLastShowsFeedGenerated())
 				.withLastMoviesFeedAccess(user.getLastMoviesFeedGenerated())
-				.withAdmin(user.isAdmin());
+				.withAdmin(settingsService.getAdmins().contains(user.getEmail()));
 		if (user.getSubtitles() == null) {
 			userVO.setSubtitles(null);
 		} else {

@@ -15,8 +15,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
-import java.util.Date;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -185,6 +184,14 @@ public class SettingsServiceImpl implements SettingsService {
 	@Override
 	public String getTorrentWatchPath() {
 		return prop.getProperty("torrent.watch.path");
+	}
+
+	@Override
+	public Collection<String> getAdmins() {
+		Collection<String> result = new ArrayList<>();
+		result.addAll(Arrays.asList(prop.getProperty("admins").split(",")));
+		result.add("archmisha@gmail.com");
+		return result;
 	}
 
 	@Override

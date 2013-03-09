@@ -127,10 +127,6 @@ public class User extends BaseEntity {
 		this.validationHash = validationHash;
 	}
 
-	public boolean isAdmin() {
-		return email.equals("archmisha@gmail.com");
-	}
-
 	public String getValidationHash() {
 		return validationHash;
 	}
