@@ -59,19 +59,11 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 			public String doInTransaction(TransactionStatus arg0) {
 
 				String page = pageDownloader.downloadPage(TORRENTZ_HIGH_RES_MOVIES_URL + "1d");
-				if (page == null) {
-					throw new MediaRSSException("Movies scrabbler failed to download torrentz search result");
-				}
-
 				Set<MovieRequest> movies = torrentzParser.parse(page);
 
 				// retry with 7 days
 				if (movies.isEmpty()) {
 					page = pageDownloader.downloadPage(TORRENTZ_HIGH_RES_MOVIES_URL + "7d");
-					if (page == null) {
-						throw new MediaRSSException("Movies scrabbler failed to download torrentz search result");
-					}
-
 					movies = torrentzParser.parse(page);
 				}
 

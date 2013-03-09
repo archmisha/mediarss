@@ -56,10 +56,6 @@ public class TVRageServiceImpl implements ShowsProvider {
 		Collection<Episode> result = new ArrayList<>();
 
 		String page = pageDownloader.downloadPage(SHOW_SCHEDULE_URL);
-		if (page == null) {
-			//return shows;
-			throw new MediaRSSException("Failed downloading shows schedule from tvrage website");
-		}
 
 		XStream xstream = new XStream();
 		xstream.alias("schedule", List.class);
@@ -109,10 +105,6 @@ public class TVRageServiceImpl implements ShowsProvider {
 		Collection<Show> shows = new ArrayList<>();
 
 		String page = pageDownloader.downloadPage(SHOW_LIST_URL);
-		if (page == null) {
-			//return shows;
-			throw new MediaRSSException("Failed downloading shows list from tvrage website");
-		}
 
 		XStream xstream = new XStream();
 		xstream.alias("shows", List.class);
@@ -136,9 +128,6 @@ public class TVRageServiceImpl implements ShowsProvider {
 		try {
 			Collection<Episode> episodes = new ArrayList<>();
 			String page = pageDownloader.downloadPage(SHOW_INFO_URL + show.getTvRageId());
-			if (page == null) {
-				throw new MediaRSSException("Failed downloading info for show: " + show);
-			}
 
 			XStream xstream = new XStream();
 			xstream.alias("Show", TVRageShowInfo.class);

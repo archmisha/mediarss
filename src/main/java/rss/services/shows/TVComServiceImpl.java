@@ -107,9 +107,11 @@ public class TVComServiceImpl implements ShowsProvider {
 		try {
 			EpisodesMapper episodesMapper = new EpisodesMapper(show.getEpisodes());
 
-			String page = pageDownloader.downloadPage(show.getTvComUrl());
-			if (page == null) {
-				throw new RuntimeException("Show '" + show + "' got invalid tv.com url " + show.getTvComUrl());
+			String page;
+			try {
+				page = pageDownloader.downloadPage(show.getTvComUrl());
+			} catch (Exception e) {
+				throw new RuntimeException("Show '" + show + "' got invalid tv.com url " + show.getTvComUrl() + ": " + e.getMessage(), e);
 			}
 
 			Matcher isEndedMatcher = IS_ENDED_PATTERN.matcher(page);

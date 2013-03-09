@@ -66,9 +66,11 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 
 	// might be in the headers of the torrent or in the content as plain text
 	private String getImdbUrl(Torrent torrent) {
-		String page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
-		if (page == null) {
-			log.error("Failed retrieving the imdb url of " + torrent.toString());
+		String page;
+		try {
+			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
+		} catch (Exception e) {
+			log.error("Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
 			return null;
 		}
 

@@ -96,8 +96,10 @@ public class TorrentSearcher1337x extends AbstractTorrentSearcher {
 	}
 
 	private SearchResult<Media> retrieveTorrentEntry(String torrentUrl) {
-		String page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
-		if (page == null) {
+		String page;
+		try {
+			page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
+		} catch (Exception e) {
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 

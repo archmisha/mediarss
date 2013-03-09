@@ -17,6 +17,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.ConnectionTimeoutException;
+import rss.MediaRSSException;
 import rss.services.log.LogService;
 
 import java.io.InputStream;
@@ -96,8 +97,9 @@ public class PageDownloaderImpl implements PageDownloader {
 
 			return sendRequest(httpGet, streamExtractor);
 		} catch (Exception e) {
-			log.error(getClass(), errorMessagePrefix + " " + e.getMessage(), e);
-			return null;
+			throw new MediaRSSException(errorMessagePrefix + " " + e.getMessage(), e);
+//			log.error(getClass(), errorMessagePrefix + " " + e.getMessage(), e);
+//			return null;
 		} finally {
 			log.debug(getClass(), String.format("Download page %s took %d millis", url, System.currentTimeMillis() - from));
 		}

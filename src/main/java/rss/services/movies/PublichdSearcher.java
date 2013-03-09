@@ -38,11 +38,13 @@ public class PublichdSearcher implements TorrentSearcher<MovieRequest, Movie> {
     @Override
     public SearchResult<Movie> search(MovieRequest movieRequest) {
         String url = PUBLICHD_TORRENT_URL + movieRequest.getHash();
-        String page = pageDownloader.downloadPage(url);
-        if (page == null) {
-            log.error("Failed downloading page of " + movieRequest.toString() + " at " + url);
-            return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
-        }
+		String page;
+		try {
+			page = pageDownloader.downloadPage(url);
+		} catch (Exception e) {
+			log.error("Failed downloading page of " + movieRequest.toString() + " at " + url + ": " + e.getMessage(), e);
+			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		}
 
         Matcher matcher = PATTERN.matcher(page);
         if (!matcher.find()) {

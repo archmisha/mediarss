@@ -35,12 +35,13 @@ public abstract class AbstractTorrentSearcher implements TorrentSearcher<MediaRe
             return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
         }
 
-        String page = pageDownloader.downloadPage(url);
-
-        if (page == null) {
-            log.info("Page for the url " + url + " could not be retrieved");
-            return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
-        }
+		String page;
+		try {
+			page = pageDownloader.downloadPage(url);
+		} catch (Exception e) {
+			log.error("Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
+			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		}
 
         SearchResult<Media> searchResult = parseSearchResults(mediaRequest, url, page);
         if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {

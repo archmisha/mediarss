@@ -79,16 +79,17 @@ public class MoviesController extends BaseController {
 		if (page != null) {
 			logService.debug(getClass(), "IMDB page for movie " + movie.getName() + " was found in cache");
 		} else {
-			DurationMeter durationMeter = new DurationMeter();
-			page = pageDownloader.downloadPage(movie.getImdbUrl());
-			durationMeter.stop();
-			logService.debug(getClass(), "IMDB page download for movie " + movie.getName() + " took " + durationMeter.getDuration() + " millis");
-
-			if (page != null) {
+			try {
+				DurationMeter durationMeter = new DurationMeter();
+				page = pageDownloader.downloadPage(movie.getImdbUrl());
 				page = cleanImdbPage(movie.getName(), page);
+				durationMeter.stop();
+				logService.debug(getClass(), "IMDB page download for movie " + movie.getName() + " took " + durationMeter.getDuration() + " millis");
+				sessionService.setImdbMoviePage(movie.getId(), page);
+			} catch (Exception e) {
+				page = null;
+				logService.error(getClass(), e.getMessage(), e);
 			}
-
-			sessionService.setImdbMoviePage(movie.getId(), page);
 		}
 
 		return page;
