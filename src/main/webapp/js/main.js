@@ -13,7 +13,8 @@ require.config({
 		jqplugin: 'lib/jquery.jqplugin.1.0.2.min',
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
-		noty: 'lib/noty/jquery.noty'
+		noty: 'lib/noty/jquery.noty',
+		qtip: 'lib/jquery.qtip-1.0.0-rc3.min'
 	},
 	shim: {
 		'lib/backbone-localStorage': ['backbone'],
@@ -51,19 +52,25 @@ require.config({
 		},
 		noty: {
 			exports: 'Noty'
+		},
+		qtip: {
+			exports: 'qTip',
+			deps: ['jquery']
 		}
 	},
 	deps: ['jquery', 'underscore']
 });
 
 require([
+	'jquery',
 	'backbone',
 	'handlebars',
 	'routers/MainRouter',
 	'controllers/BaseController',
-	'moment'
+	'moment',
+	'qtip'
 ],
-	function(Backbone, Handlebars, MainRouter, BaseController, Moment) {
+	function($, Backbone, Handlebars, MainRouter, BaseController, Moment, qtip) {
 		"use strict";
 
 		//  format an ISO date using Moment.js
@@ -88,6 +95,16 @@ require([
 				controller: controller
 			});
 			Backbone.history.start();
+
+			$.fn.qtip.styles.rssStyle = {
+				name: 'blue',
+				color: '#097fe3',
+				fontSize: 13,
+				border: {
+					width: 1,
+					radius: 4
+				}
+			};
 		});
 
 		app.start();

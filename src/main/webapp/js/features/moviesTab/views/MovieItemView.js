@@ -1,9 +1,10 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/moviesTab/templates/movie-item.tpl'
+	'text!features/moviesTab/templates/movie-item.tpl',
+	'qtip'
 ],
-	function(Marionette, Handlebars, template) {
+	function(Marionette, Handlebars, template, qtip) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -12,7 +13,8 @@ define([
 
 			ui: {
 				scheduledImage: '.movie-item-scheduled-image',
-				downloadedImage: '.movie-item-downloaded-image'
+				downloadedImage: '.movie-item-downloaded-image',
+				movieTitle: '.movie-item-title'
 			},
 
 			events: {
@@ -42,6 +44,16 @@ define([
 				}
 
 				this.updateDownloadStatus();
+
+				this.ui.scheduledImage.qtip({
+					style: 'rssStyle'
+				});
+				this.ui.downloadedImage.qtip({
+					style: 'rssStyle'
+				});
+				this.ui.movieTitle.qtip({
+					style: 'rssStyle'
+				});
 			},
 
 			updateDownloadStatus: function() {

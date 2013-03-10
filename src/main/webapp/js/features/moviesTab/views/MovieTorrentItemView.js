@@ -1,9 +1,10 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/moviesTab/templates/movie-torrent-item.tpl'
+	'text!features/moviesTab/templates/movie-torrent-item.tpl',
+	'qtip'
 ],
-	function(Marionette, Handlebars, template) {
+	function(Marionette, Handlebars, template, qtip) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -17,7 +18,8 @@ define([
 			ui: {
 				downloadImage: '.movie-torrent-item-download-image',
 				scheduledImage: '.movie-torrent-item-scheduled-image',
-				downloadedImage: '.movie-torrent-item-downloaded-image'
+				downloadedImage: '.movie-torrent-item-downloaded-image',
+				movieTorrentTitle: '.movie-torrent-title'
 			},
 
 			constructor: function(options) {
@@ -52,6 +54,19 @@ define([
 				}
 
 				this.updateDownloadStatus();
+
+				this.ui.downloadImage.qtip({
+					style: 'rssStyle'
+				});
+				this.ui.scheduledImage.qtip({
+					style: 'rssStyle'
+				});
+				this.ui.downloadedImage.qtip({
+					style: 'rssStyle'
+				});
+				this.ui.movieTorrentTitle.qtip({
+					style: 'rssStyle'
+				});
 			},
 
 			onDownloadButtonClick: function() {

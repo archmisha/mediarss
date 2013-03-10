@@ -1,9 +1,10 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/adminTab/templates/access-stats-item.tpl'
+	'text!features/adminTab/templates/access-stats-item.tpl',
+	'qtip'
 ],
-	function(Marionette, Handlebars, template) {
+	function(Marionette, Handlebars, template, qtip) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -11,6 +12,7 @@ define([
 			className: 'access-stats-item',
 
 			ui: {
+				userName: '.username-column'
 			},
 
 			events: {
@@ -21,6 +23,9 @@ define([
 			},
 
 			onRender: function() {
+				this.ui.userName.qtip({
+					style: 'rssStyle'
+				});
 			},
 
 			templateHelpers: function() {
