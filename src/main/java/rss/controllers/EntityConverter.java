@@ -30,7 +30,7 @@ public class EntityConverter {
 		return result;
 	}
 
-	public Collection<UserVO> toThinUser(Collection<User> users) {
+	public List<UserVO> toThinUser(Collection<User> users) {
 		ArrayList<UserVO> result = new ArrayList<>();
 		for (User user : users) {
 			result.add(toThinUser(user));

@@ -13,6 +13,9 @@ import rss.services.SessionService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -50,6 +53,13 @@ public class AdminController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
-		return entityConverter.toThinUser(userDao.findAll());
+		List<UserVO> users = entityConverter.toThinUser(userDao.findAll());
+		Collections.sort(users, new Comparator<UserVO>() {
+			@Override
+			public int compare(UserVO o1, UserVO o2) {
+				return o2.getLastLogin().compareTo(o1.getLastLogin());
+			}
+		});
+		return users;
 	}
 }
