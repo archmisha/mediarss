@@ -5,5 +5,5 @@
     </div>
 </div>
 <div class='section-description'>
-    {{description}}
+    {{{description}}}
 </div>

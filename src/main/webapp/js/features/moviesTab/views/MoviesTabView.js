@@ -7,9 +7,11 @@ define([
 	'features/moviesTab/collections/MoviesCollection',
 	'features/moviesTab/views/MovieTorrentCollectionView',
 	'features/collections/UserTorrentCollection',
-	'HttpUtils'
+	'HttpUtils',
+	'components/section/views/SectionView'
 ],
-	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils) {
+	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView,
+		UserTorrentCollection, HttpUtils, SectionView) {
 		"use strict";
 
 		var selectedMovie = null;
@@ -29,7 +31,9 @@ define([
 
 			regions: {
 				moviesListRegion: '.movies-list-container',
-				movieTorrentListRegion: '.movies-torrents-list-container'
+				movieTorrentListRegion: '.movies-torrents-list-container',
+				moviesSectionRegion: '.movies-section',
+				futureMoviesSectionRegion: '.future-movies-section'
 			},
 
 			constructor: function(options) {
@@ -47,6 +51,17 @@ define([
 				// reset the retries limit so wont run for ever
 				window.moviesImdbPreviewHeightRetries = 5;
 				window.resize_iframe = this.resize_iframe;
+
+				this.moviesSection = new SectionView({
+					title: 'Movies Download',
+					description: 'Select movies to download. You can use IMDB preview'
+				});
+
+				this.futureMoviesSection = new SectionView({
+					title: 'Movies You Want (experimental)',
+					description: 'Add movies not available yet for download by their IMDB id and they will be ' +
+						'automatically added <br/>to your feed once they are available for download.'
+				});
 
 				this.vent.on('movie-selected', this.onMovieSelected, this);
 			},
@@ -76,6 +91,8 @@ define([
 			onRender: function() {
 				this.moviesListRegion.show(this.moviesCollectionView);
 				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
+				this.moviesSectionRegion.show(this.moviesSection);
+				this.futureMoviesSectionRegion.show(this.futureMoviesSection);
 			},
 
 			onMovieSelected: function(movieModel) {

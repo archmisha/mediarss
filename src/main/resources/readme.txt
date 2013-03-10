@@ -74,5 +74,6 @@ http://www.turnkeylinux.org/forum/support/20120514/how-do-i-install-modpagespeed
 todo
 ====
 when on movie and then back the status of the torrent is still bold
-track every1 login
-show in admin last access for each user
+a place to submit defects
+help
+future movie subscriptions
