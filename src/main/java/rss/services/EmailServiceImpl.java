@@ -1,8 +1,6 @@
 package rss.services;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.UserDao;
@@ -24,7 +22,6 @@ public class EmailServiceImpl implements EmailService {
 
 	public static final String APP_NAME = "Personalized Media RSS";
 	public static final String EMAIL_SIGNATURE = "\n\nMichael Dikman\n" + APP_NAME + " Team";
-	private static Log log = LogFactory.getLog(EmailServiceImpl.class);
 
 	@Autowired
 	private UrlService urlService;
@@ -152,6 +149,22 @@ public class EmailServiceImpl implements EmailService {
 				throw new RuntimeException("Failed sending email to user. Error: " + e.getMessage(), e);
 			} else {
 				throw new RuntimeException("Failed sending email to user", e);
+			}
+		}
+	}
+
+	@Override
+	public void sendTicket(User user, String type, String content) {
+		try {
+			sendEmail(getAdministratorEmails(), APP_NAME + " - " + type,
+					"User " + user.getFirstName() + " " + user.getLastName() + " (" + user.getEmail() +
+					") has submitted the following " + type + ": \n" + content +
+					EMAIL_SIGNATURE);
+		} catch (MessagingException e) {
+			if (e.getMessage() != null) {
+				throw new RuntimeException("Failed sending email of a new ticket. Error: " + e.getMessage(), e);
+			} else {
+				throw new RuntimeException("Failed sending email of a new ticket", e);
 			}
 		}
 	}

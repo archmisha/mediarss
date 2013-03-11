@@ -30,4 +30,6 @@ public interface EmailService {
 	void sendPasswordRecoveryEmail(User user);
 
 	void sendEmailToAllUsers(String text);
+
+	void sendTicket(User user, String type, String content);
 }
