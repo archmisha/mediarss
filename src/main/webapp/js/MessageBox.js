@@ -26,7 +26,7 @@ define(['fancybox', 'noty'],
 					layout: 'topCenter',
 					text: message,
 					timeout: 5000,
-					type: 'information'
+					type: 'success'
 				});
 			}
 		};

@@ -77,3 +77,6 @@ when on movie and then back the status of the torrent is still bold
 a place to submit defects
 help
 future movie subscriptions
+tvshows change icons, add shceduled state
+movies - add dates of when downloaded when movie uploaded torrent uploaded
+
