@@ -166,8 +166,7 @@ public class AppConfigListener implements ServletContextListener {
 				Trigger trigger = TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(quartzJobAnnotation.name() + "_trigger")
 						.withSchedule(CronScheduleBuilder.cronSchedule(quartzJobAnnotation.cronExp())).build();
 
-				scheduler.addJob(jobDetail, true);
-				scheduler.scheduleJob(trigger);
+				scheduler.scheduleJob(jobDetail, trigger);
 				log.info("Loading quartz Job: " + entry.getValue());
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
