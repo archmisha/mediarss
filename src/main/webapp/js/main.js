@@ -78,6 +78,9 @@ require([
 		//  moment syntax example: moment(Date("2011-07-18T15:50:52")).format("MMMM YYYY")
 		//  usage: {{dateFormat creation_date format="MMMM YYYY"}}
 		Handlebars.registerHelper('dateFormat', function(context, block) {
+			if (context == null) {
+				return block.hash.default || 'never';
+			}
 			var f = block.hash.format || "MMM Do, YYYY";
 //			console.log('dateFormat:  context=' + new Date(context) + ' ' + Moment(new Date(context)).format(f));
 			return Moment(new Date(context)).format(f);
