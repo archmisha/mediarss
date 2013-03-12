@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
 	public UserResponse getUserResponse(User user) {
 		String tvShowsRssFeed = urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.TV_SHOWS_RSS_FEED_TYPE, user.getFeedHash());
 		String moviesRssFeed = urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.MOVIES_RSS_FEED_TYPE, user.getFeedHash());
-		return new UserResponse(entityConverter.toThinUser(user), tvShowsRssFeed, moviesRssFeed, sort(entityConverter.toThinShows(user.getShows())));
+		return new UserResponse(entityConverter.toThinUser(user), tvShowsRssFeed, moviesRssFeed);
 	}
 
 	private List<ShowVO> sort(List<ShowVO> shows) {

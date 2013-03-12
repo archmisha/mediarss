@@ -17,11 +17,10 @@ public class UserResponse {
 	private Date moviesLastUpdated;
 	private List<ShowVO> shows;
 
-	public UserResponse(UserVO user, String tvShowsRssFeed, String moviesRssFeed, List<ShowVO> shows) {
+	public UserResponse(UserVO user, String tvShowsRssFeed, String moviesRssFeed) {
 		this.user = user;
 		this.tvShowsRssFeed = tvShowsRssFeed;
 		this.moviesRssFeed = moviesRssFeed;
-		this.shows = shows;
 	}
 
 	public UserVO getUser() {
@@ -52,6 +51,11 @@ public class UserResponse {
 
 	public Date getMoviesLastUpdated() {
 		return moviesLastUpdated;
+	}
+
+	public UserResponse withShows(List<ShowVO> shows) {
+		this.shows = shows;
+		return this;
 	}
 
 	public List<ShowVO> getShows() {

@@ -13,10 +13,12 @@ import rss.RegisterException;
 import rss.SubtitleLanguage;
 import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.UserResponse;
-import rss.dao.*;
-import rss.entities.*;
+import rss.dao.JobStatusDao;
+import rss.dao.ShowDao;
+import rss.dao.UserDao;
+import rss.entities.JobStatus;
+import rss.entities.User;
 import rss.services.*;
-import rss.services.downloader.TVShowsTorrentEntriesDownloader;
 import rss.services.log.LogService;
 import rss.services.movies.MovieService;
 import rss.services.movies.MoviesScrabblerImpl;
@@ -29,6 +31,9 @@ import java.util.*;
 @Controller
 @RequestMapping("/user")
 public class UserController extends BaseController {
+
+	public static final String TVSHOWS_TAB = "tvshows";
+	public static final String MOVIES_TAB = "movies";
 
 	@Autowired
 	private UserService userService;
@@ -65,21 +70,23 @@ public class UserController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getPreLoginData(@PathVariable String tab) {
 		Map<String, Object> result = new HashMap<>();
-		result.put("initialData", createInitialData());
+		result.put("initialData", createInitialData(tab));
 
 		if (sessionService.isUserLogged()) {
 			User user = userDao.find(sessionService.getLoggedInUserId());
-			result.put("user", createUserResponse(user));
+			result.put("user", createUserResponse(user, tab));
 		}
 
 		return result;
 	}
 
-	private Map<String, Object> createInitialData() {
+	private Map<String, Object> createInitialData(String tab) {
 		Map<String, Object> initialData = new HashMap<>();
 		initialData.put("deploymentDate", settingsService.getDeploymentDate());
 		initialData.put("subtitles", SubtitleLanguage.getValues());
-		initialData.put("shows", sort(entityConverter.toThinShows(showDao.findNotEnded())));
+		if (tab.equals(TVSHOWS_TAB)) {
+			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findNotEnded())));
+		}
 		return initialData;
 	}
 
@@ -99,6 +106,7 @@ public class UserController extends BaseController {
 	public Map<String, Object> login(HttpServletRequest request) {
 		String email = extractString(request, "username", true);
 		String password = extractString(request, "password", true);
+		String tab = extractString(request, "tab", true);
 		boolean includeInitialData = extractBoolean(request, "includeInitialData", true);
 		email = email.trim();
 		password = password.trim();
@@ -117,18 +125,25 @@ public class UserController extends BaseController {
 		user.setLastLogin(new Date());
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("user", createUserResponse(user));
+		result.put("user", createUserResponse(user, tab));
 		if (includeInitialData) {
-			result.put("initialData", createInitialData());
+			result.put("initialData", createInitialData(tab));
 		}
 		return result;
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	private UserResponse createUserResponse(User user) {
-		return userService.getUserResponse(user)
-				.withMoviesLastUpdated(getMoviesLastUpdated())
-				.withMovies(movieService.getUserMovies(user));
+	private UserResponse createUserResponse(User user, String tab) {
+		UserResponse userResponse = userService.getUserResponse(user);
+
+		if (tab.equals(MOVIES_TAB)) {
+			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
+					.withMovies(movieService.getUserMovies(user));
+		} else if (tab.equals(TVSHOWS_TAB)) {
+			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())));
+		}
+
+		return userResponse;
 	}
 
 	private Date getMoviesLastUpdated() {
@@ -171,7 +186,7 @@ public class UserController extends BaseController {
 	public void subtitles(HttpServletRequest request) {
 		String subtitles = extractString(request, "subtitles", false);
 
- 		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userDao.find(sessionService.getLoggedInUserId());
 		user.setSubtitles(SubtitleLanguage.fromString(subtitles));
 	}
 

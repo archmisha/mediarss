@@ -36,22 +36,10 @@ import java.util.Map;
 public class SupportController extends BaseController {
 
 	@Autowired
-	private JobStatusDao jobStatusDao;
-
-	@Autowired
 	private SessionService sessionService;
 
 	@Autowired
 	private UserDao userDao;
-
-	@Autowired
-	private MoviesScrabbler moviesScrabbler;
-
-	@Autowired
-	private ShowsListDownloaderService showsListDownloaderService;
-
-	@Autowired
-	private ShowsScheduleDownloaderService showsScheduleDownloaderService;
 
 	@Autowired
 	private EmailService emailService;
