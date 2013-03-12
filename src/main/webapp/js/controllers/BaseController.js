@@ -77,7 +77,7 @@ define([
 					if (res.user && res.user != null) {
 						that._showHome(res.initialData, res.user);
 					} else {
-						that._showLogin(res.initialData);
+						that._showLogin(res.initialData, tab);
 					}
 				}).error(function(res) {
 						console.log('error. data: ' + res);
@@ -103,14 +103,15 @@ define([
 				tabToSelect = null;
 			},
 
-			_showLogin: function(initialData) {
+			_showLogin: function(initialData, tab) {
 				var that = this;
 				var login = new LoginView();
 				login.on('login', function(options) {
 					$.post("rest/user/login", {
 						username: options.username,
 						password: options.password,
-						includeInitialData: initialData == undefined
+						includeInitialData: initialData == undefined,
+						tab: tab
 					}).success(function(res) {
 							if (res.success === undefined) {
 								if (initialData == undefined) {
