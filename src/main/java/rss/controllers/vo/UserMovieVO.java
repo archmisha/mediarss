@@ -86,4 +86,8 @@ public class UserMovieVO {
 	public List<UserMovieStatus> getTorrents() {
 		return torrents;
 	}
+
+	public void setDownloadStatus(DownloadStatus downloadStatus) {
+		this.downloadStatus = downloadStatus;
+	}
 }

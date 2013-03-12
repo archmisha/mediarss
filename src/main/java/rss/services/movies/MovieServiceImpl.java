@@ -1,9 +1,13 @@
 package rss.services.movies;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.controllers.EntityConverter;
 import rss.controllers.vo.DownloadStatus;
 import rss.controllers.vo.UserMovieStatus;
 import rss.controllers.vo.UserMovieVO;
@@ -11,10 +15,15 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
+import rss.services.PageDownloader;
 import rss.services.SessionService;
+import rss.services.downloader.MoviesTorrentEntriesDownloader;
+import rss.services.log.LogService;
+import rss.util.DurationMeter;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Matcher;
 
 /**
  * User: dikmanm
@@ -22,6 +31,8 @@ import java.util.*;
  */
 @Service
 public class MovieServiceImpl implements MovieService {
+
+	private static final String IMDB_URL = "http://www.imdb.com/title/";
 
 	@Autowired
 	private SessionService sessionService;
@@ -34,6 +45,75 @@ public class MovieServiceImpl implements MovieService {
 
 	@Autowired
 	private TorrentDao torrentDao;
+
+	@Autowired
+	private PageDownloader pageDownloader;
+
+	@Autowired
+	private LogService logService;
+
+	@Autowired
+	private EntityConverter entityConverter;
+
+	@Transactional(propagation = Propagation.REQUIRED)
+	public String getImdbPreviewPage(Movie movie) {
+		String page;
+		try {
+			DurationMeter durationMeter = new DurationMeter();
+			page = pageDownloader.downloadPage(movie.getImdbUrl());
+			page = cleanImdbPage(movie.getName(), page);
+			durationMeter.stop();
+			logService.debug(getClass(), "IMDB page download for movie " + movie.getName() + " took " + durationMeter.getDuration() + " millis");
+		} catch (Exception e) {
+			page = null;
+			logService.error(getClass(), e.getMessage(), e);
+		}
+		return page;
+	}
+
+	private String cleanImdbPage(String name, String page) {
+		DurationMeter durationMeter = new DurationMeter();
+		Document doc = Jsoup.parse(page);
+		doc.select("#maindetails_sidebar_bottom").remove();
+		doc.select("#nb20").remove();
+		doc.select("#titleRecs").remove();
+		doc.select("#titleBoardsTeaser").remove();
+		doc.select("div.article.contribute").remove();
+		doc.select("#title_footer_links").remove();
+		doc.select("#titleDidYouKnow").remove();
+		doc.select("#footer").remove();
+		doc.select("#root").removeAttr("id");
+		doc.select("script").remove();
+		doc.select("iframe").remove();
+		doc.select("link[type!=text/css").remove();
+		doc.select("#bottom_ad_wrapper").remove();
+		doc.select("#pagecontent").removeAttr("id"); // got the style of the top line
+		doc.select(".rightcornerlink").remove();
+		doc.select("div#content-2-wide").removeAttr("id");
+		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
+		doc.body().append("<script>parent.resize_iframe()</script>");
+
+		durationMeter.stop();
+		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
+		return doc.html();
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED)
+	public ArrayList<UserMovieVO> getFutureUserMovies(User user) {
+		List<UserMovie> futureUserMovies = movieDao.findFutureUserMovies(user);
+		Collections.sort(futureUserMovies, new Comparator<UserMovie>() {
+			@Override
+			public int compare(UserMovie o1, UserMovie o2) {
+				return o2.getUpdated().compareTo(o1.getUpdated());
+			}
+		});
+
+		ArrayList<UserMovieVO> result = new ArrayList<>();
+		for (UserMovie userMovie : futureUserMovies) {
+			result.add(entityConverter.toFutureMovie(userMovie.getMovie()));
+		}
+		return result;
+	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
@@ -69,6 +149,7 @@ public class MovieServiceImpl implements MovieService {
 			}
 		}
 
+		// sort and set viewed status
 		ArrayList<UserMovieVO> result = new ArrayList<>(userMoviesVOContainer.getUserMovies());
 
 		UserMovieStatusComparator comparator = new UserMovieStatusComparator(torrentsByIds);
@@ -147,6 +228,10 @@ public class MovieServiceImpl implements MovieService {
 			return userMovieVO;
 		}
 
+		public boolean contains(Movie movie) {
+			return lwUserMovies.containsKey(movie.getName());
+		}
+
 		public Collection<UserMovieVO> getUserMovies() {
 			return lwUserMovies.values();
 		}
@@ -188,5 +273,52 @@ public class MovieServiceImpl implements MovieService {
 
 			return o1Torrent.compareTo(o2Torrent);
 		}
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Movie addFutureMovieDownload(User user, String imdbId) {
+		String imdbUrl = IMDB_URL + imdbId;
+		Movie movie = movieDao.findByImdbUrl(imdbUrl);
+		if (movie == null) {
+			String partialPage;
+			try {
+				partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, MoviesTorrentEntriesDownloader.VIEWERS_PATTERN);
+			} catch (Exception e) {
+				logService.error(getClass(), "Failed downloading IMDB page " + imdbId + ": " + e.getMessage(), e);
+				return null;
+			}
+			Matcher oldYearMatcher = MoviesTorrentEntriesDownloader.OLD_YEAR_PATTERN.matcher(partialPage);
+			oldYearMatcher.find();
+			String name = oldYearMatcher.group(1);
+			name = StringEscapeUtils.unescapeHtml4(name);
+
+			movie = new Movie(name, imdbUrl);
+			movieDao.persist(movie);
+		}
+
+		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
+		if (userMovie == null) {
+			userMovie = new UserMovie();
+			userMovie.setMovie(movie);
+			userMovie.setUser(user);
+			userMovie.setUpdated(new Date());
+			movieDao.persist(userMovie);
+		}
+
+		return movie;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void markMovieViewed(User user, long movieId) {
+		UserMovie userMovie = movieDao.findUserMovie(movieId, user);
+		if (userMovie == null) {
+			userMovie = new UserMovie();
+			userMovie.setUser(user);
+			userMovie.setMovie(movieDao.find(movieId));
+			movieDao.persist(userMovie);
+		}
+		userMovie.setUpdated(new Date());
 	}
 }

@@ -145,7 +145,6 @@ public class BaseController {
 		userTorrent.setUser(user);
 		userTorrent.setAdded(new Date());
 		userTorrent.setTorrent(torrent);
-//		userTorrent.setIgnored(false);
 		userTorrentDao.persist(userTorrent);
 		return userTorrent;
 	}

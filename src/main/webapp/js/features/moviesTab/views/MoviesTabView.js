@@ -8,10 +8,10 @@ define([
 	'features/moviesTab/views/MovieTorrentCollectionView',
 	'features/collections/UserTorrentCollection',
 	'HttpUtils',
-	'components/section/views/SectionView'
+	'components/section/views/SectionView',
+	'MessageBox'
 ],
-	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView,
-		UserTorrentCollection, HttpUtils, SectionView) {
+	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox) {
 		"use strict";
 
 		var selectedMovie = null;
@@ -23,10 +23,18 @@ define([
 				imdbPreview: '.movies-imdb-preview',
 				imdbNoPreview: '.movies-imdb-no-preview',
 				imdbClickForPreview: '.movies-imdb-click-for-preview',
-				imdbPreviewLoading: '.movies-imdb-preview-loading'
+				imdbPreviewLoading: '.movies-imdb-preview-loading',
+				imdbIdInput: '.future-movies-imdb-id-input',
+				moviesCounter: '.movies-counter',
+				futureMoviesCounter: '.future-movies-counter',
+				futureMoviesFilter: '.future-movies-filter',
+				moviesFilter: '.movies-filter'
 			},
 
 			events: {
+				'click .future-movies-add-button': 'onFutureMovieAddButtonClick',
+				'click .future-movies-filter': 'onFutureMoviesFilterClick',
+				'click .movies-filter': 'onMoviesFilterClick'
 			},
 
 			regions: {
@@ -93,6 +101,9 @@ define([
 				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
 				this.moviesSectionRegion.show(this.moviesSection);
 				this.futureMoviesSectionRegion.show(this.futureMoviesSection);
+
+				this.ui.moviesCounter.html(this.loggedInUserData.movies.length);
+				this.ui.futureMoviesCounter.html(this.loggedInUserData.futureMovies.length);
 			},
 
 			onMovieSelected: function(movieModel) {
@@ -133,6 +144,37 @@ define([
 
 				// update movie torrents list
 				this.movieTorrentCollection.reset(movieModel.get('torrents'));
+			},
+
+			onFutureMovieAddButtonClick: function() {
+				var imdbId = this.ui.imdbIdInput.val();
+
+				if (!imdbId || imdbId.trim().length == 0) {
+					return;
+				}
+
+				var that = this;
+				HttpUtils.post("rest/movies/future/add", {imdbId: imdbId}, function(res) {
+					that.ui.imdbIdInput.val('');
+					MessageBox.info(res.message);
+					that.loggedInUserData.futureMovies.unshift(res.movie);
+					that.ui.futureMoviesCounter.html(that.loggedInUserData.futureMovies.length);
+					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {
+						that.moviesCollection.reset(that.loggedInUserData.futureMovies);
+					}
+				});
+			},
+
+			onFutureMoviesFilterClick: function() {
+				this.moviesCollection.reset(this.loggedInUserData.futureMovies);
+				this.ui.futureMoviesFilter.addClass('filter-selected');
+				this.ui.moviesFilter.removeClass('filter-selected');
+			},
+
+			onMoviesFilterClick: function() {
+				this.moviesCollection.reset(this.loggedInUserData.movies);
+				this.ui.futureMoviesFilter.removeClass('filter-selected');
+				this.ui.moviesFilter.addClass('filter-selected');
 			}
 		});
 	});

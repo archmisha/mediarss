@@ -138,7 +138,8 @@ public class UserController extends BaseController {
 
 		if (tab.equals(MOVIES_TAB)) {
 			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
-					.withMovies(movieService.getUserMovies(user));
+					.withMovies(movieService.getUserMovies(user))
+					.withFutureMovies(movieService.getFutureUserMovies(user));
 		} else if (tab.equals(TVSHOWS_TAB)) {
 			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())));
 		}

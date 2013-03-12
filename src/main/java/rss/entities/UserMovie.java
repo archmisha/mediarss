@@ -13,7 +13,13 @@ import java.util.Date;
 @NamedQueries({
 		@NamedQuery(name = "UserMovie.findUserMovie",
 				query = "select t from UserMovie as t " +
-						"where t.user.id = :userId and t.movie.id = :movieId")
+						"where t.user.id = :userId and t.movie.id = :movieId"),
+		@NamedQuery(name = "UserMovie.findFutureUserMovies",
+				query = "select um from UserMovie as um join um.movie as m " +
+						"where um.user.id = :userId and m.torrentIds.size = 0"),
+		@NamedQuery(name = "UserMovie.findUsersForFutureMovie",
+				query = "select um.user from UserMovie as um join um.movie as m " +
+						"where m.id = :movieId and m.torrentIds.size = 0")
 })
 public class UserMovie extends BaseEntity {
 

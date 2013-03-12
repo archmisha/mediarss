@@ -18,7 +18,10 @@ import javax.persistence.*;
 						"where :torrentId = tid"),
 		@NamedQuery(name = "Movie.findByName",
 				query = "select m from Movie as m " +
-						"where m.name = :name")
+						"where m.name = :name"),
+		@NamedQuery(name = "Movie.findByImdbUrl",
+				query = "select m from Movie as m " +
+						"where m.imdbUrl = :imdbUrl")
 })
 public class Movie extends Media {
 
@@ -67,7 +70,6 @@ public class Movie extends Media {
 
 	@Override
 	public int hashCode() {
-//        return getTorrentEntry().getTitle().hashCode();
 		return getName().hashCode();
 	}
 

@@ -14,7 +14,8 @@ define([
 			ui: {
 				scheduledImage: '.movie-item-scheduled-image',
 				downloadedImage: '.movie-item-downloaded-image',
-				movieTitle: '.movie-item-title'
+				movieTitle: '.movie-item-title',
+				futureImage: '.movie-item-future-image'
 			},
 
 			events: {
@@ -54,17 +55,27 @@ define([
 				this.ui.movieTitle.qtip({
 					style: 'rssStyle'
 				});
+				this.ui.futureImage.qtip({
+					style: 'rssStyle'
+				});
 			},
 
 			updateDownloadStatus: function() {
 				if (this.model.get('downloadStatus') == 'SCHEDULED') {
 					this.ui.scheduledImage.show();
 					this.ui.downloadedImage.hide();
+					this.ui.futureImage.hide();
 				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
 					this.ui.scheduledImage.hide();
 					this.ui.downloadedImage.show();
+					this.ui.futureImage.hide();
+				} else if (this.model.get('downloadStatus') == 'FUTURE') {
+					this.ui.scheduledImage.hide();
+					this.ui.downloadedImage.hide();
+					this.ui.futureImage.show();
 				} else {
 					this.ui.scheduledImage.hide();
+					this.ui.futureImage.hide();
 					this.ui.downloadedImage.hide();
 				}
 			}

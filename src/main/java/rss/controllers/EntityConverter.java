@@ -2,8 +2,11 @@ package rss.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.controllers.vo.DownloadStatus;
 import rss.controllers.vo.ShowVO;
+import rss.controllers.vo.UserMovieVO;
 import rss.controllers.vo.UserVO;
+import rss.entities.Movie;
 import rss.entities.Show;
 import rss.entities.User;
 import rss.services.SettingsService;
@@ -53,5 +56,15 @@ public class EntityConverter {
 			userVO.setSubtitles(user.getSubtitles().toString());
 		}
 		return userVO;
+	}
+
+	public UserMovieVO toFutureMovie(Movie movie) {
+		UserMovieVO userMovieVO = new UserMovieVO()
+				.withId(movie.getId())
+				.withTitle(movie.getName())
+				.withImdbUrl(movie.getImdbUrl());
+		userMovieVO.setViewed(true);
+		userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
+		return userMovieVO;
 	}
 }

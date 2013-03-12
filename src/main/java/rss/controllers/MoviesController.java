@@ -10,15 +10,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import rss.dao.*;
-import rss.entities.*;
-import rss.services.*;
+import rss.MediaRSSException;
+import rss.dao.MovieDao;
+import rss.dao.TorrentDao;
+import rss.dao.UserDao;
+import rss.entities.Movie;
+import rss.entities.MovieUserTorrent;
+import rss.entities.Torrent;
+import rss.entities.User;
+import rss.services.PageDownloader;
+import rss.services.SessionService;
 import rss.services.log.LogService;
-import rss.services.shows.ShowService;
+import rss.services.movies.MovieService;
 import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/movies")
@@ -42,6 +50,12 @@ public class MoviesController extends BaseController {
 	@Autowired
 	private TorrentDao torrentDao;
 
+	@Autowired
+	private MovieService movieService;
+
+	@Autowired
+	private EntityConverter entityConverter;
+
 	@RequestMapping(value = "/imdb/{movieId}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -52,47 +66,11 @@ public class MoviesController extends BaseController {
 		if (page != null) {
 			logService.debug(getClass(), "IMDB page for movie " + movie.getName() + " was found in cache");
 		} else {
-			try {
-				DurationMeter durationMeter = new DurationMeter();
-				page = pageDownloader.downloadPage(movie.getImdbUrl());
-				page = cleanImdbPage(movie.getName(), page);
-				durationMeter.stop();
-				logService.debug(getClass(), "IMDB page download for movie " + movie.getName() + " took " + durationMeter.getDuration() + " millis");
-				sessionService.setImdbMoviePage(movie.getId(), page);
-			} catch (Exception e) {
-				page = null;
-				logService.error(getClass(), e.getMessage(), e);
-			}
+			page = movieService.getImdbPreviewPage(movie);
+			sessionService.setImdbMoviePage(movie.getId(), page);
 		}
 
 		return page;
-	}
-
-	private String cleanImdbPage(String name, String page) {
-		DurationMeter durationMeter = new DurationMeter();
-		Document doc = Jsoup.parse(page);
-		doc.select("#maindetails_sidebar_bottom").remove();
-		doc.select("#nb20").remove();
-		doc.select("#titleRecs").remove();
-		doc.select("#titleBoardsTeaser").remove();
-		doc.select("div.article.contribute").remove();
-		doc.select("#title_footer_links").remove();
-		doc.select("#titleDidYouKnow").remove();
-		doc.select("#footer").remove();
-		doc.select("#root").removeAttr("id");
-		doc.select("script").remove();
-		doc.select("iframe").remove();
-		doc.select("link[type!=text/css").remove();
-		doc.select("#bottom_ad_wrapper").remove();
-		doc.select("#pagecontent").removeAttr("id"); // got the style of the top line
-		doc.select(".rightcornerlink").remove();
-		doc.select("div#content-2-wide").removeAttr("id");
-		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
-		doc.body().append("<script>parent.resize_iframe()</script>");
-
-		durationMeter.stop();
-		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
-		return doc.html();
 	}
 
 	@RequestMapping(value = "/download", method = RequestMethod.POST)
@@ -114,13 +92,23 @@ public class MoviesController extends BaseController {
 	public void markMovieViewed(HttpServletRequest request) {
 		long movieId = extractMandatoryInteger(request, "movieId");
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		UserMovie userMovie = movieDao.findUserMovie(movieId, user);
-		if (userMovie == null) {
-			userMovie = new UserMovie();
-			userMovie.setUser(user);
-			userMovie.setMovie(movieDao.find(movieId));
-			movieDao.persist(userMovie);
+		movieService.markMovieViewed(user, movieId);
+	}
+
+	@RequestMapping(value = "/future/add", method = RequestMethod.POST)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> addFutureMovie(HttpServletRequest request) {
+		String imdbId = extractString(request, "imdbId", true);
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		Movie movie = movieService.addFutureMovieDownload(user, imdbId);
+		if (movie == null) {
+			throw new MediaRSSException("Movie ID was not found in IMDB");
 		}
-		userMovie.setUpdated(new Date());
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
+		result.put("movie", entityConverter.toFutureMovie(movie));
+		return result;
 	}
 }

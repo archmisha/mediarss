@@ -4,6 +4,7 @@ import rss.entities.*;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -21,4 +22,10 @@ public interface MovieDao extends Dao<Movie> {
 	void persist(UserMovie userMovie);
 
 	UserMovie findUserMovie(long movieId, User user);
+
+	Movie findByImdbUrl(String imdbUrl);
+
+	List<UserMovie> findFutureUserMovies(User user);
+
+	Collection<User> findUsersForFutureMovie(Movie movie);
 }
