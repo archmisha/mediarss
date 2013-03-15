@@ -36,6 +36,7 @@ public class SettingsServiceImpl implements SettingsService {
 	private SettingsDao settingsDao;
 
 	private Date deploymentDate;
+	private Date startupDate;
 	private Properties prop;
 	private ExecutorService executorService;
 	private boolean shouldRun;
@@ -141,6 +142,16 @@ public class SettingsServiceImpl implements SettingsService {
 	@Override
 	public Date getDeploymentDate() {
 		return deploymentDate;
+	}
+
+	@Override
+	public void setStartupDate(Date startupDate) {
+		this.startupDate = startupDate;
+	}
+
+	@Override
+	public Date getStartupDate() {
+		return startupDate;
 	}
 
 	@Override

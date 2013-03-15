@@ -95,6 +95,8 @@ public class AppConfigListener implements ServletContextListener {
 		// track deployment date
 		Date deployedDate = getDeploymentDate();
 		settingsService.setDeploymentDate(deployedDate);
+
+		settingsService.setStartupDate(new Date());
 	}
 
 	@Override

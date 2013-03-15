@@ -79,8 +79,8 @@ public class JobsController extends BaseController {
 
 		// if a job started before the server was up, then was a problem with a job and should mark it as stopped
 		for (JobStatus job : jobs) {
-			if (job.getEnd() == null && job.getStart() != null && job.getStart().before(settingsService.getDeploymentDate())) {
-				job.setEnd(settingsService.getDeploymentDate());
+			if (job.getEnd() == null && job.getStart() != null && job.getStart().before(settingsService.getStartupDate())) {
+				job.setEnd(settingsService.getStartupDate());
 			}
 		}
 

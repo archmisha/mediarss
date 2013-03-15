@@ -37,4 +37,8 @@ public interface SettingsService {
 	void setPersistentSetting(String key, String value);
 
 	String getWebRootContext();
+
+	void setStartupDate(Date date);
+
+	Date getStartupDate();
 }
