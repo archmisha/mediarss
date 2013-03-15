@@ -2,6 +2,7 @@ package rss.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.entities.Show;
+import rss.services.shows.CachedShow;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,5 +35,11 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("term", "%" + term.toLowerCase() + "%");
 		return super.findByNamedQueryAndNamedParams("Show.autoCompleteShowNames", params);
+	}
+
+	@Override
+	public List<CachedShow> findCachedShows() {
+		Map<String, Object> params = new HashMap<>(0);
+		return super.findByNamedQueryAndNamedParams("Show.findCachedShows", params);
 	}
 }

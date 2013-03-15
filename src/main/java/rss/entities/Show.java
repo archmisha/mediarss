@@ -19,7 +19,9 @@ import java.util.Set;
 		@NamedQuery(name = "Show.autoCompleteShowNames",
 				query = "select b from Show as b where lower(b.name) like :term"),
 		@NamedQuery(name = "Show.getNotEnded",
-				query = "select b from Show as b where b.ended = false")
+				query = "select b from Show as b where b.ended = false"),
+		@NamedQuery(name = "Show.findCachedShows",
+				query = "select new rss.services.shows.CachedShow(b.id, b.name) from Show as b")
 })
 public class Show extends BaseEntity {
 	private static final long serialVersionUID = -4408596786454177485L;

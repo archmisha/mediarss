@@ -1,6 +1,7 @@
 package rss.dao;
 
 import rss.entities.Show;
+import rss.services.shows.CachedShow;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,4 +18,6 @@ public interface ShowDao extends Dao<Show> {
 	Collection<Show> findNotEnded();
 
 	List<Show> autoCompleteShowNames(String term);
+
+	List<CachedShow> findCachedShows();
 }

@@ -18,6 +18,7 @@ import rss.entities.Show;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SessionService;
+import rss.services.shows.AutoCompleteItem;
 import rss.services.shows.ShowService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -99,12 +100,8 @@ public class AdminController extends BaseController {
 
 			String term = extractString(request, "term", true).trim();
 			String callback = extractString(request, "callback", true);
-			List<Show> shows = showService.autoCompleteShowNames(term);
 
-			Collection<AutoCompleteItem> result = new ArrayList<>();
-			for (Show show : shows) {
-				result.add(new AutoCompleteItem(show.getId(), show.getName()));
-			}
+			List<AutoCompleteItem> result = showService.autoCompleteShowNames(term);
 
 			response.setContentType("text/javascript");
 
@@ -120,21 +117,4 @@ public class AdminController extends BaseController {
 		}
 	}
 
-	private class AutoCompleteItem {
-		private long id;
-		private String text;
-
-		private AutoCompleteItem(long id, String text) {
-			this.id = id;
-			this.text = text;
-		}
-
-		public long getId() {
-			return id;
-		}
-
-		public String getText() {
-			return text;
-		}
-	}
 }

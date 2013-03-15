@@ -25,7 +25,7 @@ public interface ShowService {
 
 	void downloadSchedule(Show show);
 
-	List<Show> autoCompleteShowNames(String term);
+	List<AutoCompleteItem> autoCompleteShowNames(String term);
 
 //	Show downloadShowByUrl(String url);
 }

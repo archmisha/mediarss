@@ -71,6 +71,9 @@ public class ShowServiceImpl implements ShowService {
 	@Autowired
 	private PageDownloader pageDownloader;
 
+	@Autowired
+	private ShowsCacheService showsCacheService;
+
 	@PostConstruct
 	private void postConstruct() {
 		showsProvider = new TVRageServiceImpl();
@@ -81,6 +84,7 @@ public class ShowServiceImpl implements ShowService {
 	private void saveNewShow(Show show) {
 		logService.info(getClass(), "It is a new show! - Persisting '" + show.getName() + "' (tvrage_id=" + show.getTvRageId() + ")");
 		showDao.persist(show);
+		showsCacheService.put(show);
 		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
 		for (Episode episode : episodes) {
 			episodeDao.persist(episode);
@@ -89,96 +93,59 @@ public class ShowServiceImpl implements ShowService {
 		}
 	}
 
-	// Levenshtein distance
-	// allow minimal and minimal+1
+	// Levenshtein distance (LD)
+	// Don't use threshold, cuz maybe our name is shorter than the actual name... like spartacus: ....
+	// and we search simply for spartacus
 	public Collection<Show> statisticMatch(String name) {
 		name = normalize(name);
+		List<String> sortedNameSplit = Arrays.asList(name.split(" "));
+		Collections.sort(sortedNameSplit);
+		String sortedNameJoined = StringUtils.join(sortedNameSplit.toArray(), " ");
 
-		Set<Show> matches = new HashSet<>();
-		Set<Show> containmentMatches = new HashSet<>();
-		Collection<Show> shows = showDao.findAll();
+		Set<CachedShow> matches = new HashSet<>();
 
-		// first test for full containment - for case of search 'anatomy' we want 'grey's anatomy' result
-		// and not arrow which has lower LD
-		for (Show show : shows) {
-			String cur = normalize(show.getName());
-			if (cur.contains(name)) {
-				containmentMatches.add(show);
-			}
-		}
-
-		if (containmentMatches.size() == 1) {
-			logService.info(getClass(), "found containing match:" + containmentMatches.iterator().next().getName());
-			return containmentMatches;
-		}
-
-		// if there were several matches on the previous step - not continuing with them to LD like was the initial idea
-		// better return them all as whatDidYouMean cuz spartacus there are several shows and don't want to choose for the user
-		// now also adding a threshold for that, if there are under X shows then return them. otherwise it might be
-		// just a stupid word like 'the' that is contained in every show
-		if (!containmentMatches.isEmpty() && containmentMatches.size() <= 10) {
-			logService.info(getClass(), "found several containing matches:" + StringUtils.join(containmentMatches.toArray(), ","));
-			return containmentMatches;
-		}
-
-		// LD.
-		// Don't use threshold, cuz maybe our name is shorter than the actual name... like spartacus: ....
-		// and we search simply for spartacus
 		int bestLD = Integer.MAX_VALUE;
-		for (Show show : shows) {
-			String cur = normalize(show.getName());
-			int ld = StringUtils.getLevenshteinDistance(name, cur);
-
-			List<String> nameSplit = Arrays.asList(name.split(" "));
-			Collections.sort(nameSplit);
-			String nameSorted = StringUtils.join(nameSplit.toArray(), " ");
-
-			List<String> curSplit = Arrays.asList(cur.split(" "));
-			Collections.sort(curSplit);
-			String curSorted = StringUtils.join(curSplit.toArray(), " ");
-
-			int ldSortedWords = StringUtils.getLevenshteinDistance(nameSorted, curSorted);
-
-			if (ld == -1 && ldSortedWords == -1) {
-				continue;
+		for (CachedShow show : showsCacheService.getAll()) {
+			int ld = Integer.MAX_VALUE;
+			for (String permutation : showsCacheService.getShowNamePermutations(show)) {
+				if (permutation.contains(sortedNameJoined)) {
+					ld = 0;
+				} else {
+					int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, permutation);
+					if (curLd == -1) {
+						curLd = Integer.MAX_VALUE;
+					}
+					ld = Math.min(curLd, ld);
+				}
+//				if ( show.getName().equalsIgnoreCase("the walking dead")) {
+//					logService.info(getClass(), "show=" + show.getName() + " ld=" + curLd);
+//				}
 			}
-			if (ld == -1) {
-				ld = Integer.MAX_VALUE;
-			}
-			if (ldSortedWords == -1) {
-				ldSortedWords = Integer.MAX_VALUE;
-			}
-			ld = Math.min(ld, ldSortedWords);
 
-			if (matches.isEmpty() || ld == bestLD) {
-				matches.add(show);
-				logService.info(getClass(), "show=" + show.getName() + " ld=" + ld);
-			} else if (ld < bestLD) {
+			if (ld < bestLD) {
 				matches.clear();
+			}
+
+			// if ld same as bestLD still want to add the show
+			if (matches.isEmpty() || ld <= bestLD) {
 				matches.add(show);
 				bestLD = ld;
 				logService.info(getClass(), "show=" + show.getName() + " ld=" + ld);
 			}
-			// optimizing average case
-			bestLD = Math.min(bestLD, ld);
 		}
 
-		// if bestLD is the size of the input, it means need to transform all the chars - means its a bad match
-		// also if there are only 2 letters match its a weak match
-		if (matches.isEmpty() || Math.abs(name.length() - bestLD) <= 1) {
-			logService.info(getClass(), "Show statistic match end for: " + name + " NOT FOUND");
-			logService.info(getClass(), "Retuning " + containmentMatches.size() + " containment matches");
-			return containmentMatches;
-//			return Collections.emptyList();
+		Collection<Show> result = new ArrayList<>();
+		for (CachedShow match : matches) {
+			result.add(showDao.find(match.getId()));
 		}
 
-		logService.info(getClass(), "Show statistic match end for: " + name + " found: " + StringUtils.join(matches.toArray(), ","));
-		return matches;
+		logService.info(getClass(), "Show statistic match end for: " + name + " found: " + StringUtils.join(result.toArray(), ","));
+		return result;
 	}
 
-	private String normalize(String name) {
+	public static String normalize(String name) {
 		name = name.toLowerCase();
-		name = name.replaceAll("'", "");
+		name = name.replaceAll("['\"!,\\.&\\-\\+\\?/:]", "");
 		return name;
 	}
 
@@ -318,8 +285,15 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public List<Show> autoCompleteShowNames(String term) {
-		return showDao.autoCompleteShowNames(term);
+	public List<AutoCompleteItem> autoCompleteShowNames(String term) {
+		term = term.toLowerCase().trim();
+		List<AutoCompleteItem> result = new ArrayList<>();
+		for (CachedShow cachedShow : showsCacheService.getAll()) {
+			if (cachedShow.getName().toLowerCase().contains(term)) {
+				result.add(new AutoCompleteItem(cachedShow.getId(), cachedShow.getName()));
+			}
+		}
+		return result;
 	}
 
 	@Override
