@@ -50,7 +50,7 @@ public class TorrentSearcher1337xTest  extends BaseTest {
 		Calendar c = Calendar.getInstance();
 		c.setTime(dateUploaded);
 		assertEquals(2011, c.get(Calendar.YEAR));
-		assertEquals(6, c.get(Calendar.MONTH)+1);
+		assertEquals(8, c.get(Calendar.MONTH)+1);
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import rss.services.EpisodeRequest;
 import rss.entities.Show;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -21,6 +22,10 @@ public interface ShowService {
 	EpisodeSearchResult search(EpisodeRequest episodeRequest, User user);
 
 	DownloadScheduleResult downloadSchedule();
+
+	void downloadSchedule(Show show);
+
+	List<Show> autoCompleteShowNames(String term);
 
 //	Show downloadShowByUrl(String url);
 }

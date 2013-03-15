@@ -8,10 +8,17 @@ define([
 	'components/section/views/SectionView',
 	'features/adminTab/views/NotificationsView',
 	'features/adminTab/collections/UsersCollection',
-	'features/adminTab/views/AccessStatsCompositeView'
+	'features/adminTab/views/AccessStatsCompositeView',
+	'HttpUtils',
+	'MessageBox',
+	'select2',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, JobsCollectionView, JobsCollection, SectionView, NotificationsView, UsersCollection, AccessStatsCompositeView) {
+	function(Marionette, Handlebars, template, JobsCollectionView, JobsCollection, SectionView, NotificationsView,
+		UsersCollection, AccessStatsCompositeView, HttpUtils, MessageBox, select2, Utils) {
 		"use strict";
+
+		var SHOWS_COMBO_BOX_SELECTOR = '.admin-all-shows-combo';
 
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
@@ -24,6 +31,14 @@ define([
 				accessStatsRegion: '.admin-access-stats',
 				notificationsSectionRegion: '.admin-notifications-section',
 				notificationsRegion: '.admin-notifications'
+			},
+
+			ui: {
+				showsComboBox: SHOWS_COMBO_BOX_SELECTOR
+			},
+
+			events: {
+				'click .admin-download-show-schedule-button': '_onDownloadShowScheduleButtonClick'
 			},
 
 			constructor: function(options) {
@@ -64,6 +79,49 @@ define([
 				this.notificationsRegion.show(this.notificationsView);
 				this.accessStatsSectionRegion.show(this.accessStatsSection);
 				this.accessStatsRegion.show(this.accessStatsView);
+			},
+
+			onShow: function() {
+				Utils.waitForDisplayAndCreate(SHOWS_COMBO_BOX_SELECTOR, this.createChosen);
+			},
+
+			createChosen: function(selector) {
+				$(selector).select2({
+					placeholder: "Select a Show",
+					minimumInputLength: 3,
+					ajax: {
+						url: 'rest/admin/shows/autocomplete',
+						dataType: 'jsonp',
+						data: function(term, page) {
+							return {
+								term: term
+							};
+						},
+						results: function(data, page) {
+							return {results: data.shows};
+						}
+					},
+					formatResult: function(show) {
+						return show.text;
+					},
+					formatSelection: function(show) {
+						return show.text;
+					}
+				});
+			},
+
+			_onDownloadShowScheduleButtonClick: function() {
+				var showId = this.ui.showsComboBox.select2('data').id;
+				// nothing is selected
+				if (showId == undefined) {
+					return;
+				}
+
+				var that = this;
+				HttpUtils.get("rest/admin/downloadSchedule/" + showId, function(res) {
+					that.ui.showsComboBox.select2("data", '');
+					MessageBox.info(res);
+				});
 			}
 		});
 	});

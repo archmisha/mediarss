@@ -19,7 +19,8 @@ define([
 			},
 
 			events: {
-				'click': 'onMovieClick'
+				'click': 'onMovieClick',
+				'click .future-movie-item-remove-image': 'onFutureMovieRemoveClick'
 			},
 
 			onMovieClick: function() {
@@ -78,6 +79,10 @@ define([
 					this.ui.futureImage.hide();
 					this.ui.downloadedImage.hide();
 				}
+			},
+
+			onFutureMovieRemoveClick: function() {
+				this.vent.trigger('future-movie-remove', this.model);
 			}
 		});
 	});

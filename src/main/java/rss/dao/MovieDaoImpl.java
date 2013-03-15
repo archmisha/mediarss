@@ -43,6 +43,11 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 	}
 
 	@Override
+	public void delete(UserMovie userMovie) {
+		em.remove(userMovie);
+	}
+
+	@Override
 	public UserMovie findUserMovie(long movieId, User user) {
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("movieId", movieId);

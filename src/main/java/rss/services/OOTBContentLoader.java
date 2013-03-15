@@ -98,7 +98,7 @@ public class OOTBContentLoader {
 							protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
 								// had to copy paste from ShowServiceImpl
 								showDao.persist(show);
-								Collection<Episode> episodes = tvRageService.downloadInfo(show);
+								Collection<Episode> episodes = tvRageService.downloadSchedule(show);
 								for (Episode episode : episodes) {
 									episodeDao.persist(episode);
 									episode.setShow(show);

@@ -22,7 +22,7 @@ public interface ShowsProvider {
 
 	Collection<Show> downloadShowList();
 
-	Collection<Episode> downloadInfo(Show show);
+	Collection<Episode> downloadSchedule(Show show);
 
 //	int getSeasonCount(Show show);
 

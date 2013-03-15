@@ -86,7 +86,10 @@ public class BaseController {
 	@ExceptionHandler(MediaRSSException.class)
 	@ResponseBody
 	public ExceptionResponse handleMediaRSSException(MediaRSSException ex) {
-		return new ExceptionResponse().withMessage(ex.getMessage());
+		if (ex.log()) {
+			log.error(getClass(), ex.getMessage(), ex);
+		}
+		return new ExceptionResponse().withMessage(ex.getUserMessage());
 	}
 
 	@ExceptionHandler(NoPermissionsException.class)

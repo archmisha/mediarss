@@ -3,6 +3,7 @@ package rss.dao;
 import rss.entities.Show;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -14,4 +15,6 @@ public interface ShowDao extends Dao<Show> {
     Show findByName(String name);
 
 	Collection<Show> findNotEnded();
+
+	List<Show> autoCompleteShowNames(String term);
 }

@@ -204,7 +204,7 @@ public class MovieServiceImpl implements MovieService {
 	private Set<Movie> getLatestMovies() {
 		Calendar c = Calendar.getInstance();
 		c.setTime(sessionService.getPrevLoginDate());
-		c.add(Calendar.DAY_OF_MONTH, -7);
+		c.add(Calendar.DAY_OF_MONTH, -27);
 		Date uploadedFromDate = c.getTime();
 		return new HashSet<>(movieDao.findUploadedSince(uploadedFromDate));
 	}

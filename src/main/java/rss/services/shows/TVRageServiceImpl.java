@@ -124,7 +124,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 	}
 
 	@Override
-	public Collection<Episode> downloadInfo(Show show) {
+	public Collection<Episode> downloadSchedule(Show show) {
 		try {
 			Collection<Episode> episodes = new ArrayList<>();
 			String page = pageDownloader.downloadPage(SHOW_INFO_URL + show.getTvRageId());
@@ -182,7 +182,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 			}
 			return episodes;
 		} catch (Exception e) {
-			throw new MediaRSSException("Failed to downloadInfo for show: " + show + ". " + e.getMessage(), e);
+			throw new MediaRSSException("Failed to download schedule for show: " + show, e).withUserMessage("Failed to download schedule for show: " + show.getName());
 		}
 	}
 

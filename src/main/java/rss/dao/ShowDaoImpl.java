@@ -5,6 +5,7 @@ import rss.entities.Show;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,7 +25,14 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 
 	@Override
 	public Collection<Show> findNotEnded() {
-		Map<String, Object> params = new HashMap<>(1);
+		Map<String, Object> params = new HashMap<>(0);
 		return super.findByNamedQueryAndNamedParams("Show.getNotEnded", params);
+	}
+
+	@Override
+	public List<Show> autoCompleteShowNames(String term) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("term", "%" + term.toLowerCase() + "%");
+		return super.findByNamedQueryAndNamedParams("Show.autoCompleteShowNames", params);
 	}
 }

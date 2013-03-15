@@ -55,6 +55,7 @@
   text-overflow: ellipsis;
   padding: @movie-item-padding;
   padding-left: @movie-item-padding-left;
+  position: relative;
 }
 
 .movie-torrent-item:hover,
@@ -74,6 +75,20 @@
 .movie-item-selected,
 .movie-item:hover {
   cursor: pointer;
+}
+
+.future-movies-list .movie-item:hover {
+  padding-right: 20px;
+  .future-movie-item-remove-image {
+    display: inline;
+  }
+}
+
+.future-movie-item-remove-image {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 9px;
 }
 
 .movie-torrent-item-not-viewed,

@@ -102,7 +102,7 @@ public class TVComServiceImpl implements ShowsProvider {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Collection<Episode> downloadInfo(Show show) {
+	public Collection<Episode> downloadSchedule(Show show) {
 		Collection<Episode> newEpisodes = new ArrayList<>();
 		try {
 			EpisodesMapper episodesMapper = new EpisodesMapper(show.getEpisodes());

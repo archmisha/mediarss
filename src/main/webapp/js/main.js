@@ -14,7 +14,9 @@ require.config({
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
 		noty: 'lib/noty/jquery.noty',
-		qtip: 'lib/jquery.qtip-1.0.0-rc3.min'
+		qtip: 'lib/jquery.qtip-1.0.0-rc3.min',
+		ajaxChosen: 'lib/ajax-chosen.min',
+		select2: 'lib/select2.min'
 	},
 	shim: {
 		'lib/backbone-localStorage': ['backbone'],
@@ -56,6 +58,12 @@ require.config({
 		qtip: {
 			exports: 'qTip',
 			deps: ['jquery']
+		},
+		ajaxChosen: {
+			exports: 'AjaxChosen'
+		},
+		select2: {
+			exports: 'Select2'
 		}
 	},
 	deps: ['jquery', 'underscore']

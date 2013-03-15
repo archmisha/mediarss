@@ -2,9 +2,10 @@ define([
 	'marionette',
 	'handlebars',
 	'features/tvShowsTab/views/ShowsComboBoxItemView',
-	'chosen'
+	'chosen',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, ShowsComboBoxItemView, Chosen) {
+	function(Marionette, Handlebars, ShowsComboBoxItemView, Chosen, Utils) {
 		"use strict";
 
 		return Marionette.CollectionView.extend({
@@ -24,7 +25,7 @@ define([
 			},
 
 			getSelectedShow: function() {
-				var selectedShowId = this.$el.val();//find('option:selected').attr('value');
+				var selectedShowId = this.$el.val();
 				return this.collection.get(selectedShowId);
 			},
 
@@ -47,31 +48,12 @@ define([
 			},
 
 			onShow: function() {
-				this.waitForElement();
+				Utils.waitForDisplayAndCreate('.show-combobox', this.createChosen);
 				this.clearSelection();
 			},
 
-			waitForElement: function() {
-				var that = this;
-				var f = function() {
-					if ($('.show-combobox').length == 0) {
-//						console.log('element not present yet');
-						setTimeout(f, 50);
-					} else {
-//						console.log('element IS present');
-						that.createChosen();
-					}
-				};
-
-//				console.log('Starting to wait for element');
-				if ($('.show-combobox').length == 0) {
-//					console.log('element not present yet');
-					setTimeout(f, 50);
-				}
-			},
-
-			createChosen: function() {
-				$('.show-combobox').chosen({
+			createChosen: function(selector) {
+				$(selector).chosen({
 					no_results_text: "No shows matched"
 				});
 			}

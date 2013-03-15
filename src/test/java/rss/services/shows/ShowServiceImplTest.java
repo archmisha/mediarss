@@ -2,6 +2,7 @@ package rss.services.shows;
 
 import junit.framework.Assert;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,7 @@ public class ShowServiceImplTest extends BaseTest {
 	private ShowServiceImpl showService = new ShowServiceImpl();
 
 	@Test
+	@Ignore
 	public void testStatisticMatch() {
 		doReturn(getAllShows()).when(showDao).findAll();
 

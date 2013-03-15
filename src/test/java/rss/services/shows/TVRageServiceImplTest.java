@@ -62,7 +62,7 @@ public class TVRageServiceImplTest extends BaseTest {
 			doReturn(page).when(pageDownloader).downloadPage(anyString());
 			Show show = new Show();
 			show.setTvRageId(3628);
-			Collection<Episode> episodes = tvRageService.downloadInfo(show);
+			Collection<Episode> episodes = tvRageService.downloadSchedule(show);
 
 			Assert.assertEquals(111, episodes.size());
 
@@ -84,9 +84,9 @@ public class TVRageServiceImplTest extends BaseTest {
 		doReturn(page).when(pageDownloader).downloadPage(anyString());
 		Show show = new Show();
 		show.setTvRageId(1);
-		Collection<Episode> episodes = tvRageService.downloadInfo(show);
+		Collection<Episode> episodes = tvRageService.downloadSchedule(show);
 
-		Assert.assertEquals(65 - 4, episodes.size()); // minus 4 for special
+		Assert.assertEquals(65, episodes.size());
 	}
 
 	@Test
@@ -95,9 +95,20 @@ public class TVRageServiceImplTest extends BaseTest {
 		doReturn(page).when(pageDownloader).downloadPage(anyString());
 		Show show = new Show();
 		show.setTvRageId(1);
-		Collection<Episode> episodes = tvRageService.downloadInfo(show);
+		Collection<Episode> episodes = tvRageService.downloadSchedule(show);
 
-		Assert.assertEquals(44, episodes.size());
+		Assert.assertEquals(44 - 4, episodes.size()); // minus 4 for special
+	}
+
+	@Test
+	public void testDownloadInfo4() {
+		String page = loadPage("tvrage-pretty-little-liars.xml");
+		doReturn(page).when(pageDownloader).downloadPage(anyString());
+		Show show = new Show();
+		show.setTvRageId(1);
+		Collection<Episode> episodes = tvRageService.downloadSchedule(show);
+
+		Assert.assertEquals(71, episodes.size());
 	}
 
 	@Test

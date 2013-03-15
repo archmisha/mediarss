@@ -16,6 +16,8 @@ import java.util.Set;
 		// searching with lower case, so when user input "suits" it will also find "Suits"
 		@NamedQuery(name = "Show.findByName",
 				query = "select b from Show as b where lower(b.name) = :name"),
+		@NamedQuery(name = "Show.autoCompleteShowNames",
+				query = "select b from Show as b where lower(b.name) like :term"),
 		@NamedQuery(name = "Show.getNotEnded",
 				query = "select b from Show as b where b.ended = false")
 })

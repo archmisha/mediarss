@@ -1,3 +1,6 @@
+@job-font-size: 15px;
+@job-label-width: 200px;
+
 .admin-tab {
   width: @tab-width;
 }
@@ -28,8 +31,8 @@
 }
 
 .job {
-  font-size: 15px;
-  width: 200px;
+  font-size: @job-font-size;
+  width: @job-label-width;
 }
 
 .job-running {
@@ -149,3 +152,46 @@
   margin-bottom: 10px;
   color: #808080;
 }
+
+.admin-all-shows-combo, .select2-container {
+  float: left;
+  margin-right: 10px;
+  width: 250px;
+}
+
+.admin-download-show-schedule {
+  margin-top: 20px;
+  margin-left: 25px;
+  height: 30px;
+  width: 700px;
+  font-size: @job-font-size;
+
+  .chzn-container, .select2-container {
+    float: left;
+    margin-right: 10px;
+  }
+}
+
+.admin-download-show-schedule-button {
+  float: left;
+  margin-top: 3px;
+}
+
+.admin-download-show-schedule-title {
+  float: left;
+  width: @job-label-width;
+  margin-top: 5px;
+}
+
+.chzn-container .chzn-results .group-result {
+  display: list-item;
+}
+
+.select2-no-results {
+  font-size: 13px;
+}
+
+.select2-drop .select2-results li:first-child {
+  display: block;
+}
+

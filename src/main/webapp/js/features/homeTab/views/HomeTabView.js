@@ -7,9 +7,10 @@ define([
 	'zeroClipboard',
 	'jqplugin',
 	'chosen',
-	'MessageBox'
+	'MessageBox',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox) {
+	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils) {
 		"use strict";
 
 		var SUBTITLES_NONE = 'None';
@@ -65,7 +66,6 @@ define([
 			},
 
 			setCopyToClipboard: function() {
-				var that = this;
 				if ($.browser.flash == true) {
 //					console.log('YES FLASH');
 					var clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]], {
@@ -118,34 +118,15 @@ define([
 			},
 
 			onShow: function() {
-				this.waitForElement();
+				Utils.waitForDisplayAndCreate('.subtitles-settings-combobox', this.createChosen);
 
 				if (this.loggedInUserData.user.subtitles) {
 					this.ui.subtitlesCombobox.val(this.loggedInUserData.user.subtitles);
 				}
 			},
 
-			waitForElement: function() {
-				var that = this;
-				var f = function() {
-					if ($('.subtitles-settings-combobox').length == 0) {
-//						console.log('element not present yet');
-						setTimeout(f, 50);
-					} else {
-//						console.log('element IS present');
-						that.createChosen();
-					}
-				};
-
-//				console.log('Starting to wait for element');
-				if ($('.subtitles-settings-combobox').length == 0) {
-//					console.log('element not present yet');
-					setTimeout(f, 50);
-				}
-			},
-
-			createChosen: function() {
-				$('.subtitles-settings-combobox').chosen();
+			createChosen: function(selector) {
+				$(selector).chosen();
 			}
 		});
 	});

@@ -34,6 +34,7 @@ public class UserController extends BaseController {
 
 	public static final String TVSHOWS_TAB = "tvshows";
 	public static final String MOVIES_TAB = "movies";
+	public static final String ADMIN_TAB = "admin";
 
 	@Autowired
 	private UserService userService;
@@ -86,7 +87,9 @@ public class UserController extends BaseController {
 		initialData.put("subtitles", SubtitleLanguage.getValues());
 		if (tab.equals(TVSHOWS_TAB)) {
 			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findNotEnded())));
-		}
+		} /*else if (tab.equals(ADMIN_TAB)) {
+			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findAll())));
+		}*/
 		return initialData;
 	}
 

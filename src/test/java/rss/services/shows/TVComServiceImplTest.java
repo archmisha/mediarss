@@ -48,7 +48,7 @@ public class TVComServiceImplTest extends BaseTest {
 		String page = loadPage("how-i-met-your-mother");
 		doReturn(page).when(pageDownloader).downloadPage(tvComUrl);
 
-		tvComService.downloadInfo(show);
+		tvComService.downloadSchedule(show);
 
 		assertEquals(37, show.getEpisodes().size());
 		assertFalse(show.isEnded());
@@ -78,7 +78,7 @@ public class TVComServiceImplTest extends BaseTest {
 		String page = loadPage("house");
 		doReturn(page).when(pageDownloader).downloadPage(tvComUrl);
 
-		tvComService.downloadInfo(show);
+		tvComService.downloadSchedule(show);
 
 		assertTrue(show.isEnded());
 	}
@@ -92,11 +92,10 @@ public class TVComServiceImplTest extends BaseTest {
 		String page = loadPage("greys-anatomy");
 		doReturn(page).when(pageDownloader).downloadPage(tvComUrl);
 
-		tvComService.downloadInfo(show);
+		Collection<Episode> episodes = tvComService.downloadSchedule(show);
 
-		assertEquals(36, show.getEpisodes().size());
 		assertFalse(show.isEnded());
-		verify(episodeDao, Mockito.times(36)).persist(any(Episode.class));
+		assertEquals(36, episodes.size());
 	}
 
 	// handles special episodes
@@ -122,7 +121,7 @@ public class TVComServiceImplTest extends BaseTest {
 			}
 		}).when(episodeDao).persist(any(Episode.class));
 
-		tvComService.downloadInfo(show);
+		tvComService.downloadSchedule(show);
 
 		assertEquals(34, show.getEpisodes().size());
 		assertFalse(show.isEnded());

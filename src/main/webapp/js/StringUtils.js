@@ -37,14 +37,5 @@ define([],
             }
         }
 
-
-        /*
-        //Tests
-        console.log("Dan: urls match = " + (Util.formatRoute('question/:id1', '12345') === 'question/12345'));
-        console.log("Dan: urls match = " + (Util.formatRoute('question/:id1/:id2/:id3', '12345', '23456') === 'question/12345/23456/:id3'));
-        console.log("Dan: urls match = " + (Util.formatRoute('question/:id1/:id2/*', '12345', '23456') === 'question/12345/23456/*'));
-        */
-
         return Util;
-
     });

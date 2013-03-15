@@ -14,10 +14,7 @@ import rss.MediaRSSException;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
-import rss.entities.Movie;
-import rss.entities.MovieUserTorrent;
-import rss.entities.Torrent;
-import rss.entities.User;
+import rss.entities.*;
 import rss.services.PageDownloader;
 import rss.services.SessionService;
 import rss.services.log.LogService;
@@ -43,9 +40,6 @@ public class MoviesController extends BaseController {
 
 	@Autowired
 	private MovieDao movieDao;
-
-	@Autowired
-	private PageDownloader pageDownloader;
 
 	@Autowired
 	private TorrentDao torrentDao;
@@ -103,12 +97,26 @@ public class MoviesController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Movie movie = movieService.addFutureMovieDownload(user, imdbId);
 		if (movie == null) {
-			throw new MediaRSSException("Movie ID was not found in IMDB");
+			throw new MediaRSSException("Movie ID was not found in IMDB").doNotLog();
 		}
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
 		result.put("movie", entityConverter.toFutureMovie(movie));
+		return result;
+	}
+
+	@RequestMapping(value = "/future/remove", method = RequestMethod.POST)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> removeFutureMovie(HttpServletRequest request) {
+		long movieId = extractMandatoryInteger(request, "movieId");
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		UserMovie userMovie = movieDao.findUserMovie(movieId, user);
+		movieDao.delete(userMovie);
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("message", "Movie '" + userMovie.getMovie().getName() + "' was removed from schedule for download when it will be available");
 		return result;
 	}
 }

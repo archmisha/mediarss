@@ -81,7 +81,7 @@ public class ShowServiceImpl implements ShowService {
 	private void saveNewShow(Show show) {
 		logService.info(getClass(), "It is a new show! - Persisting '" + show.getName() + "' (tvrage_id=" + show.getTvRageId() + ")");
 		showDao.persist(show);
-		Collection<Episode> episodes = showsProvider.downloadInfo(show);
+		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
 		for (Episode episode : episodes) {
 			episodeDao.persist(episode);
 			episode.setShow(show);
@@ -311,6 +311,19 @@ public class ShowServiceImpl implements ShowService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
+	public void downloadSchedule(Show show) {
+		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
+		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
+		downloadScheduleHelper(show, episodes, downloadScheduleResult);
+	}
+
+	@Override
+	public List<Show> autoCompleteShowNames(String term) {
+		return showDao.autoCompleteShowNames(term);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadScheduleResult downloadSchedule() {
 		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
 
@@ -336,21 +349,7 @@ public class ShowServiceImpl implements ShowService {
 					show.setTvRageId(showShell.getTvRageId());
 				}
 
-				EpisodesMapper mapper = new EpisodesMapper(show.getEpisodes());
-				for (Episode episode : curEpisodes) {
-					Episode persistedEpisode = mapper.get(episode.getSeason(), episode.getEpisode());
-					if (persistedEpisode == null) {
-						episodeDao.persist(episode);
-						episode.setShow(show);
-						show.getEpisodes().add(episode);
-						downloadScheduleResult.addNewEpisode(episode);
-						persistedEpisode = episode;
-					} else if (persistedEpisode.getTorrentIds().isEmpty()) {
-						// if there are episodes without torrents, try to find their torrents
-						downloadScheduleResult.addNewEpisode(persistedEpisode);
-					}
-					persistedEpisode.setAirDate(episode.getAirDate());
-				}
+				downloadScheduleHelper(show, curEpisodes, downloadScheduleResult);
 			} catch (Exception e) {
 				downloadScheduleResult.addFailedShow(showShell);
 				logService.error(getClass(), "Failed downloading schedule for show " + showShell);
@@ -368,6 +367,24 @@ public class ShowServiceImpl implements ShowService {
 		}
 
 		return downloadScheduleResult;
+	}
+
+	private void downloadScheduleHelper(Show show, Collection<Episode> episodes, DownloadScheduleResult downloadScheduleResult) {
+		EpisodesMapper mapper = new EpisodesMapper(show.getEpisodes());
+		for (Episode episode : episodes) {
+			Episode persistedEpisode = mapper.get(episode.getSeason(), episode.getEpisode());
+			if (persistedEpisode == null) {
+				episodeDao.persist(episode);
+				episode.setShow(show);
+				show.getEpisodes().add(episode);
+				downloadScheduleResult.addNewEpisode(episode);
+				persistedEpisode = episode;
+			} else if (persistedEpisode.getTorrentIds().isEmpty()) {
+				// if there are episodes without torrents, try to find their torrents
+				downloadScheduleResult.addNewEpisode(persistedEpisode);
+			}
+			persistedEpisode.setAirDate(episode.getAirDate());
+		}
 	}
 
 	/*@Override
