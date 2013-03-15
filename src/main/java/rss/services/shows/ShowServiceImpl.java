@@ -117,9 +117,6 @@ public class ShowServiceImpl implements ShowService {
 					}
 					ld = Math.min(curLd, ld);
 				}
-//				if ( show.getName().equalsIgnoreCase("the walking dead")) {
-//					logService.info(getClass(), "show=" + show.getName() + " ld=" + curLd);
-//				}
 			}
 
 			if (ld < bestLD) {
@@ -130,7 +127,7 @@ public class ShowServiceImpl implements ShowService {
 			if (matches.isEmpty() || ld <= bestLD) {
 				matches.add(show);
 				bestLD = ld;
-				logService.info(getClass(), "show=" + show.getName() + " ld=" + ld);
+				logService.debug(getClass(), "show=" + show.getName() + " ld=" + ld);
 			}
 		}
 
