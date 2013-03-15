@@ -136,7 +136,7 @@ public class ShowServiceImpl implements ShowService {
 			result.add(showDao.find(match.getId()));
 		}
 
-		logService.info(getClass(), "Show statistic match end for: " + name + " found: " + StringUtils.join(result.toArray(), ","));
+		logService.debug(getClass(), "Show statistic match end for: " + name + " found: " + StringUtils.join(result.toArray(), ","));
 		return result;
 	}
 
