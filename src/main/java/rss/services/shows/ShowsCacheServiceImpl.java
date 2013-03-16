@@ -50,10 +50,8 @@ public class ShowsCacheServiceImpl extends QuartzJobBean implements ShowsCacheSe
 	}
 
 	private void reloadCache() {
-		logService.info(getClass(), "Loading shows cache");
-		Thread.dumpStack();
 		DurationMeter duration = new DurationMeter();
-
+Thread.dumpStack();
 		cache.clear();
 		showNamePermutations.clear();
 
@@ -62,7 +60,7 @@ public class ShowsCacheServiceImpl extends QuartzJobBean implements ShowsCacheSe
 		}
 
 		duration.stop();
-		logService.info(getClass(), "Loading shows cache took " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Loaded shows cache (" + duration.getDuration() + " millis)");
 	}
 
 	private void addShow(CachedShow show) {

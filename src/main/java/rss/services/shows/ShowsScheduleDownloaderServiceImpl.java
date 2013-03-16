@@ -45,11 +45,6 @@ public class ShowsScheduleDownloaderServiceImpl extends JobRunner implements Sho
 		super(JOB_NAME);
 	}
 
-	@PostConstruct
-	private void postConstruct() {
-		createJobStatus();
-	}
-
 	protected String run() {
 		final Set<EpisodeRequest> missing = new HashSet<>();
 		final Collection<Show> failedShows = new ArrayList<>();

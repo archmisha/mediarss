@@ -47,11 +47,6 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 		super(JOB_NAME);
 	}
 
-	@PostConstruct
-	private void postConstruct() {
-		createJobStatus();
-	}
-
 	@Override
 	protected String run() {
 		return transactionTemplate.execute(new TransactionCallback<String>() {

@@ -67,8 +67,8 @@ define([
 
 				this.futureMoviesSection = new SectionView({
 					title: 'Movies You Want (experimental)',
-					description: 'Add movies not available yet for download by their IMDB id and they will be ' +
-						'automatically added <br/>to your feed once they are available for download.'
+					description: 'Add movies you want to download by their IMDB id and they will be ' +
+						'automatically added to your feed <br/>if already available for download, or in the <b>future</b> once they will be available.'
 				});
 
 				this.vent.on('movie-selected', this.onMovieSelected, this);

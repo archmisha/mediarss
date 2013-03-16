@@ -30,11 +30,6 @@ public class ShowsListDownloaderServiceImpl extends JobRunner implements ShowsLi
 		super(JOB_NAME);
 	}
 
-	@PostConstruct
-	private void postConstruct() {
-		createJobStatus();
-	}
-
 	@Override
 	protected String run() {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {

@@ -14,6 +14,7 @@ import rss.entities.JobStatus;
 import rss.services.log.LogService;
 import rss.util.DurationMeter;
 
+import javax.annotation.PostConstruct;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -43,6 +44,11 @@ public abstract class JobRunner extends QuartzJobBean {
 	public JobRunner(String name) {
 		this.name = name;
 		running = false;
+	}
+
+	@PostConstruct
+	private void postConstruct() {
+		createJobStatus();
 	}
 
 	public JobStatus start() {
