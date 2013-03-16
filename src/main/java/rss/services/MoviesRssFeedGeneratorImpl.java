@@ -38,7 +38,6 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public String generateFeed(User user) {
-        log.info("Generating feed");
         long from = System.currentTimeMillis();
 
         Date downloadDate = new Date();
@@ -55,7 +54,7 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
         String rssFeed = rssFeedBuilder.build("Movies RSS personalized feed",
                 "RSS feed of movies selected by the user in the past " + backlogDays + " days", torrentEntries, Collections.<Subtitles>emptyList());
 
-        log.info(String.format("Generating feed took %d millis", System.currentTimeMillis() - from));
+        log.info(String.format("Generated movies feed for " + user + " (%d millis)", System.currentTimeMillis() - from));
         return rssFeed;
     }
 

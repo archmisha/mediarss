@@ -44,20 +44,15 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String generateFeed(User user) {
-		log.info("Generating feed");
 		long from = System.currentTimeMillis();
 
 		Date downloadDate = new Date();
 		user.setLastShowsFeedGenerated(new Date());
 		userDao.merge(user);
 
-//        Set<EpisodeRequest> episodesToDownload = showRssService.getTVShowsEpisodes(user.getShowRssUsername(), user.getShowRssPassword());
-
-		Collection<Episode> episodes = userDao.getEpisodesToDownload(user);
-
 		// extract torrent entries - take best by quality
 		Set<Torrent> torrentEntries = new HashSet<>();
-		for (Episode media : episodes) {
+		for (Episode media : userDao.getEpisodesToDownload(user)) {
 			Map<MediaQuality, Torrent> qualityMap = new HashMap<>();
 			for (Long torrentId : media.getTorrentIds()) {
 				Torrent torrent = torrentDao.find(torrentId);
@@ -90,7 +85,7 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 
 		String rssFeed = rssFeedBuilder.build("TV Shows RSS personalized feed", "TV Shows RSS feed of the shows selected by the user", torrentEntries, subtitles);
 
-		log.info(String.format("Generating feed took %d millis", System.currentTimeMillis() - from));
+		log.info(String.format("Generated shows feed for " + user + " (%d millis)", System.currentTimeMillis() - from));
 		return rssFeed;
 	}
 
