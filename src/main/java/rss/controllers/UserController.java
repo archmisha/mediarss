@@ -32,13 +32,6 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController extends BaseController {
 
-	public static final String TVSHOWS_TAB = "tvshows";
-	public static final String MOVIES_TAB = "movies";
-	public static final String ADMIN_TAB = "admin";
-
-	@Autowired
-	private UserService userService;
-
 	@Autowired
 	private UserDao userDao;
 
@@ -49,22 +42,13 @@ public class UserController extends BaseController {
 	private SessionService sessionService;
 
 	@Autowired
-	private JobStatusDao jobStatusDao;
-
-	@Autowired
 	private ShowDao showDao;
-
-	@Autowired
-	private EntityConverter entityConverter;
 
 	@Autowired
 	private SettingsService settingsService;
 
 	@Autowired
 	private LogService logService;
-
-	@Autowired
-	private MovieService movieService;
 
 	@RequestMapping(value = "/pre-login/{tab}", method = RequestMethod.GET)
 	@ResponseBody
@@ -133,29 +117,6 @@ public class UserController extends BaseController {
 			result.put("initialData", createInitialData(tab));
 		}
 		return result;
-	}
-
-	@Transactional(propagation = Propagation.REQUIRED)
-	private UserResponse createUserResponse(User user, String tab) {
-		UserResponse userResponse = userService.getUserResponse(user);
-
-		if (tab.equals(MOVIES_TAB)) {
-			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
-					.withMovies(movieService.getUserMovies(user))
-					.withFutureMovies(movieService.getFutureUserMovies(user));
-		} else if (tab.equals(TVSHOWS_TAB)) {
-			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())));
-		}
-
-		return userResponse;
-	}
-
-	private Date getMoviesLastUpdated() {
-		JobStatus jobStatus = jobStatusDao.find(MoviesScrabblerImpl.JOB_NAME);
-		if (jobStatus == null) {
-			return null;
-		}
-		return jobStatus.getStart();
 	}
 
 	@RequestMapping(value = "/register", method = RequestMethod.POST)

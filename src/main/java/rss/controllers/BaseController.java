@@ -2,21 +2,33 @@ package rss.controllers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.MediaRSSException;
 import rss.NoPermissionsException;
 import rss.UserNotLoggedInException;
+import rss.controllers.vo.ShowVO;
+import rss.controllers.vo.UserResponse;
+import rss.dao.JobStatusDao;
 import rss.dao.UserTorrentDao;
+import rss.entities.JobStatus;
 import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserTorrent;
 import rss.services.SettingsService;
+import rss.services.UserService;
 import rss.services.log.LogService;
+import rss.services.movies.MovieService;
+import rss.services.movies.MoviesScrabblerImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.InvalidParameterException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -24,6 +36,10 @@ import java.util.Date;
  */
 @SuppressWarnings("UnusedDeclaration")
 public class BaseController {
+
+	public static final String TVSHOWS_TAB = "tvshows";
+	public static final String MOVIES_TAB = "movies";
+	public static final String ADMIN_TAB = "admin";
 
 	@Autowired
 	private LogService log;
@@ -33,6 +49,18 @@ public class BaseController {
 
 	@Autowired
 	private SettingsService settingsService;
+
+	@Autowired
+	private MovieService movieService;
+
+	@Autowired
+	private JobStatusDao jobStatusDao;
+
+	@Autowired
+	protected EntityConverter entityConverter;
+
+	@Autowired
+	protected UserService userService;
 
 	protected LogService getLogService() {
 		return log;
@@ -150,5 +178,37 @@ public class BaseController {
 		userTorrent.setTorrent(torrent);
 		userTorrentDao.persist(userTorrent);
 		return userTorrent;
+	}
+
+	protected UserResponse createUserResponse(User user, String tab) {
+		UserResponse userResponse = userService.getUserResponse(user);
+
+		if (tab.equals(MOVIES_TAB)) {
+			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
+					.withMovies(movieService.getUserMovies(user))
+					.withFutureMovies(movieService.getFutureUserMovies(user));
+		} else if (tab.equals(TVSHOWS_TAB)) {
+			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())));
+		}
+
+		return userResponse;
+	}
+
+	private Date getMoviesLastUpdated() {
+		JobStatus jobStatus = jobStatusDao.find(MoviesScrabblerImpl.JOB_NAME);
+		if (jobStatus == null) {
+			return null;
+		}
+		return jobStatus.getStart();
+	}
+
+	private List<ShowVO> sort(List<ShowVO> shows) {
+		Collections.sort(shows, new Comparator<ShowVO>() {
+			@Override
+			public int compare(ShowVO o1, ShowVO o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
+			}
+		});
+		return shows;
 	}
 }

@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface UserTorrentDao extends Dao<UserTorrent> {
 
-	List<UserTorrent> findMoviesUploadedSince(Date dateUploaded, User user);
+	List<UserTorrent> findUserMoviesForUserFeed(Date dateUploaded, User user);
 
 	List<UserTorrent> findEpisodesAddedSince(Date dateUploaded, User user);
 

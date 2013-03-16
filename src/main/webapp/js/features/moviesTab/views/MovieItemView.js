@@ -23,6 +23,31 @@ define([
 				'click .future-movie-item-remove-image': 'onFutureMovieRemoveClick'
 			},
 
+			constructor: function(options) {
+				this.vent = options.vent;
+				Marionette.ItemView.prototype.constructor.apply(this, arguments);
+
+				var that = this;
+				this.model.on('change:downloadStatus', function() {
+					that.updateDownloadStatus();
+				});
+			},
+
+			onRender: function() {
+				if (!this.model.get('viewed')) {
+					this.$el.addClass('movie-item-not-viewed');
+				}
+
+				this.updateDownloadStatus();
+
+				[this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage].forEach(
+					function(el) {
+						el.qtip({
+							style: 'rssStyle'
+						});
+					});
+			},
+
 			onMovieClick: function() {
 				var that = this;
 				if (!this.model.get('viewed')) {
@@ -35,49 +60,17 @@ define([
 				this.vent.trigger('movie-selected', this.model);
 			},
 
-			constructor: function(options) {
-				this.vent = options.vent;
-				Marionette.ItemView.prototype.constructor.apply(this, arguments);
-			},
-
-			onRender: function() {
-				if (!this.model.get('viewed')) {
-					this.$el.addClass('movie-item-not-viewed');
-				}
-
-				this.updateDownloadStatus();
-
-				this.ui.scheduledImage.qtip({
-					style: 'rssStyle'
-				});
-				this.ui.downloadedImage.qtip({
-					style: 'rssStyle'
-				});
-				this.ui.movieTitle.qtip({
-					style: 'rssStyle'
-				});
-				this.ui.futureImage.qtip({
-					style: 'rssStyle'
-				});
-			},
-
 			updateDownloadStatus: function() {
+				this.ui.scheduledImage.hide();
+				this.ui.downloadedImage.hide();
+				this.ui.futureImage.hide();
+
 				if (this.model.get('downloadStatus') == 'SCHEDULED') {
 					this.ui.scheduledImage.show();
-					this.ui.downloadedImage.hide();
-					this.ui.futureImage.hide();
 				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
-					this.ui.scheduledImage.hide();
 					this.ui.downloadedImage.show();
-					this.ui.futureImage.hide();
 				} else if (this.model.get('downloadStatus') == 'FUTURE') {
-					this.ui.scheduledImage.hide();
-					this.ui.downloadedImage.hide();
 					this.ui.futureImage.show();
-				} else {
-					this.ui.scheduledImage.hide();
-					this.ui.futureImage.hide();
-					this.ui.downloadedImage.hide();
 				}
 			},
 

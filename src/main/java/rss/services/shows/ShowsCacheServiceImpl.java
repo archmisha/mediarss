@@ -51,6 +51,7 @@ public class ShowsCacheServiceImpl extends QuartzJobBean implements ShowsCacheSe
 
 	private void reloadCache() {
 		logService.info(getClass(), "Loading shows cache");
+		Thread.dumpStack();
 		DurationMeter duration = new DurationMeter();
 
 		cache.clear();

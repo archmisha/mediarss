@@ -46,7 +46,7 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
         Collection<Torrent> torrentEntries = new ArrayList<>();
         int backlogDays = 7;
-        for (UserTorrent userTorrent : userTorrentDao.findMoviesUploadedSince(getUploadedDate(backlogDays), user)) {
+        for (UserTorrent userTorrent : userTorrentDao.findUserMoviesForUserFeed(getUploadedDate(backlogDays), user)) {
             userTorrent.setDownloadDate(downloadDate);
             torrentEntries.add(userTorrent.getTorrent());
         }

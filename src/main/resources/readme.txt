@@ -73,14 +73,9 @@ http://www.turnkeylinux.org/forum/support/20120514/how-do-i-install-modpagespeed
 
 todo
 ====
-when on movie and then back the status of the torrent is still bold
 help
 tvshows change icons, add shceduled state
 movies - add dates of when downloaded when movie uploaded torrent uploaded
 
-if shceduling an existin gmovie it adds to scheduled i ui but then it is removed fro mthere
-and shown as regular
-1 not always add to ui
-2 start downlogin auto if its already i - and show shceduled icon and not download icon
-3 when in torrent changes icon to download should also change icon of the movie itself
 
+when adding a movie - check maybe its torrent already out and i not downloaded yet

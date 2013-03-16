@@ -17,16 +17,16 @@ import java.util.*;
 public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserTorrentDao {
 
 	@Override
-	public List<UserTorrent> findMoviesUploadedSince(Date dateUploaded, User user) {
-		Map<String, Object> params = new HashMap<String, Object>(1);
+	public List<UserTorrent> findUserMoviesForUserFeed(Date dateUploaded, User user) {
+		Map<String, Object> params = new HashMap<>(2);
 		params.put("dateUploaded", dateUploaded);
 		params.put("userId", user.getId());
-		return super.<UserTorrent>findByNamedQueryAndNamedParams("MovieUserTorrent.findUserMoviesUploadedSince", params);
+		return super.findByNamedQueryAndNamedParams("MovieUserTorrent.findUserMoviesForUserFeed", params);
 	}
 
 	@Override
 	public List<UserTorrent> findEpisodesAddedSince(Date dateAdded, User user) {
-		Map<String, Object> params = new HashMap<String, Object>(1);
+		Map<String, Object> params = new HashMap<>(2);
 		params.put("dateAdded", dateAdded);
 		params.put("userId", user.getId());
 		return super.findByNamedQueryAndNamedParams("EpisodeUserTorrent.findEpisodesAddedSince", params);
@@ -34,7 +34,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 
 	@Override
 	public UserTorrent findEpisodeUserTorrentByTorrentId(long torrentId, User user) {
-		Map<String, Object> params = new HashMap<String, Object>(1);
+		Map<String, Object> params = new HashMap<>(2);
 		params.put("torrentId", torrentId);
 		params.put("userId", user.getId());
 		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("EpisodeUserTorrent.findUserTorrentByTorrentId", params));
@@ -42,7 +42,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 
 	@Override
 	public UserTorrent findMovieUserTorrentByTorrentId(long torrentId, User user) {
-		Map<String, Object> params = new HashMap<>(1);
+		Map<String, Object> params = new HashMap<>(2);
 		params.put("torrentId", torrentId);
 		params.put("userId", user.getId());
 		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("MovieUserTorrent.findUserTorrentByTorrentId", params));

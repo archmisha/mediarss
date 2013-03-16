@@ -54,7 +54,7 @@ define([
 				this.moviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.moviesCollection});
 
 				this.movieTorrentCollection = new UserTorrentCollection();
-				this.movieTorrentColletionView = new MovieTorrentCollectionView({collection: this.movieTorrentCollection});
+				this.movieTorrentColletionView = new MovieTorrentCollectionView({vent: this.vent, collection: this.movieTorrentCollection});
 
 				// reset the retries limit so wont run for ever
 				window.moviesImdbPreviewHeightRetries = 5;
@@ -73,6 +73,16 @@ define([
 
 				this.vent.on('movie-selected', this.onMovieSelected, this);
 				this.vent.on('future-movie-remove', this.onFutureMovieRemove, this);
+				this.vent.on('movie-torrent-download', this.onMovieTorrentDownload, this);
+			},
+
+			onMovieTorrentDownload: function(userTorrent) {
+				HttpUtils.post("rest/movies/download", {
+					torrentId: userTorrent.get('torrentId')
+				}, function(res) {
+					userTorrent.set('downloadStatus', 'SCHEDULED');
+					selectedMovie.set('downloadStatus', 'SCHEDULED');
+				});
 			},
 
 			// called in window scope, so no reference to this
@@ -120,6 +130,9 @@ define([
 						movieId: movieModel.get('id')
 					}, function(res) {
 						movieModel.set('viewed', true);
+						movieModel.get('torrents').forEach(function(t) {
+							t.viewed = true;
+						});
 					}, false);
 				}
 
@@ -159,10 +172,13 @@ define([
 					that.ui.imdbIdInput.val('');
 					MessageBox.info(res.message);
 
-					that.loggedInUserData.futureMovies.unshift(res.movie);
+					that.loggedInUserData = res.user;
+					that.ui.moviesCounter.html(that.loggedInUserData.movies.length);
 					that.ui.futureMoviesCounter.html(that.loggedInUserData.futureMovies.length);
 					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {
 						that.moviesCollection.reset(that.loggedInUserData.futureMovies);
+					} else {
+						that.moviesCollection.reset(that.loggedInUserData.movies);
 					}
 				});
 			},
@@ -172,6 +188,7 @@ define([
 				this.ui.futureMoviesFilter.addClass('filter-selected');
 				this.ui.moviesFilter.removeClass('filter-selected');
 				this.moviesListRegion.$el.addClass('future-movies-list');
+				this.movieTorrentCollection.reset();
 			},
 
 			onMoviesFilterClick: function() {
@@ -179,6 +196,7 @@ define([
 				this.ui.futureMoviesFilter.removeClass('filter-selected');
 				this.ui.moviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.removeClass('future-movies-list');
+				this.movieTorrentCollection.reset();
 			},
 
 			onFutureMovieRemove: function(movieModel) {
@@ -187,8 +205,8 @@ define([
 					MessageBox.info(res.message);
 
 					var i;
-					for (i=0; i<that.loggedInUserData.futureMovies.length; ++i) {
-						if ( that.loggedInUserData.futureMovies[i].id == movieModel.get('id')) {
+					for (i = 0; i < that.loggedInUserData.futureMovies.length; ++i) {
+						if (that.loggedInUserData.futureMovies[i].id == movieModel.get('id')) {
 							break;
 						}
 					}

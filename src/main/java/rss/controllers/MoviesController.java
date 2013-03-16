@@ -1,7 +1,5 @@
 package rss.controllers;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,11 +13,9 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
-import rss.services.PageDownloader;
 import rss.services.SessionService;
 import rss.services.log.LogService;
 import rss.services.movies.MovieService;
-import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -101,8 +97,27 @@ public class MoviesController extends BaseController {
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
-		result.put("movie", entityConverter.toFutureMovie(movie));
+		if (!movie.getTorrentIds().isEmpty()) {
+			result.put("message", "Movie '" + movie.getName() + "' was scheduled for immediate download as it is already available");
+			result.put("alreadyOut", true);
+
+			// take where max seeders
+			int seeders = -1;
+			Torrent theTorrent = null;
+			for (Torrent torrent : torrentDao.findByIds(movie.getTorrentIds())) {
+				if (seeders == -1 || seeders < torrent.getSeeders()) {
+					seeders = torrent.getSeeders();
+					theTorrent = torrent;
+				}
+			}
+			addUserTorrent(user, theTorrent, new MovieUserTorrent());
+		} else {
+			result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
+			result.put("alreadyOut", false);
+		}
+
+		// must be after movieUserTorrent creation
+		result.put("user", createUserResponse(user, MOVIES_TAB));
 		return result;
 	}
 
