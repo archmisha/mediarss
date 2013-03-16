@@ -198,8 +198,8 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
-	public Collection<String> getAdmins() {
-		Collection<String> result = new ArrayList<>();
+	public List<String> getAdministratorEmails() {
+		List<String> result = new ArrayList<>();
 		result.addAll(Arrays.asList(prop.getProperty("admins").split(",")));
 		result.add("archmisha@gmail.com");
 		return result;

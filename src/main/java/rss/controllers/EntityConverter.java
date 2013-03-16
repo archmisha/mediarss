@@ -49,7 +49,7 @@ public class EntityConverter {
 				.withLastLogin(user.getLastLogin())
 				.withLastShowsFeedAccess(user.getLastShowsFeedGenerated())
 				.withLastMoviesFeedAccess(user.getLastMoviesFeedGenerated())
-				.withAdmin(settingsService.getAdmins().contains(user.getEmail()));
+				.withAdmin(settingsService.getAdministratorEmails().contains(user.getEmail()));
 		if (user.getSubtitles() == null) {
 			userVO.setSubtitles(null);
 		} else {

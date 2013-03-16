@@ -27,11 +27,14 @@ public class EmailServiceImpl implements EmailService {
 	private UrlService urlService;
 
 	@Autowired
+	private SettingsService settingsService;
+
+	@Autowired
 	private UserDao userDao;
 
 	public void notifyNewUserRegistered(User user) {
 		try {
-			sendEmail(getAdministratorEmails(), APP_NAME + " - Users",
+			sendEmail(settingsService.getAdministratorEmails(), APP_NAME + " - Users",
 					"New user subscribed: " + user.getEmail() +
 					EMAIL_SIGNATURE);
 		} catch (MessagingException e) {
@@ -70,7 +73,7 @@ public class EmailServiceImpl implements EmailService {
 	@Override
 	public void notifyOfMissingEpisodes(Collection<EpisodeRequest> missingRequests) {
 		try {
-			sendEmail(getAdministratorEmails(), APP_NAME + " - Jobs",
+			sendEmail(settingsService.getAdministratorEmails(), APP_NAME + " - Jobs",
 					"The following torrents were not found:\n  " + StringUtils.join(missingRequests, "\n  ") +
 					EMAIL_SIGNATURE);
 		} catch (MessagingException e) {
@@ -90,7 +93,7 @@ public class EmailServiceImpl implements EmailService {
 	@Override
 	public void notifyOfMissingMovies(Collection<MovieRequest> missingRequests) {
 		try {
-			sendEmail(getAdministratorEmails(), APP_NAME,
+			sendEmail(settingsService.getAdministratorEmails(), APP_NAME,
 					"The following torrents were not found:\n  " + StringUtils.join(missingRequests, "\n  ") +
 					EMAIL_SIGNATURE);
 		} catch (MessagingException e) {
@@ -105,7 +108,7 @@ public class EmailServiceImpl implements EmailService {
 	@Override
 	public void notifyShowCreatedBlindly(Show show) {
 		try {
-			sendEmail(getAdministratorEmails(), APP_NAME,
+			sendEmail(settingsService.getAdministratorEmails(), APP_NAME,
 					"The following show was created without verification of tv.com url: \n" +
 					show + " - " + show.getTvComUrl() +
 					EMAIL_SIGNATURE);
@@ -156,7 +159,7 @@ public class EmailServiceImpl implements EmailService {
 	@Override
 	public void sendTicket(User user, String type, String content) {
 		try {
-			sendEmail(getAdministratorEmails(), APP_NAME + " - " + type,
+			sendEmail(settingsService.getAdministratorEmails(), APP_NAME + " - " + type,
 					"User " + user.getFirstName() + " " + user.getLastName() + " (" + user.getEmail() +
 					") has submitted the following " + type + ": \n" + content +
 					EMAIL_SIGNATURE);
@@ -181,9 +184,5 @@ public class EmailServiceImpl implements EmailService {
 
 		List<String> recipientsCopy = new ArrayList<>(recipients);
 		GoogleMail.Send("lan4ear", "84ad17ad!", recipientsCopy.remove(0), StringUtils.join(recipientsCopy, " "), title, message);
-	}
-
-	private List<String> getAdministratorEmails() {
-		return Arrays.asList("archmisha@gmail.com");
 	}
 }

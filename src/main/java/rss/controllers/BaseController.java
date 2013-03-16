@@ -106,7 +106,7 @@ public class BaseController {
 	}
 
 	protected void verifyAdminPermissions(User user) {
-		if (!settingsService.getAdmins().contains(user.getEmail())) {
+		if (!settingsService.getAdministratorEmails().contains(user.getEmail())) {
 			String msg = "Detected impersonation of admin user. User: " + user.getEmail();
 			getLogService().error(getClass(), msg);
 			throw new NoPermissionsException(msg);
