@@ -14,6 +14,8 @@ import rss.entities.JobStatus;
 import rss.services.log.LogService;
 import rss.util.DurationMeter;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
@@ -31,6 +33,9 @@ public abstract class JobRunner extends QuartzJobBean {
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
+
+	@Autowired
+	private EmailService emailService;
 
 	private String name;
 	private boolean running;
@@ -60,6 +65,9 @@ public abstract class JobRunner extends QuartzJobBean {
 				} catch (Exception e) {
 					logService.error(aClass, e.getMessage(), e);
 					statusMessage = "Failed";
+					StringWriter sw = new StringWriter();
+					e.printStackTrace(new PrintWriter(sw));
+					emailService.notifyOfFailedJob("Job " + JobRunner.this.name + " fail at " + durationMeter.getStartTime() + "\r\n\r\n" + sw);
 				}
 
 				durationMeter.stop();

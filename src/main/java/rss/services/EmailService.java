@@ -31,5 +31,7 @@ public interface EmailService {
 
 	void sendEmailToAllUsers(String text);
 
-	void sendTicket(User user, String type, String content);
+	void notifyOfATicket(User user, String type, String content);
+
+	void notifyOfFailedJob(String msg);
 }
