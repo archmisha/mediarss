@@ -29,9 +29,13 @@ public class TVRageServiceImpl implements ShowsProvider {
 	public static final String SHOW_SCHEDULE_URL = "http://services.tvrage.com/feeds/fullschedule.php?country=US&24_format=1";
 
 	private static final int RETURNING_STATUS = 1;
-	private static final int ENDED_STATUS = 2;
+	private static final int CANCELED_ENDED_STATUS = 2;
 	private static final int TBD_STATUS = 3;
 	private static final int IN_DEV_STATUS = 4;
+	private static final int NEW_SERIES_STATUS = 7;
+	private static final int ENDED2_STATUS = 11;
+	private static final int CANCELED_STATUS = 13;
+	private static final int ENDED_STATUS = 14;
 
 	private PageDownloader pageDownloader;
 
@@ -116,7 +120,8 @@ public class TVRageServiceImpl implements ShowsProvider {
 			}
 			Show show = new Show(tvRageShow.getName());
 			show.setTvRageId(tvRageShow.getId());
-			show.setEnded(tvRageShow.getStatus() == ENDED_STATUS);
+			show.setEnded(tvRageShow.getStatus() != RETURNING_STATUS &&
+						  tvRageShow.getStatus() == NEW_SERIES_STATUS);
 			shows.add(show);
 		}
 
