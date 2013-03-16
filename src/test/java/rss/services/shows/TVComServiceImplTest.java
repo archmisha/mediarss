@@ -43,16 +43,16 @@ public class TVComServiceImplTest extends BaseTest {
 		show.setName("how i met your mother");
 		show.setTvComUrl(tvComUrl);
 		Episode ep = new Episode(8, 3);
-		show.getEpisodes().add(ep);
 		ep.setShow(show);
+		show.getEpisodes().add(ep);
 		String page = loadPage("how-i-met-your-mother");
 		doReturn(page).when(pageDownloader).downloadPage(tvComUrl);
 
-		tvComService.downloadSchedule(show);
+		Collection<Episode> episodes = tvComService.downloadSchedule(show);
 
-		assertEquals(37, show.getEpisodes().size());
+		assertEquals(36, episodes.size());
 		assertFalse(show.isEnded());
-		for (Episode episode : show.getEpisodes()) {
+		for (Episode episode : episodes) {
 			if (episode.getSeason() == 8 && episode.getEpisode() == 5) {
 				Calendar c = Calendar.getInstance();
 				c.set(Calendar.YEAR, 2012);
@@ -65,8 +65,7 @@ public class TVComServiceImplTest extends BaseTest {
 				Assert.assertEquals(c.getTime(), episode.getAirDate());
 			}
 		}
-		// 36 cuz 1 is predefined
-		verify(episodeDao, Mockito.times(36)).persist(any(Episode.class));
+		verify(episodeDao, Mockito.times(0)).persist(any(Episode.class));
 	}
 
 	@Test
