@@ -62,7 +62,7 @@ define([
 
 				this.moviesSection = new SectionView({
 					title: 'Movies Download',
-					description: 'Select movies to download. You can use IMDB preview'
+					description: 'Select movies to download. Here you can find newly available movies. You can use IMDB preview'
 				});
 
 				this.futureMoviesSection = new SectionView({

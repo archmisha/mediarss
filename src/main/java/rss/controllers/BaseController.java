@@ -2,8 +2,6 @@ package rss.controllers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.MediaRSSException;
@@ -42,29 +40,25 @@ public class BaseController {
 	public static final String ADMIN_TAB = "admin";
 
 	@Autowired
-	private LogService log;
+	protected LogService logService;
 
 	@Autowired
 	protected UserTorrentDao userTorrentDao;
 
 	@Autowired
-	private SettingsService settingsService;
+	protected SettingsService settingsService;
 
 	@Autowired
-	private MovieService movieService;
+	protected MovieService movieService;
 
 	@Autowired
-	private JobStatusDao jobStatusDao;
+	protected JobStatusDao jobStatusDao;
 
 	@Autowired
 	protected EntityConverter entityConverter;
 
 	@Autowired
 	protected UserService userService;
-
-	protected LogService getLogService() {
-		return log;
-	}
 
 	protected String extractString(HttpServletRequest request, String name, boolean isMandatory) {
 		String value = request.getParameter(name);
@@ -115,7 +109,7 @@ public class BaseController {
 	@ResponseBody
 	public ExceptionResponse handleMediaRSSException(MediaRSSException ex) {
 		if (ex.log()) {
-			log.error(getClass(), ex.getMessage(), ex);
+			logService.error(getClass(), ex.getMessage(), ex);
 		}
 		return new ExceptionResponse().withMessage(ex.getUserMessage());
 	}
@@ -129,14 +123,14 @@ public class BaseController {
 	@ExceptionHandler(Exception.class)
 	@ResponseBody
 	public ExceptionResponse handleException(Exception ex) {
-		log.error(getClass(), ex.getMessage(), ex);
+		logService.error(getClass(), ex.getMessage(), ex);
 		return new ExceptionResponse().withMessage("Oops. We've got some error.");
 	}
 
 	protected void verifyAdminPermissions(User user) {
 		if (!settingsService.getAdministratorEmails().contains(user.getEmail())) {
 			String msg = "Detected impersonation of admin user. User: " + user.getEmail();
-			getLogService().error(getClass(), msg);
+			logService.error(getClass(), msg);
 			throw new NoPermissionsException(msg);
 		}
 	}

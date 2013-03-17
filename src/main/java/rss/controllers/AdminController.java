@@ -112,7 +112,7 @@ public class AdminController extends BaseController {
 			String data = gson.toJson(map);
 			IOUtils.write(callback + "(" + data + ")", response.getOutputStream());
 		} catch (IOException e) {
-			getLogService().error(getClass(), e.getMessage(), e);
+			logService.error(getClass(), e.getMessage(), e);
 			throw new MediaRSSException(e.getMessage(), e);
 		}
 	}

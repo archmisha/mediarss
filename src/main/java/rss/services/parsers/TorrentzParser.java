@@ -30,14 +30,11 @@ public class TorrentzParser implements PageParser {
 	// need to skip entries like /z/...
 	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?</dl>");
 
-	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn"};
+	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Set<T> parse(String page) {
-		int curYear = Calendar.getInstance().get(Calendar.YEAR);
-		int prevYear = curYear - 1;
-
 		Set<MovieRequest> movies = new HashSet<>();
 		Matcher matcher = ENTRY_CONTENT_PATTERN.matcher(page);
 		while (matcher.find()) {
@@ -48,16 +45,12 @@ public class TorrentzParser implements PageParser {
 
 			name = stripTags(name);
 			name = StringEscapeUtils.unescapeHtml4(name);
-			boolean skip = false;
-			if (!name.contains(curYear + "") && !name.contains(prevYear + "")) {
-				log.info("Skipping movie '" + name + "' due to old year");
-				skip = true;
-			}
-
 			type = stripTags(type);
+
+			boolean skip = false;
 			for (String keyword : TYPES_TO_SKIP) {
 				if (type.contains(keyword)) {
-					log.info("Skipping movie '" + name + "' due to offending type: '" + type + "'");
+					log.info("Skipping movie '" + name + "' due to type: '" + type + "'");
 					skip = true;
 				}
 			}

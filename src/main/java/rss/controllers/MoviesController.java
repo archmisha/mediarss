@@ -32,19 +32,10 @@ public class MoviesController extends BaseController {
 	private SessionService sessionService;
 
 	@Autowired
-	private LogService logService;
-
-	@Autowired
 	private MovieDao movieDao;
 
 	@Autowired
 	private TorrentDao torrentDao;
-
-	@Autowired
-	private MovieService movieService;
-
-	@Autowired
-	private EntityConverter entityConverter;
 
 	@RequestMapping(value = "/imdb/{movieId}", method = RequestMethod.GET)
 	@ResponseBody

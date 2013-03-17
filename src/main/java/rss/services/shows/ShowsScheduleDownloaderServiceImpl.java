@@ -11,6 +11,7 @@ import rss.dao.EpisodeDao;
 import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.EmailService;
 import rss.services.EpisodeRequest;
 import rss.services.JobRunner;
 import rss.services.downloader.DownloadResult;
@@ -37,6 +38,9 @@ public class ShowsScheduleDownloaderServiceImpl extends JobRunner implements Sho
 
 	@Autowired
 	private EpisodeDao episodeDao;
+
+	@Autowired
+	private EmailService emailService;
 
 	@Autowired
 	private TVShowsTorrentEntriesDownloader torrentEntriesDownloader;
@@ -99,7 +103,7 @@ public class ShowsScheduleDownloaderServiceImpl extends JobRunner implements Sho
 						missing.remove(episodeRequest);
 					}
 				}
-				torrentEntriesDownloader.emailMissingRequests(missing);
+				emailService.notifyOfMissingEpisodes(missing);
 			}
 		});
 

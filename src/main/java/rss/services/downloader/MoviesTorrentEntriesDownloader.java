@@ -110,7 +110,6 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	protected void preDownloadPhase(Set<MovieRequest> mediaRequestsCopy) {
-		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	private String getMovieName(SearchResult<Movie> searchResult) {
@@ -130,10 +129,10 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 				name = oldYearMatcher.group(1);
 				name = StringEscapeUtils.unescapeHtml4(name);
 				logService.info(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
-				if (isInvalidMovieYear(name)) {
-					logService.info(getClass(), "Skipping movie '" + name + "' due to old year");
-					return null;
-				}
+//				if (isInvalidMovieYear(name)) {
+//					logService.info(getClass(), "Skipping movie '" + name + "' due to old year");
+//					return null;
+//				}
 
 				// ignore future movies which are not release yet
 				Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(partialPage);
@@ -182,11 +181,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	}
 
 	@Override
-	public void emailMissingRequests(Collection<MovieRequest> missingRequests) {
-		if (missingRequests.isEmpty()) {
-			return;
-		}
-
+	protected void emailMissingRequests(Collection<MovieRequest> missingRequests) {
 		emailService.notifyOfMissingMovies(missingRequests);
 	}
 

@@ -51,7 +51,7 @@ public class ShowsCacheServiceImpl extends QuartzJobBean implements ShowsCacheSe
 
 	private void reloadCache() {
 		DurationMeter duration = new DurationMeter();
-Thread.dumpStack();
+
 		cache.clear();
 		showNamePermutations.clear();
 

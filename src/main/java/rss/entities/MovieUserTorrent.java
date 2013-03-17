@@ -16,6 +16,9 @@ import javax.persistence.Table;
 		@NamedQuery(name = "MovieUserTorrent.findUserMoviesForUserFeed",
 				query = "select ut from MovieUserTorrent as ut " +
 						"where ut.user.id = :userId and (ut.torrent.dateUploaded > :dateUploaded or downloadDate is null)"),
+		@NamedQuery(name = "MovieUserTorrent.findScheduledUserMovies",
+				query = "select ut from MovieUserTorrent as ut " +
+						"where ut.user.id = :userId and downloadDate is null"),
 		@NamedQuery(name = "MovieUserTorrent.findUserTorrentByTorrentId",
 				query = "select ut from MovieUserTorrent as ut where ut.user.id = :userId and ut.torrent.id = :torrentId")
 })

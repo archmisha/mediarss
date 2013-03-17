@@ -175,11 +175,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
-	public void emailMissingRequests(Collection<EpisodeRequest> missingRequests) {
-		if (missingRequests.isEmpty()) {
-			return;
-		}
-
+	protected void emailMissingRequests(Collection<EpisodeRequest> missingRequests) {
 		emailService.notifyOfMissingEpisodes(missingRequests);
 	}
 

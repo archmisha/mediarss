@@ -5,8 +5,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import rss.controllers.EntityConverter;
 import rss.controllers.vo.DownloadStatus;
 import rss.controllers.vo.UserMovieStatus;
@@ -54,6 +57,12 @@ public class MovieServiceImpl implements MovieService {
 
 	@Autowired
 	private EntityConverter entityConverter;
+
+	@Autowired
+	private TorrentzService torrentzService;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String getImdbPreviewPage(Movie movie) {
@@ -132,6 +141,15 @@ public class MovieServiceImpl implements MovieService {
 			updateLatestUploadDate(torrent, userMovieVO);
 		}
 
+		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user)) {
+			Torrent torrent = userTorrent.getTorrent();
+			torrentsByIds.put(torrent.getId(), torrent);
+			Movie movie = movieDao.find(torrent);
+			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
+			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
+			updateLatestUploadDate(torrent, userMovieVO);
+		}
+
 		// add movies that had no userMovies
 		for (Movie movie : latestMovies) {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
@@ -204,7 +222,7 @@ public class MovieServiceImpl implements MovieService {
 	private Set<Movie> getLatestMovies() {
 		Calendar c = Calendar.getInstance();
 		c.setTime(sessionService.getPrevLoginDate());
-		c.add(Calendar.DAY_OF_MONTH, -27);
+		c.add(Calendar.DAY_OF_MONTH, -7);
 		Date uploadedFromDate = c.getTime();
 		return new HashSet<>(movieDao.findUploadedSince(uploadedFromDate));
 	}
@@ -278,7 +296,7 @@ public class MovieServiceImpl implements MovieService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Movie addFutureMovieDownload(User user, String imdbId) {
-		String imdbUrl = IMDB_URL + imdbId;
+		final String imdbUrl = IMDB_URL + imdbId;
 		Movie movie = movieDao.findByImdbUrl(imdbUrl);
 		if (movie == null) {
 			String partialPage;
@@ -293,8 +311,18 @@ public class MovieServiceImpl implements MovieService {
 			String name = oldYearMatcher.group(1);
 			name = StringEscapeUtils.unescapeHtml4(name);
 
-			movie = new Movie(name, imdbUrl);
-			movieDao.persist(movie);
+			final String finalName = name;
+			movie = transactionTemplate.execute(new TransactionCallback<Movie>() {
+				@Override
+				public Movie doInTransaction(TransactionStatus arg0) {
+					Movie movie = new Movie(finalName, imdbUrl);
+					movieDao.persist(movie);
+					return movie;
+				}
+			});
+
+			// uses a separate transaction
+			torrentzService.downloadMovie(movie);
 		}
 
 		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
