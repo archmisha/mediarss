@@ -27,7 +27,8 @@ import java.util.Set;
 @Service
 public class TorrentzServiceImpl implements TorrentzService {
 
-	private static final String TORRENTZ_HIGH_RES_MOVIES_URL = "http://torrentz.eu/search?f=movies+hd+video+highres+added%3A";
+//	private static final String TORRENTZ_HIGH_RES_MOVIES_URL = "http://torrentz.eu/search?f=movies+hd+video+highres+added%3A";
+	private static final String TORRENTZ_HIGH_RES_MOVIES_URL = "http://torrentz.eu/search?f=movies+hd+video+-shows+-porn+-brrip+added%3A";
 	private static final String TORRENTZ_MOVIE_SEARCH_URL = "http://torrentz.eu/search?f=movies+hd+video+highres+";
 
 	@Autowired

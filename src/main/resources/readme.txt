@@ -73,9 +73,7 @@ http://www.turnkeylinux.org/forum/support/20120514/how-do-i-install-modpagespeed
 
 todo
 ====
+an email when scheduled movie is out
 help
 tvshows change icons, add shceduled state
-movies - add dates of when downloaded when movie uploaded torrent uploaded
 
-
-when adding a movie - check maybe its torrent already out and i not downloaded yet

@@ -30,6 +30,7 @@ public class TorrentzParser implements PageParser {
 	// need to skip entries like /z/...
 	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?</dl>");
 
+	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
 
 	@SuppressWarnings("unchecked")
