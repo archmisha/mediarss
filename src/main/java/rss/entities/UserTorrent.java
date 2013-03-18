@@ -27,9 +27,6 @@ public abstract class UserTorrent extends BaseEntity {
 	@JoinColumn(name = "torrent_id")
 	private Torrent torrent;
 
-//	@Column(name = "ignored")
-//	private boolean ignored;
-
 	public UserTorrent() {
 	}
 

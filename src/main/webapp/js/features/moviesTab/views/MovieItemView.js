@@ -15,7 +15,9 @@ define([
 				scheduledImage: '.movie-item-scheduled-image',
 				downloadedImage: '.movie-item-downloaded-image',
 				movieTitle: '.movie-item-title',
-				futureImage: '.movie-item-future-image'
+				futureImage: '.movie-item-future-image',
+				subTitle: '.movie-sub-title',
+				scheduledOn: '.movie-scheduled-on'
 			},
 
 			events: {
@@ -71,6 +73,8 @@ define([
 					this.ui.downloadedImage.show();
 				} else if (this.model.get('downloadStatus') == 'FUTURE') {
 					this.ui.futureImage.show();
+					this.ui.scheduledOn.show();
+					this.ui.subTitle.show();
 				}
 			},
 

@@ -18,6 +18,7 @@ public class UserMovieVO {
 	private Date latestUploadDate;
 	private DownloadStatus downloadStatus;
 	private boolean viewed;
+	private Date scheduledDate;
 
 	public UserMovieVO() {
 		viewed = false;
@@ -89,5 +90,14 @@ public class UserMovieVO {
 
 	public void setDownloadStatus(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
+	}
+
+	public UserMovieVO withScheduledOn(Date scheduledOn) {
+		this.scheduledDate = scheduledOn;
+		return this;
+	}
+
+	public Date getScheduledDate() {
+		return scheduledDate;
 	}
 }

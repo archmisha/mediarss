@@ -119,7 +119,7 @@ public class MovieServiceImpl implements MovieService {
 
 		ArrayList<UserMovieVO> result = new ArrayList<>();
 		for (UserMovie userMovie : futureUserMovies) {
-			result.add(entityConverter.toFutureMovie(userMovie.getMovie()));
+			result.add(entityConverter.toFutureMovie(userMovie.getMovie()).withScheduledOn(userMovie.getUpdated()));
 		}
 		return result;
 	}
@@ -161,7 +161,9 @@ public class MovieServiceImpl implements MovieService {
 					torrentsByIds.put(torrent.getId(), torrent);
 					userMovieVO.addTorrentDownloadStatus(new UserMovieStatus(DownloadStatus.NONE)
 							.withTitle(torrent.getTitle())
-							.withTorrentId(torrent.getId()));
+							.withTorrentId(torrent.getId())
+							.withUploadedDate(torrent.getDateUploaded())
+							.withScheduledOn(null));
 					updateLatestUploadDate(torrent, userMovieVO);
 				}
 			}

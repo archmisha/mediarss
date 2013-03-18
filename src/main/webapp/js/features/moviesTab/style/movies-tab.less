@@ -58,6 +58,12 @@
   position: relative;
 }
 
+.movie-item-inner {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .movie-torrent-item:hover,
 .movie-item-selected,
 .movie-item:hover {
@@ -181,5 +187,18 @@
 
 .filter-selected {
   font-weight: bold;
+}
+
+.movie-sub-title,
+.movie-torrent-sub-title {
+  margin-left: 26px;
+  font-size: 11px;
+  color: #808080;
+  margin-top: -4px;
+}
+
+.movie-sub-title,
+.movie-scheduled-on {
+  display: none;
 }
 

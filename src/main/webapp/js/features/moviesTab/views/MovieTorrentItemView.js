@@ -19,7 +19,8 @@ define([
 				downloadImage: '.movie-torrent-item-download-image',
 				scheduledImage: '.movie-torrent-item-scheduled-image',
 				downloadedImage: '.movie-torrent-item-downloaded-image',
-				movieTorrentTitle: '.movie-torrent-title'
+				movieTorrentTitle: '.movie-torrent-title',
+				scheduledOn: '.movie-torrent-scheduled-on'
 			},
 
 			constructor: function(options) {
@@ -37,7 +38,7 @@ define([
 					this.ui.downloadImage.hide();
 					this.ui.scheduledImage.show();
 					this.ui.downloadedImage.hide();
-				} else if (this.model.get('downloadStatus') == 'NONE'){
+				} else if (this.model.get('downloadStatus') == 'NONE') {
 					this.ui.downloadImage.show();
 					this.ui.scheduledImage.hide();
 					this.ui.downloadedImage.hide();
@@ -55,18 +56,16 @@ define([
 
 				this.updateDownloadStatus();
 
-				this.ui.downloadImage.qtip({
-					style: 'rssStyle'
-				});
-				this.ui.scheduledImage.qtip({
-					style: 'rssStyle'
-				});
-				this.ui.downloadedImage.qtip({
-					style: 'rssStyle'
-				});
-				this.ui.movieTorrentTitle.qtip({
-					style: 'rssStyle'
-				});
+				[this.ui.downloadImage, this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTorrentTitle].forEach(
+					function(el) {
+						el.qtip({
+							style: 'rssStyle'
+						});
+					});
+
+				if (this.model.get('scheduledDate') == null) {
+					this.ui.hide();
+				}
 			},
 
 			onDownloadButtonClick: function() {

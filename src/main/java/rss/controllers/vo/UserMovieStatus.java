@@ -17,6 +17,8 @@ public class UserMovieStatus {
 	private DownloadStatus downloadStatus;
 	private boolean viewed;
 	private Date downloadDate;
+	private Date uploadedDate;
+	private Date scheduledDate;
 
 	public UserMovieStatus(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
@@ -35,6 +37,11 @@ public class UserMovieStatus {
 		return this;
 	}
 
+	public UserMovieStatus withUploadedDate(Date uploadedDate) {
+		this.uploadedDate = uploadedDate;
+		return this;
+	}
+
 	public UserMovieStatus withTorrentId(long torrentId) {
 		this.torrentId = torrentId;
 		return this;
@@ -46,6 +53,11 @@ public class UserMovieStatus {
 
 	public UserMovieStatus withDownloadDate(Date downloadDate) {
 		this.downloadDate = downloadDate;
+		return this;
+	}
+
+	public UserMovieStatus withScheduledOn(Date scheduledOn) {
+		this.scheduledDate = scheduledOn;
 		return this;
 	}
 
@@ -74,11 +86,21 @@ public class UserMovieStatus {
 		return new UserMovieStatus(downloadStatus)
 				.withDownloadDate(userTorrent.getDownloadDate())
 				.withTitle(torrent.getTitle())
-				.withTorrentId(torrent.getId());
+				.withTorrentId(torrent.getId())
+				.withUploadedDate(torrent.getDateUploaded())
+				.withScheduledOn(userTorrent.getAdded());
 	}
 
 	public UserMovieStatus withViewed(boolean viewed) {
 		this.viewed = viewed;
 		return this;
+	}
+
+	public Date getUploadedDate() {
+		return uploadedDate;
+	}
+
+	public Date getScheduledDate() {
+		return scheduledDate;
 	}
 }
