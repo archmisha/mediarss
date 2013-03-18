@@ -170,7 +170,6 @@ public class EmailServiceImpl implements EmailService {
 			return;
 		}
 
-		List<String> recipientsCopy = new ArrayList<>(recipients);
-		GoogleMail.Send("lan4ear", "84ad17ad!", recipientsCopy.remove(0), StringUtils.join(recipientsCopy, " "), title, message);
+		GoogleMail.Send("lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
 	}
 }
