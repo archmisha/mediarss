@@ -63,6 +63,9 @@ public class AppStartupListener implements ApplicationListener<ContextRefreshedE
 			e.printStackTrace();
 		}
 
+		// debug
+		LogFactory.getLog(AppStartupListener.class).info("springContext.getId()=" + springContext.getId());
+
 		AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
 		autowireCapableBeanFactory.autowireBean(this);
 
