@@ -39,7 +39,7 @@ public class AppStartupListener implements ApplicationListener<ContextRefreshedE
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// only if it is the dispatcher web application context - proceed. if root the stop. otherwise happen twice
 		ApplicationContext springContext = event.getApplicationContext();
-		if (springContext.getId().endsWith(":")) {
+		if (!springContext.getId().contains("dispatcher")) {
 			return;
 		}
 
