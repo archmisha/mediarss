@@ -64,7 +64,7 @@ public class AppStartupListener implements ApplicationListener<ContextRefreshedE
 		}
 
 		// debug
-		LogFactory.getLog(AppStartupListener.class).info("springContext.getId()=" + springContext.getId());
+		LogFactory.getLog(AppStartupListener.class).debug("springContext.getId()=" + springContext.getId());
 
 		AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
 		autowireCapableBeanFactory.autowireBean(this);

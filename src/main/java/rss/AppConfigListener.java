@@ -32,7 +32,7 @@ public class AppConfigListener implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
-		Log log = LogFactory.getLog(AppStartupListener.class);
+		Log log = LogFactory.getLog(AppConfigListener.class);
 
 		try {
 			log.info("Shutting down quartz scheduler");
