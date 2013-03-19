@@ -18,6 +18,7 @@ Welcome <span class='masthead-username'>{{username}}</span>
     <textarea class='masthead-support-content'></textarea>
 
     <div class='masthead-support-button-bar'>
+        <button class='btn btn-small masthead-support-cancel-button'>Cancel</button>
         <button class='btn btn-small masthead-support-submit-button'>Submit</button>
     </div>
 </div>

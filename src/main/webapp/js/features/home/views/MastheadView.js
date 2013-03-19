@@ -38,9 +38,14 @@ define([
 				var that = this;
 				MessageBox.show($('.masthead-support-box'), {
 					hideOnContentClick: false,
+					closeBtn: false,
 					afterShow: function() {
 						$('.masthead-support-submit-button').on('click', function() {
 							that.onSubmitButtonClick();
+						});
+
+						$('.masthead-support-cancel-button').on('click', function() {
+							$.fancybox.close();
 						});
 					}
 				});
