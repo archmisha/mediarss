@@ -143,11 +143,13 @@ public class MovieServiceImpl implements MovieService {
 
 		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user)) {
 			Torrent torrent = userTorrent.getTorrent();
-			torrentsByIds.put(torrent.getId(), torrent);
-			Movie movie = movieDao.find(torrent);
-			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
-			updateLatestUploadDate(torrent, userMovieVO);
+			if (!torrentsByIds.containsKey(torrent.getId())) {
+				torrentsByIds.put(torrent.getId(), torrent);
+				Movie movie = movieDao.find(torrent);
+				UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
+				userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
+				updateLatestUploadDate(torrent, userMovieVO);
+			}
 		}
 
 		// add movies that had no userMovies
