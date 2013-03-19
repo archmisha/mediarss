@@ -83,6 +83,10 @@ public class EmailServiceImpl implements EmailService {
 
 	@Override
 	public void notifyOfMissingMovies(Collection<MovieRequest> missingRequests) {
+		if (missingRequests.isEmpty()) {
+			return;
+		}
+
 		notifyToAdmins(
 				JOBS_TITLE_SUFFIX,
 				"The following torrents were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
