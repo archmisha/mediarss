@@ -76,10 +76,5 @@ todo
 an email when scheduled movie is out (need an option to disable emails then)
 help
 tvshows change icons, add shceduled state
-support - add cancel button and remove X
-
-availble torrents title
-select a movie to view available torrents
-no available torrents yet
 
 instead by imdb id - search by name

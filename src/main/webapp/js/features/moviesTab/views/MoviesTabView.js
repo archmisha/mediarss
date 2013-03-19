@@ -15,6 +15,8 @@ define([
 		"use strict";
 
 		var selectedMovie = null;
+		var SELECT_MOVIE_EMPTY_MSG = 'Select a movie to view available torrents';
+		var NO_TORRENTS_MSG = 'No available torrents yet';
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
 			className: 'movies-tab',
@@ -110,6 +112,9 @@ define([
 			},
 
 			onRender: function() {
+				// must be first
+				this.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
+
 				this.moviesListRegion.show(this.moviesCollectionView);
 				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
 				this.moviesSectionRegion.show(this.moviesSection);
@@ -159,6 +164,16 @@ define([
 				}
 
 				// update movie torrents list
+				if (movieModel.get('torrents').length == 0) {
+					var msg;
+					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {
+						msg = NO_TORRENTS_MSG;
+					} else {
+						msg = SELECT_MOVIE_EMPTY_MSG;
+					}
+					this.movieTorrentColletionView.setEmptyMessage(msg);
+				}
+				// must be after the message is set
 				this.movieTorrentCollection.reset(movieModel.get('torrents'));
 			},
 
@@ -190,6 +205,8 @@ define([
 				this.ui.futureMoviesFilter.addClass('filter-selected');
 				this.ui.moviesFilter.removeClass('filter-selected');
 				this.moviesListRegion.$el.addClass('future-movies-list');
+				// must be before reset
+				this.movieTorrentColletionView.setEmptyMessage(NO_TORRENTS_MSG);
 				this.movieTorrentCollection.reset();
 			},
 
@@ -198,6 +215,8 @@ define([
 				this.ui.futureMoviesFilter.removeClass('filter-selected');
 				this.ui.moviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.removeClass('future-movies-list');
+				// must be before reset
+				this.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
 				this.movieTorrentCollection.reset();
 			},
 

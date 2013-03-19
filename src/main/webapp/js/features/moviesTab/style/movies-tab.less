@@ -19,11 +19,14 @@
   min-height: @list-height + 2 * @list-padding + 2 * @list-border;
 }
 
+.movies-list-wrapper {
+  float: left;
+}
+
 .movies-list-container {
   width: @movies-list-width;
   height: @list-height;
   min-height: @list-height;
-  float: left;
   overflow: auto;
   margin-right: @space-between-lists;
   border: @list-border solid #CCCCCC;
@@ -31,9 +34,12 @@
   padding: @list-padding;
 }
 
+.movies-torrents-list-wrapper {
+  float: left;
+}
+
 .movies-torrents-list-container { // 4 cuz left and right of each list
   width: @preview-width - @movies-list-width - @space-between-lists - 4 * @list-padding;
-  float: left;
   height: @list-height;
   min-height: @list-height;
   border: @list-border solid #CCCCCC;
@@ -166,13 +172,18 @@
   width: 100px;
 }
 
-.movies-filter,
-.future-movies-filter {
+.movies-torrents-list-title {
   font-size: 13px;
+  margin-left: 5px;
 }
 
 .movies-filter {
-  margin-left: 0px;
+  margin-left: 5px;
+}
+
+.movies-filter,
+.future-movies-filter {
+  font-size: 13px;
 }
 
 .future-movies-filter {
@@ -203,3 +214,8 @@
   display: none;
 }
 
+.movies-list-empty-label-container {
+  color: #808080;
+  font-size: 13px;
+  font-style: italic;
+}
