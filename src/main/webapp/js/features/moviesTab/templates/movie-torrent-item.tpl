@@ -7,6 +7,7 @@
          title="Torrent Was Already Downloaded"/>
     <span class='movie-torrent-title' title='{{{title}}}'>{{{title}}}</span>
 </div>
-<div class='movie-torrent-sub-title'>Uploaded on {{dateFormat uploadedDate format="DD/MM/YYYY HH:mm" default='never'}},
-    <span class='movie-torrent-scheduled-on'>Scheduled on {{dateFormat scheduledDate format="DD/MM/YYYY HH:mm" default='never'}}</span>
+<div class='movie-torrent-sub-title'>Uploaded on {{dateFormat uploadedDate format="DD/MM/YYYY HH:mm"
+    default='never'}}<span class='movie-torrent-scheduled-on'>, Scheduled on <span
+            class='movie-torrent-scheduled-on-date'>{{dateFormat scheduledDate format="DD/MM/YYYY HH:mm" default='never'}}</span></span>
 </div>

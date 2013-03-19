@@ -2,9 +2,10 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movie-torrent-item.tpl',
-	'qtip'
+	'qtip',
+	'moment'
 ],
-	function(Marionette, Handlebars, template, qtip) {
+	function(Marionette, Handlebars, template, qtip, Moment) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -20,7 +21,8 @@ define([
 				scheduledImage: '.movie-torrent-item-scheduled-image',
 				downloadedImage: '.movie-torrent-item-downloaded-image',
 				movieTorrentTitle: '.movie-torrent-title',
-				scheduledOn: '.movie-torrent-scheduled-on'
+				scheduledOn: '.movie-torrent-scheduled-on',
+				scheduledOnDate: '.movie-torrent-scheduled-on-date'
 			},
 
 			constructor: function(options) {
@@ -31,20 +33,26 @@ define([
 				this.model.on('change:downloadStatus', function() {
 					that.updateDownloadStatus();
 				});
+				this.model.on('change:scheduledDate', function(model, val) {
+					if (val) {
+						that.ui.scheduledOnDate.html(Moment(val).format('DD/MM/YYYY HH:mm'));
+						that.ui.scheduledOn.show();
+					} else {
+						that.ui.scheduledOn.hide();
+					}
+				});
 			},
 
 			updateDownloadStatus: function() {
+				this.ui.downloadImage.hide();
+				this.ui.scheduledImage.hide();
+				this.ui.downloadedImage.hide();
+
 				if (this.model.get('downloadStatus') == 'SCHEDULED') {
-					this.ui.downloadImage.hide();
 					this.ui.scheduledImage.show();
-					this.ui.downloadedImage.hide();
 				} else if (this.model.get('downloadStatus') == 'NONE') {
 					this.ui.downloadImage.show();
-					this.ui.scheduledImage.hide();
-					this.ui.downloadedImage.hide();
 				} else { // DOWNLOADED
-					this.ui.downloadImage.hide();
-					this.ui.scheduledImage.hide();
 					this.ui.downloadedImage.show();
 				}
 			},
@@ -64,7 +72,7 @@ define([
 					});
 
 				if (this.model.get('scheduledDate') == null) {
-					this.ui.hide();
+					this.ui.scheduledOn.hide();
 				}
 			},
 

@@ -81,6 +81,7 @@ define([
 					torrentId: userTorrent.get('torrentId')
 				}, function(res) {
 					userTorrent.set('downloadStatus', 'SCHEDULED');
+					userTorrent.set('scheduledDate', new Date());
 					selectedMovie.set('downloadStatus', 'SCHEDULED');
 				});
 			},
