@@ -8,8 +8,8 @@ Welcome <span class='masthead-username'>{{username}}</span>
 
 <a class='masthead-support-box' href="#masthead-support-box-content"></a>
 <div class='masthead-support-box-content' id='masthead-support-box-content'>
-    <div class='masthead-support-title'>Submit a feature request or a defect</div>
-    <div class='masthead-support-subtitle'>Make MediaRSS better !</div>
+    <div class='masthead-support-title'>Submit a Feature request or a Defect</div>
+    <div class='masthead-support-subtitle'>Help us improve MediaRSS !</div>
     <div class='masthead-support-type-container'>
         <span>Type: </span>
         <input type="radio" name="type" value="Feature" checked/> Feature

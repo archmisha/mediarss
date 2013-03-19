@@ -61,14 +61,15 @@ define([
 				window.resize_iframe = this.resize_iframe;
 
 				this.moviesSection = new SectionView({
-					title: 'Movies Download',
+					title: 'Latest Movies (experimental)',
 					description: 'Select movies to download. Here you can find newly available movies. You can use IMDB preview'
 				});
 
 				this.futureMoviesSection = new SectionView({
-					title: 'Movies You Want (experimental)',
-					description: 'Add movies you want to download by their IMDB id and they will be ' +
-						'automatically added to your feed <br/>if already available for download, or in the <b>future</b> once they will be available.'
+					title: 'Search Movies (experimental)',
+					description: 'Search for movies by IMDB ID.<br/>' +
+						'If the movie is already available for download it will be automatically added to your feed<br/>' +
+						'Otherwise it will be scheduled for download in the <b>future</b> once they will be available.'
 				});
 
 				this.vent.on('movie-selected', this.onMovieSelected, this);
