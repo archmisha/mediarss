@@ -11,4 +11,3 @@ define([
 			className: 'movies-list-empty-label-container'
 		});
 	});
-

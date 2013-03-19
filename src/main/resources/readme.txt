@@ -76,5 +76,5 @@ todo
 an email when scheduled movie is out (need an option to disable emails then)
 help
 tvshows change icons, add shceduled state
-
 instead by imdb id - search by name
+shows scheduling
