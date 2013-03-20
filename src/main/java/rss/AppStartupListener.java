@@ -92,7 +92,8 @@ public class AppStartupListener implements ApplicationListener<ContextRefreshedE
 	private void loadCronTriggerBeans(ApplicationContext applicationContext) {
 		Log log = LogFactory.getLog(AppStartupListener.class);
 
-		Map<String, Object> quartzJobBeans = applicationContext.getBeansWithAnnotation(QuartzJob.class);
+		// using parent because we are here with the dispatcher context - it wont find anything on itself
+		Map<String, Object> quartzJobBeans = applicationContext.getParent().getBeansWithAnnotation(QuartzJob.class);
 		for (Map.Entry<String, Object> entry : quartzJobBeans.entrySet()) {
 			try {
 				Object job = entry.getValue();
