@@ -12,16 +12,15 @@ import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
 import rss.SubtitleLanguage;
 import rss.controllers.vo.ShowVO;
-import rss.controllers.vo.UserResponse;
-import rss.dao.JobStatusDao;
 import rss.dao.ShowDao;
 import rss.dao.UserDao;
-import rss.entities.JobStatus;
 import rss.entities.User;
-import rss.services.*;
+import rss.services.EmailService;
+import rss.services.SessionService;
+import rss.services.SettingsService;
+import rss.services.UserServiceImpl;
 import rss.services.log.LogService;
-import rss.services.movies.MovieService;
-import rss.services.movies.MoviesScrabblerImpl;
+import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,6 +53,7 @@ public class UserController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getPreLoginData(@PathVariable String tab) {
+		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
 		result.put("initialData", createInitialData(tab));
 
@@ -62,6 +62,8 @@ public class UserController extends BaseController {
 			result.put("user", createUserResponse(user, tab));
 		}
 
+		duration.stop();
+		logService.info(getClass(), "getPreLoginData(" + tab + ") took " + duration.getDuration() + " millis");
 		return result;
 	}
 

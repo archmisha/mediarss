@@ -78,3 +78,6 @@ help
 tvshows change icons, add shceduled state
 instead by imdb id - search by name
 shows scheduling
+
+icons
+Are movies without imdb id worth bringing?
