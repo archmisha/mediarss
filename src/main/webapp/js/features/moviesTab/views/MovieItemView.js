@@ -50,7 +50,12 @@ define([
 					});
 			},
 
-			onMovieClick: function() {
+			onMovieClick: function(event) {
+				// if remove icon was clicked, then ignore selection
+				if ($(event.target).hasClass('future-movie-item-remove-image')) {
+					return;
+				}
+
 				var that = this;
 				if (!this.model.get('viewed')) {
 					setTimeout(function() {
