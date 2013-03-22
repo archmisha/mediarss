@@ -18,7 +18,7 @@
             <div class='movies-torrents-list-container'></div>
         </div>
     </div>
-    <div>
+    <div class='movies-preview-container'>
         <iframe class='movies-imdb-preview' id="movies-imdb-preview"></iframe>
         <div class='movies-imdb-no-preview'>There is no IMDB preview available</div>
         <div class='movies-imdb-click-for-preview'>Select a movie to see IMDB preview</div>

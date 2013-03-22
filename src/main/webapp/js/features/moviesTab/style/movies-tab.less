@@ -4,6 +4,7 @@
 @space-between-lists: 20px;
 @list-padding: 5px;
 @list-border: 1px;
+@filters-height: 20px;
 
 .movies-tab {
   width: 600px;
@@ -15,8 +16,8 @@
 }
 
 .movies-lists-container {
-  height: @list-height + 2  * @list-padding + 2 * @list-border;
-  min-height: @list-height + 2 * @list-padding + 2 * @list-border;
+  height: @list-height + 2  * @list-padding + 2 * @list-border + @filters-height;
+  min-height: @list-height + 2 * @list-padding + 2 * @list-border + @filters-height;
 }
 
 .movies-list-wrapper {
@@ -121,8 +122,11 @@
   display: none;
 }
 
-.movies-imdb-preview {
+.movies-preview-container {
   margin-top: 20px;
+}
+
+.movies-imdb-preview {
   border: 0px;
 }
 
@@ -130,7 +134,6 @@
 .movies-imdb-no-preview,
 .movies-imdb-click-for-preview {
   font-style: italic;
-  margin-top: 20px;
   margin-left: 9px;
   font-size: 13px;
   color: #808080;
