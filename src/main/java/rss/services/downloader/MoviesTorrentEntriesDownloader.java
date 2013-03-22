@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 @Service("moviesTorrentEntriesDownloader")
 public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Movie, MovieRequest> {
 
-	public static final Pattern NAME_YEAR_PATTERN = Pattern.compile(".*?\\((\\d+)\\)");
+//	public static final Pattern NAME_YEAR_PATTERN = Pattern.compile(".*?\\((\\d+)\\)");
 
 	public static final Pattern COMING_SOON_PATTERN = Pattern.compile("<div class=\"showtime\">.*?<h2>Coming Soon</h2>", Pattern.MULTILINE | Pattern.DOTALL);
 
@@ -162,11 +162,14 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 		// no imdb url so can't infer the title from imdb
 		name = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
-		logService.info(this.getClass(), String.format("No IMDB url for movie '%s', using torrent title as name", name));
-		return name;
+//		logService.info(this.getClass(), String.format("No IMDB url for movie '%s', using torrent title as name", name));
+//		return name;
+		// decided not to download movies without IMDB url
+		logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", name));
+		return null;
 	}
 
-	private boolean isInvalidMovieYear(String name) {
+	/*private boolean isInvalidMovieYear(String name) {
 		Matcher matcher = NAME_YEAR_PATTERN.matcher(name);
 		if (matcher.find()) {
 			int year = Integer.parseInt(matcher.group(1));
@@ -178,7 +181,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		}
 
 		return false;
-	}
+	}*/
 
 	@Override
 	protected void emailMissingRequests(Collection<MovieRequest> missingRequests) {
