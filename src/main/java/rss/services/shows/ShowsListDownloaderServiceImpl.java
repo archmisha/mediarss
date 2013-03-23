@@ -23,9 +23,6 @@ public class ShowsListDownloaderServiceImpl extends JobRunner implements ShowsLi
 	@Autowired
 	private ShowService showService;
 
-	@Autowired
-	private TransactionTemplate transactionTemplate;
-
 	public ShowsListDownloaderServiceImpl() {
 		super(JOB_NAME);
 	}

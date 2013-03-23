@@ -33,7 +33,7 @@ public abstract class JobRunner extends QuartzJobBean {
 	protected LogService logService;
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
+	protected TransactionTemplate transactionTemplate;
 
 	@Autowired
 	private EmailService emailService;
@@ -46,10 +46,10 @@ public abstract class JobRunner extends QuartzJobBean {
 		running = false;
 	}
 
-	@PostConstruct
-	private void postConstruct() {
-		createJobStatus();
-	}
+//	@PostConstruct
+//	private void postConstruct() {
+//		createJobStatus();
+//	}
 
 	public JobStatus start() {
 		if (running) {
@@ -89,7 +89,7 @@ public abstract class JobRunner extends QuartzJobBean {
 		return jobStatus;
 	}
 
-	protected void updateJobFinished(final Date end, final String statusMessage) {
+	private void updateJobFinished(final Date end, final String statusMessage) {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
@@ -101,12 +101,17 @@ public abstract class JobRunner extends QuartzJobBean {
 		});
 	}
 
-	protected JobStatus updateJobStarted(final Date startTime) {
+	private JobStatus updateJobStarted(final Date startTime) {
 		return transactionTemplate.execute(new TransactionCallback<JobStatus>() {
 			@Override
 			public JobStatus doInTransaction(TransactionStatus transactionStatus) {
 				// must be present in the database
 				JobStatus jobStatus = jobStatusDao.find(name);
+				if (jobStatus == null) {
+					jobStatus = new JobStatus();
+					jobStatus.setName(name);
+					jobStatusDao.persist(jobStatus);
+				}
 				jobStatus.setStart(startTime);
 				jobStatus.setEnd(null);
 				jobStatus.setErrorMessage(null);
@@ -115,7 +120,7 @@ public abstract class JobRunner extends QuartzJobBean {
 		});
 	}
 
-	protected JobStatus getJobStatus() {
+	private JobStatus getJobStatus() {
 		return transactionTemplate.execute(new TransactionCallback<JobStatus>() {
 			@Override
 			public JobStatus doInTransaction(TransactionStatus transactionStatus) {
@@ -124,19 +129,19 @@ public abstract class JobRunner extends QuartzJobBean {
 		});
 	}
 
-	protected void createJobStatus() {
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-				JobStatus jobStatus = jobStatusDao.find(name);
-				if (jobStatus == null) {
-					jobStatus = new JobStatus();
-					jobStatus.setName(name);
-					jobStatusDao.persist(jobStatus);
-				}
-			}
-		});
-	}
+//	private void createJobStatus() {
+//		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+//			@Override
+//			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+//				JobStatus jobStatus = jobStatusDao.find(name);
+//				if (jobStatus == null) {
+//					jobStatus = new JobStatus();
+//					jobStatus.setName(name);
+//					jobStatusDao.persist(jobStatus);
+//				}
+//			}
+//		});
+//	}
 
 	protected abstract String run();
 

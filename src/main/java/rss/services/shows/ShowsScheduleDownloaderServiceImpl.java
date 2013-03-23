@@ -31,9 +31,6 @@ import java.util.*;
 public class ShowsScheduleDownloaderServiceImpl extends JobRunner implements ShowsScheduleDownloaderService {
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
-
-	@Autowired
 	private ShowService showService;
 
 	@Autowired

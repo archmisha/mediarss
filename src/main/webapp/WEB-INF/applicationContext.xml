@@ -15,7 +15,7 @@
 
     <bean name="EmbeddedTracker" class="com.turn.ttorrent.tracker.EmbeddedTracker" />
 
-    <bean name="myApplicationListener" class="rss.AppStartupListener" />
+    <!--<bean name="myApplicationListener" class="rss.AppStartupListener" />-->
 
     <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate"
           p:transactionManager-ref="transactionManager"/>
