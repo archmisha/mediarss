@@ -1,19 +1,22 @@
 .home-header-tabs {
   margin-top: 40px;
   border-bottom: 2px solid @theme-color;
-  padding-bottom: 5px;
+//  padding-bottom: 5px;
+  height: 29px;
 }
 
 .home-header-tabs a {
   text-decoration: none;
-  color: black;
+  color: @theme-color;
   padding-top: 7px;
   padding-bottom: 7px;
   padding-left: 20px;
   padding-right: 20px;
 }
 
-.home-header-tabs .home-selected-tab {
+// the hover overrides unselected hover styling
+.home-header-tabs .home-selected-tab,
+.home-header-tabs .home-selected-tab:hover {
   background-color: @theme-color;
   color: yellow;
 
@@ -104,4 +107,14 @@
 .masthead-support-type-container {
   margin-top: 20px;
   margin-bottom: 10px;
+}
+
+.home-home-tab:hover,
+.home-tvshows-tab:hover,
+.home-movies-tab:hover,
+.home-admin-tab:hover {
+  background-color: lightblue;
+  margin-bottom: 1px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
