@@ -320,9 +320,10 @@ public class ShowServiceImpl implements ShowService {
 			map.get(episodeDate).add(new ShowScheduleEpisodeItem(episode.getSeasonEpisode().toUpperCase(), episode.getShow().getName()));
 		}
 
-		// sort the dates
+		// sort the dates, newest at beginning
 		List<Date> dates = new ArrayList<>(map.keySet());
 		Collections.sort(dates);
+		Collections.reverse(dates);
 
 		ShowsScheduleVO schedule = new ShowsScheduleVO();
 		for (Date date : dates) {
