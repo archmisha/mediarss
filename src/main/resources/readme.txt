@@ -79,3 +79,7 @@ tvshows change icons, add shceduled state
 instead by imdb id - search by name
 
 icons
+
+ After creating an account, should redirect automatically to login page
+
+ after adding a movie and its already available make it be sorted to top?

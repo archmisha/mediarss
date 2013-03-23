@@ -68,7 +68,7 @@ define([
 
 			_showProgress: function() {
 				this._resetStatus();
-				this.ui.status.text("Please wait. That could take a few moments.");
+				this.ui.status.text("Please wait. This could take a few moments.");
 				this.ui.status.addClass('register-status-progress');
 				this.ui.status.fadeIn('slow');
 			},

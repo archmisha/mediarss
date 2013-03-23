@@ -26,7 +26,7 @@ public class User extends BaseEntity {
 
 	private static final long serialVersionUID = -8612852113678825310L;
 
-	@Column(name = "email")
+	@Column(name = "email", unique = true)
 	@Index(name = "email_idx")
 	private String email;
 

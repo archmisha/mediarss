@@ -52,7 +52,7 @@ public class RegisterServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(final HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         final PrintWriter out = response.getWriter();
         response.setContentType("text/html");
 
@@ -76,7 +76,9 @@ public class RegisterServlet extends HttpServlet {
                     if (user.getValidationHash() == null || user.getValidationHash().equals(hash)) {
                         user.setValidationHash(null);
 
-                        out.println("<html><body>Account validated. Click <a href=\"" + urlService.getApplicationUrl() + "\">here</a> to proceed</body></html>");
+						response.setHeader("Refresh", "5;url=" + urlService.getApplicationUrl());
+                        out.println("<html><body>Account validated. Click <a href=\"" + urlService.getApplicationUrl() +
+									"\">here</a> to proceed or wait to be automatically redirected</body></html>");
                     } else {
                         // invalid hash
                         log.error("Invalid hash validation for user: " + user);
