@@ -11,6 +11,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import rss.EpisodesComparator;
 import rss.controllers.EntityConverter;
 import rss.controllers.vo.EpisodeSearchResult;
+import rss.controllers.vo.ShowScheduleEpisodeItem;
+import rss.controllers.vo.ShowsScheduleVO;
 import rss.controllers.vo.UserTorrentVO;
 import rss.dao.EpisodeDao;
 import rss.dao.ShowDao;
@@ -23,6 +25,7 @@ import rss.services.SettingsService;
 import rss.services.downloader.TVShowsTorrentEntriesDownloader;
 import rss.services.log.LogService;
 import rss.util.CollectionUtils;
+import rss.util.DateUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -291,6 +294,53 @@ public class ShowServiceImpl implements ShowService {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public ShowsScheduleVO getSchedule(Set<Show> shows) {
+		List<Long> showIds = new ArrayList<>();
+		for (Show show : shows) {
+			showIds.add(show.getId());
+		}
+
+		Collection<Episode> episodes = episodeDao.getEpisodesForSchedule(showIds);
+		Map<Date, Set<ShowScheduleEpisodeItem>> map = new HashMap<>();
+		for (Episode episode : episodes) {
+			Date episodeDate = episode.getAirDate();
+			Date date = null;
+			for (Date curDate : map.keySet()) {
+				if (DateUtils.isSameDay(episodeDate, curDate)) {
+					date = curDate;
+					break;
+				}
+			}
+			if (date == null) {
+				map.put(episodeDate, new HashSet<ShowScheduleEpisodeItem>());
+			}
+			map.get(episodeDate).add(new ShowScheduleEpisodeItem(episode.getSeasonEpisode().toUpperCase(), episode.getShow().getName()));
+		}
+
+		// sort the dates
+		List<Date> dates = new ArrayList<>(map.keySet());
+		Collections.sort(dates);
+
+		ShowsScheduleVO schedule = new ShowsScheduleVO();
+		for (Date date : dates) {
+			List<ShowScheduleEpisodeItem> showNames = new ArrayList<>(map.get(date));
+			Collections.sort(showNames, new Comparator<ShowScheduleEpisodeItem>() {
+				@Override
+				public int compare(ShowScheduleEpisodeItem o1, ShowScheduleEpisodeItem o2) {
+					int res = o1.getShowName().compareToIgnoreCase(o2.getShowName());
+					if ( res != 0 ) {
+						return res;
+					}
+
+					return o1.getSequence().compareToIgnoreCase(o2.getSequence());
+				}
+			});
+			schedule.addSchedule(date, showNames);
+		}
+		return schedule;
 	}
 
 	@Override

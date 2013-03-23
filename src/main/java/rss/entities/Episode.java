@@ -27,7 +27,6 @@ import java.util.Date;
 public class Episode extends Media {
 
 	private static final long serialVersionUID = 4424414890903298183L;
-	public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd");
 
 	@Column(name = "season")
 	private int season;
@@ -75,12 +74,17 @@ public class Episode extends Media {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder().append(getName()).append(" s").append(StringUtils.pad(season, 2));
+		StringBuilder sb = new StringBuilder().append(getName()).append(" ").append(getSeasonEpisode());
+		if (airDate != null) {
+			sb.append(" air date ").append(new SimpleDateFormat("yyyy/MM/dd").format(airDate));
+		}
+		return sb.toString();
+	}
+
+	public String getSeasonEpisode() {
+		StringBuilder sb = new StringBuilder().append("s").append(StringUtils.pad(season, 2));
 		if (episode > 0) {
 			sb.append("e").append(StringUtils.pad(episode, 2));
-		}
-		if (airDate != null) {
-			sb.append(" air date ").append(DATE_FORMAT.format(airDate));
 		}
 		return sb.toString();
 	}

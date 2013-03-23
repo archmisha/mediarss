@@ -1,10 +1,10 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.entities.Episode;
-import rss.services.EpisodeRequest;
 import rss.SubtitleLanguage;
+import rss.entities.Episode;
 import rss.entities.Torrent;
+import rss.services.EpisodeRequest;
 
 import java.util.*;
 
@@ -58,5 +58,44 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("torrentId", torrent.getId());
 		return uniqueResult(super.<Episode>findByNamedQueryAndNamedParams("Episode.findByTorrent", params));
+	}
+
+	@Override
+	public Collection<Episode> getEpisodesForSchedule(List<Long> showIds) {
+		if (showIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Object> params = new ArrayList<>();
+		params.add(getScheduleLowerDate());
+		params.add(getScheduleUpperDate());
+		params.addAll(showIds);
+
+		StringBuilder query = new StringBuilder();
+		query.append("select t from Episode as t where :p0 <= t.airDate and t.airDate <= :p1 and t.show.id in (").append(generateQuestionMarks(showIds.size(), 2)).append(")");
+
+		return find(query.toString(), params.toArray());
+	}
+
+	private Date getScheduleUpperDate() {
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		c.add(Calendar.DAY_OF_YEAR, 7);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
+		return c.getTime();
+	}
+
+	private Date getScheduleLowerDate() {
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		c.add(Calendar.DAY_OF_YEAR, -7);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		c.set(Calendar.MILLISECOND, 0);
+		return c.getTime();
 	}
 }

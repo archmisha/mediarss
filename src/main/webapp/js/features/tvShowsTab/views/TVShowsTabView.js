@@ -8,10 +8,11 @@ define([
 	'components/section/views/SectionView',
 	'features/tvShowsTab/views/SearchShowsView',
 	'features/tvShowsTab/views/TrackedShowsDescriptionView',
-	'MessageBox'
+	'MessageBox',
+	'features/tvShowsTab/views/ShowsScheduleView'
 ],
 	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView,
-		SearchShowsView, TrackedShowsDescriptionView, MessageBox) {
+		SearchShowsView, TrackedShowsDescriptionView, MessageBox, ShowsScheduleView) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -26,7 +27,9 @@ define([
 				searchShowsSectionRegion: '.search-shows-section',
 				searchShowsRegion: '.search-shows-container',
 				trackedShowsSectionRegion: '.tracked-shows-section',
-				trackedShowsRegion: '.tracked-shows-container'
+				trackedShowsRegion: '.tracked-shows-container',
+				showsScheduleSectionRegion: '.shows-schedule-section',
+				showsScheduleRegion: '.shows-schedule-list-container'
 			},
 
 			constructor: function(options) {
@@ -39,8 +42,7 @@ define([
 					title: 'Search TV Shows',
 					description: 'Search for older episodes'
 				});
-				this.searchShowsView = new SearchShowsView({
-				});
+				this.searchShowsView = new SearchShowsView();
 
 				this.trackedShowsView = new TrackedShowsComponentView({
 					shows: this.initialData.shows,
@@ -53,6 +55,14 @@ define([
 					descriptionViewDef: TrackedShowsDescriptionView,
 					vent: this.vent
 				});
+
+				this.showsScheduleSection = new SectionView({
+					title: 'Schedule',
+					description: 'View past and future episode air dates'
+				});
+				this.showsScheduleView = new ShowsScheduleView({
+					schedule: this.loggedInUserData.schedule
+				});
 			},
 
 			onRender: function() {
@@ -62,6 +72,8 @@ define([
 				this.searchShowsRegion.show(this.searchShowsView);
 				this.trackedShowsSectionRegion.show(this.trackedShowsSection);
 				this.trackedShowsRegion.show(this.trackedShowsView);
+				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
+				this.showsScheduleRegion.show(this.showsScheduleView);
 			},
 
 			onAddManualShow: function(params) {

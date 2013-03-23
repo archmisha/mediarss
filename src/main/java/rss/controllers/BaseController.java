@@ -10,6 +10,7 @@ import rss.UserNotLoggedInException;
 import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.UserResponse;
 import rss.dao.JobStatusDao;
+import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.JobStatus;
 import rss.entities.Torrent;
@@ -20,6 +21,7 @@ import rss.services.UserService;
 import rss.services.log.LogService;
 import rss.services.movies.MovieService;
 import rss.services.movies.MoviesScrabblerImpl;
+import rss.services.shows.ShowService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.InvalidParameterException;
@@ -59,6 +61,9 @@ public class BaseController {
 
 	@Autowired
 	protected UserService userService;
+
+	@Autowired
+	protected ShowService showService;
 
 	protected String extractString(HttpServletRequest request, String name, boolean isMandatory) {
 		String value = request.getParameter(name);
@@ -182,7 +187,8 @@ public class BaseController {
 					.withMovies(movieService.getUserMovies(user))
 					.withFutureMovies(movieService.getFutureUserMovies(user));
 		} else if (tab.equals(TVSHOWS_TAB)) {
-			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())));
+			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
+			.withSchedule(showService.getSchedule(user.getShows()));
 		}
 
 		return userResponse;

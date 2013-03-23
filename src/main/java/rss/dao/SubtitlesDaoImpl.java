@@ -38,7 +38,7 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 			for (Torrent torrent : torrentsCopy) {
 				params.add(torrent.getId());
 			}
-			String query = "select t from Subtitles as t where t.language = :p0 and t.torrent.id in (" + generateQuestionMarks(torrentsCopy, 1) + ")";
+			String query = "select t from Subtitles as t where t.language = :p0 and t.torrent.id in (" + generateQuestionMarks(torrentsCopy.size(), 1) + ")";
 			List<Subtitles> subs = find(query, params.toArray());
 			result.addAll(subs);
 
@@ -51,14 +51,5 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 		}
 
 		return result;
-	}
-
-	private String generateQuestionMarks(Set<Torrent> torrentsCopy, int counter) {
-		StringBuilder sb = new StringBuilder();
-		for (Torrent torrent : torrentsCopy) {
-			sb.append(":p").append(counter++).append(",");
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		return sb.toString();
 	}
 }

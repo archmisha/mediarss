@@ -25,9 +25,6 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 	private EmailService emailService;
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
-
-	@Autowired
 	private TorrentzService torrentzService;
 
 	public MoviesScrabblerImpl() {

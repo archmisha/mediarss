@@ -1,5 +1,14 @@
+@shows-tab-width: 730px;
+@shows-schedules-width: 300px;
+
 .tvshows-tab {
-  width: @tab-width;
+  width: @shows-tab-width;
+  position: relative;
+}
+
+.search-shows-section,
+.tracked-shows-section {
+  width: @shows-tab-width - @shows-schedules-width - 50px;
 }
 
 .show-combobox {
@@ -178,8 +187,7 @@
   bottom: -25px;
 }
 
-.shows-search-results-header {
-//  display: none;
+.shows-search-results-header { //  display: none;
   margin-left: 5px;
   margin-top: 15px;
   margin-bottom: 5px;
@@ -272,4 +280,36 @@
 // customizing select2 - added dummy option to display caption so now hiding it to prevent a weird selectable row
 .select2-results li:first-child {
   display: none;
+}
+
+.shows-schedule-container {
+  width: @shows-schedules-width;
+  height: 540px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+
+.shows-schedule-day {
+  margin-top: 12px;
+  margin-bottom: 2px;
+  font-size: 14px;
+//  font-weight: bold;
+  color: @theme-color;
+}
+
+.shows-schedule-show-name {
+}
+
+.shows-schedule-show-item {
+  margin-left: 20px;
+  font-size: 13px;
+}
+
+.shows-schedule-list {
+  margin-left: 20px;
+}
+
+.shows-schedule-show-sequence {
+  font-weight: bold;
 }

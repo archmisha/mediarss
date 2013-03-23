@@ -1,6 +1,7 @@
 package rss.services.shows;
 
 import rss.controllers.vo.EpisodeSearchResult;
+import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
 import rss.entities.User;
 import rss.services.EpisodeRequest;
@@ -8,6 +9,7 @@ import rss.entities.Show;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * User: dikmanm
@@ -26,6 +28,8 @@ public interface ShowService {
 	void downloadSchedule(Show show);
 
 	List<AutoCompleteItem> autoCompleteShowNames(String term);
+
+	ShowsScheduleVO getSchedule(Set<Show> shows);
 
 //	Show downloadShowByUrl(String url);
 }

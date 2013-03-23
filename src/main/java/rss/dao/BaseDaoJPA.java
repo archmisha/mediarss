@@ -118,4 +118,13 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		}
 		return first;
 	}
+
+	protected String generateQuestionMarks(int size, int counter) {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i<size; ++i) {
+			sb.append(":p").append(counter++).append(",");
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		return sb.toString();
+	}
 }
