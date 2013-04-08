@@ -96,9 +96,9 @@ require([
 
 		Handlebars.registerHelper('isToday', function(date, options) {
 			if (new Date(date).toDateString() == (new Date()).toDateString()) {
-				return options.fn(date);//'<div class=\'shows-schedule-day-today\'>{{dateFormat date format="DD/MM (dddd)" default=\'never\'}} - Today</div>';
+				return options.fn(date);
 			} else {
-				return options.inverse(date);//'<div class=\'shows-schedule-day\'>{{dateFormat date format="DD/MM (dddd)" default=\'never\'}}</div>';
+				return options.inverse(date);
 			}
 		});
 
