@@ -10,4 +10,6 @@ import java.util.Set;
 public interface PageParser {
 
     <T> Set<T> parse(String page);
+
+	String getPirateBayId(String page);
 }

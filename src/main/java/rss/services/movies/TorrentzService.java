@@ -10,7 +10,7 @@ import rss.services.downloader.MovieRequest;
  */
 public interface TorrentzService {
 
-	DownloadResult<Movie,MovieRequest> downloadLatestMovies();
+	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
 
-	void downloadMovie(Movie movie);
+	DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie);
 }

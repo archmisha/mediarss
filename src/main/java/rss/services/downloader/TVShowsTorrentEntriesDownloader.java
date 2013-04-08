@@ -175,11 +175,6 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
-	protected void emailMissingRequests(Collection<EpisodeRequest> missingRequests) {
-		emailService.notifyOfMissingEpisodes(missingRequests);
-	}
-
-	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	protected Collection<Episode> removeCachedEntries(Set<EpisodeRequest> requests) {
 		Set<Episode> result = new HashSet<>();

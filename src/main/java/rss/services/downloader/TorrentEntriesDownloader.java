@@ -128,5 +128,4 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 
 	protected abstract SearchResult<T> downloadTorrent(S request);
 
-	protected abstract void emailMissingRequests(Collection<S> missingRequests);
 }

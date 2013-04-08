@@ -13,7 +13,7 @@ public class MovieRequest extends MediaRequest {
 
 	private String hash;
 
-    public MovieRequest(String title, String hash) {
+	public MovieRequest(String title, String hash) {
         super(title);
         this.hash = hash;
     }
@@ -22,7 +22,7 @@ public class MovieRequest extends MediaRequest {
         return hash;
     }
 
-    @Override
+	@Override
     public String toString() {
         StringBuilder sb = new StringBuilder(super.toString());
         if (hash != null) {

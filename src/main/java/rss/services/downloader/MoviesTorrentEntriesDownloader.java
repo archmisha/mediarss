@@ -40,9 +40,6 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	private MovieDao movieDao;
 
 	@Autowired
-	private EmailService emailService;
-
-	@Autowired
 	@Qualifier("compositeMoviesSearcher")
 	private TorrentSearcher<MovieRequest, Movie> compositeMoviesSearcher;
 
@@ -182,11 +179,6 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 		return false;
 	}*/
-
-	@Override
-	protected void emailMissingRequests(Collection<MovieRequest> missingRequests) {
-		emailService.notifyOfMissingMovies(missingRequests);
-	}
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)

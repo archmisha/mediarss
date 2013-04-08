@@ -6,7 +6,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 import rss.services.downloader.MovieRequest;
 
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -29,6 +28,8 @@ public class TorrentzParser implements PageParser {
 
 	// need to skip entries like /z/...
 	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?</dl>");
+
+	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay.se/torrent/([^\"]+)");
 
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
@@ -57,7 +58,8 @@ public class TorrentzParser implements PageParser {
 			}
 
 			if (!skip) {
-				movies.add(new MovieRequest(name, hash));
+				MovieRequest movieRequest = new MovieRequest(name, hash);
+				movies.add(movieRequest);
 			}
 		}
 
@@ -68,5 +70,13 @@ public class TorrentzParser implements PageParser {
 		name = name.replaceAll("<b>", "");
 		name = name.replaceAll("</b>", "");
 		return name;
+	}
+
+	public String getPirateBayId(String page) {
+		Matcher pirateBayIdMatcher = PIRATE_BAY_ID.matcher(page);
+		if (pirateBayIdMatcher.find()) {
+			return pirateBayIdMatcher.group(1);
+		}
+		return null;
 	}
 }

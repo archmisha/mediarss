@@ -11,7 +11,9 @@ public abstract class MediaRequest implements Serializable {
 
     private static final long serialVersionUID = 5299194875537926970L;
 
-    private String title;
+	protected String pirateBayId;
+
+	private String title;
 
     protected MediaRequest() {
     }
@@ -36,6 +38,14 @@ public abstract class MediaRequest implements Serializable {
     public void setTitle(String title) {
         this.title = title;
     }
+
+	public String getPirateBayId() {
+		return pirateBayId;
+	}
+
+	public void setPirateBayId(String pirateBayId) {
+		this.pirateBayId = pirateBayId;
+	}
 
 	@Override
 	public boolean equals(Object o) {

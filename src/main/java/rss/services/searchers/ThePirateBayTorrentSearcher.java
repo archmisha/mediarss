@@ -4,13 +4,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.entities.Media;
+import rss.entities.Torrent;
+import rss.services.MediaRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
-import rss.entities.Media;
-import rss.services.MediaRequest;
-import rss.entities.Torrent;
 
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +30,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 	private static final String NAME = "thepiratebay.se";
 	private static final String HOST_NAME_URL_PART = "http://" + NAME;
 	private static final String SEARCH_URL = HOST_NAME_URL_PART + "/search/%s/0/99/0";
+	private static final String ENTRY_URL = HOST_NAME_URL_PART + "/torrent/";
 	public static final Pattern IMDB_URL_PATTERN = Pattern.compile("(http://www.imdb.com/title/\\w+)");
 
 	@Autowired
@@ -43,8 +46,61 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 		return SEARCH_URL;
 	}
 
+	@Override
+	public SearchResult<Media> search(MediaRequest mediaRequest) {
+		if (mediaRequest.getPirateBayId() != null) {
+			String page = pageDownloader.downloadPage(ENTRY_URL + mediaRequest.getPirateBayId());
+			return parseTorrentPage(mediaRequest, page);
+		} else {
+			return super.search(mediaRequest);
+		}
+	}
+
+	private SearchResult<Media> parseTorrentPage(MediaRequest mediaRequest, String page) {
+		try {
+			String titlePrefix = "<div id=\"title\">";
+			int idx = page.indexOf(titlePrefix);
+			String title = page.substring(idx + titlePrefix.length(), page.indexOf("</div>", idx)).trim();
+
+			String urlPrefix = "<div class=\"download\">";
+			idx = page.indexOf(urlPrefix);
+			String urlPrefix2 = "href=\"";
+			int idx2 = page.indexOf(urlPrefix2, idx) + urlPrefix2.length();
+			String torrentUrl = page.substring(idx2, page.indexOf("\"", idx2));
+
+			idx = page.indexOf("<dt>Uploaded:</dt>");
+			String uploadedPrefix = "<dd>";
+			idx = page.indexOf(uploadedPrefix, idx);
+			idx2 = idx + uploadedPrefix.length();
+			String uploadedStr = page.substring(idx2, page.indexOf("</dd>", idx2));
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+			Date uploaded = sdf.parse(uploadedStr);
+
+			idx = page.indexOf("<dt>Seeders:</dt>");
+			String seedersPrefix = "<dd>";
+			idx = page.indexOf(seedersPrefix, idx);
+			idx2 = idx + seedersPrefix.length();
+			String seedersStr = page.substring(idx2, page.indexOf("</dd>", idx2));
+			int seeders = Integer.parseInt(seedersStr);
+
+			String hashPrefix = "<dt>Info Hash:</dt><dd>&nbsp;</dd>";
+			idx = page.indexOf(hashPrefix);
+			idx2 = idx + hashPrefix.length();
+			String hash = page.substring(idx2, page.indexOf("</dl>")).trim();
+
+			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
+			torrent.setHash(hash);
+			SearchResult<Media> searchResult = new SearchResult<>(torrent, getName());
+			searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent, page));
+			return searchResult;
+		} catch (ParseException e) {
+			log.error("Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		}
+	}
+
 	protected SearchResult<Media> parseSearchResults(MediaRequest mediaRequest, String url, String page) {
-		List<Torrent> results = parsePage(mediaRequest, page);
+		List<Torrent> results = parseSearchResultsPage(mediaRequest, page);
 
 		if (results.isEmpty()) {
 			//			log.info("There were no search results for: " + tvShowEpisode.toQueryString() + " url=" + url);
@@ -74,6 +130,10 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 			return null;
 		}
 
+		return getImdbUrl(torrent, page);
+	}
+
+	private String getImdbUrl(Torrent torrent, String page) {
 		Matcher matcher = IMDB_URL_PATTERN.matcher(page);
 		if (matcher.find()) {
 			return matcher.group(1);
@@ -83,7 +143,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 		return null;
 	}
 
-	private List<Torrent> parsePage(MediaRequest mediaRequest, String page) {
+	private List<Torrent> parseSearchResultsPage(MediaRequest mediaRequest, String page) {
 		List<Torrent> results = new ArrayList<>();
 		try {
 			int idx = page.indexOf("<td class=\"vertTh\">");
