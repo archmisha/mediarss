@@ -72,6 +72,11 @@ public class AdminController extends BaseController {
 		Collections.sort(users, new Comparator<UserVO>() {
 			@Override
 			public int compare(UserVO o1, UserVO o2) {
+				if (o2.getLastLogin() == null) {
+					return -1;
+				} else if (o1.getLastLogin() == null) {
+					return 1;
+				}
 				return o2.getLastLogin().compareTo(o1.getLastLogin());
 			}
 		});
