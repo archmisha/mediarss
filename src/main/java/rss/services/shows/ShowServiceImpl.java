@@ -317,9 +317,10 @@ public class ShowServiceImpl implements ShowService {
 				}
 			}
 			if (date == null) {
-				map.put(episodeDate, new HashSet<ShowScheduleEpisodeItem>());
+				date = episodeDate;
+				map.put(date, new HashSet<ShowScheduleEpisodeItem>());
 			}
-			map.get(episodeDate).add(new ShowScheduleEpisodeItem(episode.getSeasonEpisode().toUpperCase(), episode.getShow().getName()));
+			map.get(date).add(new ShowScheduleEpisodeItem(episode.getSeasonEpisode().toUpperCase(), episode.getShow().getName()));
 		}
 
 		// sort the dates, newest at beginning
