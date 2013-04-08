@@ -94,6 +94,14 @@ require([
 			return Moment(new Date(context)).format(f);
 		});
 
+		Handlebars.registerHelper('isToday', function(date, options) {
+			if (new Date(date).toDateString() == (new Date()).toDateString()) {
+				return options.fn(date);//'<div class=\'shows-schedule-day-today\'>{{dateFormat date format="DD/MM (dddd)" default=\'never\'}} - Today</div>';
+			} else {
+				return options.inverse(date);//'<div class=\'shows-schedule-day\'>{{dateFormat date format="DD/MM (dddd)" default=\'never\'}}</div>';
+			}
+		});
+
 		var app = new Backbone.Marionette.Application();
 
 		app.addRegions({

@@ -305,6 +305,8 @@ public class ShowServiceImpl implements ShowService {
 
 		Collection<Episode> episodes = episodeDao.getEpisodesForSchedule(showIds);
 		Map<Date, Set<ShowScheduleEpisodeItem>> map = new HashMap<>();
+		// add today
+		map.put(new Date(), new HashSet<ShowScheduleEpisodeItem>());
 		for (Episode episode : episodes) {
 			Date episodeDate = episode.getAirDate();
 			Date date = null;
