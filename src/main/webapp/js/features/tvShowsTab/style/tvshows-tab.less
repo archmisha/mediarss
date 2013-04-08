@@ -11,6 +11,12 @@
   width: @shows-tab-width - @shows-schedules-width - 70px;
 }
 
+.shows-left-side {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
 .show-combobox {
   height: 24px;
   width: 300px;
@@ -284,10 +290,7 @@
 
 .shows-schedule-container {
   width: @shows-schedules-width;
-  height: 540px;
-  position: absolute;
-  right: 0px;
-  top: 0px;
+  margin-left: @shows-tab-width - @shows-schedules-width;
 }
 
 .shows-schedule-day {

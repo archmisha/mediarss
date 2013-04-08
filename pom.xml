@@ -60,11 +60,11 @@
             <version>${combinatoricslib.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.google.guava</groupId>-->
+            <!--<artifactId>guava</artifactId>-->
+            <!--<version>${guava.version}</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -460,7 +460,7 @@
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
                             <warSourceExcludes>js/**,style/style.less,index_*.jsp</warSourceExcludes>
-                            <packagingExcludes>WEB-INF/web.xml</packagingExcludes>
+                            <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/rhino-*.jar</packagingExcludes>
                         </configuration>
                     </plugin>
                 </plugins>
