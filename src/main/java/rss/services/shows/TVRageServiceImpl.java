@@ -73,7 +73,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 
 		List<TVRageDay> tvRageDays = (List<TVRageDay>) xstream.fromXML(page);
 
-		// 2013-2-25
+		// date format: 2013-2-25
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-M-dd");
 		for (TVRageDay tvRageDay : tvRageDays) {
 			try {
@@ -121,7 +121,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 			Show show = new Show(tvRageShow.getName());
 			show.setTvRageId(tvRageShow.getId());
 			show.setEnded(tvRageShow.getStatus() != RETURNING_STATUS &&
-						  tvRageShow.getStatus() == NEW_SERIES_STATUS);
+						  tvRageShow.getStatus() != NEW_SERIES_STATUS);
 			shows.add(show);
 		}
 

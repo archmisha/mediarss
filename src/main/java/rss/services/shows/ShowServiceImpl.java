@@ -181,6 +181,9 @@ public class ShowServiceImpl implements ShowService {
 								} else {
 									// update existing shows with tvrage id
 									show.setTvRageId(downloadedShow.getTvRageId());
+
+									// update show status that might have changed
+									show.setEnded(downloadedShow.isEnded());
 								}
 							}
 						});
