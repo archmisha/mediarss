@@ -122,7 +122,7 @@ public class MoviesController extends BaseController {
 		movieDao.delete(userMovie);
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("message", "Movie '" + userMovie.getMovie().getName() + "' was removed from schedule for download when it will be available");
+		result.put("message", "Movie '" + userMovie.getMovie().getName() + "' was removed from schedule for download");
 		return result;
 	}
 }
