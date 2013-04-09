@@ -8,6 +8,7 @@ import rss.entities.Episode;
 import rss.entities.Show;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
+import rss.util.DurationMeter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -108,14 +109,18 @@ public class TVRageServiceImpl implements ShowsProvider {
 	public Collection<Show> downloadShowList() {
 		Collection<Show> shows = new ArrayList<>();
 
+		DurationMeter duration = new DurationMeter();
 		String page = pageDownloader.downloadPage(SHOW_LIST_URL);
+		duration.stop();
+		logService.info(getClass(), "Downloading the show list from tvrage.com took " + duration.getDuration() + " millis");
 
 		XStream xstream = new XStream();
 		xstream.alias("shows", List.class);
 		xstream.alias("show", TVRageShow.class);
 		List<TVRageShow> tvRageShows = (List<TVRageShow>) xstream.fromXML(page);
 		for (TVRageShow tvRageShow : tvRageShows) {
-			if (tvRageShow.getStatus() == IN_DEV_STATUS || tvRageShow.getStatus() == TBD_STATUS) {
+			// not skipping here TBD status, cuz in between seasons a show might go into that status and then continue
+			if (tvRageShow.getStatus() == IN_DEV_STATUS) {
 				continue;
 			}
 			Show show = new Show(tvRageShow.getName());
