@@ -6,6 +6,8 @@
   position: relative;
 }
 
+.search-shows-container,
+.tracked-shows-container,
 .search-shows-section,
 .tracked-shows-section {
   width: @shows-tab-width - @shows-schedules-width - 70px;
@@ -207,7 +209,7 @@
 
 .shows-search-results-header-title-single,
 .shows-search-results-header-title-multiple {
-  width: 300px;
+  width: 260px;
   float: left;
   margin-top: 5px;
 }
@@ -293,16 +295,15 @@
   margin-left: @shows-tab-width - @shows-schedules-width;
 }
 
-.shows-schedule-day-today,
+.shows-schedule-today {
+  font-weight: bold;
+}
+
 .shows-schedule-day {
   margin-top: 12px;
   margin-bottom: 2px;
   font-size: 14px;
   color: @theme-color;
-}
-
-.shows-schedule-day-today {
-  font-weight: bold;
 }
 
 .shows-schedule-show-name {

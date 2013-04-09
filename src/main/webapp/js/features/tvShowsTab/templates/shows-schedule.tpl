@@ -1,6 +1,6 @@
 {{#each schedule.schedules}}
     {{#isToday date}}
-        <div class='shows-schedule-day-today'>{{dateFormat this format="DD/MM (dddd)" default='never'}} - Today</div>
+        <div class='shows-schedule-day'>{{dateFormat this format="DD/MM (dddd)" default='never'}} - <span class='shows-schedule-today'>Today</span></div>
     {{else}}
         <div class='shows-schedule-day'>{{dateFormat this format="DD/MM (dddd)" default='never'}}</div>
     {{/isToday}}
