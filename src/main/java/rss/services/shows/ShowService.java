@@ -1,5 +1,6 @@
 package rss.services.shows;
 
+import com.google.common.base.Predicate;
 import rss.controllers.vo.EpisodeSearchResult;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
@@ -27,7 +28,7 @@ public interface ShowService {
 
 	void downloadSchedule(Show show);
 
-	List<AutoCompleteItem> autoCompleteShowNames(String term);
+	List<AutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super AutoCompleteItem> predicate);
 
 	ShowsScheduleVO getSchedule(Set<Show> shows);
 

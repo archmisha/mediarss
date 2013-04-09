@@ -1,7 +1,5 @@
 package rss.controllers;
 
-import com.google.gson.Gson;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
@@ -10,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import rss.MediaRSSException;
 import rss.controllers.vo.UserVO;
 import rss.dao.ShowDao;
 import rss.dao.UserDao;
@@ -18,12 +15,9 @@ import rss.entities.Show;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SessionService;
-import rss.services.shows.AutoCompleteItem;
-import rss.services.shows.ShowService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -48,9 +42,6 @@ public class AdminController extends BaseController {
 
 	@Autowired
 	private ShowDao showDao;
-
-	@Autowired
-	private ShowService showService;
 
 	@RequestMapping(value = "/notification", method = RequestMethod.POST)
 	@ResponseBody
@@ -99,27 +90,8 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/shows/autocomplete", method = RequestMethod.GET)
 	@ResponseBody
 	public void autoCompleteShows(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			User user = userDao.find(sessionService.getLoggedInUserId());
-			verifyAdminPermissions(user);
-
-			String term = extractString(request, "term", true).trim();
-			String callback = extractString(request, "callback", true);
-
-			List<AutoCompleteItem> result = showService.autoCompleteShowNames(term);
-
-			response.setContentType("text/javascript");
-
-			Map<String, Object> map = new HashMap<>();
-			map.put("shows", result);
-			map.put("total", result.size());
-			Gson gson = new Gson();
-			String data = gson.toJson(map);
-			IOUtils.write(callback + "(" + data + ")", response.getOutputStream());
-		} catch (IOException e) {
-			logService.error(getClass(), e.getMessage(), e);
-			throw new MediaRSSException(e.getMessage(), e);
-		}
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+		autoCompleteShowNames(request, response, true, null);
 	}
-
 }

@@ -91,7 +91,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 	@Override
 	public void put(Show show) {
-		addShow(new CachedShow(show.getId(), show.getName()));
+		addShow(new CachedShow(show.getId(), show.getName(), show.isEnded()));
 	}
 
 	@Override

@@ -8,10 +8,12 @@ public class CachedShow {
 
 	private long id;
 	private String name;
+	private boolean ended;
 
-	public CachedShow(long id, String name) {
+	public CachedShow(long id, String name, boolean ended) {
 		this.id = id;
 		this.name = name;
+		this.ended = ended;
 	}
 
 	public long getId() {
@@ -20,5 +22,9 @@ public class CachedShow {
 
 	public String getName() {
 		return name;
+	}
+
+	public boolean isEnded() {
+		return ended;
 	}
 }

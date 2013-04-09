@@ -7,12 +7,11 @@ define([
 	'features/tvShowsTab/collections/ShowsCollection',
 	'components/section/views/SectionView',
 	'features/tvShowsTab/views/SearchShowsView',
-	'features/tvShowsTab/views/TrackedShowsDescriptionView',
 	'MessageBox',
 	'features/tvShowsTab/views/ShowsScheduleView'
 ],
 	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView,
-		SearchShowsView, TrackedShowsDescriptionView, MessageBox, ShowsScheduleView) {
+		SearchShowsView, MessageBox, ShowsScheduleView) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -51,8 +50,7 @@ define([
 				});
 				this.trackedShowsSection = new SectionView({
 					title: 'Tracked TV Shows',
-//					description: 'Ended shows are not shown as there is no point tracking them'
-					descriptionViewDef: TrackedShowsDescriptionView,
+					description: 'Ended shows are not shown as there is no point tracking them',
 					vent: this.vent
 				});
 
@@ -66,19 +64,12 @@ define([
 			},
 
 			onRender: function() {
-				this.vent.on('add-manual-show', this.onAddManualShow, this);
-
 				this.searchShowsSectionRegion.show(this.searchShowsSection);
 				this.searchShowsRegion.show(this.searchShowsView);
 				this.trackedShowsSectionRegion.show(this.trackedShowsSection);
 				this.trackedShowsRegion.show(this.trackedShowsView);
 				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
 				this.showsScheduleRegion.show(this.showsScheduleView);
-			},
-
-			onAddManualShow: function(params) {
-				this.trackedShowsView.addShow(params.show);
-				MessageBox.info('Added show \'' + params.show.name + '\'');
 			}
 		});
 	});

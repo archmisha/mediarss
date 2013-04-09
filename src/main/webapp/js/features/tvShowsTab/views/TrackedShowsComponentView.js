@@ -6,20 +6,24 @@ define([
 	'features/tvShowsTab/views/TrackedShowsCollectionView',
 	'text!features/tvShowsTab/templates/tracked-shows-component.tpl',
 	'features/tvShowsTab/collections/ShowsCollection',
-	'features/tvShowsTab/views/ShowsComboBoxCollectionView',
 	'HttpUtils',
-	'chosen',
-	'Spinner'
+	'select2',
+	'Spinner',
+	'utils/Utils',
+	'features/tvShowsTab/models/Show'
 ],
-	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, ShowsComboBoxCollectionView, HttpUtils, Chosen, Spinner) {
+	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, HttpUtils, select2, Spinner, Utils, Show) {
 		"use strict";
+
+		var SHOWS_COMBO_BOX_SELECTOR = '.all-shows-combo';
 
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
 			className: 'tracked-shows',
 
 			ui: {
-				trackedShowsList: '.tracked-shows-list'
+				trackedShowsList: '.tracked-shows-list',
+				showsComboBox: SHOWS_COMBO_BOX_SELECTOR
 			},
 
 			events: {
@@ -27,26 +31,14 @@ define([
 			},
 
 			regions: {
-				showsComboBoxRegion: '.all-shows-combo',
 				trackedShowsListRegion: '.tracked-shows-list'
 			},
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.vent = options.vent;
-				this.allShowsCollection = new ShowsCollection();
 				this.trackedShowsCollection = new ShowsCollection(options.trackedShows);
-				var that = this;
-				options.shows.forEach(function(show) {
-					if (that.trackedShowsCollection.get(show.id) == null) {
-						that.allShowsCollection.add(show);
-					}
-				});
 
-				this.showsComboBoxCollectionView = new ShowsComboBoxCollectionView({
-					collection: this.allShowsCollection,
-					vent: this.vent
-				});
 				this.trackedShowsView = new TrackedShowsCollectionView({
 					collection: this.trackedShowsCollection,
 					vent: this.vent
@@ -54,7 +46,6 @@ define([
 			},
 
 			onRender: function() {
-				this.showsComboBoxRegion.show(this.showsComboBoxCollectionView);
 				this.trackedShowsListRegion.show(this.trackedShowsView);
 				this.vent.on('tracked-show-remove', this._onRemoveTrackedShow, this);
 				if (this.trackedShowsCollection.length > 0) {
@@ -62,25 +53,20 @@ define([
 				}
 			},
 
-			addShow: function(show) {
-				this.allShowsCollection.add(show);
-				this.allShowsCollection.sort();
-			},
-
 			_onAddTrackedShow: function() {
-				var show = this.showsComboBoxCollectionView.getSelectedShow();
+				var comboShow = this.ui.showsComboBox.select2('data');
+				var showId = comboShow.id;
 				// nothing is selected
-				if (show == undefined) {
+				if (showId == undefined) {
 					return;
 				}
 
 				var that = this;
-				HttpUtils.post("rest/shows/addTracked/" + show.id, {}, function(res) {
-					that.showsComboBoxCollectionView.clearSelection();
-					that.allShowsCollection.remove(show);
-					that.trackedShowsCollection.add(show);
+				HttpUtils.post("rest/shows/addTracked/" + showId, {}, function(res) {
+					that.trackedShowsCollection.add(new Show({id:comboShow.id, name:comboShow.text}));
 					that.trackedShowsCollection.sort();
 					that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
+					that.ui.showsComboBox.select2('data', '');
 				});
 			},
 
@@ -90,14 +76,41 @@ define([
 				setTimeout(function() {
 					HttpUtils.post("rest/shows/removeTracked/" + show.id, {}, function(res) {
 						that.trackedShowsCollection.remove(show);
-						that.allShowsCollection.add(show);
-						that.allShowsCollection.sort();
 						if (that.trackedShowsCollection.length == 0) {
 							that.ui.trackedShowsList.removeClass('tracked-shows-list-non-empty');
 						}
 						Spinner.unmask();
 					}, false);
 				}, 150);
+			},
+
+			onShow: function() {
+				Utils.waitForDisplayAndCreate(SHOWS_COMBO_BOX_SELECTOR, this.createChosen);
+			},
+
+			createChosen: function(selector) {
+				$(selector).select2({
+					placeholder: "Select a Show",
+					minimumInputLength: 3,
+					ajax: {
+						url: 'rest/shows/tracked/autocomplete',
+						dataType: 'jsonp',
+						data: function(term, page) {
+							return {
+								term: term
+							};
+						},
+						results: function(data, page) {
+							return {results: data.shows};
+						}
+					},
+					formatResult: function(show) {
+						return show.text;
+					},
+					formatSelection: function(show) {
+						return show.text;
+					}
+				});
 			}
 		});
 	});

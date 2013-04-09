@@ -119,7 +119,7 @@ define([
 
 				var that = this;
 				HttpUtils.get("rest/admin/downloadSchedule/" + showId, function(res) {
-					that.ui.showsComboBox.select2("data", '');
+					that.ui.showsComboBox.select2('data', '');
 					MessageBox.info(res);
 				});
 			}

@@ -77,7 +77,18 @@ an email when scheduled movie is out (need an option to disable emails then)
 help
 tvshows change icons, add shceduled state
 instead by imdb id - search by name
-
 icons
-
+the office no new episode
  after adding a movie and its already available make it be sorted to top?
+
+ download all is not present
+ Wrong/not existing subtitles - no eng default
+ subcenter
+remove tracked show is slow!
+
+ - search is slow!!
+ - Stop searching in the middle of the search - Stuck everything! strange red line
+ - Tracked TV shows - table looks bad
+ - movie search - result message - if not in focux in browser tab
+
+should trim search terms of show name?

@@ -21,7 +21,7 @@ import java.util.Set;
 		@NamedQuery(name = "Show.getNotEnded",
 				query = "select b from Show as b where b.ended = false"),
 		@NamedQuery(name = "Show.findCachedShows",
-				query = "select new rss.services.shows.CachedShow(b.id, b.name) from Show as b")
+				query = "select new rss.services.shows.CachedShow(b.id, b.name, b.ended) from Show as b")
 })
 public class Show extends BaseEntity {
 	private static final long serialVersionUID = -4408596786454177485L;

@@ -1,5 +1,6 @@
 package rss.controllers;
 
+import com.google.common.base.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
@@ -9,19 +10,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.ShowNotFoundException;
-import rss.UserNotLoggedInException;
 import rss.controllers.vo.EpisodeSearchResult;
-import rss.dao.*;
+import rss.dao.EpisodeDao;
+import rss.dao.ShowDao;
+import rss.dao.TorrentDao;
+import rss.dao.UserDao;
 import rss.entities.*;
-import rss.services.*;
-import rss.services.log.LogService;
-import rss.services.shows.ShowService;
+import rss.services.EpisodeRequest;
+import rss.services.SessionService;
+import rss.services.SubtitlesService;
+import rss.services.shows.AutoCompleteItem;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashSet;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/shows")
@@ -35,9 +38,6 @@ public class ShowsController extends BaseController {
 
 	@Autowired
 	private ShowDao showDao;
-
-	@Autowired
-	private ShowService showService;
 
 	@Autowired
 	private SubtitlesService subtitlesService;
@@ -64,6 +64,24 @@ public class ShowsController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Show show = showDao.find(showId);
 		user.getShows().remove(show);
+	}
+
+	@RequestMapping(value = "/tracked/autocomplete", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void autoCompleteTracked(HttpServletRequest request, HttpServletResponse response) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		final Set<Long> trackedShowsIds = new HashSet<>();
+		for (Show show : user.getShows()) {
+			trackedShowsIds.add(show.getId());
+		}
+
+		autoCompleteShowNames(request, response, false, new Predicate<AutoCompleteItem>() {
+			@Override
+			public boolean apply(rss.services.shows.AutoCompleteItem autoCompleteItem) {
+				return !trackedShowsIds.contains(autoCompleteItem.getId());
+			}
+		});
 	}
 
 	@RequestMapping(value = "/episode/download", method = RequestMethod.POST)

@@ -1,5 +1,7 @@
 package rss.services.shows;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -288,13 +290,17 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public List<AutoCompleteItem> autoCompleteShowNames(String term) {
+	public List<AutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super AutoCompleteItem> predicate) {
 		term = term.toLowerCase().trim();
 		List<AutoCompleteItem> result = new ArrayList<>();
 		for (CachedShow cachedShow : showsCacheService.getAll()) {
-			if (cachedShow.getName().toLowerCase().contains(term)) {
+			if ((includeEnded || !cachedShow.isEnded()) &&
+				(cachedShow.getName().toLowerCase().contains(term))) {
 				result.add(new AutoCompleteItem(cachedShow.getId(), cachedShow.getName()));
 			}
+		}
+		if (predicate != null) {
+			result = new ArrayList<>(Collections2.filter(result, predicate));
 		}
 		return result;
 	}
@@ -339,7 +345,7 @@ public class ShowServiceImpl implements ShowService {
 				@Override
 				public int compare(ShowScheduleEpisodeItem o1, ShowScheduleEpisodeItem o2) {
 					int res = o1.getShowName().compareToIgnoreCase(o2.getShowName());
-					if ( res != 0 ) {
+					if (res != 0) {
 						return res;
 					}
 

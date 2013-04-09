@@ -71,23 +71,23 @@ public class UserController extends BaseController {
 		Map<String, Object> initialData = new HashMap<>();
 		initialData.put("deploymentDate", settingsService.getDeploymentDate());
 		initialData.put("subtitles", SubtitleLanguage.getValues());
-		if (tab.equals(TVSHOWS_TAB)) {
+		/*if (tab.equals(TVSHOWS_TAB)) {
 			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findNotEnded())));
-		} /*else if (tab.equals(ADMIN_TAB)) {
+		} *//*else if (tab.equals(ADMIN_TAB)) {
 			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findAll())));
 		}*/
 		return initialData;
 	}
 
-	private List<ShowVO> sort(List<ShowVO> shows) {
-		Collections.sort(shows, new Comparator<ShowVO>() {
-			@Override
-			public int compare(ShowVO o1, ShowVO o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}
-		});
-		return shows;
-	}
+//	private List<ShowVO> sort(List<ShowVO> shows) {
+//		Collections.sort(shows, new Comparator<ShowVO>() {
+//			@Override
+//			public int compare(ShowVO o1, ShowVO o2) {
+//				return o1.getName().compareToIgnoreCase(o2.getName());
+//			}
+//		});
+//		return shows;
+//	}
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@ResponseBody

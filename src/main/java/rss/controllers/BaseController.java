@@ -1,5 +1,9 @@
 package rss.controllers;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,7 +14,6 @@ import rss.UserNotLoggedInException;
 import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.UserResponse;
 import rss.dao.JobStatusDao;
-import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.JobStatus;
 import rss.entities.Torrent;
@@ -21,14 +24,14 @@ import rss.services.UserService;
 import rss.services.log.LogService;
 import rss.services.movies.MovieService;
 import rss.services.movies.MoviesScrabblerImpl;
+import rss.services.shows.AutoCompleteItem;
 import rss.services.shows.ShowService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.InvalidParameterException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -210,5 +213,32 @@ public class BaseController {
 			}
 		});
 		return shows;
+	}
+
+	protected void autoCompleteShowNames(HttpServletRequest request, HttpServletResponse response, boolean includeEnded,
+										 Predicate<? super AutoCompleteItem> predicate) {
+		try {
+			String term = extractString(request, "term", true).trim();
+			String callback = extractString(request, "callback", true);
+
+			List<AutoCompleteItem> result = showService.autoCompleteShowNames(term, includeEnded, predicate);
+			Collections.sort(result, new Comparator<AutoCompleteItem>() {
+				@Override
+				public int compare(AutoCompleteItem o1, AutoCompleteItem o2) {
+					return o1.getText().compareToIgnoreCase(o2.getText());
+				}
+			});
+
+			response.setContentType("text/javascript");
+
+			Map<String, Object> map = new HashMap<>();
+			map.put("shows", result);
+			map.put("total", result.size());
+			Gson gson = new Gson();
+			String data = gson.toJson(map);
+			IOUtils.write(callback + "(" + data + ")", response.getOutputStream());
+		} catch (IOException e) {
+			throw new MediaRSSException(e.getMessage(), e);
+		}
 	}
 }
