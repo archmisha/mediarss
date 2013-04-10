@@ -86,7 +86,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 			String hashPrefix = "<dt>Info Hash:</dt><dd>&nbsp;</dd>";
 			idx = page.indexOf(hashPrefix);
 			idx2 = idx + hashPrefix.length();
-			String hash = page.substring(idx2, page.indexOf("</dl>")).trim();
+			String hash = page.substring(idx2, page.indexOf("</dl>", idx2)).trim();
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
 			torrent.setHash(hash);
