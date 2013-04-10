@@ -307,7 +307,10 @@ public class MovieServiceImpl implements MovieService {
 			try {
 				partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, MoviesTorrentEntriesDownloader.VIEWERS_PATTERN);
 			} catch (Exception e) {
-				logService.error(getClass(), "Failed downloading IMDB page " + imdbId + ": " + e.getMessage(), e);
+				// usually it is HTTP/1.1 404 Not Found
+				if (!e.getMessage().contains("404 Not Found")) {
+					logService.error(getClass(), "Failed downloading IMDB page " + imdbId + ": " + e.getMessage(), e);
+				}
 				return null;
 			}
 			Matcher oldYearMatcher = MoviesTorrentEntriesDownloader.OLD_YEAR_PATTERN.matcher(partialPage);
