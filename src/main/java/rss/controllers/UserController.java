@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
 import rss.SubtitleLanguage;
-import rss.controllers.vo.ShowVO;
 import rss.dao.ShowDao;
 import rss.dao.UserDao;
 import rss.entities.User;
@@ -25,7 +24,9 @@ import rss.util.DurationMeter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.InvalidParameterException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/user")
@@ -57,13 +58,22 @@ public class UserController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("initialData", createInitialData(tab));
 
+		User user = null;
+
+
 		if (sessionService.isUserLogged()) {
-			User user = userDao.find(sessionService.getLoggedInUserId());
+			user = userDao.find(sessionService.getLoggedInUserId());
 			result.put("user", createUserResponse(user, tab));
 		}
 
 		duration.stop();
-		logService.info(getClass(), "getPreLoginData(" + tab + ") took " + duration.getDuration() + " millis");
+		String msg = "getPreLoginData(" + tab + ")";
+		if (user != null) {
+			msg += " for " + user.getEmail();
+		}
+		msg += " (" + duration.getDuration() + " millis)";
+		logService.info(getClass(), msg);
+
 		return result;
 	}
 

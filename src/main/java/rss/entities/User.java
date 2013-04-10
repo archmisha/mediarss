@@ -18,8 +18,10 @@ import java.util.Set;
 @NamedQueries({
 		@NamedQuery(name = "User.findByEmail",
 				query = "select b from User as b where lower(b.email) = :email"),
+		@NamedQuery(name = "User.findByTrackedShow",
+				query = "select b from User as b inner join b.shows as s where s.id = :showId"),
 		@NamedQuery(name = "User.getEpisodesToDownload",
-                query = "select e from User as u inner join u.shows as s inner join s.episodes as e " +
+				query = "select e from User as u inner join u.shows as s inner join s.episodes as e " +
 						"where u.id = :userId and e.airDate > :fromDate")
 })
 public class User extends BaseEntity {

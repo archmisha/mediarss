@@ -34,11 +34,13 @@ define([
 			},
 
 			ui: {
-				showsComboBox: SHOWS_COMBO_BOX_SELECTOR
+				showsComboBox: SHOWS_COMBO_BOX_SELECTOR,
+				deleteShowIdInput: '.admin-delete-show-id-input'
 			},
 
 			events: {
-				'click .admin-download-show-schedule-button': '_onDownloadShowScheduleButtonClick'
+				'click .admin-download-show-schedule-button': '_onDownloadShowScheduleButtonClick',
+				'click .admin-delete-show-button': '_onDeleteShowButtonClick'
 			},
 
 			constructor: function(options) {
@@ -51,7 +53,7 @@ define([
 				this.jobs.fetch();
 
 				this.jobsSection = new SectionView({
-					title: 'Jobs',
+					title: 'Actions',
 					description: ''
 				});
 
@@ -120,6 +122,20 @@ define([
 				var that = this;
 				HttpUtils.get("rest/admin/downloadSchedule/" + showId, function(res) {
 					that.ui.showsComboBox.select2('data', '');
+					MessageBox.info(res);
+				});
+			},
+
+			_onDeleteShowButtonClick: function() {
+				var showId = this.ui.deleteShowIdInput.val();
+
+				if (!showId || showId.trim().length == 0) {
+					return;
+				}
+
+				var that = this;
+				HttpUtils.get("rest/admin/shows/delete/" + showId, function(res) {
+					that.ui.deleteShowIdInput.val('');
 					MessageBox.info(res);
 				});
 			}

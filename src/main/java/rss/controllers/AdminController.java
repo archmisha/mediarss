@@ -1,5 +1,6 @@
 package rss.controllers;
 
+import org.hibernate.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
@@ -8,17 +9,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import rss.MediaRSSException;
 import rss.controllers.vo.UserVO;
+import rss.dao.EpisodeDao;
 import rss.dao.ShowDao;
+import rss.dao.TorrentDao;
 import rss.dao.UserDao;
-import rss.entities.Show;
-import rss.entities.User;
+import rss.entities.*;
 import rss.services.EmailService;
 import rss.services.SessionService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -42,6 +48,12 @@ public class AdminController extends BaseController {
 
 	@Autowired
 	private ShowDao showDao;
+
+	@Autowired
+	private EpisodeDao episodeDao;
+
+	@Autowired
+	private TorrentDao torrentDao;
 
 	@RequestMapping(value = "/notification", method = RequestMethod.POST)
 	@ResponseBody
@@ -93,5 +105,44 @@ public class AdminController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 		autoCompleteShowNames(request, response, true, null);
+	}
+
+	@RequestMapping(value = "/shows/delete/{showId}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public String deleteShow(@PathVariable long showId) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		Show show = showDao.find(showId);
+		// allow deletion only if no one is tracking this show
+		if (userDao.isShowBeingTracked(show)) {
+			throw new MediaRSSException("Show is being tracked. Unable to delete");
+		}
+
+		for (Episode episode : show.getEpisodes()) {
+			// episode is always connected to a single show - not a problem
+			for (Long torrentId : episode.getTorrentIds()) {
+				// delete the torrent only if it is connected to a single episode
+				Torrent torrent = torrentDao.find(torrentId);
+				try {
+					episodeDao.find(torrentId);
+
+					for (UserTorrent userTorrent : userTorrentDao.findEpisodeUserTorrentByTorrentId(torrentId)) {
+						userTorrentDao.delete(userTorrent);
+					}
+					torrentDao.delete(torrent);
+				} catch (NonUniqueResultException e) {
+					// if exception was thrown - it means the torrent is connected to multiple episodes
+				}
+			}
+
+			episode.getTorrentIds().clear();
+			episodeDao.delete(episode);
+		}
+
+		showDao.delete(show);
+
+		return "Show '" + show.getName() + "' (id=" + show.getId() + ") was deleted";
 	}
 }

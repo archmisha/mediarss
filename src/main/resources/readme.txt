@@ -56,9 +56,9 @@ install speed_mon
 http://www.turnkeylinux.org/forum/support/20120514/how-do-i-install-modpagespeed
 
 
-
-
-
+change timezone on the machine
+====
+http://www.thegeekstuff.com/2010/09/change-timezone-in-linux/
 
 
 
@@ -79,12 +79,13 @@ tvshows change icons, add shceduled state
 instead by imdb id - search by name
 icons
 the office no new episode
+
  after adding a movie and its already available make it be sorted to top?
 
  download all is not present
  Wrong/not existing subtitles - no eng default
  subcenter
-remove tracked show is slow!
+
 
  - search is slow!!
  - Stop searching in the middle of the search - Stuck everything! strange red line
@@ -92,3 +93,10 @@ remove tracked show is slow!
  - movie search - result message - if not in focux in browser tab
 
 should trim search terms of show name?
+
+movies mark all as viewed
+
+when tracked show becomes ended - notify somehow to the user in the ui? (so he can remove it manually) - dont remove it for him
+   cuz maybe he still not downloaded some episode from that show with the rss
+
+showlistdownloader runs tooo long - why?

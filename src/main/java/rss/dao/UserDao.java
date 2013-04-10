@@ -1,6 +1,7 @@
 package rss.dao;
 
 import rss.entities.Episode;
+import rss.entities.Show;
 import rss.entities.User;
 
 import java.util.Collection;
@@ -15,4 +16,6 @@ public interface UserDao extends Dao<User> {
     public User findByEmail(String email);
 
 	Collection<Episode> getEpisodesToDownload(User user);
+
+	boolean isShowBeingTracked(Show show);
 }
