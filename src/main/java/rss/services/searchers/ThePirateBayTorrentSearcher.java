@@ -93,7 +93,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 			SearchResult<Media> searchResult = new SearchResult<>(torrent, getName());
 			searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent, page));
 			return searchResult;
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			log.error("Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
