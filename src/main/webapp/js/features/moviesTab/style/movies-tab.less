@@ -63,6 +63,7 @@
   padding: @movie-item-padding;
   padding-left: @movie-item-padding-left;
   position: relative;
+  padding-right: 20px;
 }
 
 .movie-item-inner {
@@ -76,6 +77,7 @@
 .movie-item:hover {
   padding: @movie-item-padding - 1; /* minus 1 for the border */
   padding-left: @movie-item-padding-left - 1;
+//  padding-right: 45px;
   border: 1px solid #dcdcdc;
   background-color: #f5f5f5;
   cursor: pointer;
@@ -91,10 +93,20 @@
 }
 
 .future-movies-list .movie-item:hover {
-  padding-right: 20px;
+  padding-right: 40px;
   .future-movie-item-remove-image {
     display: inline;
   }
+
+  .movie-show-preview-image {
+    right: 30px;
+  }
+}
+
+.movie-show-preview-image {
+  position: absolute;
+  top: 4px;
+  right: 4px;
 }
 
 .future-movie-item-remove-image {
@@ -107,36 +119,6 @@
 .movie-torrent-item-not-viewed,
 .movie-item-not-viewed {
   font-weight: bold;
-}
-
-.movies-imdb-preview {
-  height: 500px;
-  width: @preview-width;
-  display: none;
-  overflow-x: hidden;
-  box-shadow: 0px 5px 10px 5px #444;
-}
-
-.movies-imdb-preview-loading,
-.movies-imdb-no-preview {
-  display: none;
-}
-
-.movies-preview-container {
-  margin-top: 20px;
-}
-
-.movies-imdb-preview {
-  border: 0px;
-}
-
-.movies-imdb-preview-loading,
-.movies-imdb-no-preview,
-.movies-imdb-click-for-preview {
-  font-style: italic;
-  margin-left: 9px;
-  font-size: 13px;
-  color: #808080;
 }
 
 .movie-torrent-item-download-image {

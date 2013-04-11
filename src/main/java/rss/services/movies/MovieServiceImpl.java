@@ -99,6 +99,9 @@ public class MovieServiceImpl implements MovieService {
 		doc.select("#pagecontent").removeAttr("id"); // got the style of the top line
 		doc.select(".rightcornerlink").remove();
 		doc.select("div#content-2-wide").removeAttr("id");
+		doc.select("body").removeAttr("id");
+		doc.select("br.clear").remove();
+		doc.select("#content-1").removeAttr("id");
 		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
 		doc.body().append("<script>parent.resize_iframe()</script>");
 

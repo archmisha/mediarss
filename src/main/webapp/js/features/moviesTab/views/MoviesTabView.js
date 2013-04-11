@@ -9,9 +9,10 @@ define([
 	'features/collections/UserTorrentCollection',
 	'HttpUtils',
 	'components/section/views/SectionView',
-	'MessageBox'
+	'MessageBox',
+	'fancybox'
 ],
-	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox) {
+	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox) {
 		"use strict";
 
 		var selectedMovie = null;
@@ -22,10 +23,6 @@ define([
 			className: 'movies-tab',
 
 			ui: {
-				imdbPreview: '.movies-imdb-preview',
-				imdbNoPreview: '.movies-imdb-no-preview',
-				imdbClickForPreview: '.movies-imdb-click-for-preview',
-				imdbPreviewLoading: '.movies-imdb-preview-loading',
 				imdbIdInput: '.future-movies-imdb-id-input',
 				moviesCounter: '.movies-counter',
 				futureMoviesCounter: '.future-movies-counter',
@@ -58,10 +55,6 @@ define([
 				this.movieTorrentCollection = new UserTorrentCollection();
 				this.movieTorrentColletionView = new MovieTorrentCollectionView({vent: this.vent, collection: this.movieTorrentCollection});
 
-				// reset the retries limit so wont run for ever
-				window.moviesImdbPreviewHeightRetries = 5;
-				window.resize_iframe = this.resize_iframe;
-
 				this.moviesSection = new SectionView({
 					title: 'Latest Movies (experimental)',
 					description: 'Select movies to download. Here you can find newly available movies. You can use IMDB preview'
@@ -87,28 +80,6 @@ define([
 					userTorrent.set('scheduledDate', new Date());
 					selectedMovie.set('downloadStatus', 'SCHEDULED');
 				});
-			},
-
-			// called in window scope, so no reference to this
-			resize_iframe: function() {
-				var scrollHeight = document.getElementById("movies-imdb-preview").contentWindow.document.body.offsetHeight;
-//				console.log('scroll height:' + scrollHeight);
-
-				document.getElementById("movies-imdb-preview").style.height = parseInt(scrollHeight, 10) + 10 + 'px';
-
-				// after the page is loaded adjust the height again - assuming the height must change so running until changed
-				setTimeout(function() {
-					if (window.moviesImdbPreviewHeightRetries == 0) {
-						return;
-					}
-					window.moviesImdbPreviewHeightRetries--;
-
-					if (window.moviesImdbPreviewHeight !== undefined && window.moviesImdbPreviewHeight != scrollHeight) {
-						return;
-					}
-					window.moviesImdbPreviewHeight = scrollHeight;
-					resize_iframe();
-				}, 500);
 			},
 
 			onRender: function() {
@@ -143,27 +114,8 @@ define([
 					}, false);
 				}
 
-				// display imdb preview
-				var that = this;
-				this.ui.imdbClickForPreview.hide();
-				this.ui.imdbPreview.hide();
-				var imdbUrl = movieModel.get('imdbUrl');
-				if (imdbUrl) {
-					this.ui.imdbNoPreview.hide();
-					this.ui.imdbPreviewLoading.show();
-
-					HttpUtils.get("rest/movies/imdb/" + movieModel.get('id'), function(res) {
-						that.ui.imdbPreviewLoading.hide();
-						that.ui.imdbPreview.show();
-						that.ui.imdbPreview.contents().find('body').html(res);
-					}, false);
-				} else {
-					this.ui.imdbPreviewLoading.hide();
-					this.ui.imdbPreview.hide();
-					this.ui.imdbNoPreview.show();
-				}
-
 				// update movie torrents list
+				var that = this;
 				if (movieModel.get('torrents').length == 0) {
 					var msg;
 					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {

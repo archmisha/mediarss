@@ -17,7 +17,8 @@ define([
 				movieTitle: '.movie-item-title',
 				futureImage: '.movie-item-future-image',
 				subTitle: '.movie-sub-title',
-				scheduledOn: '.movie-scheduled-on'
+				scheduledOn: '.movie-scheduled-on',
+				moviePreviewLink: '.movie-show-preview'
 			},
 
 			events: {
@@ -48,11 +49,21 @@ define([
 							style: 'rssStyle'
 						});
 					});
+
+				this.ui.moviePreviewLink.fancybox({
+					'width'				: '800',
+					'height'			: '75%',
+					'autoScale'     	: false,
+					'transitionIn'		: 'none',
+					'transitionOut'		: 'none',
+					'type'				: 'iframe'
+				});
 			},
 
 			onMovieClick: function(event) {
 				// if remove icon was clicked, then ignore selection
-				if ($(event.target).hasClass('future-movie-item-remove-image')) {
+				if ($(event.target).hasClass('future-movie-item-remove-image') ||
+					$(event.target).hasClass('movie-show-preview-image')) {
 					return;
 				}
 

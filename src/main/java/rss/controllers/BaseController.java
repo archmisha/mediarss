@@ -1,7 +1,6 @@
 package rss.controllers;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -187,7 +186,7 @@ public class BaseController {
 
 		if (tab.equals(MOVIES_TAB)) {
 			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
-					.withMovies(movieService.getUserMovies(user))
+					.withAvailableMovies(movieService.getUserMovies(user))
 					.withFutureMovies(movieService.getFutureUserMovies(user));
 		} else if (tab.equals(TVSHOWS_TAB)) {
 			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
