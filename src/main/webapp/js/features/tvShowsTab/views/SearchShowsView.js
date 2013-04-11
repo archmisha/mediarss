@@ -11,6 +11,7 @@ define([
 		"use strict";
 
 		var didYouMeanShowId = undefined;
+		var lastSearchResult = undefined;
 
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
@@ -40,7 +41,8 @@ define([
 				'keypress .shows-search-title': 'onKeyPress',
 				'keypress .shows-search-season': 'onKeyPress',
 				'keypress .shows-search-episode': 'onKeyPress',
-				'click .shows-search-results-did-you-mean-list': 'onDidYouMeanClick'
+				'click .shows-search-results-did-you-mean-list': 'onDidYouMeanClick',
+				'click .shows-search-results-download-all-button': 'onDownloadAllClick'
 			},
 
 			regions: {
@@ -95,6 +97,7 @@ define([
 				// in case failed want to reset showId param also
 				var showId = didYouMeanShowId;
 				didYouMeanShowId = undefined;
+				lastSearchResult = undefined;
 				HttpUtils.post("rest/shows/search", {
 					title: title,
 					season: season,
@@ -125,6 +128,7 @@ define([
 			},
 
 			onSearchResultsReceived: function(searchResult) {
+				lastSearchResult = searchResult;
 				var that = this;
 
 				if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
@@ -136,7 +140,8 @@ define([
 
 				this.ui.resultsCount.html(searchResult.episodes.length);
 				this.ui.titleContainer.show();
-				var searchResultsCollectionView = new SearchResultsCollectionView({collection: new UserTorrentCollection(searchResult.episodes)});
+				this.searchResultsCollection = new UserTorrentCollection(searchResult.episodes);
+				var searchResultsCollectionView = new SearchResultsCollectionView({collection: this.searchResultsCollection});
 				searchResultsCollectionView.on('render', function() {
 					// if there is scroll bar - move download all button more to the left
 					//if (that.searchResultsRegion.$el.get(0).scrollHeight > that.searchResultsRegion.$el.height()) {
@@ -174,6 +179,29 @@ define([
 				var showName = $(event.target).html();
 				this.ui.titleInput.val(showName);
 				this.onSearchButtonClick();
+			},
+
+			onDownloadAllClick: function() {
+				var torrentIds = [];
+				lastSearchResult.episodes.forEach(function(userTorrent) {
+					if (!userTorrent.downloaded) {
+						torrentIds.push(userTorrent.torrentId);
+					}
+				});
+
+				var that = this;
+				HttpUtils.post("rest/shows/episode/downloadAll", {
+					torrentIds: torrentIds
+				}, function(res) {
+					// set all in downloaded state in ui
+					that.searchResultsCollection.forEach(function(userTorrent) {
+						if (!userTorrent.downloaded) {
+							userTorrent.set('downloaded', true);
+						}
+					});
+
+					that.ui.downloadAllButton.hide();
+				});
 			}
 		});
 	});

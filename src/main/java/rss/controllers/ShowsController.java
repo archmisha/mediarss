@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
 import rss.controllers.vo.EpisodeSearchResult;
 import rss.dao.EpisodeDao;
@@ -87,9 +84,12 @@ public class ShowsController extends BaseController {
 	@RequestMapping(value = "/episode/download", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void episodeDownload(HttpServletRequest request) {
-		long torrentId = extractMandatoryInteger(request, "torrentId");
+	public void episodeDownload(@RequestParam("torrentId") long torrentId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
+		downloadEpisode(torrentId, user);
+	}
+
+	private void downloadEpisode(long torrentId, User user) {
 		Torrent torrent = torrentDao.find(torrentId);
 		addUserTorrent(user, torrent, new EpisodeUserTorrent());
 		if (user.getSubtitles() != null) {
@@ -98,14 +98,26 @@ public class ShowsController extends BaseController {
 		}
 	}
 
+	@RequestMapping(value = "/episode/downloadAll", method = RequestMethod.POST)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void episodeDownloadAll(@RequestParam("torrentIds[]") long[] torrentIds) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		for (long torrentId : torrentIds) {
+			downloadEpisode(torrentId, user);
+		}
+	}
+
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public EpisodeSearchResult search(HttpServletRequest request) {
-		String title = extractString(request, "title", true);
-		int season = extractInteger(request, "season", -1);
-		int episode = extractInteger(request, "episode", -1);
-		long showId = extractInteger(request, "showId", -1);
+	public EpisodeSearchResult search(@RequestParam("title") String title,
+									  @RequestParam(value = "season", required = false) Integer season,
+									  @RequestParam(value = "episode", required = false) Integer episode,
+									  @RequestParam(value = "showId", required = false) Long showId) {
+		season = applyDefaultValue(season, -1);
+		episode = applyDefaultValue(episode, -1);
+		showId = applyDefaultValue(showId, -1l);
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		try {
 			Show show = showDao.find(showId);

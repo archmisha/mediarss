@@ -68,6 +68,10 @@ public class BaseController {
 	@Autowired
 	protected ShowService showService;
 
+	protected <T> T applyDefaultValue(T  value, T defaultValue) {
+		return value == null ? defaultValue : value;
+	}
+
 	protected String extractString(HttpServletRequest request, String name, boolean isMandatory) {
 		String value = request.getParameter(name);
 		if (isMandatory) {

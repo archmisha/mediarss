@@ -21,7 +21,7 @@ define([
 
 			setDownloadedState: function() {
 				this.ui.downloadButton.hide();
-				this.ui.downloadedStatus.show();
+				this.ui.downloadedStatus.css('display', 'inline'); // show make display: block we need inline here
 			},
 
 			setNotDownloadedState: function() {
