@@ -81,17 +81,12 @@ icons
 
  after adding a movie and its already available make it be sorted to top?
 
- download all is not present
  Wrong/not existing subtitles - no eng default
  subcenter
 
 - update schedule when tracked shows updated
  - Stop searching in the middle of the search - Stuck everything! strange red line
  - Tracked TV shows - table looks bad
- - movie search - result message - if not in focux in browser tab
-tab hover in firefox bad and in chrome good
-section line width different that heade tabs
-should trim search terms of show name?
 
 movies mark all as viewed
 
@@ -103,5 +98,3 @@ showlistdownloader runs tooo long - why?
 need tooltips in show search result
 
 can improve the show name matching algo speed to reduce from 1 second?
-
-add user to all log msgs
