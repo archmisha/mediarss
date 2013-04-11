@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
 import rss.SubtitleLanguage;
@@ -81,32 +78,16 @@ public class UserController extends BaseController {
 		Map<String, Object> initialData = new HashMap<>();
 		initialData.put("deploymentDate", settingsService.getDeploymentDate());
 		initialData.put("subtitles", SubtitleLanguage.getValues());
-		/*if (tab.equals(TVSHOWS_TAB)) {
-			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findNotEnded())));
-		} *//*else if (tab.equals(ADMIN_TAB)) {
-			initialData.put("shows", sort(entityConverter.toThinShows(showDao.findAll())));
-		}*/
 		return initialData;
 	}
-
-//	private List<ShowVO> sort(List<ShowVO> shows) {
-//		Collections.sort(shows, new Comparator<ShowVO>() {
-//			@Override
-//			public int compare(ShowVO o1, ShowVO o2) {
-//				return o1.getName().compareToIgnoreCase(o2.getName());
-//			}
-//		});
-//		return shows;
-//	}
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> login(HttpServletRequest request) {
-		String email = extractString(request, "username", true);
-		String password = extractString(request, "password", true);
-		String tab = extractString(request, "tab", true);
-		boolean includeInitialData = extractBoolean(request, "includeInitialData", true);
+	public Map<String, Object> login(@RequestParam("username") String email,
+									 @RequestParam("password") String password,
+									 @RequestParam("tab") String tab,
+									 @RequestParam("includeInitialData") boolean includeInitialData) {
 		email = email.trim();
 		password = password.trim();
 

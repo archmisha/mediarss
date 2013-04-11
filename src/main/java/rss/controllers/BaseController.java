@@ -101,10 +101,6 @@ public class BaseController {
 		}
 	}
 
-	protected boolean extractBoolean(HttpServletRequest request, String name, boolean isMandatory) {
-		return Boolean.parseBoolean(extractString(request, name, isMandatory));
-	}
-
 	@ExceptionHandler(InvalidParameterException.class)
 	@ResponseBody
 	public ExceptionResponse handleInvalidParameterException(InvalidParameterException ex) {
