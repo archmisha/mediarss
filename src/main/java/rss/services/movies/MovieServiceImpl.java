@@ -111,24 +111,40 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public ArrayList<UserMovieVO> getFutureUserMovies(User user) {
+	public ArrayList<UserMovieVO> getUserMovies(User user) {
 		List<UserMovie> futureUserMovies = movieDao.findFutureUserMovies(user);
-		Collections.sort(futureUserMovies, new Comparator<UserMovie>() {
-			@Override
-			public int compare(UserMovie o1, UserMovie o2) {
-				return o2.getUpdated().compareTo(o1.getUpdated());
-			}
-		});
 
 		ArrayList<UserMovieVO> result = new ArrayList<>();
 		for (UserMovie userMovie : futureUserMovies) {
-			result.add(entityConverter.toFutureMovie(userMovie.getMovie()).withScheduledOn(userMovie.getUpdated()));
+			result.add(entityConverter.toFutureMovie(userMovie.getMovie())
+					.withScheduledOn(userMovie.getUpdated())
+					.withAdded(userMovie.getUpdated()));
 		}
+		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user)) {
+			Torrent torrent = userTorrent.getTorrent();
+			Movie movie = movieDao.find(torrent);
+			UserMovieVO userMovieVO = new UserMovieVO()
+					.withId(movie.getId())
+					.withTitle(movie.getName())
+					.withImdbUrl(movie.getImdbUrl())
+					.withAdded(userTorrent.getAdded());
+			userMovieVO.setViewed(true);
+			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
+			result.add(userMovieVO);
+		}
+
+		Collections.sort(result, new Comparator<UserMovieVO>() {
+			@Override
+			public int compare(UserMovieVO o1, UserMovieVO o2) {
+				return o2.getAdded().compareTo(o1.getAdded());
+			}
+		});
+
 		return result;
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public ArrayList<UserMovieVO> getUserMovies(User user) {
+	public ArrayList<UserMovieVO> getAvailableMovies(User user) {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 		Set<Movie> latestMovies = getLatestMovies();
 		MoviesToTorrentsMapper moviesMapper = new MoviesToTorrentsMapper(latestMovies);
@@ -142,17 +158,6 @@ public class MovieServiceImpl implements MovieService {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
 			updateLatestUploadDate(torrent, userMovieVO);
-		}
-
-		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user)) {
-			Torrent torrent = userTorrent.getTorrent();
-			if (!torrentsByIds.containsKey(torrent.getId())) {
-				torrentsByIds.put(torrent.getId(), torrent);
-				Movie movie = movieDao.find(torrent);
-				UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-				userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
-				updateLatestUploadDate(torrent, userMovieVO);
-			}
 		}
 
 		// add movies that had no userMovies

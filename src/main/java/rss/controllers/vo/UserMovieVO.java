@@ -19,6 +19,7 @@ public class UserMovieVO {
 	private DownloadStatus downloadStatus;
 	private boolean viewed;
 	private Date scheduledDate;
+	private Date added;
 
 	public UserMovieVO() {
 		viewed = false;
@@ -99,5 +100,14 @@ public class UserMovieVO {
 
 	public Date getScheduledDate() {
 		return scheduledDate;
+	}
+
+	public UserMovieVO withAdded(Date added) {
+		this.added = added;
+		return this;
+	}
+
+	public Date getAdded() {
+		return added;
 	}
 }

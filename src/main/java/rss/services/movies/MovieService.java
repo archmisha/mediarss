@@ -12,9 +12,9 @@ import java.util.ArrayList;
  */
 public interface MovieService {
 
-	ArrayList<UserMovieVO> getFutureUserMovies(User user);
+	ArrayList<UserMovieVO> getUserMovies(User user);
 
-	ArrayList<UserMovieVO> getUserMovies(User loggedInUser);
+	ArrayList<UserMovieVO> getAvailableMovies(User loggedInUser);
 
 	Movie addFutureMovieDownload(User user, String imdbId);
 

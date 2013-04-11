@@ -49,7 +49,7 @@ define([
 				this.loggedInUserData = options.loggedInUserData;
 				this.initialData = options.initialData;
 
-				this.moviesCollection = new MoviesCollection(this.loggedInUserData.movies);
+				this.moviesCollection = new MoviesCollection(this.loggedInUserData.availableMovies);
 				this.moviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.moviesCollection});
 
 				this.movieTorrentCollection = new UserTorrentCollection();
@@ -91,8 +91,8 @@ define([
 				this.moviesSectionRegion.show(this.moviesSection);
 				this.futureMoviesSectionRegion.show(this.futureMoviesSection);
 
-				this.ui.moviesCounter.html(this.loggedInUserData.movies.length);
-				this.ui.futureMoviesCounter.html(this.loggedInUserData.futureMovies.length);
+				this.ui.moviesCounter.html(this.loggedInUserData.availableMovies.length);
+				this.ui.futureMoviesCounter.html(this.loggedInUserData.userMovies.length);
 			},
 
 			onMovieSelected: function(movieModel) {
@@ -142,18 +142,18 @@ define([
 					MessageBox.info(res.message);
 
 					that.loggedInUserData = res.user;
-					that.ui.moviesCounter.html(that.loggedInUserData.movies.length);
+					that.ui.moviesCounter.html(that.loggedInUserData.availableMovies.length);
 					that.ui.futureMoviesCounter.html(that.loggedInUserData.futureMovies.length);
-					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {
+					if (that.ui.userMoviesFilter.hasClass('filter-selected')) {
 						that.moviesCollection.reset(that.loggedInUserData.futureMovies);
 					} else {
-						that.moviesCollection.reset(that.loggedInUserData.movies);
+						that.moviesCollection.reset(that.loggedInUserData.availableMovies);
 					}
 				});
 			},
 
 			onFutureMoviesFilterClick: function() {
-				this.moviesCollection.reset(this.loggedInUserData.futureMovies);
+				this.moviesCollection.reset(this.loggedInUserData.userMovies);
 				this.ui.futureMoviesFilter.addClass('filter-selected');
 				this.ui.moviesFilter.removeClass('filter-selected');
 				this.moviesListRegion.$el.addClass('future-movies-list');
@@ -163,7 +163,7 @@ define([
 			},
 
 			onMoviesFilterClick: function() {
-				this.moviesCollection.reset(this.loggedInUserData.movies);
+				this.moviesCollection.reset(this.loggedInUserData.availableMovies);
 				this.ui.futureMoviesFilter.removeClass('filter-selected');
 				this.ui.moviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.removeClass('future-movies-list');
@@ -178,15 +178,15 @@ define([
 					MessageBox.info(res.message);
 
 					var i;
-					for (i = 0; i < that.loggedInUserData.futureMovies.length; ++i) {
-						if (that.loggedInUserData.futureMovies[i].id == movieModel.get('id')) {
+					for (i = 0; i < that.loggedInUserData.userMovies.length; ++i) {
+						if (that.loggedInUserData.userMovies[i].id == movieModel.get('id')) {
 							break;
 						}
 					}
-					that.loggedInUserData.futureMovies.splice(i, 1);
-					that.ui.futureMoviesCounter.html(that.loggedInUserData.futureMovies.length);
+					that.loggedInUserData.userMovies.splice(i, 1);
+					that.ui.futureMoviesCounter.html(that.loggedInUserData.userMovies.length);
 					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {
-						that.moviesCollection.reset(that.loggedInUserData.futureMovies);
+						that.moviesCollection.reset(that.loggedInUserData.userMovies);
 					}
 				});
 			}

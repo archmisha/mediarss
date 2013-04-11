@@ -55,21 +55,13 @@ public class UserController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("initialData", createInitialData(tab));
 
-		User user = null;
-
-
 		if (sessionService.isUserLogged()) {
-			user = userDao.find(sessionService.getLoggedInUserId());
+			User user = userDao.find(sessionService.getLoggedInUserId());
 			result.put("user", createUserResponse(user, tab));
 		}
 
 		duration.stop();
-		String msg = "getPreLoginData(" + tab + ")";
-		if (user != null) {
-			msg += " for " + user.getEmail();
-		}
-		msg += " (" + duration.getDuration() + " millis)";
-		logService.info(getClass(), msg);
+		logService.info(getClass(), "getPreLoginData(" + tab + ") (" + duration.getDuration() + " millis)");
 
 		return result;
 	}

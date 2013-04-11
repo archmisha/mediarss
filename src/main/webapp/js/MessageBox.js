@@ -19,13 +19,22 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 					type: "error",
 					buttons: [{ value: "OK" }]
 				});
+			},
 
-//				noty({
-//					layout: 'topCenter',
-//					text: message,
-//					timeout: 5000,
-//					type: 'error'
-//				});
+			sessionTimeout: function() {
+				$.msgBox({
+					title: 'Authentication Timeout',
+					content: "An authentication timeout has been detected.<br/>The application will log out and redirect to login page.",
+					type: "error",
+					buttons: [{ value: "Proceed" }],
+					success: function (result) {
+						if (result == "Proceed") {
+							var url = window.parent.location.href;
+							url = url.substring(0, url.indexOf('#'));
+							window.parent.location = url;
+						}
+					}
+				});
 			},
 
 			info: function(message) {

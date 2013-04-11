@@ -19,7 +19,6 @@
 <script data-main="main.js" src="require.js"></script>
 
 <%@ include file="login-form.jsp" %>
-<%@ include file="session-timeout-dialog.jsp" %>
 
 </body>
 </html>

@@ -2,11 +2,8 @@
  * Date: 06/01/13
  * Time: 14:23
  */
-define([
-	'MessageBox',
-	'Spinner',
-	'components/session-timeout-dialog/views/SessionTimeoutDialog'],
-	function(MessageBox, Spinner, SessionTimeoutDialog) {
+define(['MessageBox', 'Spinner'],
+	function(MessageBox, Spinner) {
 		"use strict";
 
 		return {
@@ -52,7 +49,7 @@ define([
 
 				if (res.success === false) {
 					if (res.message == 'User is not logged in') {
-						new SessionTimeoutDialog().show();
+						MessageBox.sessionTimeout();
 					} else {
 						MessageBox.error(res.message);
 					}

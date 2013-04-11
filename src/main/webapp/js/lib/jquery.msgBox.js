@@ -76,7 +76,7 @@ function msg (options) {
             image = "info.png";
             break;
         case "error":
-            image = "error.png";
+            image = "error.jpg";
             break;
         case "confirm":
             image = "confirm.png";

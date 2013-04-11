@@ -98,3 +98,4 @@ showlistdownloader runs tooo long - why?
 need tooltips in show search result
 
 can improve the show name matching algo speed to reduce from 1 second?
+when doing action shown session timeout dialog but when clickin tab redirected to login wothout message

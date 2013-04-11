@@ -186,8 +186,8 @@ public class BaseController {
 
 		if (tab.equals(MOVIES_TAB)) {
 			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
-					.withAvailableMovies(movieService.getUserMovies(user))
-					.withFutureMovies(movieService.getFutureUserMovies(user));
+					.withAvailableMovies(movieService.getAvailableMovies(user))
+					.withUserMovies(movieService.getUserMovies(user));
 		} else if (tab.equals(TVSHOWS_TAB)) {
 			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
 			.withSchedule(showService.getSchedule(user.getShows()));

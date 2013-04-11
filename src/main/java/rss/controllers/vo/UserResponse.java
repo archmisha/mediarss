@@ -14,7 +14,7 @@ public class UserResponse {
 	private String tvShowsRssFeed;
 	private String moviesRssFeed;
 	private List<UserMovieVO> availableMovies;
-	private List<UserMovieVO> futureMovies;
+	private List<UserMovieVO> userMovies;
 	private Date moviesLastUpdated;
 	private List<ShowVO> shows;
 	private ShowsScheduleVO schedule;
@@ -46,12 +46,12 @@ public class UserResponse {
 		return this;
 	}
 
-	public List<UserMovieVO> getFutureMovies() {
-		return futureMovies;
+	public List<UserMovieVO> getUserMovies() {
+		return userMovies;
 	}
 
-	public UserResponse withFutureMovies(List<UserMovieVO> futureMovies) {
-		this.futureMovies = futureMovies;
+	public UserResponse withUserMovies(List<UserMovieVO> userMovies) {
+		this.userMovies = userMovies;
 		return this;
 	}
 
