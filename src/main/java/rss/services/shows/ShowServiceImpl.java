@@ -28,6 +28,7 @@ import rss.services.downloader.TVShowsTorrentEntriesDownloader;
 import rss.services.log.LogService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
+import rss.util.DurationMeter;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -110,17 +111,17 @@ public class ShowServiceImpl implements ShowService {
 		Set<CachedShow> matches = new HashSet<>();
 
 		int bestLD = Integer.MAX_VALUE;
-		for (CachedShow show : showsCacheService.getAll()) {
+		for (Map.Entry<CachedShow, Collection<String>> entry : showsCacheService.getShowsSubsets()) {
+			CachedShow show = entry.getKey();
 			int ld = Integer.MAX_VALUE;
-			for (String permutation : showsCacheService.getShowNamePermutations(show)) {
-				if (permutation.contains(sortedNameJoined)) {
+			for (String subset : entry.getValue()) {
+				if (subset.contains(sortedNameJoined)) {
 					ld = 0;
 				} else {
-					int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, permutation);
-					if (curLd == -1) {
-						curLd = Integer.MAX_VALUE;
+					int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, subset);
+					if (curLd != -1) {
+						ld = Math.min(curLd, ld);
 					}
-					ld = Math.min(curLd, ld);
 				}
 			}
 
@@ -208,11 +209,17 @@ public class ShowServiceImpl implements ShowService {
 	public EpisodeSearchResult search(EpisodeRequest episodeRequest, User user) {
 		// saving original search term - it might change during the search
 		String originalSearchTerm = episodeRequest.getTitle();
-
+		DurationMeter duration = new DurationMeter();
 		// first check which show we need
 		String actualSearchTerm;
 		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm);
+		duration.stop();
+		DurationMeter duration2 = new DurationMeter();
 		Show show = showDao.findByName(originalSearchTerm);
+
+		duration2.stop();
+		logService.info(getClass(), "AAAAAAAA - " + duration.getDuration() + "<>" + duration2.getDuration());
+
 		if (show != null) {
 			episodeRequest.setShow(show);
 			episodeRequest.setTitle(show.getName());
@@ -232,6 +239,8 @@ public class ShowServiceImpl implements ShowService {
 		} else {
 			return EpisodeSearchResult.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
 		}
+
+
 
 		ArrayList<UserTorrentVO> result = new ArrayList<>();
 		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest)).getDownloaded();
@@ -278,6 +287,7 @@ public class ShowServiceImpl implements ShowService {
 
 		EpisodeSearchResult episodeSearchResult = new EpisodeSearchResult(originalSearchTerm, actualSearchTerm, result);
 		episodeSearchResult.setDidYouMean(entityConverter.toThinShows(didYouMeanShows));
+
 		return episodeSearchResult;
 	}
 

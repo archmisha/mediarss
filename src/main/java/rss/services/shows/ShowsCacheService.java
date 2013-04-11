@@ -3,6 +3,8 @@ package rss.services.shows;
 import rss.entities.Show;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: dikmanm
@@ -14,5 +16,7 @@ public interface ShowsCacheService {
 
 	Collection<CachedShow> getAll();
 
-	Collection<String> getShowNamePermutations(CachedShow show);
+	Collection<String> getShowNameSubsets(CachedShow show);
+
+	List<Map.Entry<CachedShow, Collection<String>>> getShowsSubsets();
 }

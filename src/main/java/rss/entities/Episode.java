@@ -15,7 +15,7 @@ import java.util.Date;
 @Entity
 @Table(name = "episode")
 @org.hibernate.annotations.Table(appliesTo = "episode",
-		indexes = {@Index(name = "episode_idx", columnNames = {"season", "episode"})})
+		indexes = {@Index(name = "ep_showid_season_episode_idx", columnNames = {"show_id", "season", "episode"})})
 @NamedQueries({
 		@NamedQuery(name = "Episode.getSubtitlesLanguages",
 				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e " +

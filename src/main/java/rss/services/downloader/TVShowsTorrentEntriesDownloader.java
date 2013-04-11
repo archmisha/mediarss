@@ -17,12 +17,12 @@ import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
-import rss.services.EmailService;
 import rss.services.EpisodeRequest;
 import rss.services.SearchResult;
 import rss.services.SubtitlesService;
 import rss.services.searchers.TorrentSearcher;
 import rss.services.shows.ShowService;
+import rss.util.DurationMeter;
 
 import java.util.*;
 
@@ -43,9 +43,6 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	@Autowired
 	@Qualifier("smartEpisodeSearcher")
 	private TorrentSearcher<EpisodeRequest, Episode> smartEpisodeSearcher;
-
-	@Autowired
-	private EmailService emailService;
 
 	@Autowired
 	private ShowService showService;
@@ -98,7 +95,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	@Override
 	// persisting new shows here - must be persisted before the new transaction opens for each download
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	protected void preDownloadPhase(Set<EpisodeRequest> episodeRequests) {
+	protected Collection<Episode> preDownloadPhase(Set<EpisodeRequest> episodeRequests) {
 		// expand full season requests into the specific episode requests
 		// iterating on a copy
 		Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps = new HashMap<>();
@@ -164,26 +161,33 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			}
 		}
 
-		// skip un-aired episodes
-		for (EpisodeRequest episodeRequest : new HashSet<>(episodeRequests)) {
+		Map<Episode, EpisodeRequest> episodesMap = new HashMap<>();
+		for (EpisodeRequest episodeRequest : episodeRequests) {
 			Episode episode = episodeDao.find(episodeRequest);
-			if (episode != null && episode.isUnAired()) {
+			if (episode != null) {
+				episodesMap.put(episode, episodeRequest);
+			}
+		}
+
+		// skip un-aired episodes
+		for (Map.Entry<Episode, EpisodeRequest> entry : new ArrayList<>(episodesMap.entrySet())) {
+			Episode episode = entry.getKey();
+			if (episode.isUnAired()) {
+				EpisodeRequest episodeRequest = entry.getValue();
 				episodeRequests.remove(episodeRequest);
+				// removing to skip in the following iteration loop
+				episodesMap.remove(episode);
 				logService.info(getClass(), "Skipping downloading '" + episodeRequest.toString() + "' - still un-aired");
 			}
 		}
-	}
 
-	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	protected Collection<Episode> removeCachedEntries(Set<EpisodeRequest> requests) {
-		Set<Episode> result = new HashSet<>();
-
-		Collection<Episode> episodes = episodeDao.find(requests);
-		for (Episode episode : episodes) {
+		// prepare cached episodes
+		Set<Episode> cachedEpisodes = new HashSet<>();
+		for (Map.Entry<Episode, EpisodeRequest> entry : new ArrayList<>(episodesMap.entrySet())) {
+			Episode episode = entry.getKey();
 			if (!episode.getTorrentIds().isEmpty()) {
 				logService.info(this.getClass(), "Episode \"" + episode + "\" was found in cache");
-				result.add(episode);
+				cachedEpisodes.add(episode);
 
 				Set<MediaQuality> qualities = new HashSet<>();
 				for (Torrent torrent : torrentDao.findByIds(episode.getTorrentIds())) {
@@ -195,11 +199,13 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 				qualities.addAll(Arrays.asList(MediaQuality.values()));
 
 				for (MediaQuality quality : qualities) {
-					requests.remove(new EpisodeRequest(episode.getName(), episode.getShow(), quality, episode.getSeason(), episode.getEpisode()));
+					episodeRequests.remove(new EpisodeRequest(episode.getName(), episode.getShow(), quality, episode.getSeason(), episode.getEpisode()));
 				}
+
+				// removing to skip in the following iteration loop
+				episodesMap.remove(episode);
 			}
 		}
-
-		return result;
+		return cachedEpisodes;
 	}
 }

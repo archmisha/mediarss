@@ -36,12 +36,12 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	protected LogService logService;
 
 	private List<CachedShow> cache;
-	private Map<Long, Collection<String>> showNamePermutations;
+	private Map<CachedShow, Collection<String>> showNameSubsets;
 
 	@PostConstruct
 	private void postConstruct() {
 		cache = new ArrayList<>();
-		showNamePermutations = new HashMap<>();
+		showNameSubsets = new HashMap<>();
 
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -60,7 +60,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		DurationMeter duration = new DurationMeter();
 
 		cache.clear();
-		showNamePermutations.clear();
+		showNameSubsets.clear();
 
 		for (CachedShow show : showDao.findCachedShows()) {
 			addShow(show);
@@ -81,7 +81,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 			permutationsList.add(StringUtils.join(permutation, " "));
 		}
 
-		showNamePermutations.put(show.getId(), permutationsList);
+		showNameSubsets.put(show, permutationsList);
 	}
 
 	private Generator<String> getSubsets(String[] arr) {
@@ -101,7 +101,12 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	}
 
 	@Override
-	public Collection<String> getShowNamePermutations(CachedShow show) {
-		return showNamePermutations.get(show.getId());
+	public Collection<String> getShowNameSubsets(CachedShow show) {
+		return showNameSubsets.get(show);
+	}
+
+	@Override
+	public List<Map.Entry<CachedShow, Collection<String>>> getShowsSubsets() {
+		return new ArrayList<>(showNameSubsets.entrySet());
 	}
 }

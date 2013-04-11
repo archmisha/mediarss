@@ -11,6 +11,7 @@ import rss.services.MediaRequest;
 import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
+import rss.util.DurationMeter;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -49,10 +50,8 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 
 		// enriching the set before the cache query - maybe expanding full season request into parts
 		// modifying and enriching the set inside the method
-		preDownloadPhase(mediaRequestsCopy);
-
 		// first query the cache and those that are not found in cache divide between the threads
-		Collection<T> cachedTorrentEntries = removeCachedEntries(mediaRequestsCopy);
+		Collection<T> cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy);
 
 		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
@@ -117,12 +116,11 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 		DownloadResult<T, S> downloadResult = new DownloadResult<>();
 		downloadResult.getDownloaded().addAll(result);
 		downloadResult.getMissing().addAll(missing);
+
 		return downloadResult;
 	}
 
-	protected abstract void preDownloadPhase(Set<S> mediaRequestsCopy);
-
-	protected abstract Collection<T> removeCachedEntries(Set<S> requests);
+	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy);
 
 	protected abstract T onTorrentFound(S mediaRequest, SearchResult<T> searchResult);
 

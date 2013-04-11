@@ -104,11 +104,6 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		return persistedMovie;
 	}
 
-	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	protected void preDownloadPhase(Set<MovieRequest> mediaRequestsCopy) {
-	}
-
 	private String getMovieName(SearchResult<Movie> searchResult) {
 		String name;
 
@@ -182,7 +177,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	protected Collection<Movie> removeCachedEntries(Set<MovieRequest> requests) {
+	protected Collection<Movie> preDownloadPhase(Set<MovieRequest> requests) {
 		Set<Movie> result = new HashSet<>();
 
 		Map<String, MovieRequest> byHash = new HashMap<>();

@@ -34,15 +34,16 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		query.append("select t from Episode as t where ");
 		int counter = 0;
 		for (EpisodeRequest episodeRequest : episodeRequests) {
-			query.append("(lower(t.show.name) = :p").append(counter++).append(" and t.season = :p").append(counter++).append(" and t.episode = :p").append(counter++).append(")");
+			query.append("(t.show.id = :p").append(counter++).append(" and t.season = :p").append(counter++).append(" and t.episode = :p").append(counter++).append(")");
 			query.append(orPart);
-			params.add(episodeRequest.getTitle().toLowerCase());
+			params.add(episodeRequest.getShow().getId());
 			params.add(episodeRequest.getSeason());
 			params.add(episodeRequest.getEpisode());
 
 		}
 		query.delete(query.length() - orPart.length(), query.length());
 
+//		System.out.println("params: " + params);
 		return find(query.toString(), params.toArray());
 	}
 

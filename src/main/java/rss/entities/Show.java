@@ -1,5 +1,7 @@
 package rss.entities;
 
+import org.hibernate.annotations.Index;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.HashSet;
@@ -27,6 +29,7 @@ public class Show extends BaseEntity {
 	private static final long serialVersionUID = -4408596786454177485L;
 
 	@Column(name = "name", unique = true)
+	@Index(name ="show_name_idx")
 	private String name;
 
 	@Column(name = "created")

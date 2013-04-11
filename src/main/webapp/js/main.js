@@ -16,7 +16,8 @@ require.config({
 		noty: 'lib/noty/jquery.noty',
 		qtip: 'lib/jquery.qtip-1.0.0-rc3.min',
 		ajaxChosen: 'lib/ajax-chosen.min',
-		select2: 'lib/select2.min'
+		select2: 'lib/select2.min',
+		jqueryMsgBox: 'lib/jquery.msgBox'
 	},
 	shim: {
 		'lib/backbone-localStorage': ['backbone'],
@@ -64,6 +65,9 @@ require.config({
 		},
 		select2: {
 			exports: 'Select2'
+		},
+		jqueryMsgBox: {
+			exports: 'jqueryMsgBox'
 		}
 	},
 	deps: ['jquery', 'underscore']
