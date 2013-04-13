@@ -7,6 +7,8 @@ define([
 	function(Marionette, Handlebars, template, Moment) {
 		"use strict";
 
+		var JOB_MAX_HOURS = 2;
+
 		return Marionette.ItemView.extend({
 			template: Handlebars.compile(template),
 			className: 'admin-job',
@@ -32,11 +34,15 @@ define([
 				// handling some bugs - usually takes a few mins to run a job, so if running for more than 2 hours - means
 				// the job is not really running
 				return this.model.get('end') == null &&
-					new Date().getTime() - this.model.get('start') < 2 * 60 * 60 * 1000;
+					new Date().getTime() - this.model.get('start') < JOB_MAX_HOURS * 60 * 60 * 1000;
 			},
 
 			_updateDuration: function() {
-				this.ui.duration.html(Moment.duration(this.model.get('end') - this.model.get('start')).humanize());
+				if (this.model.get('end') == null) {
+					this.ui.duration.html('over  ' + JOB_MAX_HOURS + ' hours or aborted');
+				} else {
+					this.ui.duration.html(Moment.duration(this.model.get('end') - this.model.get('start')).humanize());
+				}
 			},
 
 			constructor: function(options) {
