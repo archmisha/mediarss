@@ -66,6 +66,11 @@ define([
 				}
 			},
 
+			onClose: function() {
+				// when leaving the view stop polling the server for job updates
+				this._stopPollingThread();
+			},
+
 			_markJobRunning: function() {
 				this.ui.runningStatus.show();
 				this.ui.runningStartedOn.html(this._formatDate(this.model.get('start')));
