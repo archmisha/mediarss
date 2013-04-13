@@ -9,35 +9,53 @@ import java.io.Serializable;
  */
 public abstract class MediaRequest implements Serializable {
 
-    private static final long serialVersionUID = 5299194875537926970L;
+	private static final long serialVersionUID = 5299194875537926970L;
 
 	protected String pirateBayId;
-
+	private String imdbId;
+	private String hash;
 	private String title;
 
-    protected MediaRequest() {
-    }
+	protected MediaRequest() {
+	}
 
-    protected MediaRequest(String title) {
-        this.title = title;
-    }
+	protected MediaRequest(String title) {
+		this.title = title;
+	}
 
-    public String toQueryString() {
-        return title;
-    }
+	protected MediaRequest(String title, String hash) {
+		this.title = title;
+		this.hash = hash;
+	}
 
-    @Override
-    public String toString() {
-        return title;
-    }
+	public String getHash() {
+		return hash;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	public String toQueryString() {
+		return title;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(title);
+		if (hash != null) {
+			sb.append(" (").append(hash).append(")");
+		}
+		return sb.toString();
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
 	public String getPirateBayId() {
 		return pirateBayId;
@@ -45,6 +63,14 @@ public abstract class MediaRequest implements Serializable {
 
 	public void setPirateBayId(String pirateBayId) {
 		this.pirateBayId = pirateBayId;
+	}
+
+	public String getImdbId() {
+		return imdbId;
+	}
+
+	public void setImdbId(String imdbId) {
+		this.imdbId = imdbId;
 	}
 
 	@Override

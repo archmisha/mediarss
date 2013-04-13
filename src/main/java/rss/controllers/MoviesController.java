@@ -1,21 +1,17 @@
 package rss.controllers;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
-import rss.services.log.LogService;
-import rss.services.movies.MovieService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -79,32 +75,34 @@ public class MoviesController extends BaseController {
 	@RequestMapping(value = "/future/add", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> addFutureMovie(HttpServletRequest request) {
-		String imdbId = extractString(request, "imdbId", true);
+	public Map<String, Object> addFutureMovie(@RequestParam("imdbId") String imdbId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		Movie movie = movieService.addFutureMovieDownload(user, imdbId);
-		if (movie == null) {
+		Pair<Movie, Boolean> futureMovieResult = movieService.addFutureMovieDownload(user, imdbId);
+		if (futureMovieResult == null) {
 			throw new MediaRSSException("Movie ID was not found in IMDB").doNotLog();
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		if (!movie.getTorrentIds().isEmpty()) {
-			result.put("message", "Movie '" + movie.getName() + "' was scheduled for immediate download as it is already available");
-			result.put("alreadyOut", true);
-
-			// take where max seeders
-			int seeders = -1;
-			Torrent theTorrent = null;
-			for (Torrent torrent : torrentDao.findByIds(movie.getTorrentIds())) {
-				if (seeders == -1 || seeders < torrent.getSeeders()) {
-					seeders = torrent.getSeeders();
-					theTorrent = torrent;
-				}
-			}
-			addUserTorrent(user, theTorrent, new MovieUserTorrent());
+		Movie movie = futureMovieResult.getKey();
+		if (futureMovieResult.getValue()) {
+			result.put("message", "Movie '" + movie.getName() + "' was already scheduled for download");
 		} else {
-			result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
-			result.put("alreadyOut", false);
+			if (!movie.getTorrentIds().isEmpty()) {
+				result.put("message", "Movie '" + movie.getName() + "' was scheduled for immediate download as it is already available");
+
+				// take where max seeders
+				int seeders = -1;
+				Torrent theTorrent = null;
+				for (Torrent torrent : torrentDao.findByIds(movie.getTorrentIds())) {
+					if (seeders == -1 || seeders < torrent.getSeeders()) {
+						seeders = torrent.getSeeders();
+						theTorrent = torrent;
+					}
+				}
+				addUserTorrent(user, theTorrent, new MovieUserTorrent());
+			} else {
+				result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
+			}
 		}
 
 		// must be after movieUserTorrent creation

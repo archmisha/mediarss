@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class TorrentzParserTest extends BaseTest {
 
-	private TorrentzParser torrentzParser = new TorrentzParser();
+	private TorrentzParserImpl torrentzParser = new TorrentzParserImpl();
 
 	@Test
 	public void testSkipPornTorrents() {

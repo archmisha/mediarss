@@ -11,7 +11,7 @@ import rss.services.SearchResult;
  */
 public interface TorrentSearcher<T extends MediaRequest, S extends Media> {
 
-	SearchResult<S> search(T media);
+	SearchResult<S> search(T mediaRequest);
 
 	String getName();
 }

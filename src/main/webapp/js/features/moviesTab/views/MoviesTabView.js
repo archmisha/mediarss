@@ -143,12 +143,10 @@ define([
 
 					that.loggedInUserData = res.user;
 					that.ui.moviesCounter.html(that.loggedInUserData.availableMovies.length);
-					that.ui.futureMoviesCounter.html(that.loggedInUserData.futureMovies.length);
-					if (that.ui.userMoviesFilter.hasClass('filter-selected')) {
-						that.moviesCollection.reset(that.loggedInUserData.futureMovies);
-					} else {
-						that.moviesCollection.reset(that.loggedInUserData.availableMovies);
-					}
+					that.ui.futureMoviesCounter.html(that.loggedInUserData.userMovies.length);
+					that.ui.moviesFilter.removeClass('filter-selected');
+					that.ui.futureMoviesFilter.addClass('filter-selected');
+					that.moviesCollection.reset(that.loggedInUserData.userMovies);
 				});
 			},
 

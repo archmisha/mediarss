@@ -432,6 +432,14 @@ public class ShowServiceImpl implements ShowService {
 		}
 	}
 
+	@Override
+	public boolean isMatch(EpisodeRequest mediaRequest, String title) {
+		String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle()).toLowerCase();
+		String seasonEpisode = mediaRequest.getSeasonEpisode();
+		title = ShowServiceImpl.normalize(title.toLowerCase());
+		return title.contains(requestTitle) && title.contains(seasonEpisode);
+	}
+
 	/*@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Show downloadShowByUrl(String url) {

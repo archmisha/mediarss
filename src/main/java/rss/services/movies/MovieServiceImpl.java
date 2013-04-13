@@ -1,6 +1,8 @@
 package rss.services.movies;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -307,7 +309,7 @@ public class MovieServiceImpl implements MovieService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Movie addFutureMovieDownload(User user, String imdbId) {
+	public Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId) {
 		final String imdbUrl = IMDB_URL + imdbId;
 		Movie movie = movieDao.findByImdbUrl(imdbUrl);
 		if (movie == null) {
@@ -337,8 +339,10 @@ public class MovieServiceImpl implements MovieService {
 			});
 
 			// uses a separate transaction
-			torrentzService.downloadMovie(movie);
+			torrentzService.downloadMovie(movie, imdbId);
 		}
+
+		Pair<Movie, Boolean> futureMovieResult = new MutablePair<>(movie, true);
 
 		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
 		if (userMovie == null) {
@@ -347,9 +351,10 @@ public class MovieServiceImpl implements MovieService {
 			userMovie.setUser(user);
 			userMovie.setUpdated(new Date());
 			movieDao.persist(userMovie);
+			futureMovieResult.setValue(false);
 		}
 
-		return movie;
+		return futureMovieResult;
 	}
 
 	@Override

@@ -30,25 +30,30 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
         List<String> noIMDBUrlSearchers = new ArrayList<>();
         SearchResult<Media> successfulSearchResult = null;
         for (TorrentSearcher<MediaRequest, Media> torrentSearcher : getTorrentSearchers()) {
-            SearchResult<Media> searchResult = torrentSearcher.search(mediaRequest);
-            switch (searchResult.getSearchStatus()) {
-                case NOT_FOUND:
-                    failedSearchers.add(torrentSearcher.getName());
-                    break;
-                case FOUND:
-                    successfulSearchResult = searchResult; // save a successful result for the end, if searching for IMDB url fails
-                    // case of no IMDB url
-                    if (shouldFailOnNoIMDBUrl() && searchResult.getMetaData().getImdbUrl() == null) {
-                        noIMDBUrlSearchers.add(torrentSearcher.getName());
-                        continue;
-                    }
+			try {
+				SearchResult<Media> searchResult = torrentSearcher.search(mediaRequest);
+				switch (searchResult.getSearchStatus()) {
+					case NOT_FOUND:
+						failedSearchers.add(torrentSearcher.getName());
+						break;
+					case FOUND:
+						successfulSearchResult = searchResult; // save a successful result for the end, if searching for IMDB url fails
+						// case of no IMDB url
+						if (shouldFailOnNoIMDBUrl() && searchResult.getMetaData().getImdbUrl() == null) {
+							noIMDBUrlSearchers.add(torrentSearcher.getName());
+							continue;
+						}
 
-                    logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, searchResult.getSource());
-                    return searchResult;
-                case AWAITING_AGING:
-                    return searchResult;
-            }
-        }
+						logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, searchResult.getSource());
+						return searchResult;
+					case AWAITING_AGING:
+						return searchResult;
+				}
+			} catch (Exception e) {
+				failedSearchers.add(torrentSearcher.getName());
+				log.error(e.getMessage(), e);
+			}
+		}
 
         if (successfulSearchResult != null) {
             logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, successfulSearchResult.getSource());

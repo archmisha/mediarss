@@ -12,7 +12,8 @@ define([
 
 			ui: {
 				downloadedStatus: '.shows-search-result-item-downloaded-status',
-				downloadButton: '.shows-search-result-item-download-button'
+				downloadButton: '.shows-search-result-item-download-button',
+				title: '.shows-search-result-item-title'
 			},
 
 			events: {
@@ -45,6 +46,10 @@ define([
 				} else {
 					this.setNotDownloadedState();
 				}
+
+				this.ui.title.qtip({
+					style: 'rssStyle'
+				});
 			},
 
 			onDownloadButtonClick: function() {

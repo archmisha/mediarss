@@ -7,12 +7,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.MediaRSSException;
 import rss.entities.Movie;
+import rss.services.EpisodeRequest;
 import rss.services.PageDownloader;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.MovieRequest;
 import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.log.LogService;
-import rss.services.parsers.PageParser;
+import rss.services.parsers.TorrentzParser;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -27,14 +28,18 @@ import java.util.Set;
 @Service
 public class TorrentzServiceImpl implements TorrentzService {
 
-	public static final String FILTERS = "+-shows+-porn+-brrip";
-	private static final String TORRENTZ_HIGH_RES_MOVIES_URL = "http://torrentz.eu/search?f=movies+hd+video" + FILTERS + "+added%3A";
-	private static final String TORRENTZ_MOVIE_SEARCH_URL = "http://torrentz.eu/search?f=movies+hd+video+highres" + FILTERS + "+";
-	private static final String TORRENTZ_ENTRY_URL = "http://torrentz.eu/";
+	public static final String HOST_NAME = "http://torrentz.eu/";
+
+	// removed filters: highres
+	public static final String FILTERS = "+-shows+-porn+-brrip+-episodes";
+	private static final String TORRENTZ_HIGH_RES_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + FILTERS + "+added%3A";
+	private static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+hd+video" + FILTERS + "+";
+
+	public static final String TORRENTZ_ENTRY_URL = HOST_NAME;
 
 	@Autowired
 	@Qualifier("torrentzParser")
-	private PageParser torrentzParser;
+	private TorrentzParser torrentzParser;
 
 	@Autowired
 	private PageDownloader pageDownloader;
@@ -48,11 +53,11 @@ public class TorrentzServiceImpl implements TorrentzService {
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public DownloadResult<Movie, MovieRequest> downloadLatestMovies() {
-		Set<MovieRequest> movieRequests = downloadMovieRequests(TORRENTZ_HIGH_RES_MOVIES_URL + "1d");
+		Set<MovieRequest> movieRequests = downloadByUrl(TORRENTZ_HIGH_RES_MOVIES_URL + "1d");
 
 		// retry with 7 days
 		if (movieRequests.isEmpty()) {
-			movieRequests = downloadMovieRequests(TORRENTZ_HIGH_RES_MOVIES_URL + "7d");
+			movieRequests = downloadByUrl(TORRENTZ_HIGH_RES_MOVIES_URL + "7d");
 		}
 
 		// filter out old year movies
@@ -71,16 +76,19 @@ public class TorrentzServiceImpl implements TorrentzService {
 
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie) {
+	public DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie, String imdbId) {
 		try {
-			Set<MovieRequest> movieRequests = downloadMovieRequests(TORRENTZ_MOVIE_SEARCH_URL + URLEncoder.encode(movie.getName(), "UTF-8"));
+			Set<MovieRequest> movieRequests = downloadByUrl(TORRENTZ_MOVIE_SEARCH_URL + URLEncoder.encode(movie.getName(), "UTF-8"));
+			for (MovieRequest movieRequest : movieRequests) {
+				movieRequest.setImdbId(imdbId);
+			}
 			return moviesTorrentEntriesDownloader.download(movieRequests);
 		} catch (UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}
 	}
 
-	private Set<MovieRequest> downloadMovieRequests(String url) {
+	private Set<MovieRequest> downloadByUrl(String url) {
 		String page = pageDownloader.downloadPage(url);
 		Set<MovieRequest> movieRequests = torrentzParser.parse(page);
 

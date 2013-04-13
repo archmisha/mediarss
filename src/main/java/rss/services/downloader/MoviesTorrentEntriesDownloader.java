@@ -107,6 +107,13 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	private String getMovieName(SearchResult<Movie> searchResult) {
 		String name;
 
+		// if there is no imdbid - skip this movie
+		// if there is imdbid in the original request (meaning it came from ui) - compare imdbid and skip if no match
+		// if there is no imdbid i nthe original request (meaning it came from the movies job) - download imdb page (for the first time,
+		// should be some common service that parses it and returns an objects with status), skip non-release and low viewers number
+		// in case of ui, should skip all of the above in the controller level
+		// if coming from ui and nothing is found, need to compare release year. if older than 1 year ago - means there will be no hd torrent (not that its scheduled)
+
 		// if found a result then try to get the real title from IMDB
 		if (searchResult.getMetaData().getImdbUrl() != null) {
 			long from = System.currentTimeMillis();

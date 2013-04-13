@@ -28,7 +28,7 @@ public class CompositeMoviesSearcher extends CompositeTorrentSearcher {
     private TorrentSearcher episodeSearcher1337x;
 
     @Autowired
-    @Qualifier("thePirateBayEpisodeSearcher")
+    @Qualifier("thePirateBayTorrentSearcher")
     private TorrentSearcher thePirateBayEpisodeSearcher;
 
     @Override

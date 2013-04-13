@@ -7,6 +7,7 @@ import rss.services.PageDownloader;
 import rss.services.MediaRequest;
 import rss.entities.Media;
 import rss.services.SearchResult;
+import rss.services.log.LogService;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -18,20 +19,21 @@ import java.util.Date;
  * Date: 24/11/12
  * Time: 19:31
  */
-public abstract class AbstractTorrentSearcher implements TorrentSearcher<MediaRequest, Media> {
-
-    private static Log log = LogFactory.getLog(AbstractTorrentSearcher.class);
+public abstract class AbstractTorrentSearcher<T extends MediaRequest, S extends Media> implements TorrentSearcher<T, S> {
 
 	@Autowired
 	private PageDownloader pageDownloader;
 
+	@Autowired
+	protected LogService logService;
+
     @Override
-    public SearchResult<Media> search(MediaRequest mediaRequest) {
+    public SearchResult<S> search(T mediaRequest) {
         String url = null;
         try {
             url = String.format(getSearchUrl(), URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            log.error("Failed encoding: " + url + " error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed encoding: " + url + " error: " + e.getMessage(), e);
             return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
         }
 
@@ -39,11 +41,11 @@ public abstract class AbstractTorrentSearcher implements TorrentSearcher<MediaRe
 		try {
 			page = pageDownloader.downloadPage(url);
 		} catch (Exception e) {
-			log.error("Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
+			logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 
-        SearchResult<Media> searchResult = parseSearchResults(mediaRequest, url, page);
+        SearchResult<S> searchResult = parseSearchResults(mediaRequest, url, page);
         if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
             return searchResult;
         }
@@ -61,5 +63,5 @@ public abstract class AbstractTorrentSearcher implements TorrentSearcher<MediaRe
 
     protected abstract String getSearchUrl();
 
-    protected abstract SearchResult<Media> parseSearchResults(MediaRequest mediaRequest, String url, String page);
+    protected abstract SearchResult<S> parseSearchResults(T mediaRequest, String url, String page);
 }

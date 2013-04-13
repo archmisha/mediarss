@@ -15,8 +15,8 @@ import rss.services.PageDownloader;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.MovieRequest;
 import rss.services.downloader.MoviesTorrentEntriesDownloader;
-import rss.services.parsers.PageParser;
 import rss.services.parsers.TorrentzParser;
+import rss.services.parsers.TorrentzParserImpl;
 
 import java.util.Collection;
 import java.util.Set;
@@ -36,7 +36,7 @@ public class TorrentzServiceImplTest extends BaseTest {
 	private PageDownloader pageDownloader;
 
 	@Mock
-	private PageParser torrentzParser;
+	private TorrentzParser torrentzParser;
 
 	@Mock
 	private MoviesTorrentEntriesDownloader moviesTorrentEntriesDownloader;
@@ -50,7 +50,7 @@ public class TorrentzServiceImplTest extends BaseTest {
 		String searchResultsPage = loadPage("torrentz-for-the-love-of-money-search-results");
 		String entryPage = loadPage("torrentz-for-the-love-of-money-entry");
 		doReturn(searchResultsPage).doReturn(entryPage).when(pageDownloader).downloadPage(anyString());
-		TorrentzParser realTorrentzParser = new TorrentzParser();
+		TorrentzParserImpl realTorrentzParser = new TorrentzParserImpl();
 		Set<MovieRequest> parsedPage = realTorrentzParser.parse(searchResultsPage);
 		doReturn(parsedPage).when(torrentzParser).parse(anyString());
 		doReturn(realTorrentzParser.getPirateBayId(entryPage)).when(torrentzParser).getPirateBayId(anyString());
@@ -67,7 +67,7 @@ public class TorrentzServiceImplTest extends BaseTest {
 		}).when(moviesTorrentEntriesDownloader).download(any(Collection.class));
 
 		Movie movie = new Movie(name, null);
-		DownloadResult<Movie, MovieRequest> downloadResult = torrentzService.downloadMovie(movie);
+		DownloadResult<Movie, MovieRequest> downloadResult = torrentzService.downloadMovie(movie, "123");
 //		Assert.assertTrue(downloadResult.getMissing().isEmpty());
 	}
 }

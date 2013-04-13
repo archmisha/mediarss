@@ -32,5 +32,6 @@ public interface ShowService {
 
 	ShowsScheduleVO getSchedule(Set<Show> shows);
 
+	boolean isMatch(EpisodeRequest mediaRequest, String title);
 //	Show downloadShowByUrl(String url);
 }

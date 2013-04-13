@@ -2,6 +2,7 @@ package rss.services;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.shows.ShowServiceImpl;
 import rss.util.StringUtils;
 
 /**
@@ -36,10 +37,8 @@ public class EpisodeRequest extends MediaRequest {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder().append(getTitle()).append(" s").append(StringUtils.pad(season, 2));
-		if (episode > 0) {
-			sb.append("e").append(StringUtils.pad(episode, 2));
-		}
+		StringBuilder sb = new StringBuilder().append(getTitle());
+		sb.append(" ").append(getSeasonEpisode());
 		if (quality != null && quality != MediaQuality.NORMAL) {
 			sb.append(" ").append(quality);
 		}
@@ -48,16 +47,20 @@ public class EpisodeRequest extends MediaRequest {
 
 	@Override
 	public String toQueryString() {
-		String showNameNormalized = getTitle();
-		showNameNormalized = showNameNormalized.replace("'", "");
-		StringBuilder sb = new StringBuilder().append(showNameNormalized).append(" s").append(StringUtils.pad(season, 2));
-		if (episode > 0) {
-			sb.append("e").append(StringUtils.pad(episode, 2));
-		}
+		StringBuilder sb = new StringBuilder().append(ShowServiceImpl.normalize(getTitle()));
+		sb.append(" ").append(getSeasonEpisode());
 		if (quality != MediaQuality.NORMAL) {
 			sb.append(" ").append(quality);
 		}
 		return sb.toString();
+	}
+
+	public String getSeasonEpisode() {
+		if (episode > 0) {
+			return "s" + StringUtils.pad(season, 2) + "e" + StringUtils.pad(episode, 2);
+		} else {
+			return "season " + season;
+		}
 	}
 
 	public int getSeason() {

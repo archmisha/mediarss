@@ -186,7 +186,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		for (Map.Entry<Episode, EpisodeRequest> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();
 			if (!episode.getTorrentIds().isEmpty()) {
-				logService.info(this.getClass(), "Episode \"" + episode + "\" was found in cache");
+				logService.debug(this.getClass(), "Episode \"" + episode + "\" was found in cache");
 				cachedEpisodes.add(episode);
 
 				Set<MediaQuality> qualities = new HashSet<>();

@@ -99,3 +99,19 @@ need tooltips in show search result
 
 can improve the show name matching algo speed to reduce from 1 second?
 when doing action shown session timeout dialog but when clickin tab redirected to login wothout message
+
+
+what if shceduked an old movie but no hd torrent found - maybe will be scheduled for ever cuz there is no hd movie likae that....
+if found a movie wonce with 2 torrents. later when adding this movie again to some user, maybe now there are more torrent and better - we will not download them..
+
+double espidoes - so8e01e02 greys
+full seasons download not good
+search should not go to to internet
+when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
+    anatomy grey seaosn 8 vs s08 vs season 8 720p....)
+    same verification needed in pirate bay
+    also partial seasons: Greys Anatomy Season 8 Episode 1-22
+
+search results  hover text too long
+
+make all tooltips be one line

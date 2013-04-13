@@ -10,24 +10,17 @@ import rss.services.MediaRequest;
 public class MovieRequest extends MediaRequest {
 
 	private static final long serialVersionUID = 1484459093147625288L;
-
-	private String hash;
+	private int uploaders;
 
 	public MovieRequest(String title, String hash) {
-        super(title);
-        this.hash = hash;
+        super(title, hash);
     }
 
-    public String getHash() {
-        return hash;
-    }
+	public int getUploaders() {
+		return uploaders;
+	}
 
-	@Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(super.toString());
-        if (hash != null) {
-            sb.append(" (").append(hash).append(")");
-        }
-        return sb.toString();
-    }
+	public void setUploaders(int uploaders) {
+		this.uploaders = uploaders;
+	}
 }

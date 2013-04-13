@@ -135,4 +135,24 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
 	public String getHash() {
 		return hash;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Torrent torrent = (Torrent) o;
+
+		if (hash != null ? !hash.equals(torrent.hash) : torrent.hash != null) return false;
+		if (!title.equals(torrent.title)) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = title.hashCode();
+		result = 31 * result + (hash != null ? hash.hashCode() : 0);
+		return result;
+	}
 }

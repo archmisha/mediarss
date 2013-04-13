@@ -20,12 +20,16 @@ import java.util.Collection;
 public class CompositeTVShowsEpisodeSearcher extends CompositeTorrentSearcher {
 
     @Autowired
-    @Qualifier("episodeSearcher1337x")
+    @Qualifier("episodeTorrentSearcher1337x")
     private TorrentSearcher episodeSearcher1337x;
 
     @Autowired
-    @Qualifier("thePirateBayEpisodeSearcher")
+    @Qualifier("thePirateBayEpisodeTorrentSearcher")
     private TorrentSearcher thePirateBayEpisodeSearcher;
+
+	@Autowired
+	@Qualifier("torrentzEpisodeSearcher")
+	private TorrentSearcher torrentzEpisodeSearcher;
 
     @Override
     protected boolean shouldFailOnNoIMDBUrl() {
@@ -34,6 +38,6 @@ public class CompositeTVShowsEpisodeSearcher extends CompositeTorrentSearcher {
 
     @Override
     protected Collection<? extends TorrentSearcher<MediaRequest, Media>> getTorrentSearchers() {
-        return Arrays.<TorrentSearcher<MediaRequest, Media>>asList(thePirateBayEpisodeSearcher, episodeSearcher1337x);
+        return Arrays.<TorrentSearcher<MediaRequest, Media>>asList(torrentzEpisodeSearcher, thePirateBayEpisodeSearcher, episodeSearcher1337x);
     }
 }

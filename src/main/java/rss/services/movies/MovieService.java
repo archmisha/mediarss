@@ -1,5 +1,6 @@
 package rss.services.movies;
 
+import org.apache.commons.lang3.tuple.Pair;
 import rss.controllers.vo.UserMovieVO;
 import rss.entities.Movie;
 import rss.entities.User;
@@ -16,7 +17,7 @@ public interface MovieService {
 
 	ArrayList<UserMovieVO> getAvailableMovies(User loggedInUser);
 
-	Movie addFutureMovieDownload(User user, String imdbId);
+	Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId);
 
 	void markMovieViewed(User user, long movieId);
 

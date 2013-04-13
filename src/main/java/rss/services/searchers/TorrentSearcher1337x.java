@@ -9,6 +9,8 @@ import rss.entities.Torrent;
 import rss.services.MediaRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
+import rss.services.downloader.MovieRequest;
+import rss.services.shows.ShowService;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -28,9 +30,7 @@ import java.util.regex.Pattern;
  * <span class="seed">982</span>
  */
 @Service("episodeSearcher1337x")
-public class TorrentSearcher1337x extends AbstractTorrentSearcher {
-
-	private static Log log = LogFactory.getLog(TorrentSearcher1337x.class);
+public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
 
 	private static final String HOST_NAME_URL_PART = "1337x.org";
 	private static final String SEARCH_URL = "http://" + HOST_NAME_URL_PART + "/search/%s/0/";
@@ -62,7 +62,7 @@ public class TorrentSearcher1337x extends AbstractTorrentSearcher {
 		return SEARCH_URL;
 	}
 
-	protected SearchResult<Media> parseSearchResults(MediaRequest mediaRequest, String url, String page) {
+	protected SearchResult<S> parseSearchResults(T mediaRequest, String url, String page) {
 		List<String> results = new ArrayList<>();
 
 		try {
@@ -76,7 +76,7 @@ public class TorrentSearcher1337x extends AbstractTorrentSearcher {
 			}
 		} catch (Exception e) {
 			// in case of an error in parsing, printing the page so be able to reproduce
-			log.error("Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 
@@ -86,8 +86,9 @@ public class TorrentSearcher1337x extends AbstractTorrentSearcher {
 		}
 
 		for (String result : results) {
-			SearchResult<Media> searchResult = retrieveTorrentEntry(result);
-			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND) {
+			SearchResult<S> searchResult = retrieveTorrentEntry(result);
+			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND &&
+				verifySearchResult(mediaRequest, searchResult.getTorrent().getTitle())) {
 				return searchResult;
 			}
 		}
@@ -95,7 +96,11 @@ public class TorrentSearcher1337x extends AbstractTorrentSearcher {
 		return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 	}
 
-	private SearchResult<Media> retrieveTorrentEntry(String torrentUrl) {
+	protected boolean verifySearchResult(T mediaRequest, String title) {
+		return title.toLowerCase().contains(mediaRequest.getTitle().toLowerCase());
+	}
+
+	private SearchResult<S> retrieveTorrentEntry(String torrentUrl) {
 		String page;
 		try {
 			page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
@@ -126,14 +131,14 @@ public class TorrentSearcher1337x extends AbstractTorrentSearcher {
 		String url = page.substring(idx, page.indexOf("\"", idx));
 
 		Torrent torrent = new Torrent(title, url, dateUploadedAgo, seeders);
-		SearchResult<Media> searchResult = new SearchResult<>(torrent, getName());
+		SearchResult<S> searchResult = new SearchResult<>(torrent, getName());
 
 		Matcher imdbUrlMatcher = IMDB_URL_PATTERN.matcher(page);
 		if (imdbUrlMatcher.find()) {
 			String imdbUrl = imdbUrlMatcher.group(1);
 			searchResult.getMetaData().setImdbUrl(imdbUrl);
 		} else {
-			log.error("Didn't find IMDB url for: " + title);
+			logService.error(getClass(), "Didn't find IMDB url for: " + title);
 		}
 
 		return searchResult;

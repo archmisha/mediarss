@@ -1,6 +1,7 @@
 package rss.services.movies;
 
 import rss.entities.Movie;
+import rss.services.EpisodeRequest;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.MovieRequest;
 
@@ -12,5 +13,5 @@ public interface TorrentzService {
 
 	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
 
-	DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie);
+	DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie, String imdbId);
 }

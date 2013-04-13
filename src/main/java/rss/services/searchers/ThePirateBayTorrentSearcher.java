@@ -11,7 +11,6 @@ import rss.services.PageDownloader;
 import rss.services.SearchResult;
 
 import java.net.URLEncoder;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -22,8 +21,8 @@ import java.util.regex.Pattern;
  * Date: 24/11/12
  * Time: 19:21
  */
-@Service("thePirateBayEpisodeSearcher")
-public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
+@Service("thePirateBayTorrentSearcher")
+public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
 
 	private static Log log = LogFactory.getLog(ThePirateBayTorrentSearcher.class);
 
@@ -47,7 +46,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 	}
 
 	@Override
-	public SearchResult<Media> search(MediaRequest mediaRequest) {
+	public SearchResult<S> search(T mediaRequest) {
 		if (mediaRequest.getPirateBayId() != null) {
 			String page = pageDownloader.downloadPage(ENTRY_URL + mediaRequest.getPirateBayId());
 			return parseTorrentPage(mediaRequest, page);
@@ -56,7 +55,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 		}
 	}
 
-	private SearchResult<Media> parseTorrentPage(MediaRequest mediaRequest, String page) {
+	private SearchResult<S> parseTorrentPage(T mediaRequest, String page) {
 		try {
 			String titlePrefix = "<div id=\"title\">";
 			int idx = page.indexOf(titlePrefix);
@@ -90,7 +89,7 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
 			torrent.setHash(hash);
-			SearchResult<Media> searchResult = new SearchResult<>(torrent, getName());
+			SearchResult<S> searchResult = new SearchResult<>(torrent, getName());
 			searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent, page));
 			return searchResult;
 		} catch (Exception e) {
@@ -99,11 +98,16 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 		}
 	}
 
-	protected SearchResult<Media> parseSearchResults(MediaRequest mediaRequest, String url, String page) {
+	protected SearchResult<S> parseSearchResults(T mediaRequest, String url, String page) {
 		List<Torrent> results = parseSearchResultsPage(mediaRequest, page);
 
 		if (results.isEmpty()) {
 			//			log.info("There were no search results for: " + tvShowEpisode.toQueryString() + " url=" + url);
+			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		}
+
+		verifySearchResults(mediaRequest, results);
+		if (results.isEmpty()) {
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 
@@ -112,12 +116,21 @@ public class ThePirateBayTorrentSearcher extends AbstractTorrentSearcher {
 		}
 
 		Torrent torrent = results.get(0);
-		SearchResult<Media> searchResult = new SearchResult<>(torrent, getName());
+		SearchResult<S> searchResult = new SearchResult<>(torrent, getName());
 
 		// now for the final result - should download the actual page to get the imdb info if exists
 		searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent));
 
 		return searchResult;
+	}
+
+	protected void verifySearchResults(T mediaRequest, List<Torrent> results) {
+		for (Torrent torrent : new ArrayList<>(results)) {
+			if (!torrent.getTitle().toLowerCase().contains(mediaRequest.getTitle().toLowerCase())) {
+				results.remove(torrent);
+				log.info("Removing '" + torrent.getTitle() + "' cuz a bad match for '" + mediaRequest.toString() + "'");
+			}
+		}
 	}
 
 	// might be in the headers of the torrent or in the content as plain text
