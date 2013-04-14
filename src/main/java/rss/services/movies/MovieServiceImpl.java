@@ -107,9 +107,16 @@ public class MovieServiceImpl implements MovieService {
 		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
 		doc.body().append("<script>parent.resize_iframe()</script>");
 
+
+		String html = doc.html();
+		html = html.replace("http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/title-2354501989._V370594279_.css", "../../../style/imdb/title-2354501989._V370594279_.css");
+		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
+		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
+		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
+
 		durationMeter.stop();
 		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
-		return doc.html();
+		return html;
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
