@@ -459,7 +459,7 @@
                                 </manifestEntries>
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
-                            <warSourceExcludes>js/**,style/style.less,index_*.jsp</warSourceExcludes>
+                            <warSourceExcludes>js/**,style/*.less,index_*.jsp</warSourceExcludes>
                             <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/rhino-*.jar</packagingExcludes>
                         </configuration>
                     </plugin>
