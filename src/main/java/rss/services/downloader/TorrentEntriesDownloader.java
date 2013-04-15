@@ -7,16 +7,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Media;
-import rss.services.MediaRequest;
+import rss.services.requests.MediaRequest;
 import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
-import rss.util.DurationMeter;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaRequest> {
 
-	public static final int MAX_CONCURRENT_EPISODES = 20;
+	public static final int MAX_CONCURRENT_EPISODES = 15;
 
 	@Autowired
 	protected LogService logService;
@@ -83,14 +83,14 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 										// do nothing - its not missing cuz no need to  email and not found
 										break;
 									case FOUND:
-										T media = onTorrentFound(mediaRequest, searchResult);
-										if (media != null) {
+										List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
+										if (!mediaList.isEmpty()) {
 											// printing the returned torrent and not the original , as it might undergone some transformations
 											logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
 													searchResultTorrent.getTitle(),
 													System.currentTimeMillis() - from,
 													searchResult.getSource()));
-											result.add(media);
+											result.addAll(mediaList);
 										}
 										break;
 								}
@@ -122,7 +122,7 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 
 	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy);
 
-	protected abstract T onTorrentFound(S mediaRequest, SearchResult<T> searchResult);
+	protected abstract List<T> onTorrentFound(S mediaRequest, SearchResult<T> searchResult);
 
 	protected abstract SearchResult<T> downloadTorrent(S request);
 

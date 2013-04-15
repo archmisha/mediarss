@@ -7,6 +7,8 @@ import rss.dao.UserDao;
 import rss.entities.Show;
 import rss.entities.User;
 import rss.services.downloader.MovieRequest;
+import rss.services.requests.EpisodeRequest;
+import rss.services.requests.ShowRequest;
 import rss.util.GoogleMail;
 
 import javax.mail.MessagingException;
@@ -60,12 +62,12 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
-	public void notifyOfMissingEpisode(EpisodeRequest torrentRequest) {
+	public void notifyOfMissingEpisode(ShowRequest torrentRequest) {
 		notifyOfMissingEpisodes(Collections.singletonList(torrentRequest));
 	}
 
 	@Override
-	public void notifyOfMissingEpisodes(Collection<EpisodeRequest> missingRequests) {
+	public void notifyOfMissingEpisodes(Collection<ShowRequest> missingRequests) {
 		if (missingRequests.isEmpty()) {
 			return;
 		}

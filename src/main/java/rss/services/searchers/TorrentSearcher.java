@@ -1,6 +1,6 @@
 package rss.services.searchers;
 
-import rss.services.MediaRequest;
+import rss.services.requests.MediaRequest;
 import rss.entities.Media;
 import rss.services.SearchResult;
 

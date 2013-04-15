@@ -1,6 +1,6 @@
 package rss.dao;
 
-import rss.services.EpisodeRequest;
+import rss.services.requests.EpisodeRequest;
 import rss.entities.Torrent;
 import rss.SubtitleLanguage;
 import rss.entities.Episode;

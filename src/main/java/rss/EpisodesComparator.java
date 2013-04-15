@@ -12,16 +12,22 @@ public class EpisodesComparator implements Comparator<Episode> {
 
 	@Override
 	public int compare(Episode o1, Episode o2) {
-		int result = o1.getName().compareTo(o2.getName());
+		// names come in capital letters and with dots etc, should first compare by season and episod and by name at the end
+//		int result = o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+//		if (result != 0) {
+//			return result;
+//		}
+
+		int result = new Integer(o1.getSeason()).compareTo(o2.getSeason());
 		if (result != 0) {
 			return result;
 		}
 
-		result = new Integer(o1.getSeason()).compareTo(o2.getSeason());
+		result = new Integer(o1.getEpisode()).compareTo(o2.getEpisode());
 		if (result != 0) {
 			return result;
 		}
 
-		return new Integer(o1.getEpisode()).compareTo(o2.getEpisode());
+		return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
 	}
 }

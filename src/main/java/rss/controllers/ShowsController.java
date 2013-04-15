@@ -13,9 +13,12 @@ import rss.dao.ShowDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
-import rss.services.EpisodeRequest;
 import rss.services.SessionService;
 import rss.services.SubtitlesService;
+import rss.services.requests.FullSeasonRequest;
+import rss.services.requests.FullShowRequest;
+import rss.services.requests.ShowRequest;
+import rss.services.requests.SingleEpisodeRequest;
 import rss.services.shows.AutoCompleteItem;
 
 import javax.servlet.http.HttpServletRequest;
@@ -121,7 +124,15 @@ public class ShowsController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		try {
 			Show show = showDao.find(showId);
-			return showService.search(new EpisodeRequest(title, show, MediaQuality.HD720P, season, episode), user);
+			ShowRequest episodeRequest;
+			if (season == -1) {
+				episodeRequest = new FullShowRequest(title, show, MediaQuality.HD720P);
+			} else if (episode == -1) {
+				episodeRequest = new FullSeasonRequest(title, show, MediaQuality.HD720P, season);
+			} else {
+				episodeRequest = new SingleEpisodeRequest(title, show, MediaQuality.HD720P, season, episode);
+			}
+			return showService.search(episodeRequest, user);
 		} catch (ShowNotFoundException e) {
 			return EpisodeSearchResult.createNoResults(title);
 		}

@@ -21,11 +21,12 @@ import rss.dao.ShowDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.EpisodeRequest;
 import rss.services.PageDownloader;
 import rss.services.SettingsService;
 import rss.services.downloader.TVShowsTorrentEntriesDownloader;
 import rss.services.log.LogService;
+import rss.services.requests.EpisodeRequest;
+import rss.services.requests.ShowRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.DurationMeter;
@@ -148,18 +149,22 @@ public class ShowServiceImpl implements ShowService {
 
 	public static String normalize(String name) {
 		name = name.toLowerCase();
-		name = name.replaceAll("['\"!,\\.&\\-\\+\\?/:]", "");
+		name = name.replaceAll("['\"!,&\\-\\+\\?/:]", "");
+		name = name.replaceAll("[\\.]", " ");
 		return name;
 	}
 
 	@Override
 	// substitute show name with alias and seasons if needed
-	public void transformEpisodeRequest(EpisodeRequest episodeRequest) {
-		String alias = settingsService.getShowAlias(episodeRequest.getShow().getName());
+	public void transformEpisodeRequest(ShowRequest showRequest) {
+		String alias = settingsService.getShowAlias(showRequest.getShow().getName());
 		if (!StringUtils.isBlank(alias)) {
-			episodeRequest.setTitle(alias);
+			showRequest.setTitle(alias);
 
-			episodeRequest.setSeason(settingsService.getShowSeasonAlias(episodeRequest.getShow().getName(), episodeRequest.getSeason()));
+			if (showRequest instanceof EpisodeRequest) {
+				EpisodeRequest episodeRequest = (EpisodeRequest) showRequest;
+				episodeRequest.setSeason(settingsService.getShowSeasonAlias(showRequest.getShow().getName(), episodeRequest.getSeason()));
+			}
 		}
 	}
 
@@ -206,7 +211,7 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public EpisodeSearchResult search(EpisodeRequest episodeRequest, User user) {
+	public EpisodeSearchResult search(ShowRequest episodeRequest, User user) {
 		// saving original search term - it might change during the search
 		String originalSearchTerm = episodeRequest.getTitle();
 		DurationMeter duration = new DurationMeter();
@@ -239,7 +244,6 @@ public class ShowServiceImpl implements ShowService {
 		} else {
 			return EpisodeSearchResult.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
 		}
-
 
 
 		ArrayList<UserTorrentVO> result = new ArrayList<>();
@@ -434,10 +438,12 @@ public class ShowServiceImpl implements ShowService {
 
 	@Override
 	public boolean isMatch(EpisodeRequest mediaRequest, String title) {
-		String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle()).toLowerCase();
+		// need the space to avoid matching housewives to house
+		String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle()).toLowerCase() + " ";
 		String seasonEpisode = mediaRequest.getSeasonEpisode();
 		title = ShowServiceImpl.normalize(title.toLowerCase());
-		return title.contains(requestTitle) && title.contains(seasonEpisode);
+		// startswith to avoid matching fullhouse to house
+		return title.startsWith(requestTitle) && title.contains(seasonEpisode);
 	}
 
 	/*@Override

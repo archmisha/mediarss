@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.MediaRequest;
+import rss.services.requests.MediaRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
 

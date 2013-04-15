@@ -79,7 +79,8 @@ public class PageDownloaderImpl implements PageDownloader {
 		return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
 			@Override
 			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
-				return IOUtils.toString(httpResponse.getEntity().getContent());
+				String res = IOUtils.toString(httpResponse.getEntity().getContent());
+				return res;
 			}
 		});
 	}
@@ -148,8 +149,8 @@ public class PageDownloaderImpl implements PageDownloader {
 				httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 			}
 
-			HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 10 * 1000); // 10 secs
-			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 10 * 1000); // 10 secs
+			HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 30 * 1000); // 10 secs
+			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 10 secs
 			AutoRetryHttpClient retryClient = new AutoRetryHttpClient(httpClient, new DefaultServiceUnavailableRetryStrategy(3, 100));
 
 			HttpResponse httpResponse = null;

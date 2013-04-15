@@ -3,12 +3,11 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import rss.controllers.vo.EpisodeSearchResult;
 import rss.controllers.vo.ShowsScheduleVO;
-import rss.entities.Episode;
 import rss.entities.User;
-import rss.services.EpisodeRequest;
+import rss.services.requests.EpisodeRequest;
 import rss.entities.Show;
+import rss.services.requests.ShowRequest;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -18,11 +17,11 @@ import java.util.Set;
  */
 public interface ShowService {
 
-	void transformEpisodeRequest(EpisodeRequest episodeRequest);
+	void transformEpisodeRequest(ShowRequest episodeRequest);
 
 	void downloadShowList();
 
-	EpisodeSearchResult search(EpisodeRequest episodeRequest, User user);
+	EpisodeSearchResult search(ShowRequest episodeRequest, User user);
 
 	DownloadScheduleResult downloadSchedule();
 

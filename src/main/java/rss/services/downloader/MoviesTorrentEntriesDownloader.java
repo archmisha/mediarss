@@ -60,10 +60,10 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	protected Movie onTorrentFound(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
+	protected List<Movie> onTorrentFound(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
 		String name = getMovieName(searchResult);
 		if (name == null) { // when inferring imdb url if year is too old skipping it
-			return null;
+			return Collections.emptyList();
 		}
 
 		Torrent torrent = searchResult.getTorrent();
@@ -101,7 +101,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 		persistedMovie.getTorrentIds().add(persistedTorrent.getId());
 
-		return persistedMovie;
+		return Collections.singletonList(persistedMovie);
 	}
 
 	private String getMovieName(SearchResult<Movie> searchResult) {

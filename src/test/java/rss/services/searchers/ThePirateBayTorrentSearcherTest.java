@@ -1,6 +1,5 @@
 package rss.services.searchers;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -8,9 +7,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
 import rss.entities.Media;
-import rss.entities.MediaQuality;
-import rss.entities.Show;
-import rss.services.EpisodeRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
 import rss.services.downloader.MovieRequest;

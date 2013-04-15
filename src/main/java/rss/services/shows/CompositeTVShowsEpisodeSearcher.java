@@ -3,7 +3,7 @@ package rss.services.shows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import rss.services.MediaRequest;
+import rss.services.requests.MediaRequest;
 import rss.entities.Media;
 import rss.services.searchers.CompositeTorrentSearcher;
 import rss.services.searchers.TorrentSearcher;

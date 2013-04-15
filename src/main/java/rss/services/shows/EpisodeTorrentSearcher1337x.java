@@ -3,7 +3,7 @@ package rss.services.shows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
-import rss.services.EpisodeRequest;
+import rss.services.requests.EpisodeRequest;
 import rss.services.searchers.TorrentSearcher1337x;
 
 /**

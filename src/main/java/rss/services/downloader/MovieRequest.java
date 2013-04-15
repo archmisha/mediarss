@@ -1,6 +1,6 @@
 package rss.services.downloader;
 
-import rss.services.MediaRequest;
+import rss.services.requests.MediaRequest;
 
 /**
  * User: Michael Dikman

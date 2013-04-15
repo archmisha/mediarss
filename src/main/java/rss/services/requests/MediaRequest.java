@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.requests;
 
 import java.io.Serializable;
 

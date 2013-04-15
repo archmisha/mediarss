@@ -3,6 +3,8 @@ package rss.services;
 import rss.entities.Show;
 import rss.entities.User;
 import rss.services.downloader.MovieRequest;
+import rss.services.requests.EpisodeRequest;
+import rss.services.requests.ShowRequest;
 
 import java.util.Collection;
 
@@ -17,11 +19,11 @@ public interface EmailService {
 
     void sendAccountValidationLink(User user);
 
-    void notifyOfMissingEpisode(EpisodeRequest torrentRequest);
+    void notifyOfMissingEpisode(ShowRequest torrentRequest);
 
     void notifyOfMissingMovie(MovieRequest torrentRequest);
 
-	void notifyOfMissingEpisodes(Collection<EpisodeRequest> missingRequests);
+	void notifyOfMissingEpisodes(Collection<ShowRequest> missingRequests);
 
 	void notifyOfMissingMovies(Collection<MovieRequest> missingRequests);
 

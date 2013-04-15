@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.cookie.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.services.requests.EpisodeRequest;
 import rss.util.DurationMeter;
 import rss.util.CollectionUtils;
 
@@ -142,6 +143,6 @@ public class ShowRssServiceImpl implements ShowRssService {
 		int season = Integer.parseInt(arr[0].trim());
 		int episode = Integer.parseInt(arr[1].trim());
 		episodeRequest.setSeason(season);
-		episodeRequest.setEpisode(episode);
+//		episodeRequest.setEpisode(episode);
 	}
 }

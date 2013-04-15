@@ -1,7 +1,6 @@
 package rss.services.movies;
 
 import rss.entities.Movie;
-import rss.services.EpisodeRequest;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.MovieRequest;
 

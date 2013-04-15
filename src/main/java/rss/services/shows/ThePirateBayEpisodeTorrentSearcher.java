@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
 import rss.entities.Torrent;
-import rss.services.EpisodeRequest;
+import rss.services.requests.EpisodeRequest;
 import rss.services.searchers.ThePirateBayTorrentSearcher;
 
 import java.util.ArrayList;

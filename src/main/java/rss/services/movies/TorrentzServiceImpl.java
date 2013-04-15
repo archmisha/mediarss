@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.MediaRSSException;
 import rss.entities.Movie;
-import rss.services.EpisodeRequest;
 import rss.services.PageDownloader;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.MovieRequest;

@@ -7,12 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
-import rss.services.EpisodeRequest;
 import rss.entities.Media;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
+import rss.services.requests.SingleEpisodeRequest;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -44,7 +44,7 @@ public class TorrentSearcher1337xTest  extends BaseTest {
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("suits-s01e01"));
 
-		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new EpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
+		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
 
 		Date dateUploaded = searchResult.getTorrent().getDateUploaded();
 		Calendar c = Calendar.getInstance();
@@ -59,7 +59,7 @@ public class TorrentSearcher1337xTest  extends BaseTest {
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-taken2"));
 
-		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new EpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
+		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
 
 		assertEquals("http://www.imdb.com/title/tt1397280", searchResult.getMetaData().getImdbUrl());
 	}
@@ -70,8 +70,17 @@ public class TorrentSearcher1337xTest  extends BaseTest {
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-rise-of-the-guardians"));
 
-		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new EpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
+		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
 
 		assertEquals("http://www.imdb.com/title/tt1446192", searchResult.getMetaData().getImdbUrl());
+	}
+
+	@Test
+	public void testNoResults() {
+		String page = loadPage("1337x-no-results");
+
+		SearchResult<Media> searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
+
+		assertEquals(SearchResult.SearchStatus.NOT_FOUND, searchResult.getSearchStatus());
 	}
 }

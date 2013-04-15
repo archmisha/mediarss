@@ -89,7 +89,7 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/downloadSchedule/{showId}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public String downloadSchedule(@PathVariable long showId) {
+	public String downloadSchedule(@PathVariable Long showId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
@@ -110,7 +110,7 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/shows/delete/{showId}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public String deleteShow(@PathVariable long showId) {
+	public String deleteShow(@PathVariable Long showId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 

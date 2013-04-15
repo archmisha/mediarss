@@ -11,8 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.BaseTest;
 import rss.dao.EpisodeDao;
 import rss.dao.TorrentDao;
-import rss.entities.*;
-import rss.services.EpisodeRequest;
+import rss.entities.Episode;
+import rss.entities.MediaQuality;
+import rss.entities.Show;
+import rss.entities.Torrent;
+import rss.services.requests.ShowRequest;
+import rss.services.requests.SingleEpisodeRequest;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -49,8 +53,8 @@ public class TVShowsTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 		torrentDao.persist(torrent);
 		episodeDao.persist(episode);
 
-		EpisodeRequest episodeRequest = new EpisodeRequest("how i met your mother", new Show(), MediaQuality.HD720P, 8, 1);
-		Set<EpisodeRequest> episodeRequests = Collections.singleton(episodeRequest);
+		ShowRequest episodeRequest = new SingleEpisodeRequest("how i met your mother", new Show(), MediaQuality.HD720P, 8, 1);
+		Set<ShowRequest> episodeRequests = Collections.singleton(episodeRequest);
 		ExecutorService executor = Mockito.mock(ExecutorService.class);
 
 		Collection<Episode> download = downloader.download(episodeRequests, executor).getDownloaded();

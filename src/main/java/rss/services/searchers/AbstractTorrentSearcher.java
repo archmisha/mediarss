@@ -1,10 +1,8 @@
 package rss.services.searchers;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.services.PageDownloader;
-import rss.services.MediaRequest;
+import rss.services.requests.MediaRequest;
 import rss.entities.Media;
 import rss.services.SearchResult;
 import rss.services.log.LogService;

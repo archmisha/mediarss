@@ -80,10 +80,12 @@ public class CoolDownStatus {
 	private String extractHostName(String url) {
 		int ind = url.indexOf("://") + 3; // skip http://, https://
 		int end = url.indexOf("/", ind);
-		if ( end == -1 ) {
+		if (end == -1) {
 			end = url.length();
 		}
-		return url.substring(ind, end);
+		String hostname = url.substring(ind, end);
+//		log.debug("Hostname = " + hostname);
+		return hostname;
 	}
 
 	private class CoolDownEntry {

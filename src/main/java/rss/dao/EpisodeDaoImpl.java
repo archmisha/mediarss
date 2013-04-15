@@ -4,7 +4,10 @@ import org.springframework.stereotype.Repository;
 import rss.SubtitleLanguage;
 import rss.entities.Episode;
 import rss.entities.Torrent;
-import rss.services.EpisodeRequest;
+import rss.services.requests.DoubleEpisodeRequest;
+import rss.services.requests.EpisodeRequest;
+import rss.services.requests.FullSeasonRequest;
+import rss.services.requests.SingleEpisodeRequest;
 
 import java.util.*;
 
@@ -34,17 +37,28 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		query.append("select t from Episode as t where ");
 		int counter = 0;
 		for (EpisodeRequest episodeRequest : episodeRequests) {
-			query.append("(t.show.id = :p").append(counter++).append(" and t.season = :p").append(counter++).append(" and t.episode = :p").append(counter++).append(")");
-			query.append(orPart);
-			params.add(episodeRequest.getShow().getId());
-			params.add(episodeRequest.getSeason());
-			params.add(episodeRequest.getEpisode());
-
+			if (episodeRequest instanceof SingleEpisodeRequest) {
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((SingleEpisodeRequest)episodeRequest).getEpisode());
+			} else if (episodeRequest instanceof DoubleEpisodeRequest) {
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode1().getEpisode());
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode2().getEpisode());
+			} else if (episodeRequest instanceof FullSeasonRequest) {
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), -1);
+			}
 		}
 		query.delete(query.length() - orPart.length(), query.length());
 
-//		System.out.println("params: " + params);
 		return find(query.toString(), params.toArray());
+	}
+
+	private int generateSingleEpisodePart(StringBuilder query, List<Object> params, String orPart, int counter,
+										  long showId, int season, int episode) {
+		query.append("(t.show.id = :p").append(counter++).append(" and t.season = :p").append(counter++).append(" and t.episode = :p").append(counter++).append(")");
+		query.append(orPart);
+		params.add(showId);
+		params.add(season);
+		params.add(episode);
+		return counter;
 	}
 
 	@Override

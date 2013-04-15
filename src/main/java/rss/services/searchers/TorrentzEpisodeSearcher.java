@@ -5,13 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.entities.Episode;
-import rss.entities.Torrent;
-import rss.services.EpisodeRequest;
+import rss.services.requests.EpisodeRequest;
+import rss.services.requests.FullSeasonRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
 import rss.services.downloader.MovieRequest;
 import rss.services.log.LogService;
-import rss.services.movies.TorrentzService;
 import rss.services.movies.TorrentzServiceImpl;
 import rss.services.parsers.TorrentzParser;
 import rss.services.shows.ShowService;
@@ -52,7 +51,7 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 	public SearchResult<Episode> search(EpisodeRequest episodeRequest) {
 		try {
 			// don't handle episode requests, only full season requests
-			if (episodeRequest.getEpisode() > 0) {
+			if (!(episodeRequest instanceof FullSeasonRequest)) {
 				return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 			}
 

@@ -6,9 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
-import rss.services.EpisodeRequest;
+import rss.services.requests.EpisodeRequest;
 import rss.entities.MediaQuality;
 import rss.services.SearchResult;
+import rss.services.requests.ShowRequest;
 import rss.services.searchers.TorrentSearcher;
 
 import javax.annotation.PostConstruct;
@@ -23,13 +24,13 @@ import java.util.regex.Pattern;
  * Time: 18:59
  */
 @Service("smartEpisodeSearcher")
-public class SmartEpisodeSearcher implements TorrentSearcher<EpisodeRequest, Episode> {
+public class SmartEpisodeSearcher implements TorrentSearcher<ShowRequest, Episode> {
 
     private static Log log = LogFactory.getLog(SmartEpisodeSearcher.class);
 
     @Autowired
     @Qualifier("compositeTVShowsEpisodeSearcher")
-    private TorrentSearcher<EpisodeRequest, Episode> compositeEpisodeSearcher;
+    private TorrentSearcher<ShowRequest, Episode> compositeEpisodeSearcher;
 
     private List<EpisodeModificator> episodeModificators;
 
@@ -42,10 +43,10 @@ public class SmartEpisodeSearcher implements TorrentSearcher<EpisodeRequest, Epi
     }
 
     @Override
-    public SearchResult<Episode> search(EpisodeRequest episodeRequest) {
+    public SearchResult<Episode> search(ShowRequest episodeRequest) {
         String msgPrefix = null;
         for (EpisodeModificator episodeModificator : episodeModificators) {
-            EpisodeRequest modifiedEpisode = episodeModificator.modify(episodeRequest);
+			ShowRequest modifiedEpisode = episodeModificator.modify(episodeRequest);
             if (modifiedEpisode != null) {
                 if (msgPrefix != null) { // skipping the first one
                     log.info(msgPrefix + episodeModificator.getDescription() + " (modificator: " + episodeModificator.getClass().getSimpleName() + ").");
@@ -75,14 +76,14 @@ public class SmartEpisodeSearcher implements TorrentSearcher<EpisodeRequest, Epi
     }
 
     private interface EpisodeModificator {
-        EpisodeRequest modify(EpisodeRequest episodeRequest);
+		ShowRequest modify(ShowRequest episodeRequest);
 
         String getDescription();
     }
 
     private class DoNothingEpisodeModificator implements EpisodeModificator {
         @Override
-        public EpisodeRequest modify(EpisodeRequest episodeRequest) {
+        public ShowRequest modify(ShowRequest episodeRequest) {
             return episodeRequest;
         }
 
@@ -94,8 +95,8 @@ public class SmartEpisodeSearcher implements TorrentSearcher<EpisodeRequest, Epi
 
     private class NormalQualityEpisodeModificator implements EpisodeModificator {
         @Override
-        public EpisodeRequest modify(EpisodeRequest episodeRequest) {
-            EpisodeRequest copy = new EpisodeRequest(episodeRequest);
+        public ShowRequest modify(ShowRequest episodeRequest) {
+            EpisodeRequest copy = episodeRequest.copy();
             copy.setQuality(MediaQuality.NORMAL);
             return copy;
         }
@@ -115,10 +116,10 @@ public class SmartEpisodeSearcher implements TorrentSearcher<EpisodeRequest, Epi
         }
 
         @Override
-        public EpisodeRequest modify(EpisodeRequest episodeRequest) {
+        public ShowRequest modify(ShowRequest episodeRequest) {
             Matcher matcher = p.matcher(episodeRequest.getTitle());
             if (matcher.find()) {
-                EpisodeRequest copy = new EpisodeRequest(episodeRequest);
+                EpisodeRequest copy = episodeRequest.copy();
                 copy.setTitle(matcher.group(1));
                 return copy;
             }
