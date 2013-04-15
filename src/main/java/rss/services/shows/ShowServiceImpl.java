@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 public class ShowServiceImpl implements ShowService {
 
 	private static final int MAX_CONCURRENT_SHOWS = 10;
+	private static final int MAX_DID_YOU_MEAN = 20;
 
 	@Autowired
 	private ShowDao showDao;
@@ -145,8 +146,20 @@ public class ShowServiceImpl implements ShowService {
 			}
 		}
 
+		List<CachedShow> matchesList = new ArrayList<>(matches);
+
+		// if found too many
+		if (matches.size() > MAX_DID_YOU_MEAN) {
+			Collections.sort(matchesList, new Comparator<CachedShow>() {
+				@Override
+				public int compare(CachedShow o1, CachedShow o2) {
+					return Integer.valueOf(o1.getWords()).compareTo(o2.getWords());
+				}
+			});
+		}
+
 		Collection<Show> result = new ArrayList<>();
-		for (CachedShow match : matches) {
+		for (CachedShow match : matchesList.subList(0, MAX_DID_YOU_MEAN)) {
 			result.add(showDao.find(match.getId()));
 		}
 
@@ -221,17 +234,15 @@ public class ShowServiceImpl implements ShowService {
 	public EpisodeSearchResult search(ShowRequest episodeRequest, User user) {
 		// saving original search term - it might change during the search
 		String originalSearchTerm = episodeRequest.getTitle();
-		DurationMeter duration = new DurationMeter();
-		// first check which show we need
 		String actualSearchTerm;
+
+		DurationMeter duration = new DurationMeter();
 		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm);
 		duration.stop();
-		DurationMeter duration2 = new DurationMeter();
+		logService.info(getClass(), "Did you mean time - " + duration.getDuration());
+
+		// first check which show we need
 		Show show = showDao.findByName(originalSearchTerm);
-
-		duration2.stop();
-		logService.info(getClass(), "AAAAAAAA - " + duration.getDuration() + "<>" + duration2.getDuration());
-
 		if (show != null) {
 			episodeRequest.setShow(show);
 			episodeRequest.setTitle(show.getName());

@@ -132,11 +132,5 @@ about your schedule in the site i think it would be better user experience if th
 
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
 
-searching for house - gives too many shows suggestions - what to do
 how to prevent when searching house from finding house of lies or house of cards
 
-speed up statistics match - n oneed contains when i nsabset less words that in the query - straight to levinshtein
-also skip shows that contains less words than the query
-
-did you mean - limit the number of did you mean to 15, if exceed 15 then filter only shows that have more words or equals to the query
- and sort by number of words - show first 25 only
