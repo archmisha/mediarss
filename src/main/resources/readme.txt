@@ -130,8 +130,6 @@ subtitles chaged - need the green info that subtitle preferences were saved
 
 about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
 
-keep trying to redownload double episode even when have it
-
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
 
 searching for house - gives too many shows suggestions - what to do

@@ -36,7 +36,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	protected LogService logService;
 
 	private List<CachedShow> cache;
-	private Map<CachedShow, Collection<String>> showNameSubsets;
+	private Map<CachedShow, Collection<CachedShowSubset>> showNameSubsets;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -73,12 +73,14 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	private void addShow(CachedShow show) {
 		cache.add(show);
 
-		Collection<String> permutationsList = new ArrayList<>();
 		String cur = ShowServiceImpl.normalize(show.getName());
+		show.setWords(cur.split(" ").length);
+
+		Collection<CachedShowSubset> permutationsList = new ArrayList<>();
 		for (ICombinatoricsVector<String> subSet : getSubsets(cur.split(" "))) {
 			List<String> permutation = subSet.getVector();
 			Collections.sort(permutation);
-			permutationsList.add(StringUtils.join(permutation, " "));
+			permutationsList.add(new CachedShowSubset(StringUtils.join(permutation, " "), permutation.size()));
 		}
 
 		showNameSubsets.put(show, permutationsList);
@@ -101,12 +103,12 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	}
 
 	@Override
-	public Collection<String> getShowNameSubsets(CachedShow show) {
+	public Collection<CachedShowSubset> getShowNameSubsets(CachedShow show) {
 		return showNameSubsets.get(show);
 	}
 
 	@Override
-	public List<Map.Entry<CachedShow, Collection<String>>> getShowsSubsets() {
+	public List<Map.Entry<CachedShow, Collection<CachedShowSubset>>> getShowsSubsets() {
 		return new ArrayList<>(showNameSubsets.entrySet());
 	}
 }

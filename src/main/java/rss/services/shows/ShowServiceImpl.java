@@ -106,20 +106,27 @@ public class ShowServiceImpl implements ShowService {
 	public Collection<Show> statisticMatch(String name) {
 		name = normalize(name);
 		List<String> sortedNameSplit = Arrays.asList(name.split(" "));
+		int nameWords = sortedNameSplit.size();
 		Collections.sort(sortedNameSplit);
 		String sortedNameJoined = StringUtils.join(sortedNameSplit.toArray(), " ");
 
 		Set<CachedShow> matches = new HashSet<>();
 
 		int bestLD = Integer.MAX_VALUE;
-		for (Map.Entry<CachedShow, Collection<String>> entry : showsCacheService.getShowsSubsets()) {
+		for (Map.Entry<CachedShow, Collection<CachedShowSubset>> entry : showsCacheService.getShowsSubsets()) {
 			CachedShow show = entry.getKey();
+			if (show.getWords() < nameWords) {
+				// if show has less words that the search term - it doesn't match
+				continue;
+			}
+
 			int ld = Integer.MAX_VALUE;
-			for (String subset : entry.getValue()) {
-				if (subset.contains(sortedNameJoined)) {
+			for (CachedShowSubset subset : entry.getValue()) {
+				// no point doing contains if there are less words in the subset than in the search term
+				if (subset.getWords() >= nameWords && subset.getSubset().contains(sortedNameJoined)) {
 					ld = 0;
 				} else {
-					int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, subset);
+					int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, subset.getSubset());
 					if (curLd != -1) {
 						ld = Math.min(curLd, ld);
 					}

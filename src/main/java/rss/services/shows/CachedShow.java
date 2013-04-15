@@ -9,6 +9,7 @@ public class CachedShow {
 	private long id;
 	private String name;
 	private boolean ended;
+	private int words;
 
 	public CachedShow(long id, String name, boolean ended) {
 		this.id = id;
@@ -26,6 +27,14 @@ public class CachedShow {
 
 	public boolean isEnded() {
 		return ended;
+	}
+
+	public int getWords() {
+		return words;
+	}
+
+	public void setWords(int words) {
+		this.words = words;
 	}
 
 	@Override

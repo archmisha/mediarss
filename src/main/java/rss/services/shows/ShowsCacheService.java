@@ -16,7 +16,7 @@ public interface ShowsCacheService {
 
 	Collection<CachedShow> getAll();
 
-	Collection<String> getShowNameSubsets(CachedShow show);
+	Collection<CachedShowSubset> getShowNameSubsets(CachedShow show);
 
-	List<Map.Entry<CachedShow, Collection<String>>> getShowsSubsets();
+	List<Map.Entry<CachedShow, Collection<CachedShowSubset>>> getShowsSubsets();
 }
