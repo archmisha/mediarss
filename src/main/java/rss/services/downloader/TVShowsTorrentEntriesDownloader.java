@@ -1,5 +1,6 @@
 package rss.services.downloader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,9 @@ import rss.services.SubtitlesService;
 import rss.services.requests.*;
 import rss.services.searchers.TorrentSearcher;
 import rss.services.shows.ShowService;
+import rss.util.CollectionUtils;
 
+import java.security.InvalidParameterException;
 import java.util.*;
 
 /**
@@ -64,16 +67,46 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		Show persistedShow = showDao.find(episodeRequest.getShow().getId());
 		Torrent torrent = searchResult.getTorrent();
 
-		List<Episode> persistedEpisodes;
+		List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) episodeRequest);
 		if (episodeRequest instanceof SingleEpisodeRequest) {
-			persistedEpisodes = Collections.singletonList(persistEpisodeRequest(persistedShow, (SingleEpisodeRequest) episodeRequest));
+			if (persistedEpisodes.isEmpty()) {
+				// should be one episode
+				SingleEpisodeRequest singleEpisodeRequest = (SingleEpisodeRequest) episodeRequest;
+				Episode episode = new Episode(singleEpisodeRequest.getSeason(), singleEpisodeRequest.getEpisode());
+				persistEpisode(episode, persistedShow);
+				persistedEpisodes.add(episode);
+			}
 		} else if (episodeRequest instanceof FullSeasonRequest) {
-			persistedEpisodes = Collections.singletonList(persistEpisodeRequest(persistedShow, (FullSeasonRequest) episodeRequest));
+			if (persistedEpisodes.isEmpty()) {
+				// should be one episode
+				FullSeasonRequest fullEpisodeRequest = (FullSeasonRequest) episodeRequest;
+				Episode episode = new Episode(fullEpisodeRequest.getSeason(), -1);
+				persistEpisode(episode, persistedShow);
+				persistedEpisodes.add(episode);
+			}
+		} else if (episodeRequest instanceof DoubleEpisodeRequest) {
+			if (persistedEpisodes.size() < 2) {
+				// should be 2 episodes
+				DoubleEpisodeRequest doubleEpisodeRequest = (DoubleEpisodeRequest) episodeRequest;
+				if (persistedEpisodes.size() == 1) {
+					Episode presentEpisode = persistedEpisodes.get(0);
+					int ep = doubleEpisodeRequest.getEpisode1() == presentEpisode.getEpisode()
+							 ? doubleEpisodeRequest.getEpisode2()
+							 : doubleEpisodeRequest.getEpisode1();
+					Episode episode = new Episode(doubleEpisodeRequest.getSeason(), ep);
+					persistEpisode(episode, persistedShow);
+					persistedEpisodes.add(episode);
+				} else {
+					Episode episode1 = new Episode(doubleEpisodeRequest.getSeason(), doubleEpisodeRequest.getEpisode1());
+					Episode episode2 = new Episode(doubleEpisodeRequest.getSeason(), doubleEpisodeRequest.getEpisode2());
+					persistEpisode(episode2, persistedShow);
+					persistEpisode(episode2, persistedShow);
+					persistedEpisodes.add(episode1);
+					persistedEpisodes.add(episode2);
+				}
+			}
 		} else {
-			DoubleEpisodeRequest doubleEpisodeRequest = (DoubleEpisodeRequest) episodeRequest;
-			persistedEpisodes = Arrays.asList(
-					persistEpisodeRequest(persistedShow, doubleEpisodeRequest.getEpisode1()),
-					persistEpisodeRequest(persistedShow, doubleEpisodeRequest.getEpisode2()));
+			throw new InvalidParameterException("EpisodeRequest of unsupported type: " + episodeRequest.getClass());
 		}
 
 		// sometimes the same torrent returned from search for different episodes
@@ -100,19 +133,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		return persistedEpisodes;
 	}
 
-	private Episode persistEpisodeRequest(Show show, EpisodeRequest episodeRequest) {
-		Episode persistedEpisode = episodeDao.find(episodeRequest);
-		if (persistedEpisode == null) {
-			if (episodeRequest instanceof SingleEpisodeRequest) {
-				persistedEpisode = new Episode(episodeRequest.getSeason(), ((SingleEpisodeRequest) episodeRequest).getEpisode());
-			} else {
-				persistedEpisode = new Episode(episodeRequest.getSeason(), -1);
-			}
-			persistedEpisode.setShow(show);
-			episodeDao.persist(persistedEpisode);
-			show.getEpisodes().add(persistedEpisode);
-		}
-		return persistedEpisode;
+	private void persistEpisode(Episode episode, Show show) {
+		episode.setShow(show);
+		episodeDao.persist(episode);
+		show.getEpisodes().add(episode);
 	}
 
 	@Override
@@ -164,47 +188,25 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			}
 		}
 
-		// if requesting a full season, also try to download the episodes 1 by 1, not always there is 1 torrent of the full season
-		// special case - if there are un-aired episodes in a season then there is no need to try download the full season as a single torrent
-		for (ShowRequest showRequest : new HashSet<>(episodeRequests)) {
-			if (showRequest instanceof FullSeasonRequest) {
-				Show show = showRequest.getShow();
-				Map<Integer, Pair<Set<Episode>, Boolean>> map = eps.get(show.getName());
-				int season = ((EpisodeRequest) showRequest).getSeason();
-				Pair<Set<Episode>, Boolean> pair = map.get(season);
-				if (pair != null) {
-					// if there is un-aired episodes in that season, remove that request
-					if (pair.getValue()) {
-						episodeRequests.remove(showRequest);
-					}
+		expandFullSeasonRequests(episodeRequests, eps);
 
-					for (Episode episode : pair.getKey()) {
-						// skip fill season episodes
-						if (episode.getEpisode() > -1) {
-							episodeRequests.add(new SingleEpisodeRequest(show.getName(), show, showRequest.getQuality(), season, episode.getEpisode()));
-						}
-					}
-				}
-			}
-		}
-
-		Map<Episode, EpisodeRequest> episodesMap = new HashMap<>();
-		for (ShowRequest episodeRequest : episodeRequests) {
-			Episode episode = episodeDao.find((EpisodeRequest) episodeRequest);
-			if (episode != null) {
-				episodesMap.put(episode, (EpisodeRequest) episodeRequest);
+		Map<Episode, Set<EpisodeRequest>> episodesMap = new HashMap<>();
+		for (ShowRequest showRequest : episodeRequests) {
+			EpisodeRequest episodeRequest = (EpisodeRequest) showRequest;
+			for (Episode episode : episodeDao.find(episodeRequest)) {
+				CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
 			}
 		}
 
 		// skip un-aired episodes
-		for (Map.Entry<Episode, EpisodeRequest> entry : new ArrayList<>(episodesMap.entrySet())) {
+		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();
 			if (episode.isUnAired()) {
-				EpisodeRequest episodeRequest = entry.getValue();
-				episodeRequests.remove(episodeRequest);
+				Set<EpisodeRequest> episodeRequest = entry.getValue();
+				episodeRequests.removeAll(episodeRequest);
 				// removing to skip in the following iteration loop
 				episodesMap.remove(episode);
-				logService.info(getClass(), "Skipping downloading '" + episodeRequest.toString() + "' - still un-aired");
+				logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest.toString(), ",") + "' - still un-aired");
 			}
 		}
 
@@ -220,9 +222,12 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					Episode ep1 = episodes.get(0);
 					for (int i = 1; i < episodes.size(); ++i) {
 						Episode ep2 = episodes.get(i);
-						if (ep1.getAirDate() != null && ep2.getAirDate() != null && ep1.getAirDate().equals(ep2.getAirDate())) {
+						// if both episodes were requested in the search, both released on the same day and one of them lacks torrents
+						if (episodesMap.containsKey(ep1) && episodesMap.containsKey(ep2) &&
+							ep1.getAirDate() != null && ep2.getAirDate() != null && ep1.getAirDate().equals(ep2.getAirDate()) &&
+							(ep1.getTorrentIds().isEmpty() || ep2.getTorrentIds().isEmpty())) {
 							DoubleEpisodeRequest doubleEpisodeRequest = new DoubleEpisodeRequest(showName, ep1.getShow(), quality, season,
-									(SingleEpisodeRequest) episodesMap.get(ep1), (SingleEpisodeRequest) episodesMap.get(ep2));
+									ep1.getEpisode(), ep2.getEpisode());
 							logService.info(getClass(), "Adding a double episode request: " + doubleEpisodeRequest.toString());
 							episodeRequests.add(doubleEpisodeRequest);
 						}
@@ -235,30 +240,43 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 
 		// prepare cached episodes
 		Set<Episode> cachedEpisodes = new HashSet<>();
-		for (Map.Entry<Episode, EpisodeRequest> entry : new ArrayList<>(episodesMap.entrySet())) {
+		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();
 			if (!episode.getTorrentIds().isEmpty()) {
 				logService.debug(this.getClass(), "Episode \"" + episode + "\" was found in cache");
 				cachedEpisodes.add(episode);
-
-//				Set<MediaQuality> qualities = new HashSet<>();
-//				for (Torrent torrent : torrentDao.findByIds(episode.getTorrentIds())) {
-//					qualities.add(torrent.getQuality());
-//				}
-
-				// for episodes older than 2 weeks - no way a better quality will be published anyway, so remove from requests
-				// whatever we have is good enough
-//				qualities.addAll(Arrays.asList(MediaQuality.values()));
-
-//				for (MediaQuality quality : qualities) {
-//					episodeRequests.remove(new EpisodeRequest(episode.getName(), episode.getShow(), quality, episode.getSeason(), episode.getEpisode()));
-//				}
-				episodeRequests.remove(entry.getValue());
+				episodeRequests.removeAll(entry.getValue());
 
 				// removing to skip in the following iteration loop
 				episodesMap.remove(episode);
 			}
 		}
 		return cachedEpisodes;
+	}
+
+	private void expandFullSeasonRequests(Set<ShowRequest> episodeRequests, Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps) {
+		// if requesting a full season, also try to download the episodes 1 by 1, not always there is 1 torrent of the full season
+		// special case - if there are un-aired episodes in a season then there is no need to try download the full season as a single torrent
+		for (ShowRequest showRequest : new HashSet<>(episodeRequests)) {
+			if (showRequest instanceof FullSeasonRequest) {
+				Show show = showRequest.getShow();
+				Map<Integer, Pair<Set<Episode>, Boolean>> map = eps.get(show.getName());
+				int season = ((FullSeasonRequest) showRequest).getSeason();
+				Pair<Set<Episode>, Boolean> pair = map.get(season);
+				if (pair != null) {
+					// if there is un-aired episodes in that season, remove that request
+					if (pair.getValue()) {
+						episodeRequests.remove(showRequest);
+					}
+
+					for (Episode episode : pair.getKey()) {
+						// skip full season episodes
+						if (episode.getEpisode() > -1) {
+							episodeRequests.add(new SingleEpisodeRequest(show.getName(), show, showRequest.getQuality(), season, episode.getEpisode()));
+						}
+					}
+				}
+			}
+		}
 	}
 }

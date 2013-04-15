@@ -102,7 +102,6 @@ when doing action shown session timeout dialog but when clickin tab redirected t
 what if shceduked an old movie but no hd torrent found - maybe will be scheduled for ever cuz there is no hd movie likae that....
 if found a movie wonce with 2 torrents. later when adding this movie again to some user, maybe now there are more torrent and better - we will not download them..
 
-double espidoes - so8e01e02 greys
 search should not go to to internet
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
@@ -118,17 +117,28 @@ handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013
 
 
 each episode will save last scan date for torrents, in search analyze it and dont search in in ternet for old episodes - only last 2 episode go to internet
-scheduling to run only on travcked shows - when new show being tracked also run scheduling on it
-in search hold on each show when it was being downlaing scheduled last and if ended dont download if already was downloaded
-the only problem is the shows that not ended and searching then will redownload schedule again
+last episodes scheduling to run only on travcked shows - when new show being tracked also run scheduling on it
+in search hold on each show when it was being downladed scheduled last and if ended dont download if already was downloaded
+the only problem is the shows that not ended and not tracked and searching then will redownload schedule again
+   if the last episode scheduled for after the search date - its ok no nneed to redownload schedule we are up to date enough
+   if the last episdoe schedule was before the search date - problem not up to date - must go to internet
+when show becomes ended - download its full shchedule just in case so wont be any paar. and mark the dnload date
+
+when a shows becomes tracked - dwnload its full schedule
 
 subtitles chaged - need the green info that subtitle preferences were saved
 
 about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
 
-
+keep trying to redownload double episode even when have it
 
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
 
 searching for house - gives too many shows suggestions - what to do
 how to prevent when searching house from finding house of lies or house of cards
+
+speed up statistics match - n oneed contains when i nsabset less words that in the query - straight to levinshtein
+also skip shows that contains less words than the query
+
+did you mean - limit the number of did you mean to 15, if exceed 15 then filter only shows that have more words or equals to the query
+ and sort by number of words - show first 25 only

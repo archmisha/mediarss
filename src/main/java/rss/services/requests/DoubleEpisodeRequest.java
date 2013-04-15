@@ -13,17 +13,17 @@ public class DoubleEpisodeRequest extends EpisodeRequest {
 
 	private static final long serialVersionUID = 6690542669869677922L;
 
-	private SingleEpisodeRequest episode1;
-	private SingleEpisodeRequest episode2;
+	private int episode1;
+	private int episode2;
 
-	public DoubleEpisodeRequest(String title, Show show, MediaQuality quality, int season, SingleEpisodeRequest episode1, SingleEpisodeRequest episode2) {
+	public DoubleEpisodeRequest(String title, Show show, MediaQuality quality, int season, int episode1, int episode2) {
 		super(title, show, quality, season);
 		this.episode1 = episode1;
 		this.episode2 = episode2;
 	}
 
 	public String getSeasonEpisode() {
-			return "s" + StringUtils.pad(getSeason(), 2) + "e" + StringUtils.pad(episode1.getEpisode(), 2)+ "e" + StringUtils.pad(episode2.getEpisode(), 2);
+		return "s" + StringUtils.pad(getSeason(), 2) + "e" + StringUtils.pad(episode1, 2) + "e" + StringUtils.pad(episode2, 2);
 	}
 
 	@Override
@@ -31,19 +31,19 @@ public class DoubleEpisodeRequest extends EpisodeRequest {
 		return new DoubleEpisodeRequest(getTitle(), getShow(), getQuality(), getSeason(), getEpisode1(), getEpisode2());
 	}
 
-	public SingleEpisodeRequest getEpisode1() {
+	public int getEpisode1() {
 		return episode1;
 	}
 
-	public void setEpisode1(SingleEpisodeRequest episode1) {
+	public void setEpisode1(int episode1) {
 		this.episode1 = episode1;
 	}
 
-	public SingleEpisodeRequest getEpisode2() {
+	public int getEpisode2() {
 		return episode2;
 	}
 
-	public void setEpisode2(SingleEpisodeRequest episode2) {
+	public void setEpisode2(int episode2) {
 		this.episode2 = episode2;
 	}
 
@@ -54,8 +54,8 @@ public class DoubleEpisodeRequest extends EpisodeRequest {
 
 		DoubleEpisodeRequest that = (DoubleEpisodeRequest) o;
 
-		if (!getEpisode1().equals(that.getEpisode1())) return false;
-		if (!getEpisode2().equals(that.getEpisode2())) return false;
+		if (getEpisode1() != that.getEpisode1()) return false;
+		if (getEpisode2() != that.getEpisode2()) return false;
 		if (!getTitle().equalsIgnoreCase(that.getTitle()))
 			return false; // important ignore case! - when come from search for example
 		if (getSeason() != that.getSeason()) return false;
@@ -69,8 +69,8 @@ public class DoubleEpisodeRequest extends EpisodeRequest {
 		int result = getQuality().hashCode();
 		result = 31 * result + getTitle().toLowerCase().hashCode(); // to match ignore case equals
 		result = 31 * result + getSeason();
-		result = 31 * result + getEpisode1().hashCode();
-		result = 31 * result + getEpisode2().hashCode();
+		result = 31 * result + getEpisode1();
+		result = 31 * result + getEpisode2();
 		return result;
 	}
 }

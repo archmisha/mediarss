@@ -20,8 +20,8 @@ import java.util.*;
 public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 
 	@Override
-	public Episode find(EpisodeRequest episodeRequest) {
-		return uniqueResult(find(Collections.singletonList(episodeRequest)));
+	public List<Episode> find(EpisodeRequest episodeRequest) {
+		return find(Collections.singletonList(episodeRequest));
 	}
 
 	@Override
@@ -40,8 +40,8 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 			if (episodeRequest instanceof SingleEpisodeRequest) {
 				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((SingleEpisodeRequest)episodeRequest).getEpisode());
 			} else if (episodeRequest instanceof DoubleEpisodeRequest) {
-				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode1().getEpisode());
-				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode2().getEpisode());
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode1());
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode2());
 			} else if (episodeRequest instanceof FullSeasonRequest) {
 				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), -1);
 			}

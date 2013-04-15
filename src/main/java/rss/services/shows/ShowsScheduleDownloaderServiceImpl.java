@@ -11,12 +11,12 @@ import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.EmailService;
-import rss.services.requests.EpisodeRequest;
 import rss.services.JobRunner;
-import rss.services.requests.ShowRequest;
-import rss.services.requests.SingleEpisodeRequest;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.TVShowsTorrentEntriesDownloader;
+import rss.services.requests.EpisodeRequest;
+import rss.services.requests.ShowRequest;
+import rss.services.requests.SingleEpisodeRequest;
 import rss.util.DateUtils;
 import rss.util.QuartzJob;
 
@@ -94,10 +94,11 @@ public class ShowsScheduleDownloaderServiceImpl extends JobRunner implements Sho
 			protected void doInTransactionWithoutResult(TransactionStatus arg0) {
 				// if missing episode is released today (no matter the hour) then don't email it
 				for (ShowRequest episodeRequest : new ArrayList<>(missing)) {
-					Episode episode = episodeDao.find((EpisodeRequest)episodeRequest);
-					// might be null cuz maybe there is no such episode at all - who knows what they search for
-					if (episode != null && episode.getAirDate() != null && DateUtils.isToday(episode.getAirDate())) {
-						missing.remove(episodeRequest);
+					for (Episode episode : episodeDao.find((EpisodeRequest) episodeRequest)) {
+						// might be null cuz maybe there is no such episode at all - who knows what they search for
+						if (/*episode != null &&*/ episode.getAirDate() != null && DateUtils.isToday(episode.getAirDate())) {
+							missing.remove(episodeRequest);
+						}
 					}
 				}
 				emailService.notifyOfMissingEpisodes(missing);
