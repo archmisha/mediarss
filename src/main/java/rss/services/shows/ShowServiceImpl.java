@@ -3,6 +3,7 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -31,12 +32,15 @@ import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.DurationMeter;
+import rss.util.MultiThreadExecutor;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: dikmanm
@@ -114,44 +118,52 @@ public class ShowServiceImpl implements ShowService {
 	public Collection<Show> statisticMatch(String name) {
 		name = normalize(name);
 		List<String> sortedNameSplit = Arrays.asList(name.split(" "));
-		int nameWords = sortedNameSplit.size();
+		final int nameWords = sortedNameSplit.size();
 		Collections.sort(sortedNameSplit);
-		String sortedNameJoined = StringUtils.join(sortedNameSplit.toArray(), " ");
+		final String sortedNameJoined = StringUtils.join(sortedNameSplit.toArray(), " ");
 
-		Set<CachedShow> matches = new HashSet<>();
+		// lock for matches and bestLD
+		final Lock lock = new ReentrantLock();
+		final Set<CachedShow> matches = new HashSet<>();
+		final MutableInt bestLD = new MutableInt(Integer.MAX_VALUE);
+		// 5 is best from tries on my laptop (tried 1, 5, 10, 20, 30)
+		MultiThreadExecutor.execute(Executors.newFixedThreadPool(5), showsCacheService.getShowsSubsets(), logService,
+				new MultiThreadExecutor.MultiThreadExecutorTask<Map.Entry<CachedShow, Collection<CachedShowSubset>>>() {
+					@Override
+					public void run(Map.Entry<CachedShow, Collection<CachedShowSubset>> entry) {
+						CachedShow show = entry.getKey();
+						if (show.getWords() < nameWords) {
+							// if show has less words that the search term - it doesn't match
+							return;
+						}
 
-		int bestLD = Integer.MAX_VALUE;
-		for (Map.Entry<CachedShow, Collection<CachedShowSubset>> entry : showsCacheService.getShowsSubsets()) {
-			CachedShow show = entry.getKey();
-			if (show.getWords() < nameWords) {
-				// if show has less words that the search term - it doesn't match
-				continue;
-			}
+						int ld = Integer.MAX_VALUE;
+						for (CachedShowSubset subset : entry.getValue()) {
+							// no point doing contains if there are less words in the subset than in the search term
+							if (subset.getWords() >= nameWords && subset.getSubset().contains(sortedNameJoined)) {
+								ld = 0;
+							} else {
+								int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, subset.getSubset());
+								if (curLd != -1) {
+									ld = Math.min(curLd, ld);
+								}
+							}
+						}
 
-			int ld = Integer.MAX_VALUE;
-			for (CachedShowSubset subset : entry.getValue()) {
-				// no point doing contains if there are less words in the subset than in the search term
-				if (subset.getWords() >= nameWords && subset.getSubset().contains(sortedNameJoined)) {
-					ld = 0;
-				} else {
-					int curLd = StringUtils.getLevenshteinDistance(sortedNameJoined, subset.getSubset());
-					if (curLd != -1) {
-						ld = Math.min(curLd, ld);
+						lock.lock();
+						if (ld < bestLD.getValue()) {
+							matches.clear();
+						}
+
+						// if ld same as bestLD still want to add the show
+						if (matches.isEmpty() || ld <= bestLD.getValue()) {
+							matches.add(show);
+							bestLD.setValue(ld);
+							logService.debug(getClass(), "show=" + show.getName() + " ld=" + ld);
+						}
+						lock.unlock();
 					}
-				}
-			}
-
-			if (ld < bestLD) {
-				matches.clear();
-			}
-
-			// if ld same as bestLD still want to add the show
-			if (matches.isEmpty() || ld <= bestLD) {
-				matches.add(show);
-				bestLD = ld;
-				logService.debug(getClass(), "show=" + show.getName() + " ld=" + ld);
-			}
-		}
+				});
 
 		List<CachedShow> matchesList = new ArrayList<>(matches);
 
@@ -269,7 +281,6 @@ public class ShowServiceImpl implements ShowService {
 		} else {
 			return EpisodeSearchResult.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
 		}
-
 
 		ArrayList<UserTorrentVO> result = new ArrayList<>();
 		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest)).getDownloaded();

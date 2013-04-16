@@ -115,14 +115,12 @@ make all tooltips be one line
 handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
 
 
-last episodes scheduling to run only on travcked shows - when new show being tracked also run scheduling on it
 in search hold on each show when it was being downladed scheduled last and if ended dont download if already was downloaded
 the only problem is the shows that not ended and not tracked and searching then will redownload schedule again
    if the last episode scheduled for after the search date - its ok no nneed to redownload schedule we are up to date enough
    if the last episdoe schedule was before the search date - problem not up to date - must go to internet
 when show becomes ended - download its full shchedule just in case so wont be any paar. and mark the dnload date
 what if the tracked shows schedule download job was broken and next time it runs we skipped an episode?
-when a shows becomes tracked - dwnload its full schedule
 
 about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
 

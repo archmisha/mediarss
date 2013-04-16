@@ -7,10 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Media;
-import rss.services.requests.MediaRequest;
 import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
+import rss.services.requests.MediaRequest;
+import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: Michael Dikman
@@ -56,60 +56,52 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
 		final Class aClass = getClass();
-		for (final S mediaRequest : mediaRequestsCopy) {
-			executorService.submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-							@Override
-							protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-								final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-								long from = System.currentTimeMillis();
-								SearchResult<T> searchResult = downloadTorrent(mediaRequest);
-								Torrent searchResultTorrent = searchResult.getTorrent();
-								switch (searchResult.getSearchStatus()) {
-									case NOT_FOUND:
-										onTorrentMissing(mediaRequest, searchResult);
-										logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
-												mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
-												System.currentTimeMillis() - from));
-										missing.add(mediaRequest);
-										break;
-									case AWAITING_AGING:
-										logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
+		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, logService, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
+			@Override
+			public void run(final S mediaRequest) {
+				try {
+					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+						@Override
+						protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+							final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+							long from = System.currentTimeMillis();
+							SearchResult<T> searchResult = downloadTorrent(mediaRequest);
+							Torrent searchResultTorrent = searchResult.getTorrent();
+							switch (searchResult.getSearchStatus()) {
+								case NOT_FOUND:
+									onTorrentMissing(mediaRequest, searchResult);
+									logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
+											mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
+											System.currentTimeMillis() - from));
+									missing.add(mediaRequest);
+									break;
+								case AWAITING_AGING:
+									logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
+											searchResultTorrent.getTitle(),
+											DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
+											System.currentTimeMillis() - from));
+									// do nothing - its not missing cuz no need to  email and not found
+									break;
+								case FOUND:
+									List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
+									if (!mediaList.isEmpty()) {
+										// printing the returned torrent and not the original , as it might undergone some transformations
+										logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
 												searchResultTorrent.getTitle(),
-												DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
-												System.currentTimeMillis() - from));
-										// do nothing - its not missing cuz no need to  email and not found
-										break;
-									case FOUND:
-										List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
-										if (!mediaList.isEmpty()) {
-											// printing the returned torrent and not the original , as it might undergone some transformations
-											logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
-													searchResultTorrent.getTitle(),
-													System.currentTimeMillis() - from,
-													searchResult.getSource()));
-											result.addAll(mediaList);
-										}
-										break;
-								}
+												System.currentTimeMillis() - from,
+												searchResult.getSource()));
+										result.addAll(mediaList);
+									}
+									break;
 							}
-						});
-					} catch (Exception e) {
-						logService.error(aClass, "Failed retrieving \"" + mediaRequest.toString() + "\": " + e.getMessage(), e);
-					}
+						}
+					});
+				} catch (Exception e) {
+					logService.error(aClass, "Failed retrieving \"" + mediaRequest.toString() + "\": " + e.getMessage(), e);
 				}
-			});
-		}
+			}
+		});
 
-		executorService.shutdown();
-		try {
-			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-		} catch (InterruptedException e) {
-			logService.error(getClass(), "Error waiting for download tasks to execute: " + e.getMessage(), e);
-		}
 
 		// add cached torrents to the list
 		result.addAll(cachedTorrentEntries);
