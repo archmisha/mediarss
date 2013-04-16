@@ -8,9 +8,10 @@ define([
 	'jqplugin',
 	'chosen',
 	'MessageBox',
-	'utils/Utils'
+	'utils/Utils',
+	'HttpUtils'
 ],
-	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils) {
+	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils) {
 		"use strict";
 
 		var SUBTITLES_NONE = 'None';
@@ -109,12 +110,9 @@ define([
 					selectedSubtitle = null;
 				}
 
-				$.post("rest/user/subtitles", {
-					subtitles: selectedSubtitle
-				}).success(function(res) {
-					}).error(function(res) {
-						console.log('error. data: ' + res);
-					});
+				HttpUtils.post("rest/user/subtitles", {subtitles: selectedSubtitle}, function(res) {
+					MessageBox.info('Subtitles preferences were saved');
+				});
 			},
 
 			onShow: function() {

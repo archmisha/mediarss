@@ -124,8 +124,6 @@ when show becomes ended - download its full shchedule just in case so wont be an
 what if the tracked shows schedule download job was broken and next time it runs we skipped an episode?
 when a shows becomes tracked - dwnload its full schedule
 
-subtitles chaged - need the green info that subtitle preferences were saved
-
 about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
 
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03

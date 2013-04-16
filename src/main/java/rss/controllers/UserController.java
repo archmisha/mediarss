@@ -133,9 +133,7 @@ public class UserController extends BaseController {
 	@RequestMapping(value = "/subtitles", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void subtitles(HttpServletRequest request) {
-		String subtitles = extractString(request, "subtitles", false);
-
+	public void subtitles(@RequestParam("subtitles") String subtitles) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		user.setSubtitles(SubtitleLanguage.fromString(subtitles));
 	}
