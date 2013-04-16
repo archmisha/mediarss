@@ -30,7 +30,8 @@ public class JobStatus extends BaseEntity {
     @Column(name = "end")
     private Date end;
 
-    @Column(name = "error_message")
+    @Column(name = "error")
+	@Lob
     private String errorMessage;
 
     public String getName() {
