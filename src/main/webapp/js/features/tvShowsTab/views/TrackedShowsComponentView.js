@@ -10,9 +10,10 @@ define([
 	'select2',
 	'Spinner',
 	'utils/Utils',
-	'features/tvShowsTab/models/Show'
+	'features/tvShowsTab/models/Show',
+	'MessageBox'
 ],
-	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, HttpUtils, select2, Spinner, Utils, Show) {
+	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, HttpUtils, select2, Spinner, Utils, Show, MessageBox) {
 		"use strict";
 
 		var SHOWS_COMBO_BOX_SELECTOR = '.all-shows-combo';
@@ -62,12 +63,17 @@ define([
 				}
 
 				var that = this;
-				HttpUtils.post("rest/shows/addTracked/" + showId, {}, function(res) {
-					that.trackedShowsCollection.add(new Show({id:comboShow.id, name:comboShow.text}));
-					that.trackedShowsCollection.sort();
-					that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
-					that.ui.showsComboBox.select2('data', '');
-				});
+				Spinner.mask();
+				setTimeout(function() {
+					HttpUtils.post("rest/shows/addTracked/" + showId, {}, function(res) {
+						Spinner.unmask();
+						that.trackedShowsCollection.add(new Show({id: comboShow.id, name: comboShow.text}));
+						that.trackedShowsCollection.sort();
+						that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
+						that.ui.showsComboBox.select2('data', '');
+						MessageBox.info('Show \'' + comboShow.text + '\' is being tracked');
+					}, false);
+				}, 150);
 			},
 
 			_onRemoveTrackedShow: function(show) {
@@ -75,11 +81,13 @@ define([
 				Spinner.mask();
 				setTimeout(function() {
 					HttpUtils.post("rest/shows/removeTracked/" + show.id, {}, function(res) {
+						Spinner.unmask();
+						var showModel = that.trackedShowsCollection.get(show.id);
 						that.trackedShowsCollection.remove(show);
 						if (that.trackedShowsCollection.length == 0) {
 							that.ui.trackedShowsList.removeClass('tracked-shows-list-non-empty');
 						}
-						Spinner.unmask();
+						MessageBox.info('Show \'' + showModel.get('name') + '\' is no more tracked');
 					}, false);
 				}, 150);
 			},

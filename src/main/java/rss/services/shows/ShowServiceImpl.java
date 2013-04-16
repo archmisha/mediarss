@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.EpisodesComparator;
@@ -18,12 +19,15 @@ import rss.controllers.vo.ShowsScheduleVO;
 import rss.controllers.vo.UserTorrentVO;
 import rss.dao.*;
 import rss.entities.*;
+import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.SettingsService;
+import rss.services.downloader.DownloadResult;
 import rss.services.downloader.TVShowsTorrentEntriesDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.EpisodeRequest;
 import rss.services.requests.ShowRequest;
+import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.DurationMeter;
@@ -81,6 +85,9 @@ public class ShowServiceImpl implements ShowService {
 
 	@Autowired
 	private ShowsCacheService showsCacheService;
+
+	@Autowired
+	private EmailService emailService;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -314,11 +321,59 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void downloadSchedule(Show show) {
-		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
-		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
-		downloadScheduleHelper(show, episodes, downloadScheduleResult);
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void downloadSchedule(final Show nonTransactionShow) {
+		// must separate schedule download and torrent download into separate transactions
+		// cuz in the first creating episodes which must be available (committed) in the second part
+		// and the second part spawns separate threads and transactions
+		final DownloadScheduleResult downloadScheduleResult = transactionTemplate.execute(new TransactionCallback<DownloadScheduleResult>() {
+			@Override
+			public DownloadScheduleResult doInTransaction(TransactionStatus arg0) {
+				// need to requery so it will be in this transaction
+				Show show = showDao.find(nonTransactionShow.getId());
+				Collection<Episode> episodes = showsProvider.downloadSchedule(show);
+				DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
+				downloadScheduleResultHelper(show, episodes, downloadScheduleResult);
+				return downloadScheduleResult;
+			}
+		});
+
+		downloadScheduleHelper(downloadScheduleResult);
+	}
+
+	private void downloadScheduleHelper(DownloadScheduleResult downloadScheduleResult) {
+		// download torrents for the new episodes
+		final Set<ShowRequest> episodesToDownload = new HashSet<>();
+		for (Episode episode : downloadScheduleResult.getNewEpisodes()) {
+			Show show = episode.getShow();
+			episodesToDownload.add(new SingleEpisodeRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
+			logService.info(getClass(), "Will try to download torrents of " + episode);
+		}
+
+		final Set<ShowRequest> missing = new HashSet<>();
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+				DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(episodesToDownload);
+				missing.addAll(downloadResult.getMissing());
+			}
+		});
+
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+				// if missing episode is released today (no matter the hour) then don't email it
+				for (ShowRequest episodeRequest : new ArrayList<>(missing)) {
+					for (Episode episode : episodeDao.find((EpisodeRequest) episodeRequest)) {
+						// might be null cuz maybe there is no such episode at all - who knows what they search for
+						if (/*episode != null &&*/ episode.getAirDate() != null && DateUtils.isToday(episode.getAirDate())) {
+							missing.remove(episodeRequest);
+						}
+					}
+				}
+				emailService.notifyOfMissingEpisodes(missing);
+			}
+		});
 	}
 
 	@Override
@@ -390,47 +445,59 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public DownloadScheduleResult downloadSchedule() {
-		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
+		// must separate schedule download and torrent download into separate transactions
+		// cuz in the first creating episodes which must be available (committed) in the second part
+		// and the second part spawns separate threads and transactions
+		final DownloadScheduleResult downloadScheduleResult = transactionTemplate.execute(new TransactionCallback<DownloadScheduleResult>() {
+			@Override
+			public DownloadScheduleResult doInTransaction(TransactionStatus arg0) {
+				DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
 
-		// collect all future episode schedules as given by the showsProvider
-		Map<Show, List<Episode>> map = new HashMap<>();
-		Collection<Episode> episodes = showsProvider.downloadSchedule();
-		for (Episode episode : episodes) {
-			CollectionUtils.safeListPut(map, episode.getShow(), episode);
-		}
-
-		for (Map.Entry<Show, List<Episode>> entry : map.entrySet()) {
-			Show showShell = entry.getKey();
-			List<Episode> curEpisodes = entry.getValue();
-
-			try {
-				Show show = showDao.findByName(showShell.getName());
-				// if show is not found, it is not being tracked
-				if (show == null) {
-					saveNewShow(showShell);
-					continue;
-				} else if (show.getTvRageId() == -1) {
-					show.setTvRageId(showShell.getTvRageId());
-				}
-				if (!userDao.isShowBeingTracked(show)) {
-					continue;
+				// collect all future episode schedules as given by the showsProvider
+				Map<Show, List<Episode>> map = new HashMap<>();
+				Collection<Episode> episodes = showsProvider.downloadSchedule();
+				for (Episode episode : episodes) {
+					CollectionUtils.safeListPut(map, episode.getShow(), episode);
 				}
 
-				logService.info(getClass(), "Downloading schedule for " + showShell);
-				downloadScheduleHelper(show, curEpisodes, downloadScheduleResult);
-			} catch (Exception e) {
-				downloadScheduleResult.addFailedShow(showShell);
-				// why before there was no exception trace printed to log?
-				logService.error(getClass(), "Failed downloading schedule for show " + showShell + " " + e.getMessage(), e);
+				for (Map.Entry<Show, List<Episode>> entry : map.entrySet()) {
+					Show showShell = entry.getKey();
+					List<Episode> curEpisodes = entry.getValue();
+
+					try {
+						Show show = showDao.findByName(showShell.getName());
+						// if show is not found, it is not being tracked
+						if (show == null) {
+							saveNewShow(showShell);
+							continue;
+						} else if (show.getTvRageId() == -1) {
+							show.setTvRageId(showShell.getTvRageId());
+						}
+						if (!userDao.isShowBeingTracked(show)) {
+							continue;
+						}
+
+						downloadScheduleResultHelper(show, curEpisodes, downloadScheduleResult);
+					} catch (Exception e) {
+						downloadScheduleResult.addFailedShow(showShell);
+						// why before there was no exception trace printed to log?
+						logService.error(getClass(), "Failed downloading schedule for show " + showShell + " " + e.getMessage(), e);
+					}
+				}
+
+				return downloadScheduleResult;
 			}
-		}
+		});
 
+		downloadScheduleHelper(downloadScheduleResult);
 		return downloadScheduleResult;
 	}
 
-	private void downloadScheduleHelper(Show show, Collection<Episode> episodes, DownloadScheduleResult downloadScheduleResult) {
+	private void downloadScheduleResultHelper(Show show, Collection<Episode> episodes, DownloadScheduleResult downloadScheduleResult) {
+		logService.info(getClass(), "Downloading schedule for '" + show + "'");
+
 		EpisodesMapper mapper = new EpisodesMapper(show.getEpisodes());
 		for (Episode episode : episodes) {
 			Episode persistedEpisode = mapper.get(episode.getSeason(), episode.getEpisode());
@@ -441,11 +508,6 @@ public class ShowServiceImpl implements ShowService {
 				downloadScheduleResult.addNewEpisode(episode);
 				persistedEpisode = episode;
 			}
-			// no need - going over all the episodes in the show afterwards
-			/*else if (persistedEpisode.getTorrentIds().isEmpty()) {
-				// if there are episodes without torrents, try to find their torrents
-				downloadScheduleResult.addNewEpisode(persistedEpisode);
-			}*/
 			persistedEpisode.setAirDate(episode.getAirDate());
 		}
 
@@ -467,23 +529,4 @@ public class ShowServiceImpl implements ShowService {
 		// startswith to avoid matching fullhouse to house
 		return title.startsWith(requestTitle) && title.contains(seasonEpisode);
 	}
-
-	/*@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public Show downloadShowByUrl(String url) {
-		if (url.endsWith("/")) {
-			url = url.substring(0, url.length() - 1);
-		}
-		if (!url.endsWith("episodes")) {
-			url += "/episodes";
-		}
-
-		Show show = showsProvider.downloadShowByUrl(url);
-		Show persistedShow = showDao.findByName(show.getName());
-		if (persistedShow == null) {
-			saveNewShow(show);
-			persistedShow = show;
-		}
-		return persistedShow;
-	}*/
 }
