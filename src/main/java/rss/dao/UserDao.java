@@ -18,4 +18,6 @@ public interface UserDao extends Dao<User> {
 	Collection<Episode> getEpisodesToDownload(User user);
 
 	boolean isShowBeingTracked(Show show);
+
+	long getUsersCountTrackingShow(Show show);
 }

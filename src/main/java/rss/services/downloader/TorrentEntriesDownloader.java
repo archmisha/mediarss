@@ -70,6 +70,7 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 								Torrent searchResultTorrent = searchResult.getTorrent();
 								switch (searchResult.getSearchStatus()) {
 									case NOT_FOUND:
+										onTorrentMissing(mediaRequest, searchResult);
 										logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
 												mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
 												System.currentTimeMillis() - from));
@@ -113,12 +114,10 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 		// add cached torrents to the list
 		result.addAll(cachedTorrentEntries);
 
-		DownloadResult<T, S> downloadResult = new DownloadResult<>();
-		downloadResult.getDownloaded().addAll(result);
-		downloadResult.getMissing().addAll(missing);
-
-		return downloadResult;
+		return new DownloadResult<>(result, missing);
 	}
+
+	protected abstract void onTorrentMissing(S mediaRequest, SearchResult<T> searchResult);
 
 	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy);
 

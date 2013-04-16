@@ -3,8 +3,11 @@ package rss.controllers;
 import com.google.common.base.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
 import rss.controllers.vo.EpisodeSearchResult;
@@ -15,6 +18,7 @@ import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.SubtitlesService;
+import rss.services.downloader.DownloadResult;
 import rss.services.requests.FullSeasonRequest;
 import rss.services.requests.FullShowRequest;
 import rss.services.requests.ShowRequest;
@@ -25,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 @Controller
 @RequestMapping("/shows")
@@ -48,13 +53,38 @@ public class ShowsController extends BaseController {
 	@Autowired
 	private TorrentDao torrentDao;
 
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
 	@RequestMapping(value = "/addTracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void addTracked(@PathVariable long showId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		Show show = showDao.find(showId);
+		final Show show = showDao.find(showId);
+		// if show was not being tracked before (becoming tracked now) - download its schedule
+		boolean downloadSchedule = !userDao.isShowBeingTracked(show);
 		user.getShows().add(show);
+
+		// return the request asap to the user
+		if (downloadSchedule) {
+			final Class aClass = getClass();
+			Executors.newSingleThreadExecutor().submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+							@Override
+							protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+								showService.downloadSchedule(show);
+							}
+						});
+					} catch (Exception e) {
+						logService.error(aClass, "Failed downloading schedule of show \"" + show + "\" " + e.getMessage(), e);
+					}
+				}
+			});
+		}
 	}
 
 	@RequestMapping(value = "/removeTracked/{showId}", method = RequestMethod.POST)

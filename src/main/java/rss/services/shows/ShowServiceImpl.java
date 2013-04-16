@@ -16,10 +16,7 @@ import rss.controllers.vo.EpisodeSearchResult;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.controllers.vo.UserTorrentVO;
-import rss.dao.EpisodeDao;
-import rss.dao.ShowDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserTorrentDao;
+import rss.dao.*;
 import rss.entities.*;
 import rss.services.PageDownloader;
 import rss.services.SettingsService;
@@ -49,6 +46,9 @@ public class ShowServiceImpl implements ShowService {
 
 	@Autowired
 	private ShowDao showDao;
+
+	@Autowired
+	private UserDao userDao;
 
 	private TVRageServiceImpl showsProvider;
 
@@ -159,7 +159,7 @@ public class ShowServiceImpl implements ShowService {
 		}
 
 		Collection<Show> result = new ArrayList<>();
-		for (CachedShow match : matchesList.subList(0, MAX_DID_YOU_MEAN)) {
+		for (CachedShow match : matchesList.subList(0, Math.min(matchesList.size(), MAX_DID_YOU_MEAN))) {
 			result.add(showDao.find(match.getId()));
 		}
 
@@ -405,31 +405,25 @@ public class ShowServiceImpl implements ShowService {
 			Show showShell = entry.getKey();
 			List<Episode> curEpisodes = entry.getValue();
 
-			logService.info(getClass(), "Downloading schedule for " + showShell);
 			try {
 				Show show = showDao.findByName(showShell.getName());
+				// if show is not found, it is not being tracked
 				if (show == null) {
 					saveNewShow(showShell);
-					show = showShell;
-					downloadScheduleResult.addNewEpisodes(curEpisodes);
+					continue;
 				} else if (show.getTvRageId() == -1) {
 					show.setTvRageId(showShell.getTvRageId());
 				}
+				if (!userDao.isShowBeingTracked(show)) {
+					continue;
+				}
 
+				logService.info(getClass(), "Downloading schedule for " + showShell);
 				downloadScheduleHelper(show, curEpisodes, downloadScheduleResult);
 			} catch (Exception e) {
 				downloadScheduleResult.addFailedShow(showShell);
-				logService.error(getClass(), "Failed downloading schedule for show " + showShell);
-			}
-		}
-
-		// in addition we need past episodes, which might have no torrents for some reason (maybe job was broken or something)
-		for (Show show : showDao.findNotEnded()) {
-			for (Episode episode : show.getEpisodes()) {
-				if (episode.getTorrentIds().isEmpty()) {
-					// if there are episodes without torrents, try to find their torrents
-					downloadScheduleResult.addNewEpisode(episode);
-				}
+				// why before there was no exception trace printed to log?
+				logService.error(getClass(), "Failed downloading schedule for show " + showShell + " " + e.getMessage(), e);
 			}
 		}
 
@@ -446,11 +440,21 @@ public class ShowServiceImpl implements ShowService {
 				show.getEpisodes().add(episode);
 				downloadScheduleResult.addNewEpisode(episode);
 				persistedEpisode = episode;
-			} else if (persistedEpisode.getTorrentIds().isEmpty()) {
+			}
+			// no need - going over all the episodes in the show afterwards
+			/*else if (persistedEpisode.getTorrentIds().isEmpty()) {
 				// if there are episodes without torrents, try to find their torrents
 				downloadScheduleResult.addNewEpisode(persistedEpisode);
-			}
+			}*/
 			persistedEpisode.setAirDate(episode.getAirDate());
+		}
+
+		// in addition we need past episodes, which might have no torrents for some reason (maybe job was broken or something)
+		for (Episode episode : show.getEpisodes()) {
+			if (episode.getTorrentIds().isEmpty()) {
+				// if there are episodes without torrents, try to find their torrents
+				downloadScheduleResult.addNewEpisode(episode);
+			}
 		}
 	}
 

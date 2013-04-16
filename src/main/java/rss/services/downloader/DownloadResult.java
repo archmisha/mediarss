@@ -11,9 +11,9 @@ public class DownloadResult<T, S> {
 	private Collection<T> downloaded;
 	private Collection<S> missing;
 
-	public DownloadResult() {
-		downloaded = new ArrayList<>();
-		missing = new ArrayList<>();
+	public DownloadResult(Collection<T> downloaded, Collection<S> missing) {
+		this.downloaded = new ArrayList<>(downloaded);
+		this.missing = new ArrayList<>(missing);
 	}
 
 	public Collection<T> getDownloaded() {

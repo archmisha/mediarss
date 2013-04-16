@@ -62,6 +62,13 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
+	protected void onTorrentMissing(ShowRequest episodeRequest, SearchResult<Episode> searchResult) {
+		for (Episode episode : episodeDao.find((EpisodeRequest) episodeRequest)) {
+			episode.setScanDate(new Date());
+		}
+	}
+
+	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	protected List<Episode> onTorrentFound(ShowRequest episodeRequest, SearchResult<Episode> searchResult) {
 		Show persistedShow = showDao.find(episodeRequest.getShow().getId());
@@ -129,7 +136,9 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 
 		for (Episode persistedEpisode : persistedEpisodes) {
 			persistedEpisode.getTorrentIds().add(persistedTorrent.getId());
+			persistedEpisode.setScanDate(new Date());
 		}
+
 		return persistedEpisodes;
 	}
 
@@ -143,51 +152,14 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	// persisting new shows here - must be persisted before the new transaction opens for each download
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	protected Collection<Episode> preDownloadPhase(Set<ShowRequest> episodeRequests) {
-		// expand full season requests into the specific episode requests
-		// iterating on a copy
-		Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps = new HashMap<>();
+		Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps = createEpisodesMapFromDB(episodeRequests);
+
+		// substitute show name with alias and seasons if needed
 		for (ShowRequest episodeRequest : new HashSet<>(episodeRequests)) {
-			Show show = episodeRequest.getShow();
-			if (show == null) {
-				throw new ShowNotFoundException("Show not found: " + episodeRequest.getTitle());
-			}
-
-			// substitute show name with alias and seasons if needed
 			showService.transformEpisodeRequest(episodeRequest);
-
-			Map<Integer, Pair<Set<Episode>, Boolean>> map = eps.get(show.getName());
-			if (map == null) {
-				map = new HashMap<>();
-				eps.put(show.getName(), map);
-
-				Show persistedShow = showDao.find(show.getId());
-				if (persistedShow == null) {
-					throw new MediaRSSException("Show " + show + " is not found in the database");
-				}
-				for (Episode episode : persistedShow.getEpisodes()) {
-					int season = episode.getSeason();
-					Pair<Set<Episode>, Boolean> pair = map.get(season);
-					if (pair == null) {
-						Set<Episode> set = new HashSet<>();
-						set.add(episode);
-						pair = new MutablePair<>(set, episode.isUnAired());
-						map.put(season, pair);
-					} else {
-						pair.setValue(pair.getValue() || episode.isUnAired());
-						pair.getKey().add(episode);
-					}
-				}
-			}
-
-			// if no season given, should replace with the available seasons
-			if (episodeRequest instanceof FullShowRequest) {
-				episodeRequests.remove(episodeRequest);
-				for (Map.Entry<Integer, Pair<Set<Episode>, Boolean>> entry : map.entrySet()) {
-					episodeRequests.add(new FullSeasonRequest(show.getName(), show, episodeRequest.getQuality(), entry.getKey()));
-				}
-			}
 		}
 
+		expandFullShowRequests(episodeRequests, eps);
 		expandFullSeasonRequests(episodeRequests, eps);
 
 		Map<Episode, Set<EpisodeRequest>> episodesMap = new HashMap<>();
@@ -198,7 +170,74 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			}
 		}
 
-		// skip un-aired episodes
+		skipUnAiredEpisodes(episodeRequests, episodesMap);
+		skipScannedEpisodes(episodeRequests, eps, episodesMap);
+
+		handleDoubleEpisodes(episodeRequests, eps, episodesMap);
+
+		// prepare cached episodes
+		Set<Episode> cachedEpisodes = new HashSet<>();
+		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
+			Episode episode = entry.getKey();
+			if (!episode.getTorrentIds().isEmpty()) {
+				logService.debug(this.getClass(), "Episode \"" + episode + "\" was found in cache");
+				cachedEpisodes.add(episode);
+				episodeRequests.removeAll(entry.getValue());
+
+				// removing to skip in the following iteration loop
+				episodesMap.remove(episode);
+			}
+		}
+		return cachedEpisodes;
+	}
+
+	// skip episodes that already scanned, except the last 2 (those might still be updated later)
+	private void skipScannedEpisodes(Set<ShowRequest> episodeRequests, Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps, Map<Episode, Set<EpisodeRequest>> episodesMap) {
+		if (episodeRequests.isEmpty()) {
+			return;
+		}
+
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DAY_OF_MONTH, -14);
+		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
+			Episode episode = entry.getKey();
+			// skip if already scanned and
+			// 1. episode airdate is older than 14 days ago
+			// 2. if its a full season and its last episode aired 14 days ago (only finished seasons here, unaired seasons filtered before)
+			if (episode.getScanDate() != null) {
+				boolean shouldRemoveEpisode = false;
+				if (episode.getEpisode() > 0 && episode.getAirDate() != null && episode.getAirDate().before(c.getTime())) {
+					shouldRemoveEpisode = true;
+				} else if (episode.getEpisode() == -1) {
+					ArrayList<Episode> episodes = new ArrayList<>(eps.get(episode.getShow().getName()).get(episode.getSeason()).getKey());
+					// episode -1 is sorted at the beginning, so only need to check there is more than 1 episode in the list
+					if (!episodes.isEmpty()) {
+						Collections.sort(episodes, new EpisodesComparator());
+						Episode ep = episodes.get(episodes.size() - 1);
+						if (ep.getEpisode() > 0) {
+							if (episode.getAirDate() != null && episode.getAirDate().before(c.getTime())) {
+								shouldRemoveEpisode = true;
+							}
+						}
+					}
+				}
+
+				if (shouldRemoveEpisode) {
+					Set<EpisodeRequest> episodeRequest = entry.getValue();
+					episodeRequests.removeAll(episodeRequest);
+					// removing to skip in the following iteration loop
+					episodesMap.remove(episode);
+					logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest.toString(), ",") + "' - already scanned and airdate is older than 14 days ago");
+				}
+			}
+		}
+	}
+
+	private void skipUnAiredEpisodes(Set<ShowRequest> episodeRequests, Map<Episode, Set<EpisodeRequest>> episodesMap) {
+		if (episodeRequests.isEmpty()) {
+			return;
+		}
+
 		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();
 			if (episode.isUnAired()) {
@@ -208,6 +247,12 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 				episodesMap.remove(episode);
 				logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest.toString(), ",") + "' - still un-aired");
 			}
+		}
+	}
+
+	private void handleDoubleEpisodes(Set<ShowRequest> episodeRequests, Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps, Map<Episode, Set<EpisodeRequest>> episodesMap) {
+		if (episodeRequests.isEmpty()) {
+			return;
 		}
 
 		// add double episode requests
@@ -237,21 +282,55 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 				}
 			}
 		}
+	}
 
-		// prepare cached episodes
-		Set<Episode> cachedEpisodes = new HashSet<>();
-		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
-			Episode episode = entry.getKey();
-			if (!episode.getTorrentIds().isEmpty()) {
-				logService.debug(this.getClass(), "Episode \"" + episode + "\" was found in cache");
-				cachedEpisodes.add(episode);
-				episodeRequests.removeAll(entry.getValue());
+	private Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> createEpisodesMapFromDB(Set<ShowRequest> episodeRequests) {
+		Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps = new HashMap<>();
+		for (ShowRequest episodeRequest : new HashSet<>(episodeRequests)) {
+			Show show = episodeRequest.getShow();
+			if (show == null) {
+				throw new ShowNotFoundException("Show not found: " + episodeRequest.getTitle());
+			}
 
-				// removing to skip in the following iteration loop
-				episodesMap.remove(episode);
+			Map<Integer, Pair<Set<Episode>, Boolean>> map = eps.get(show.getName());
+			if (map == null) {
+				map = new HashMap<>();
+				eps.put(show.getName(), map);
+
+				Show persistedShow = showDao.find(show.getId());
+				if (persistedShow == null) {
+					throw new MediaRSSException("Show " + show + " is not found in the database");
+				}
+				for (Episode episode : persistedShow.getEpisodes()) {
+					int season = episode.getSeason();
+					Pair<Set<Episode>, Boolean> pair = map.get(season);
+					if (pair == null) {
+						Set<Episode> set = new HashSet<>();
+						set.add(episode);
+						pair = new MutablePair<>(set, episode.isUnAired());
+						map.put(season, pair);
+					} else {
+						pair.setValue(pair.getValue() || episode.isUnAired());
+						pair.getKey().add(episode);
+					}
+				}
 			}
 		}
-		return cachedEpisodes;
+		return eps;
+	}
+
+	private void expandFullShowRequests(Set<ShowRequest> episodeRequests, Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps) {
+		// if no season given, should replace with the available seasons
+		for (ShowRequest episodeRequest : new HashSet<>(episodeRequests)) {
+			if (episodeRequest instanceof FullShowRequest) {
+				Show show = episodeRequest.getShow();
+				Map<Integer, Pair<Set<Episode>, Boolean>> map = eps.get(show.getName());
+				episodeRequests.remove(episodeRequest);
+				for (Map.Entry<Integer, Pair<Set<Episode>, Boolean>> entry : map.entrySet()) {
+					episodeRequests.add(new FullSeasonRequest(show.getName(), show, episodeRequest.getQuality(), entry.getKey()));
+				}
+			}
+		}
 	}
 
 	private void expandFullSeasonRequests(Set<ShowRequest> episodeRequests, Map<String, Map<Integer, Pair<Set<Episode>, Boolean>>> eps) {

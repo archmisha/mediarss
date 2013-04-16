@@ -35,8 +35,15 @@ public class UserDaoImpl extends BaseDaoJPA<User> implements UserDao {
 
     @Override
 	public boolean isShowBeingTracked(Show show) {
-        Map<String, Object> params = new HashMap<>(1);
-        params.put("showId", show.getId());
-        return !super.<User>findByNamedQueryAndNamedParams("User.findByTrackedShow", params).isEmpty();
+//        Map<String, Object> params = new HashMap<>(1);
+//        params.put("showId", show.getId());
+        return getUsersCountTrackingShow(show) > 0;//!super.<User>findByNamedQueryAndNamedParams("User.findByTrackedShow", params).isEmpty();
     }
+
+	@Override
+	public long getUsersCountTrackingShow(Show show) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("showId", show.getId());
+		return uniqueResult(super.<Long>findByNamedQueryAndNamedParams("User.getUsersCountTrackingShow", params));
+	}
 }

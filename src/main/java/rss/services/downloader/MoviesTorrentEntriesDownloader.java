@@ -104,6 +104,11 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		return Collections.singletonList(persistedMovie);
 	}
 
+	@Override
+	protected void onTorrentMissing(MovieRequest mediaRequest, SearchResult<Movie> searchResult) {
+		//To change body of implemented methods use File | Settings | File Templates.
+	}
+
 	private String getMovieName(SearchResult<Movie> searchResult) {
 		String name;
 

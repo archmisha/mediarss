@@ -112,18 +112,16 @@ search results  hover text too long
 save all jobs run history not only the last one
 make all tooltips be one line
 
-maybe when downloading shows schedule sort first the shows that are being tracked and then the rest
 handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
 
 
-each episode will save last scan date for torrents, in search analyze it and dont search in in ternet for old episodes - only last 2 episode go to internet
 last episodes scheduling to run only on travcked shows - when new show being tracked also run scheduling on it
 in search hold on each show when it was being downladed scheduled last and if ended dont download if already was downloaded
 the only problem is the shows that not ended and not tracked and searching then will redownload schedule again
    if the last episode scheduled for after the search date - its ok no nneed to redownload schedule we are up to date enough
    if the last episdoe schedule was before the search date - problem not up to date - must go to internet
 when show becomes ended - download its full shchedule just in case so wont be any paar. and mark the dnload date
-
+what if the tracked shows schedule download job was broken and next time it runs we skipped an episode?
 when a shows becomes tracked - dwnload its full schedule
 
 subtitles chaged - need the green info that subtitle preferences were saved
@@ -133,4 +131,7 @@ about your schedule in the site i think it would be better user experience if th
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
 
 how to prevent when searching house from finding house of lies or house of cards
+what if user was offline for a long time, it needs to download for him the whole delta not only the last episode
+
+need job to download full seasons
 

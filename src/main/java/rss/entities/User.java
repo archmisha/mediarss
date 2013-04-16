@@ -20,6 +20,8 @@ import java.util.Set;
 				query = "select b from User as b where lower(b.email) = :email"),
 		@NamedQuery(name = "User.findByTrackedShow",
 				query = "select b from User as b inner join b.shows as s where s.id = :showId"),
+		@NamedQuery(name = "User.getUsersCountTrackingShow",
+				query = "select count(b) from User as b inner join b.shows as s where s.id = :showId"),
 		@NamedQuery(name = "User.getEpisodesToDownload",
 				query = "select e from User as u inner join u.shows as s inner join s.episodes as e " +
 						"where u.id = :userId and e.airDate > :fromDate")

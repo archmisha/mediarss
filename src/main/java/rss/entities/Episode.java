@@ -42,6 +42,9 @@ public class Episode extends Media {
 	@Column(name = "air_date")
 	private Date airDate;
 
+	@Column(name = "scan_date")
+	private Date scanDate;
+
 	@SuppressWarnings("UnusedDeclaration")
 	public Episode() {
 	}
@@ -121,6 +124,14 @@ public class Episode extends Media {
 
 	public void setAirDate(Date airDate) {
 		this.airDate = airDate;
+	}
+
+	public Date getScanDate() {
+		return scanDate;
+	}
+
+	public void setScanDate(Date scanDate) {
+		this.scanDate = scanDate;
 	}
 
 	public Show getShow() {
