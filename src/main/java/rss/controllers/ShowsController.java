@@ -21,6 +21,7 @@ import rss.services.requests.FullShowRequest;
 import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.shows.AutoCompleteItem;
+import rss.services.shows.ShowSearchService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,7 +52,7 @@ public class ShowsController extends BaseController {
 	private TorrentDao torrentDao;
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
+	protected ShowSearchService showSearchService;
 
 	@RequestMapping(value = "/addTracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
@@ -70,7 +71,7 @@ public class ShowsController extends BaseController {
 				@Override
 				public void run() {
 					try {
-						showService.downloadSchedule(show);
+						showService.downloadFullScheduleWithTorrents(show);
 					} catch (Exception e) {
 						logService.error(aClass, "Failed downloading schedule of show \"" + show + "\" " + e.getMessage(), e);
 					}
@@ -154,7 +155,7 @@ public class ShowsController extends BaseController {
 			} else {
 				episodeRequest = new SingleEpisodeRequest(title, show, MediaQuality.HD720P, season, episode);
 			}
-			return showService.search(episodeRequest, user);
+			return showSearchService.search(episodeRequest, user);
 		} catch (ShowNotFoundException e) {
 			return EpisodeSearchResult.createNoResults(title);
 		}

@@ -18,6 +18,8 @@ import java.util.Set;
 		// searching with lower case, so when user input "suits" it will also find "Suits"
 		@NamedQuery(name = "Show.findByName",
 				query = "select b from Show as b where lower(b.name) = :name"),
+		@NamedQuery(name = "Show.findByTvRageId",
+				query = "select b from Show as b where b.tvRageId = :tvRageId"),
 		@NamedQuery(name = "Show.autoCompleteShowNames",
 				query = "select b from Show as b where lower(b.name) like :term"),
 		@NamedQuery(name = "Show.getNotEnded",
@@ -41,6 +43,8 @@ public class Show extends BaseEntity {
 	@Column(name = "ended")
 	private boolean ended;
 
+	@Column(name = "schedule_download_date")
+	private Date scheduleDownloadDate;
 
 	@OneToMany(mappedBy = "show", targetEntity = Episode.class)
 	private Set<Episode> episodes;
@@ -97,6 +101,14 @@ public class Show extends BaseEntity {
 
 	public int getTvRageId() {
 		return tvRageId;
+	}
+
+	public Date getScheduleDownloadDate() {
+		return scheduleDownloadDate;
+	}
+
+	public void setScheduleDownloadDate(Date scheduleDownloadDate) {
+		this.scheduleDownloadDate = scheduleDownloadDate;
 	}
 
 	@Override

@@ -21,16 +21,15 @@ public interface ShowService {
 
 	void downloadShowList();
 
-	EpisodeSearchResult search(ShowRequest episodeRequest, User user);
+	DownloadScheduleResult downloadLatestScheduleWithTorrents();
 
-	DownloadScheduleResult downloadSchedule();
+	void downloadFullScheduleWithTorrents(Show show);
 
-	void downloadSchedule(Show show);
+	DownloadScheduleResult downloadFullSchedule(final Show show);
 
 	List<AutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super AutoCompleteItem> predicate);
 
 	ShowsScheduleVO getSchedule(Set<Show> shows);
 
 	boolean isMatch(EpisodeRequest mediaRequest, String title);
-//	Show downloadShowByUrl(String url);
 }

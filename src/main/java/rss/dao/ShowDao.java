@@ -20,4 +20,6 @@ public interface ShowDao extends Dao<Show> {
 	List<Show> autoCompleteShowNames(String term);
 
 	List<CachedShow> findCachedShows();
+
+	Show findByTvRageId(int tvRageId);
 }

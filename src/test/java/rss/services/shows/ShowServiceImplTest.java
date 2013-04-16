@@ -27,7 +27,7 @@ public class ShowServiceImplTest extends BaseTest {
 	private ShowDao showDao;
 
 	@InjectMocks
-	private ShowServiceImpl showService = new ShowServiceImpl();
+	private ShowSearchServiceImpl showSearchService = new ShowSearchServiceImpl();
 
 	@Test
 	@Ignore
@@ -48,7 +48,7 @@ public class ShowServiceImplTest extends BaseTest {
 				"Pop Idol", "Super Idol", "World Idol", "NZ Idol"));
 
 		for (Map.Entry<String, Collection<String>> entry : names.entrySet()) {
-			Collection<Show> shows = showService.statisticMatch(entry.getKey());
+			Collection<Show> shows = showSearchService.statisticMatch(entry.getKey());
 			assertCollections(entry.getKey(), shows, entry.getValue());
 		}
 	}

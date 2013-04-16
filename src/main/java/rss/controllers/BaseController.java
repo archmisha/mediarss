@@ -67,7 +67,7 @@ public class BaseController {
 	@Autowired
 	protected ShowService showService;
 
-	protected <T> T applyDefaultValue(T  value, T defaultValue) {
+	protected <T> T applyDefaultValue(T value, T defaultValue) {
 		return value == null ? defaultValue : value;
 	}
 
@@ -190,7 +190,7 @@ public class BaseController {
 					.withUserMovies(movieService.getUserMovies(user));
 		} else if (tab.equals(TVSHOWS_TAB)) {
 			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
-			.withSchedule(showService.getSchedule(user.getShows()));
+					.withSchedule(showService.getSchedule(user.getShows()));
 		}
 
 		return userResponse;

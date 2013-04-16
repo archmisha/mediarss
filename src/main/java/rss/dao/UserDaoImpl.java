@@ -24,7 +24,9 @@ public class UserDaoImpl extends BaseDaoJPA<User> implements UserDao {
 
 	@Override
 	public Collection<Episode> getEpisodesToDownload(User user) {
+		// add to feed everything aired since last feed was generated and a buffer of 14 days backwards
 		Calendar c = Calendar.getInstance();
+		c.setTime(user.getLastShowsFeedGenerated());
 		c.add(Calendar.DAY_OF_MONTH, -14);
 
 		Map<String, Object> params = new HashMap<>(2);

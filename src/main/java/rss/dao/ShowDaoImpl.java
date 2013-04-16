@@ -42,4 +42,11 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 		Map<String, Object> params = new HashMap<>(0);
 		return super.findByNamedQueryAndNamedParams("Show.findCachedShows", params);
 	}
+
+	@Override
+	public Show findByTvRageId(int tvRageId) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("tvRageId", tvRageId);
+		return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByTvRageId", params));
+	}
 }
