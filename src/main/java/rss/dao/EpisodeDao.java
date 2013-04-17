@@ -1,5 +1,6 @@
 package rss.dao;
 
+import rss.entities.Show;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Torrent;
 import rss.SubtitleLanguage;
@@ -24,4 +25,6 @@ public interface EpisodeDao extends Dao<Episode> {
 	Episode find(Torrent torrent);
 
 	Collection<Episode> getEpisodesForSchedule(List<Long> showIds);
+
+	boolean exists(Show show, Episode episode);
 }

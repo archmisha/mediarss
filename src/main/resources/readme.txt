@@ -79,8 +79,6 @@ tvshows change icons, add shceduled state
 instead by imdb id - search by name
 icons
 
- after adding a movie and its already available make it be sorted to top?
-
  Wrong/not existing subtitles - no eng default
  subcenter
 
@@ -95,17 +93,13 @@ when tracked show becomes ended - notify somehow to the user in the ui? (so he c
 
 showlistdownloader runs tooo long - why?
 
-can improve the show name matching algo speed to reduce from 1 second?
 when doing action shown session timeout dialog but when clickin tab redirected to login wothout message
-
 
 what if shceduked an old movie but no hd torrent found - maybe will be scheduled for ever cuz there is no hd movie likae that....
 if found a movie wonce with 2 torrents. later when adding this movie again to some user, maybe now there are more torrent and better - we will not download them..
 
-search should not go to to internet
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
-    same verification needed in pirate bay
     also partial seasons: Greys Anatomy Season 8 Episode 1-22
 
 search results  hover text too long
@@ -122,7 +116,54 @@ add kickass torrents parser and add it to torrentz parsing like piratebay - to c
 
 how to prevent when searching house from finding house of lies or house of cards
 
-  verify that not existing episodes like 100 or season 100 are not atempted to be downloaded
-
 when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
 
+if a show has ended and some user has it tracked - mark in the ui for him red alert
+schedule - if some show has an episode in more than 7 days - maybe should add it too
+schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to display more days?
+
+
+still requests such as Pretty Little Liars s02e-1 720p are getting into the log
+
+
+
+problemm:
+Removing 'The Office US S03E13.HDTV.XviD' cuz a bad match for 'The Office (US) s03e13'
+test
+
+[ERROR] TVShowsTorrentEntriesDownloader - Failed retrieving "Homeland s02e06 720p": excuteAPI error: DownloadSubtitles
+java.lang.RuntimeException: excuteAPI error: DownloadSubtitles
+        at rss.services.SubtitlesServiceImpl.downloadEpisodeSubtitles(SubtitlesServiceImpl.java:143)
+        at sun.reflect.GeneratedMethodAccessor73.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+        at java.lang.reflect.Method.invoke(Unknown Source)
+        at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:317)
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:183)
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:150)
+        at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:110)
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
+        at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:204)
+        at $Proxy53.downloadEpisodeSubtitles(Unknown Source)
+        at rss.services.downloader.TVShowsTorrentEntriesDownloader.onTorrentFound(TVShowsTorrentEntriesDownloader.java:133)
+        at rss.services.downloader.TVShowsTorrentEntriesDownloader.onTorrentFound(TVShowsTorrentEntriesDownloader.java:38)
+        at rss.services.downloader.TorrentEntriesDownloader$1$1.doInTransactionWithoutResult(TorrentEntriesDownloader.java:86)
+        at org.springframework.transaction.support.TransactionCallbackWithoutResult.doInTransaction(TransactionCallbackWithoutResult.java:33)
+        at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:131)
+        at rss.services.downloader.TorrentEntriesDownloader$1.run(TorrentEntriesDownloader.java:63)
+        at rss.services.downloader.TorrentEntriesDownloader$1.run(TorrentEntriesDownloader.java:59)
+        at rss.util.MultiThreadExecutor$1.run(MultiThreadExecutor.java:20)
+        at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+        at java.util.concurrent.FutureTask$Sync.innerRun(Unknown Source)
+        at java.util.concurrent.FutureTask.run(Unknown Source)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+        at java.lang.Thread.run(Unknown Source)
+Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: excuteAPI error: DownloadSubtitles
+        at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:198)
+        at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.download(OpenSubtitlesAPI.java:149)
+        at rss.services.SubtitlesServiceImpl.createSubtitles(SubtitlesServiceImpl.java:178)
+        at rss.services.SubtitlesServiceImpl.downloadEpisodeSubtitles(SubtitlesServiceImpl.java:134)
+        ... 24 more
+Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download limit reached
+        at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)
+        ... 27 more

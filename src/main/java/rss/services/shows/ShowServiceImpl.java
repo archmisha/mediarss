@@ -27,6 +27,7 @@ import rss.services.downloader.DownloadResult;
 import rss.services.downloader.TVShowsTorrentEntriesDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.EpisodeRequest;
+import rss.services.requests.FullSeasonRequest;
 import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
@@ -90,17 +91,13 @@ public class ShowServiceImpl implements ShowService {
 		logService.info(getClass(), "It is a new show! - Persisting '" + show.getName() + "' (tvrage_id=" + show.getTvRageId() + ")");
 		showDao.persist(show);
 		showsCacheService.put(show);
-		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
-		for (Episode episode : episodes) {
-			persistEpisodeToShow(show, episode);
-		}
-		show.setScheduleDownloadDate(new Date());
+		downloadFullSchedule(show);
 	}
 
 
 	public static String normalize(String name) {
 		name = name.toLowerCase();
-		name = name.replaceAll("['\"!,&\\-\\+\\?/:]", "");
+		name = name.replaceAll("['\"!,&\\-\\+\\?/:\\(\\)]", "");
 		name = name.replaceAll("[\\.]", " ");
 		return name;
 	}
@@ -199,7 +196,11 @@ public class ShowServiceImpl implements ShowService {
 		final Set<ShowRequest> episodesToDownload = new HashSet<>();
 		for (Episode episode : downloadScheduleResult.getNewEpisodes()) {
 			Show show = episode.getShow();
-			episodesToDownload.add(new SingleEpisodeRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
+			if (episode.getEpisode() == -1) {
+				episodesToDownload.add(new FullSeasonRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason()));
+			} else {
+				episodesToDownload.add(new SingleEpisodeRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
+			}
 			logService.info(getClass(), "Will try to download torrents of " + episode);
 		}
 
@@ -308,40 +309,66 @@ public class ShowServiceImpl implements ShowService {
 			public DownloadScheduleResult doInTransaction(TransactionStatus arg0) {
 				DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
 
+				Collection<Episode> episodes = showsProvider.downloadSchedule();
+
 				// collect all future episode schedules as given by the showsProvider
 				Map<Show, List<Episode>> map = new HashMap<>();
-				Collection<Episode> episodes = showsProvider.downloadSchedule();
+
+				// just to skip already processed shows
+				Map<Show, Boolean> processedShows = new HashMap<>();
+				Map<Show, Show> showShellToShowMap = new HashMap<>();
 				for (Episode episode : episodes) {
-					CollectionUtils.safeListPut(map, episode.getShow(), episode);
-				}
-
-				for (Map.Entry<Show, List<Episode>> entry : map.entrySet()) {
-					Show showShell = entry.getKey();
-					List<Episode> curEpisodes = entry.getValue();
-
-					try {
+					Show showShell = episode.getShow();
+					if (!processedShows.containsKey(showShell)) {
 						Show show = showDao.findByTvRageId(showShell.getTvRageId());
 						if (show == null) {
 							show = showDao.findByName(showShell.getName());
 						}
 
+						// don't save new shows in the map, only save the show to db
 						// if show is not found, it is not being tracked
 						if (show == null) {
 							saveNewShow(showShell);
-							continue;
-						} else if (show.getTvRageId() == -1) {
-							show.setTvRageId(showShell.getTvRageId());
+							processedShows.put(showShell, false);
+						} else {
+							if (show.getTvRageId() == -1) {
+								show.setTvRageId(showShell.getTvRageId());
+							}
+							processedShows.put(showShell, userDao.isShowBeingTracked(show));
+							showShellToShowMap.put(showShell, show);
 						}
-						if (!userDao.isShowBeingTracked(show)) {
-							continue;
-						}
+					}
 
-						logService.info(getClass(), "Downloading latest schedule for '" + show + "'");
-						downloadScheduleResultHelper(show, curEpisodes, downloadScheduleResult);
-					} catch (Exception e) {
-						downloadScheduleResult.addFailedShow(showShell);
-						// why before there was no exception trace printed to log?
-						logService.error(getClass(), "Failed downloading schedule for show " + showShell + " " + e.getMessage(), e);
+					// save only tracked shows in the map (also here show != null)
+					if (processedShows.get(showShell)) {
+						Show show = showShellToShowMap.get(showShell);
+						CollectionUtils.safeListPut(map, show, episode);
+						episode.setShow(show); // replacing showShell with real show
+					}
+				}
+
+				// handle the case, where the job didn't run for a long time, and there is a gap between
+				// the schedules and what we have in db - we need to fill this gap by downloading full show schedule
+				// for the tracked shows
+				if (shouldDownloadGap(map, episodes)) {
+					logService.info(getClass(), "Detected that there is an episode schedule gap, " +
+												"will download full schedules for tracked shows");
+					for (Show show : map.keySet()) {
+						downloadFullSchedule(show);
+					}
+				} else {
+					for (Map.Entry<Show, List<Episode>> entry : map.entrySet()) {
+						Show show = entry.getKey();
+						List<Episode> curEpisodes = entry.getValue();
+
+						try {
+							logService.info(getClass(), "Downloading latest schedule for '" + show + "'");
+							downloadScheduleResultHelper(show, curEpisodes, downloadScheduleResult);
+						} catch (Exception e) {
+							downloadScheduleResult.addFailedShow(show);
+							// why before there was no exception trace printed to log?
+							logService.error(getClass(), "Failed downloading schedule for show " + show + " " + e.getMessage(), e);
+						}
 					}
 				}
 
@@ -351,6 +378,29 @@ public class ShowServiceImpl implements ShowService {
 
 		downloadScheduleHelper(downloadScheduleResult);
 		return downloadScheduleResult;
+	}
+
+	// checking if the earliest airdate episode is already in db
+	private boolean shouldDownloadGap(Map<Show, List<Episode>> map, Collection<Episode> episodes) {
+		boolean shouldDownloadGap = false;
+		if (!episodes.isEmpty()) {
+			List<Episode> sortedEpisodes = new ArrayList<>(episodes);
+			Collections.sort(sortedEpisodes, new Comparator<Episode>() {
+				@Override
+				public int compare(Episode o1, Episode o2) {
+					// air dates shouldn't be null here
+					return o1.getAirDate().compareTo(o2.getAirDate());
+				}
+			});
+			// look for an episode with existing show
+			for (Episode episode : sortedEpisodes) {
+				if (map.containsKey(episode.getShow())) {
+					shouldDownloadGap = !episodeDao.exists(episode.getShow(), episode);
+					break;
+				}
+			}
+		}
+		return shouldDownloadGap;
 	}
 
 	private void downloadScheduleResultHelper(Show show, Collection<Episode> episodes, DownloadScheduleResult downloadScheduleResult) {

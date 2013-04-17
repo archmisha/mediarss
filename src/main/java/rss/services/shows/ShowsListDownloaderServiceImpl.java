@@ -17,7 +17,7 @@ import javax.annotation.PostConstruct;
  * Date: 31/12/12 21:00
  */
 @Service
-@QuartzJob(name = "ShowsListDownloader", cronExp = "0 0 0/24 * * ?")
+@QuartzJob(name = "ShowsListDownloader", cronExp = "0 0 1/24 * * ?")
 public class ShowsListDownloaderServiceImpl extends JobRunner implements ShowsListDownloaderService {
 
 	@Autowired

@@ -11,7 +11,7 @@ import rss.util.QuartzJob;
  * Date: 31/12/12 20:12
  */
 @Service
-@QuartzJob(name = "ShowsScheduleDownloaderJob", cronExp = "0 30 0/12 * * ?")
+@QuartzJob(name = "ShowsScheduleDownloaderJob", cronExp = "0 0 0/12 * * ?")
 public class ShowsScheduleDownloaderServiceImpl extends JobRunner implements ShowsScheduleDownloaderService {
 
 	@Autowired

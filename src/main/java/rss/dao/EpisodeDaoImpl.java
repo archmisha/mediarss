@@ -3,6 +3,7 @@ package rss.dao;
 import org.springframework.stereotype.Repository;
 import rss.SubtitleLanguage;
 import rss.entities.Episode;
+import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.requests.DoubleEpisodeRequest;
 import rss.services.requests.EpisodeRequest;
@@ -90,6 +91,16 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		query.append("select t from Episode as t where :p0 <= t.airDate and t.airDate <= :p1 and t.show.id in (").append(generateQuestionMarks(showIds.size(), 2)).append(")");
 
 		return find(query.toString(), params.toArray());
+	}
+
+	@Override
+	public boolean exists(Show show, Episode episode) {
+		StringBuilder query = new StringBuilder();
+		List<Object> params = new ArrayList<>();
+
+		query.append("select count(t) from Episode as t where ");
+		generateSingleEpisodePart(query, params, "", 0, show.getId(), episode.getSeason(), episode.getEpisode());
+		return uniqueResult(super.<Long>find(query.toString(), params.toArray())) > 0;
 	}
 
 	private Date getScheduleUpperDate() {

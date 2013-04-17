@@ -49,7 +49,7 @@ public class Show extends BaseEntity {
 	@OneToMany(mappedBy = "show", targetEntity = Episode.class)
 	private Set<Episode> episodes;
 
-	@Column(name = "tvrage_id")
+	@Column(name = "tvrage_id", unique = true)
 	private int tvRageId;
 
 	public Show() {
