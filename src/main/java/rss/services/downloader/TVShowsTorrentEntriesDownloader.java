@@ -322,7 +322,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 				episodeRequests.removeAll(episodeRequest);
 				// removing to skip in the following iteration loop
 				episodesMap.remove(episode);
-				logService.info(getClass(), "Skipping downloading: " + StringUtils.join(episodeRequest, ", ") + " - still un-aired");
+				logService.debug(getClass(), "Skipping downloading: " + StringUtils.join(episodeRequest, ", ") + " - still un-aired");
 			}
 		}
 	}
