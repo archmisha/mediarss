@@ -44,7 +44,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 							continue;
 						}
 
-						logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, searchResult.getSource());
+						logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, searchResult);
 						return searchResult;
 					case AWAITING_AGING:
 						return searchResult;
@@ -61,7 +61,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 		}
 
 		if (successfulSearchResult != null) {
-			logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, successfulSearchResult.getSource());
+			logTorrentFound(mediaRequest, failedSearchers, noIMDBUrlSearchers, successfulSearchResult);
 			return successfulSearchResult;
 		}
 
@@ -70,9 +70,9 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 
 	protected abstract boolean shouldFailOnNoIMDBUrl();
 
-	private void logTorrentFound(MediaRequest mediaRequest, List<String> failedSearchers, List<String> noIMDBUrlSearchers, String source) {
-		StringBuilder sb = new StringBuilder().append("Found torrent \"").append(mediaRequest.toString())
-				.append("\" in ").append(source);
+	private void logTorrentFound(MediaRequest mediaRequest, List<String> failedSearchers, List<String> noIMDBUrlSearchers, SearchResult<Media> searchResult) {
+		StringBuilder sb = new StringBuilder().append("Found \"").append(mediaRequest.toString())
+				.append("\" in ").append(searchResult.getSource());
 		int counter = 0;
 		if (!failedSearchers.isEmpty()) {
 			sb.append(" (was missing at: ").append(StringUtils.join(failedSearchers, ", "));
@@ -90,6 +90,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 		if (counter > 0) {
 			sb.append(")");
 		}
+		sb.append(" (torrent=").append(searchResult.getTorrent().getTitle()).append(")");
 		log.info(sb.toString());
 	}
 

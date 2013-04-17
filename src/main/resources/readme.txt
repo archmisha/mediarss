@@ -123,13 +123,18 @@ schedule - if some show has an episode in more than 7 days - maybe should add it
 schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to display more days?
 
 
-still requests such as Pretty Little Liars s02e-1 720p are getting into the log
+make subtitles be totally optional!
+
+2013-04-17 19:54:36,655 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'Beverly Hills 90210 - Season 2' cuz a bad match for '90210 season 2'
 
 
+2013-04-17 19:54:02,377 [INFO ] CompositeTorrentSearcher - Found torrent "NCIS season 1" in thepiratebay.se
+2013-04-17 19:54:02,384 [INFO ] TVShowsTorrentEntriesDownloader - Downloading "NCIS Season 1-9 HD" took 31890 millis. Found in thepiratebay.se
 
-problemm:
-Removing 'The Office US S03E13.HDTV.XviD' cuz a bad match for 'The Office (US) s03e13'
-test
+2013-04-17 19:53:24,400 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'How I Met Your Mother Season 07 720p' cuz a bad match for 'How I Met Your Mother season 7 720p'
+
+
+analyze log from 17-04 since 21:30 evening
 
 [ERROR] TVShowsTorrentEntriesDownloader - Failed retrieving "Homeland s02e06 720p": excuteAPI error: DownloadSubtitles
 java.lang.RuntimeException: excuteAPI error: DownloadSubtitles

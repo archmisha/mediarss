@@ -127,12 +127,12 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			// handle subtitles - cant try-catch here, cuz it tried to insert the new entities first and if failed we
 			// don't know and un-persisted episode with torrent null is returned! if want try catch need in separate transaction or something
 			// download subtitles only if enabled for this show for any user
-			for (Episode persistedEpisode : persistedEpisodes) {
-				List<SubtitleLanguage> subtitlesLanguages = episodeDao.getSubtitlesLanguages(persistedEpisode);
-				if (!subtitlesLanguages.isEmpty()) {
-					subtitlesService.downloadEpisodeSubtitles(torrent, persistedEpisode, subtitlesLanguages);
-				}
-			}
+//			for (Episode persistedEpisode : persistedEpisodes) {
+//				List<SubtitleLanguage> subtitlesLanguages = episodeDao.getSubtitlesLanguages(persistedEpisode);
+//				if (!subtitlesLanguages.isEmpty()) {
+//					subtitlesService.downloadEpisodeSubtitles(torrent, persistedEpisode, subtitlesLanguages);
+//				}
+//			}
 		}
 
 		for (Episode persistedEpisode : persistedEpisodes) {
@@ -304,7 +304,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					episodeRequests.removeAll(episodeRequest);
 					// removing to skip in the following iteration loop
 					episodesMap.remove(episode);
-					logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest.toString(), ",") + "' - already scanned and airdate is older than 14 days ago");
+					logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest, ",") + "' - already scanned and airdate is older than 14 days ago");
 				}
 			}
 		}
