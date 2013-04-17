@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.EpisodesComparator;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.dao.EpisodeDao;
@@ -91,9 +92,7 @@ public class ShowServiceImpl implements ShowService {
 		showsCacheService.put(show);
 		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
 		for (Episode episode : episodes) {
-			episodeDao.persist(episode);
-			episode.setShow(show);
-			show.getEpisodes().add(episode);
+			persistEpisodeToShow(show, episode);
 		}
 		show.setScheduleDownloadDate(new Date());
 	}
@@ -187,7 +186,7 @@ public class ShowServiceImpl implements ShowService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadScheduleResult downloadFullSchedule(final Show show) {
 		logService.info(getClass(), "Downloading full schedule for '" + show + "'");
-		// need to requery so it will be in this transaction
+		// need to re-query so it will be in this transaction
 		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
 		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
 		downloadScheduleResultHelper(show, episodes, downloadScheduleResult);
@@ -359,13 +358,17 @@ public class ShowServiceImpl implements ShowService {
 		for (Episode episode : episodes) {
 			Episode persistedEpisode = mapper.get(episode.getSeason(), episode.getEpisode());
 			if (persistedEpisode == null) {
-				episodeDao.persist(episode);
-				episode.setShow(show);
-				show.getEpisodes().add(episode);
+				persistEpisodeToShow(show, episode);
 				downloadScheduleResult.addNewEpisode(episode);
 				persistedEpisode = episode;
 			}
 			persistedEpisode.setAirDate(episode.getAirDate());
+		}
+
+		// create full season episode if needed. Take all episodes, sort them and look at the last one
+		// all season before the season of the last episode should exist
+		for (Episode episode : findMissingFullSeasonEpisodes(show)) {
+			downloadScheduleResult.addNewEpisode(episode);
 		}
 
 		// in addition we need past episodes, which might have no torrents for some reason (maybe job was broken or something)
@@ -375,6 +378,33 @@ public class ShowServiceImpl implements ShowService {
 				downloadScheduleResult.addNewEpisode(episode);
 			}
 		}
+	}
+
+	@Override
+	public Collection<Episode> findMissingFullSeasonEpisodes(Show show) {
+		Collection<Episode> fullSeasonNewEpisodes = new ArrayList<>();
+		if (!show.getEpisodes().isEmpty()) {
+			EpisodesMapper mapper = new EpisodesMapper(show.getEpisodes());
+			ArrayList<Episode> sortedEpisodes = new ArrayList<>(show.getEpisodes());
+			Collections.sort(sortedEpisodes, new EpisodesComparator());
+			int lastEpisodeSeason = sortedEpisodes.get(sortedEpisodes.size() - 1).getSeason();
+			// running until lastEpisodeSeason-1 (including)
+			for (int i = 1; i < lastEpisodeSeason; ++i) {
+				if (mapper.get(i, -1) == null) {
+					Episode episode = new Episode(i, -1);
+					persistEpisodeToShow(show, episode);
+					fullSeasonNewEpisodes.add(episode);
+				}
+			}
+		}
+		return fullSeasonNewEpisodes;
+	}
+
+	@Override
+	public void persistEpisodeToShow(Show show, Episode episode) {
+		episodeDao.persist(episode);
+		episode.setShow(show);
+		show.getEpisodes().add(episode);
 	}
 
 	@Override

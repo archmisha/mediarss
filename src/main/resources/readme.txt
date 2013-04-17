@@ -122,17 +122,7 @@ add kickass torrents parser and add it to torrentz parsing like piratebay - to c
 
 how to prevent when searching house from finding house of lies or house of cards
 
-
-
-need job to download full seasons
-
-
-validate what is added to episodes feed is ok if user not logged in long time
-  (what if user was offline for a long time, it needs to download for him the whole delta not only the last episode)
-
-
-
   verify that not existing episodes like 100 or season 100 are not atempted to be downloaded
-  do need to create persist episdeos after torrent found? maybe not
-  create only full season episdes in pre download pahse
+
+when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
 

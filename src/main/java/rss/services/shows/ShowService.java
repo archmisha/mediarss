@@ -3,11 +3,13 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import rss.controllers.vo.EpisodeSearchResult;
 import rss.controllers.vo.ShowsScheduleVO;
+import rss.entities.Episode;
 import rss.entities.User;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Show;
 import rss.services.requests.ShowRequest;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -32,4 +34,8 @@ public interface ShowService {
 	ShowsScheduleVO getSchedule(Set<Show> shows);
 
 	boolean isMatch(EpisodeRequest mediaRequest, String title);
+
+	void persistEpisodeToShow(Show show, Episode episode);
+
+	Collection<Episode> findMissingFullSeasonEpisodes(Show show);
 }

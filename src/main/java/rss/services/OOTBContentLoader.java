@@ -16,6 +16,7 @@ import rss.dao.ShowDao;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.services.log.LogService;
+import rss.services.shows.ShowService;
 import rss.services.shows.TVRageServiceImpl;
 import rss.util.DurationMeter;
 
@@ -61,6 +62,9 @@ public class OOTBContentLoader {
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 
+	@Autowired
+	private ShowService showService;
+
 	@PostConstruct
 	private void postConstruct() {
 		tvRageService = new TVRageServiceImpl();
@@ -100,9 +104,7 @@ public class OOTBContentLoader {
 								showDao.persist(show);
 								Collection<Episode> episodes = tvRageService.downloadSchedule(show);
 								for (Episode episode : episodes) {
-									episodeDao.persist(episode);
-									episode.setShow(show);
-									show.getEpisodes().add(episode);
+									showService.persistEpisodeToShow(show, episode);
 								}
 							}
 						});

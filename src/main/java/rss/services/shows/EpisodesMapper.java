@@ -7,16 +7,21 @@ import rss.entities.Episode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
 * User: dikmanm
 * Date: 25/02/13 13:30
 */
-class EpisodesMapper {
+public class EpisodesMapper {
 	private Map<Pair<Integer, Integer>, Episode> episodes;
 
-	public EpisodesMapper(Collection<Episode> episodesList) {
+	public EpisodesMapper() {
 		episodes = new HashMap<>();
+	}
+
+	public EpisodesMapper(Collection<Episode> episodesList) {
+		this();
 		for (Episode episode : episodesList) {
 			add(episode);
 		}
@@ -28,5 +33,11 @@ class EpisodesMapper {
 
 	public void add(Episode episode) {
 		episodes.put(new ImmutablePair<>(episode.getSeason(), episode.getEpisode()), episode);
+	}
+
+	public void add(Collection<Episode> episodes) {
+		for (Episode episode : episodes) {
+			add(episode);
+		}
 	}
 }
