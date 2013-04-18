@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
+import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
@@ -24,8 +25,6 @@ import java.util.regex.Pattern;
 @Service("thePirateBayTorrentSearcher")
 public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
 
-	private static Log log = LogFactory.getLog(ThePirateBayTorrentSearcher.class);
-
 	private static final String NAME = "thepiratebay.se";
 	private static final String HOST_NAME_URL_PART = "http://" + NAME;
 	private static final String SEARCH_URL = HOST_NAME_URL_PART + "/search/%s/0/99/0";
@@ -34,6 +33,9 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 
 	@Autowired
 	private PageDownloader pageDownloader;
+
+	@Autowired
+	protected LogService logService;
 
 	@Override
 	public String getName() {
@@ -93,7 +95,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 			searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent, page));
 			return searchResult;
 		} catch (Exception e) {
-			log.error("Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 	}
@@ -128,7 +130,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		for (Torrent torrent : new ArrayList<>(results)) {
 			if (!torrent.getTitle().toLowerCase().contains(mediaRequest.getTitle().toLowerCase())) {
 				results.remove(torrent);
-				log.info("Removing '" + torrent.getTitle() + "' cuz a bad match for '" + mediaRequest.toString() + "'");
+				logService.info(getClass(), "Removing '" + torrent.getTitle() + "' cuz a bad match for '" + mediaRequest.toString() + "'");
 			}
 		}
 	}
@@ -139,7 +141,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		try {
 			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
 		} catch (Exception e) {
-			log.error("Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
+			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
 			return null;
 		}
 
@@ -151,9 +153,13 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		if (matcher.find()) {
 			return matcher.group(1);
 		} else {
-			log.info("Didn't find IMDB url for: " + torrent.getTitle());
+			logNoImdbFound(torrent);
 		}
 		return null;
+	}
+
+	protected void logNoImdbFound(Torrent torrent) {
+		logService.info(getClass(), "Didn't find IMDB url for: " + torrent.getTitle());
 	}
 
 	private List<Torrent> parseSearchResultsPage(MediaRequest mediaRequest, String page) {
@@ -190,7 +196,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 			}
 		} catch (Exception e) {
 			// in case of an error in parsing, printing the page so be able to reproduce
-			log.error("Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return Collections.emptyList(); // could maybe return the partial results collected up until now
 		}
 
@@ -285,7 +291,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		Date time = c.getTime();
 		// fix pirate bay bug, that shows today when actually its yesterday
 		if (time.after(new Date())) {
-			log.debug("Fixing pirate bay date bug for " + dateUploadedStr);
+			logService.debug(getClass(), "Fixing pirate bay date bug for " + dateUploadedStr);
 			c.add(Calendar.DAY_OF_MONTH, -1);
 		}
 

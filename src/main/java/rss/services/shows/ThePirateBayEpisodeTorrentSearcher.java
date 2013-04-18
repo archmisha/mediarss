@@ -29,4 +29,9 @@ public class ThePirateBayEpisodeTorrentSearcher extends ThePirateBayTorrentSearc
 			}
 		}
 	}
+
+	@Override
+	protected void logNoImdbFound(Torrent torrent) {
+		logService.debug(getClass(), "Didn't find IMDB url for: " + torrent.getTitle());
+	}
 }
