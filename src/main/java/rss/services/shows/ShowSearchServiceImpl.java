@@ -69,7 +69,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		DurationMeter duration = new DurationMeter();
 		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm);
 		duration.stop();
-		logService.info(getClass(), "Did you mean time - " + duration.getDuration());
+		logService.info(getClass(), "Did you mean time - " + duration.getDuration() + "millis");
 
 		// first check which show we need
 		Show show = showDao.findByName(originalSearchTerm);
@@ -93,7 +93,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			return EpisodeSearchResult.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
 		}
 
-		downloadShowScheduleBeforeSearch(episodeRequest);
+		downloadShowScheduleBeforeSearch(episodeRequest.getShow());
 
 		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest)).getDownloaded();
 
@@ -139,18 +139,15 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			}
 		});
 
-		EpisodeSearchResult episodeSearchResult = new EpisodeSearchResult(originalSearchTerm, actualSearchTerm, result);
-		episodeSearchResult.setDidYouMean(entityConverter.toThinShows(didYouMeanShows));
 
-		return episodeSearchResult;
+		return EpisodeSearchResult.createWithResult(originalSearchTerm, actualSearchTerm, result, entityConverter.toThinShows(didYouMeanShows));
 	}
 
-	private void downloadShowScheduleBeforeSearch(ShowRequest episodeRequest) {
+	private void downloadShowScheduleBeforeSearch(Show show) {
 		// download show episode schedule unless:
 		// - already downloaded schedule and show is ended
 		// - show is being tracked
 		// - the last episode we have is aired after now
-		Show show = episodeRequest.getShow();
 		boolean shouldDownloadSchedule = true;
 		if (show.getScheduleDownloadDate() != null && show.isEnded()) {
 			shouldDownloadSchedule = false;

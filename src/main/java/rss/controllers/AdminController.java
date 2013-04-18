@@ -94,7 +94,7 @@ public class AdminController extends BaseController {
 		verifyAdminPermissions(user);
 
 		Show show = showDao.find(showId);
-		showService.downloadFullScheduleWithTorrents(show);
+		showService.downloadFullScheduleWithTorrents(show, false);
 
 		return "Downloaded schedule for '" + show.getName() + "'";
 	}

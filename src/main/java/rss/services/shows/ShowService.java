@@ -25,7 +25,7 @@ public interface ShowService {
 
 	DownloadScheduleResult downloadLatestScheduleWithTorrents();
 
-	void downloadFullScheduleWithTorrents(Show show);
+	void downloadFullScheduleWithTorrents(Show show, boolean torrentsDownloadAsync);
 
 	DownloadScheduleResult downloadFullSchedule(final Show show);
 

@@ -35,12 +35,12 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	@Autowired
 	protected LogService logService;
 
-	private List<CachedShow> cache;
+	private Map<Long, CachedShow> cache;
 	private Map<CachedShow, Collection<CachedShowSubset>> showNameSubsets;
 
 	@PostConstruct
 	private void postConstruct() {
-		cache = new ArrayList<>();
+		cache = new HashMap<>();
 		showNameSubsets = new HashMap<>();
 
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
@@ -70,8 +70,15 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		logService.info(getClass(), "Loaded shows cache (" + duration.getDuration() + " millis)");
 	}
 
+	@Override
+	public void updateShowEnded(Show show) {
+		if (cache.containsKey(show.getId())) {
+			cache.get(show.getId()).setEnded(show.isEnded());
+		}
+	}
+
 	private void addShow(CachedShow show) {
-		cache.add(show);
+		cache.put(show.getId(), show);
 
 		String cur = ShowServiceImpl.normalize(show.getName());
 		show.setWords(cur.split(" ").length);
@@ -99,7 +106,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	@Override
 	public Collection<CachedShow> getAll() {
 		// return a copy
-		return new ArrayList<>(cache);
+		return new ArrayList<>(cache.values());
 	}
 
 	@Override

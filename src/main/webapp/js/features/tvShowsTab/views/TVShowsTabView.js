@@ -59,7 +59,8 @@ define([
 					description: 'View past and future episode air dates<br/>of your tracked shows'
 				});
 				this.showsScheduleView = new ShowsScheduleView({
-					schedule: this.loggedInUserData.schedule
+					schedule: this.loggedInUserData.schedule,
+					vent: this.vent
 				});
 			},
 

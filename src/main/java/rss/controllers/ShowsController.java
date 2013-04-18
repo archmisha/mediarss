@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
 import rss.controllers.vo.EpisodeSearchResult;
@@ -25,9 +24,10 @@ import rss.services.shows.ShowSearchService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
 
 @Controller
 @RequestMapping("/shows")
@@ -57,7 +57,7 @@ public class ShowsController extends BaseController {
 	@RequestMapping(value = "/addTracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void addTracked(@PathVariable final long showId) {
+	public Map<String, Object> addTracked(@PathVariable final long showId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		final Show show = showDao.find(showId);
 		// if show was not being tracked before (becoming tracked now) - download its schedule
@@ -66,27 +66,25 @@ public class ShowsController extends BaseController {
 
 		// return the request asap to the user
 		if (downloadSchedule) {
-			final Class aClass = getClass();
-			Executors.newSingleThreadExecutor().submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						showService.downloadFullScheduleWithTorrents(show);
-					} catch (Exception e) {
-						logService.error(aClass, "Failed downloading schedule of show \"" + show + "\" " + e.getMessage(), e);
-					}
-				}
-			});
+			showService.downloadFullScheduleWithTorrents(show, true);
 		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("schedule", showService.getSchedule(user.getShows()));
+		return result;
 	}
 
 	@RequestMapping(value = "/removeTracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void removeTracked(@PathVariable long showId) {
+	public Map<String, Object> removeTracked(@PathVariable long showId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Show show = showDao.find(showId);
 		user.getShows().remove(show);
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("schedule", showService.getSchedule(user.getShows()));
+		return result;
 	}
 
 	@RequestMapping(value = "/tracked/autocomplete", method = RequestMethod.GET)
@@ -115,15 +113,6 @@ public class ShowsController extends BaseController {
 		downloadEpisode(torrentId, user);
 	}
 
-	private void downloadEpisode(long torrentId, User user) {
-		Torrent torrent = torrentDao.find(torrentId);
-		addUserTorrent(user, torrent, new EpisodeUserTorrent());
-		if (user.getSubtitles() != null) {
-			Episode episode = episodeDao.find(torrent);
-			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
-		}
-	}
-
 	@RequestMapping(value = "/episode/downloadAll", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -131,6 +120,15 @@ public class ShowsController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		for (long torrentId : torrentIds) {
 			downloadEpisode(torrentId, user);
+		}
+	}
+
+	private void downloadEpisode(long torrentId, User user) {
+		Torrent torrent = torrentDao.find(torrentId);
+		addUserTorrent(user, torrent, new EpisodeUserTorrent());
+		if (user.getSubtitles() != null) {
+			Episode episode = episodeDao.find(torrent);
+			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
 		}
 	}
 
@@ -160,24 +158,4 @@ public class ShowsController extends BaseController {
 			return EpisodeSearchResult.createNoResults(title);
 		}
 	}
-
-	/*@RequestMapping(value = "/addManual", method = RequestMethod.POST)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> addManual(HttpServletRequest request) {
-		String showTvComUrl = extractString(request, "showTvComUrl", true);
-		Show show = showService.downloadShowByUrl(showTvComUrl);
-		Map<String, Object> result = new HashMap<>();
-		if (show == null) {
-			result.put("success", false);
-			result.put("message", "Unable to find show (invalid url?)");
-		} else if (show.isEnded()) {
-			result.put("success", false);
-			result.put("message", "Show '" + show.getName() + "' is already ended");
-		} else {
-			result.put("success", true);
-			result.put("show", entityConverter.toThinShows(Collections.singleton(show)).get(0));
-		}
-		return result;
-	}*/
 }

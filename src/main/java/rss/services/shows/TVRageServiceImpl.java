@@ -1,6 +1,7 @@
 package rss.services.shows;
 
 import com.thoughtworks.xstream.XStream;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.MediaRSSException;
@@ -157,7 +158,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 			xstream.useAttributeFor(TVRageSeason.class, "no");
 
 			TVRageShowInfo tvRageShowInfo = (TVRageShowInfo) xstream.fromXML(page);
-			show.setEnded(tvRageShowInfo.getEnded() != null);
+			show.setEnded(!StringUtils.isBlank(tvRageShowInfo.getEnded()));
 
 			if (tvRageShowInfo.getEpisodelist() == null) {
 				logService.debug(getClass(), "Show '" + show.getName() + "' has no episodes in TVRage!");
@@ -248,7 +249,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 		private String showlink;
 		private Object started;
 		private Object startdate;
-		private Object ended;
+		private String ended;
 		private String image;
 		private String origin_country;
 		private String status;
@@ -266,7 +267,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 			return Episodelist;
 		}
 
-		public Object getEnded() {
+		public String getEnded() {
 			return ended;
 		}
 	}

@@ -98,10 +98,6 @@ when doing action shown session timeout dialog but when clickin tab redirected t
 what if shceduked an old movie but no hd torrent found - maybe will be scheduled for ever cuz there is no hd movie likae that....
 if found a movie wonce with 2 torrents. later when adding this movie again to some user, maybe now there are more torrent and better - we will not download them..
 
-when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
-    anatomy grey seaosn 8 vs s08 vs season 8 720p....)
-    also partial seasons: Greys Anatomy Season 8 Episode 1-22
-
 search results  hover text too long
 save all jobs run history not only the last one
 make all tooltips be one line
@@ -114,25 +110,49 @@ about your schedule in the site i think it would be better user experience if th
 
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
 
-how to prevent when searching house from finding house of lies or house of cards
+when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
+    anatomy grey seaosn 8 vs s08 vs season 8 720p....)
+    also partial seasons: Greys Anatomy Season 8 Episode 1-22
+
+2013-04-17 19:54:36,655 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'Beverly Hills 90210 - Season 2' cuz a bad match for '90210 season 2'
+
+Showtime House vs house
+2013-04-17 19:54:02,377 [INFO ] CompositeTorrentSearcher - Found torrent "NCIS season 1" in thepiratebay.se
+2013-04-17 19:54:02,384 [INFO ] TVShowsTorrentEntriesDownloader - Downloading "NCIS Season 1-9 HD" took 31890 millis. Found in thepiratebay.se
+
+2013-04-17 19:53:24,400 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'How I Met Your Mother Season 07 720p' cuz a bad match for 'How I Met Your Mother season 7 720p'
+
+
+episode matching:
+case 1: single episode
+  take everything before s01e01
+  do LD on the texts
+  future: take akas use country US and attr Short title and Alternate title
+case 2: full season
+  take everything before season 1
+  take only when after season 1 there is text or number > 100
+  also
+  take everything before s01
+  take only when after s01 there is space
+  then
+  take the higher peers between the 2 options
+
+test this when removing and word completely in normalize
+Brothers & Sisters season 1 wont find cuz the result is Brothers and Sisters Season 1
+
+===== 'NCIS: Los Angeles season 1 720p - why not exist???
 
 when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
 
 if a show has ended and some user has it tracked - mark in the ui for him red alert
+
 schedule - if some show has an episode in more than 7 days - maybe should add it too
 schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to display more days?
 
 
 make subtitles be totally optional!
 
-2013-04-17 19:54:36,655 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'Beverly Hills 90210 - Season 2' cuz a bad match for '90210 season 2'
-
-
-2013-04-17 19:54:02,377 [INFO ] CompositeTorrentSearcher - Found torrent "NCIS season 1" in thepiratebay.se
-2013-04-17 19:54:02,384 [INFO ] TVShowsTorrentEntriesDownloader - Downloading "NCIS Season 1-9 HD" took 31890 millis. Found in thepiratebay.se
-
-2013-04-17 19:53:24,400 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'How I Met Your Mother Season 07 720p' cuz a bad match for 'How I Met Your Mother season 7 720p'
-
+how to prevent when searching house from finding house of lies or house of cards
 
 analyze log from 17-04 since 21:30 evening
 
@@ -172,3 +192,10 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: excuteAPI er
 Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download limit reached
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)
         ... 27 more
+
+
+
+changelog:
+shows schedule updates live on tracked shows being changed
+improved episode matching when downloading torrents
+other various bug fixes

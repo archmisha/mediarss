@@ -97,8 +97,9 @@ public class ShowServiceImpl implements ShowService {
 
 	public static String normalize(String name) {
 		name = name.toLowerCase();
-		name = name.replaceAll("['\"!,&\\-\\+\\?/:\\(\\)]", "");
-		name = name.replaceAll("[\\.]", " ");
+		name = name.replaceAll("['\"\\-]", "");
+		name = name.replaceAll("[:&\\._\\+,\\(\\)!\\?/]", " ");
+		name = name.replaceAll("\\s+", " ");
 		return name;
 	}
 
@@ -141,6 +142,7 @@ public class ShowServiceImpl implements ShowService {
 									// update show status that might have changed
 									if (show.isEnded() != downloadedShow.isEnded()) {
 										show.setEnded(downloadedShow.isEnded());
+										showsCacheService.updateShowEnded(show);
 										// since show becomes ended, download its episodes schedule one last time
 										downloadFullSchedule(show);
 									}
@@ -164,7 +166,7 @@ public class ShowServiceImpl implements ShowService {
 
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void downloadFullScheduleWithTorrents(final Show nonTransactionShow) {
+	public void downloadFullScheduleWithTorrents(final Show nonTransactionShow, boolean torrentsDownloadAsync) {
 		// must separate schedule download and torrent download into separate transactions
 		// cuz in the first creating episodes which must be available (committed) in the second part
 		// and the second part spawns separate threads and transactions
@@ -176,7 +178,19 @@ public class ShowServiceImpl implements ShowService {
 			}
 		});
 
-		downloadScheduleHelper(downloadScheduleResult);
+		if (torrentsDownloadAsync) {
+			final Class aClass = getClass();
+			Executors.newSingleThreadExecutor().submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						downloadScheduleHelper(downloadScheduleResult);
+					} catch (Exception e) {
+						logService.error(aClass, "Failed downloading schedule of show \"" + nonTransactionShow + "\" " + e.getMessage(), e);
+					}
+				}
+			});
+		}
 	}
 
 	@Override
@@ -188,6 +202,7 @@ public class ShowServiceImpl implements ShowService {
 		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
 		downloadScheduleResultHelper(show, episodes, downloadScheduleResult);
 		show.setScheduleDownloadDate(new Date());
+		showsCacheService.updateShowEnded(show);
 		return downloadScheduleResult;
 	}
 
@@ -417,6 +432,7 @@ public class ShowServiceImpl implements ShowService {
 
 		// create full season episode if needed. Take all episodes, sort them and look at the last one
 		// all season before the season of the last episode should exist
+		// persisting inside
 		for (Episode episode : findMissingFullSeasonEpisodes(show)) {
 			downloadScheduleResult.addNewEpisode(episode);
 		}

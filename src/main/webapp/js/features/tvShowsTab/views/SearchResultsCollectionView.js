@@ -16,7 +16,6 @@ define([
 			},
 
 			onRender: function() {
-				this.vent.on('show-episode-download', this.onEpisodeDownload, this);
 			},
 
 			onShow: function() {
@@ -27,6 +26,8 @@ define([
 				this.itemViewOptions = { vent: this.vent };
 
 				Marionette.CollectionView.prototype.constructor.apply(this, arguments);
+
+				this.vent.on('show-episode-download', this.onEpisodeDownload, this);
 			},
 
 			onEpisodeDownload: function(userTorrent) {

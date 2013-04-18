@@ -29,6 +29,10 @@ public class CachedShow {
 		return ended;
 	}
 
+	public void setEnded(boolean ended) {
+		this.ended = ended;
+	}
+
 	public int getWords() {
 		return words;
 	}

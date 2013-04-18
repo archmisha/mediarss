@@ -110,6 +110,9 @@ define([
 					} else if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
 						that.ui.resultsHeader.show();
 						that.showDidYouMean(searchResult);
+						if (searchResult.actualSearchTerm === searchResult.originalSearchTerm) {
+							that.ui.noResultsStatus.fadeIn('slow');
+						}
 					} else {
 						that.ui.noResultsStatus.fadeIn('slow');
 					}

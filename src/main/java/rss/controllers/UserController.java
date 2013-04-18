@@ -39,9 +39,6 @@ public class UserController extends BaseController {
 	private SessionService sessionService;
 
 	@Autowired
-	private ShowDao showDao;
-
-	@Autowired
 	private SettingsService settingsService;
 
 	@Autowired

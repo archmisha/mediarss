@@ -44,12 +44,15 @@ public class EpisodeSearchResult {
 	}
 
 	public static EpisodeSearchResult createDidYouMean(String searchTerm, Collection<ShowVO> shows) {
-		EpisodeSearchResult esr = new EpisodeSearchResult(searchTerm, searchTerm, Collections.<UserTorrentVO>emptyList());
+		EpisodeSearchResult esr = new EpisodeSearchResult(searchTerm, null, Collections.<UserTorrentVO>emptyList());
 		esr.didYouMean.addAll(shows);
 		return esr;
 	}
 
-	public void setDidYouMean(List<ShowVO> didYouMean) {
-		this.didYouMean = didYouMean;
+	public static EpisodeSearchResult createWithResult(String originalSearchTerm, String actualSearchTerm,
+													   Collection<UserTorrentVO> episodes, Collection<ShowVO> shows) {
+		EpisodeSearchResult esr = new EpisodeSearchResult(originalSearchTerm, actualSearchTerm, episodes);
+		esr.didYouMean.addAll(shows);
+		return esr;
 	}
 }

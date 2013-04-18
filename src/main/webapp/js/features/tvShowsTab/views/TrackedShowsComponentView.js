@@ -36,19 +36,20 @@ define([
 			},
 
 			constructor: function(options) {
-				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.vent = options.vent;
+				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.trackedShowsCollection = new ShowsCollection(options.trackedShows);
 
 				this.trackedShowsView = new TrackedShowsCollectionView({
 					collection: this.trackedShowsCollection,
 					vent: this.vent
 				})
+
+				this.vent.on('tracked-show-remove', this._onRemoveTrackedShow, this);
 			},
 
 			onRender: function() {
 				this.trackedShowsListRegion.show(this.trackedShowsView);
-				this.vent.on('tracked-show-remove', this._onRemoveTrackedShow, this);
 				if (this.trackedShowsCollection.length > 0) {
 					this.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
 				}
@@ -72,6 +73,7 @@ define([
 						that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
 						that.ui.showsComboBox.select2('data', '');
 						MessageBox.info('Show \'' + comboShow.text + '\' is being tracked');
+						that.vent.trigger('shows-schedule-update', res.schedule);
 					}, false);
 				}, 150);
 			},
@@ -88,6 +90,7 @@ define([
 							that.ui.trackedShowsList.removeClass('tracked-shows-list-non-empty');
 						}
 						MessageBox.info('Show \'' + showModel.get('name') + '\' is no more tracked');
+						that.vent.trigger('shows-schedule-update', res.schedule);
 					}, false);
 				}, 150);
 			},

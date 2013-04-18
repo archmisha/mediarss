@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.EpisodesComparator;
 import rss.MediaRSSException;
 import rss.ShowNotFoundException;
-import rss.SubtitleLanguage;
 import rss.dao.EpisodeDao;
 import rss.dao.ShowDao;
 import rss.dao.TorrentDao;
@@ -203,9 +202,12 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 
 		for (Show show : shows) {
 			for (Episode episode : showService.findMissingFullSeasonEpisodes(show)) {
-				EpisodeRequest episodeRequest = new FullSeasonRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason());
-				episodeRequests.add(episodeRequest);
-				CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
+				// only if this full season episode was requested in the first place
+				if (episodesMap.containsKey(episode)) {
+					EpisodeRequest episodeRequest = new FullSeasonRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason());
+					episodeRequests.add(episodeRequest);
+					CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
+				}
 			}
 		}
 	}
@@ -304,7 +306,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					episodeRequests.removeAll(episodeRequest);
 					// removing to skip in the following iteration loop
 					episodesMap.remove(episode);
-					logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest, ",") + "' - already scanned and airdate is older than 14 days ago");
+					logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest, ", ") + "' - already scanned and airdate is older than 14 days ago");
 				}
 			}
 		}
