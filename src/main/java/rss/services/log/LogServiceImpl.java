@@ -12,10 +12,6 @@ import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SessionService;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-
 /**
  * User: Michael Dikman
  * Date: 22/12/12
@@ -57,7 +53,11 @@ public class LogServiceImpl implements LogService {
 		String message = prepareMessage(msg);
 		log.error(message);
 
-		emailService.notifyOfError(message);
+		try {
+			emailService.notifyOfError(message);
+		} catch (Exception e) {
+			log.error("Failed sending the error to admins by email: " + e.getMessage(), e);
+		}
 	}
 
 	@Override
@@ -66,8 +66,12 @@ public class LogServiceImpl implements LogService {
 		String message = prepareMessage(msg);
 		log.error(message, ex);
 
-		message += ("\r\n" + ExceptionUtils.getStackTrace(ex));
-		emailService.notifyOfError(message);
+		try {
+			message += ("\r\n" + ExceptionUtils.getStackTrace(ex));
+			emailService.notifyOfError(message);
+		} catch (Exception e) {
+			log.error("Failed sending the error to admins by email: " + e.getMessage(), e);
+		}
 	}
 
 	@Override
