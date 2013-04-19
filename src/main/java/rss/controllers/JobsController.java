@@ -21,10 +21,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 import java.security.InvalidParameterException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -83,6 +80,14 @@ public class JobsController extends BaseController {
 				job.setEnd(settingsService.getStartupDate());
 			}
 		}
+
+		// so that jobs appear in the same order in the ui every time
+		Collections.sort(jobs, new Comparator<JobStatus>() {
+			@Override
+			public int compare(JobStatus o1, JobStatus o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
 
 		return jobs;
 	}
