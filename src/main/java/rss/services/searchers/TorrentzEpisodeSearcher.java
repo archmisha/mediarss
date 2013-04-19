@@ -51,9 +51,9 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 	public SearchResult<Episode> search(EpisodeRequest episodeRequest) {
 		try {
 			// don't handle episode requests, only full season requests
-			if (!(episodeRequest instanceof FullSeasonRequest)) {
-				return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
-			}
+//			if (!(episodeRequest instanceof FullSeasonRequest)) {
+//				return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+//			}
 
 			// search torrentz to get piratebay id and the use regular piratebay searcher
 			String page = pageDownloader.downloadPage(TORRENTZ_EPISODE_SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString(), "UTF-8"));

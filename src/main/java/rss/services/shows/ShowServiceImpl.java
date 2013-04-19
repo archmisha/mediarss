@@ -104,6 +104,15 @@ public class ShowServiceImpl implements ShowService {
 		return name;
 	}
 
+	// not normalizing: and, &
+	public static String normalizeFoQueryString(String name) {
+		name = name.toLowerCase();
+		name = name.replaceAll("['\"\\-]", "");
+		name = name.replaceAll("[:\\._\\+,\\(\\)!\\?/]", " ");
+		name = name.replaceAll("\\s+", " ");
+		return name;
+	}
+
 	@Override
 	// substitute show name with alias and seasons if needed
 	public void transformEpisodeRequest(ShowRequest showRequest) {

@@ -32,7 +32,10 @@ public abstract class EpisodeRequest extends ShowRequest {
 
 	@Override
 	public String toQueryString() {
-		StringBuilder sb = new StringBuilder().append(ShowServiceImpl.normalize(getTitle()));
+		// must use a different normalization method that the one used in comapring shows
+		// because when searching we don't want to remove 'and', '&' and others
+		// brothers and sisters vs brothers sisters give different results
+		StringBuilder sb = new StringBuilder().append(ShowServiceImpl.normalizeFoQueryString(getTitle()));
 		sb.append(" ").append(getSeasonEpisode());
 		if (getQuality() != MediaQuality.NORMAL) {
 			sb.append(" ").append(getQuality());

@@ -82,7 +82,6 @@ icons
  Wrong/not existing subtitles - no eng default
  subcenter
 
-- update schedule when tracked shows updated
  - Stop searching in the middle of the search - Stuck everything! strange red line
  - Tracked TV shows - table looks bad
 
@@ -101,16 +100,16 @@ if found a movie wonce with 2 torrents. later when adding this movie again to so
 search results  hover text too long
 save all jobs run history not only the last one
 make all tooltips be one line
+sections to contain also the body - refactor
 
-handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
-
-what if the tracked shows schedule download job was broken and next time it runs we skipped an episode?
-
-about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
-
-add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
-
-8,223 [WARN ] MoviesTorrentEntriesDownloader - Failed retrieving number of viewers for 'Devils of War (2013)':
+movies:
+  handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
+  8,223 [WARN ] MoviesTorrentEntriesDownloader - Failed retrieving number of viewers for 'Devils of War (2013)':
+shows:
+  about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
+  add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03 and also brothers and sisters s01e03
+  normalization in searchers makes problem in results removing & or and changes the results also grey's anatomy vs greys anatomy is a problem
+    brothers & sisters vs brothers sisters vs brothers and sisters
 
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
@@ -139,11 +138,8 @@ case 2: full season
   then
   take the higher peers between the 2 options
 
-test this when removing and word completely in normalize
-Brothers & Sisters season 1 wont find cuz the result is Brothers and Sisters Season 1
-
-
 ===== 'NCIS: Los Angeles season 1 720p - why not exist???
+2013-04-19 11:35:05,888 [INFO ] TVShowsTorrentEntriesDownloader - [archmisha@gmail.com(1)] - Skipping request 'NCIS: Los Angeles season 1 720p' because no such episodes exist
 
 when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
 
@@ -156,8 +152,6 @@ schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to
 make subtitles be totally optional!
 
 how to prevent when searching house from finding house of lies or house of cards
-
-analyze log from 17-04 since 21:30 evening
 
 [ERROR] TVShowsTorrentEntriesDownloader - Failed retrieving "Homeland s02e06 720p": excuteAPI error: DownloadSubtitles
 java.lang.RuntimeException: excuteAPI error: DownloadSubtitles
