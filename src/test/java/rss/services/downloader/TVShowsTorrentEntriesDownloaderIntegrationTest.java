@@ -57,7 +57,7 @@ public class TVShowsTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 		Set<ShowRequest> episodeRequests = Collections.singleton(episodeRequest);
 		ExecutorService executor = Mockito.mock(ExecutorService.class);
 
-		Collection<Episode> download = downloader.download(episodeRequests, executor).getDownloaded();
+		Collection<Episode> download = downloader.download(episodeRequests, executor, true).getDownloaded();
 
 		verify(executor, Mockito.times(0)).submit(any(Runnable.class));
 		assertEquals(1, download.size());

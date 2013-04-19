@@ -8,6 +8,10 @@
     <input class='shows-search-season' type='text' id='shows-search-season' size="2" tabindex="0"/>
     <label for="shows-search-episode" class='shows-search-episode-label'>Episode: </label>
     <input class='shows-search-episode' type='text' id='shows-search-episode' size="2" tabindex="0"/>
+    <div class='shows-search-admin-force-download'>
+        <input class='shows-search-admin-force-download-checkbox' type="checkbox" name="forceDownload" value="true">
+        <span class='shows-search-admin-force-download-label'>Force episodes download</span>
+    </div>
 </div>
 <div class='shows-search-results-header'>
     <div class='shows-search-results-showing-results-for'>Showing results for <span

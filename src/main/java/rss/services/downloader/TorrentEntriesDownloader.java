@@ -11,6 +11,7 @@ import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
+import rss.services.requests.ShowRequest;
 import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
@@ -40,18 +41,23 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	public DownloadResult<T, S> download(Collection<S> mediaRequests) {
-		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_EPISODES));
+		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_EPISODES), false);
 	}
 
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public DownloadResult<T, S> download(Collection<S> mediaRequests, ExecutorService executorService) {
+	public DownloadResult<T, S> download(Collection<S> mediaRequests, boolean forceDownload) {
+		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_EPISODES), forceDownload);
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public DownloadResult<T, S> download(Collection<S> mediaRequests, ExecutorService executorService, boolean forceDownload) {
 		// copying to avoid UnsupportedOperationException if immutable collections is given
 		final Set<S> mediaRequestsCopy = new HashSet<>(mediaRequests);
 
 		// enriching the set before the cache query - maybe expanding full season request into parts
 		// modifying and enriching the set inside the method
 		// first query the cache and those that are not found in cache divide between the threads
-		Collection<T> cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy);
+		Collection<T> cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
 
 		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
@@ -111,10 +117,9 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 
 	protected abstract void onTorrentMissing(S mediaRequest, SearchResult<T> searchResult);
 
-	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy);
+	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy, boolean forceDownload);
 
 	protected abstract List<T> onTorrentFound(S mediaRequest, SearchResult<T> searchResult);
 
 	protected abstract SearchResult<T> downloadTorrent(S request);
-
 }

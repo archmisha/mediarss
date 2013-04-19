@@ -10,6 +10,6 @@ import rss.services.requests.ShowRequest;
  */
 public interface ShowSearchService {
 
-	EpisodeSearchResult search(ShowRequest episodeRequest, User user);
+	EpisodeSearchResult search(ShowRequest episodeRequest, User user, boolean forceDownload);
 
 }

@@ -10,6 +10,7 @@ public class CachedShow {
 	private String name;
 	private boolean ended;
 	private int words;
+	private String normalizedName;
 
 	public CachedShow(long id, String name, boolean ended) {
 		this.id = id;
@@ -56,5 +57,13 @@ public class CachedShow {
 	@Override
 	public int hashCode() {
 		return (int) (id ^ (id >>> 32));
+	}
+
+	public void setNormalizedName(String normalizedName) {
+		this.normalizedName = normalizedName;
+	}
+
+	public String getNormalizedName() {
+		return normalizedName;
 	}
 }

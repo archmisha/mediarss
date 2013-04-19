@@ -80,7 +80,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 		}
 		if (!noIMDBUrlSearchers.isEmpty()) {
 			if (counter > 0) {
-				sb.append(" ,");
+				sb.append(", ");
 			} else {
 				sb.append(" (");
 			}

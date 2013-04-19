@@ -11,7 +11,6 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
 import rss.services.searchers.TorrentSearcher;
@@ -189,7 +188,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	protected Collection<Movie> preDownloadPhase(Set<MovieRequest> requests) {
+	protected Collection<Movie> preDownloadPhase(Set<MovieRequest> requests, boolean forceDownload) {
 		Set<Movie> result = new HashSet<>();
 
 		Map<String, MovieRequest> byHash = new HashMap<>();

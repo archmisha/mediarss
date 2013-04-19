@@ -99,6 +99,7 @@ public class ShowServiceImpl implements ShowService {
 		name = name.toLowerCase();
 		name = name.replaceAll("['\"\\-]", "");
 		name = name.replaceAll("[:&\\._\\+,\\(\\)!\\?/]", " ");
+		name = name.replaceAll("and", " ");
 		name = name.replaceAll("\\s+", " ");
 		return name;
 	}

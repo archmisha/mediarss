@@ -75,46 +75,6 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		Torrent torrent = searchResult.getTorrent();
 
 		List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) episodeRequest);
-//		if (episodeRequest instanceof SingleEpisodeRequest) {
-//			if (persistedEpisodes.isEmpty()) {
-//				// should be one episode
-//				SingleEpisodeRequest singleEpisodeRequest = (SingleEpisodeRequest) episodeRequest;
-//				Episode episode = new Episode(singleEpisodeRequest.getSeason(), singleEpisodeRequest.getEpisode());
-//				persistEpisode(episode, persistedShow);
-//				persistedEpisodes.add(episode);
-//			}
-//		} else if (episodeRequest instanceof FullSeasonRequest) {
-//			if (persistedEpisodes.isEmpty()) {
-//				// should be one episode
-//				FullSeasonRequest fullEpisodeRequest = (FullSeasonRequest) episodeRequest;
-//				Episode episode = new Episode(fullEpisodeRequest.getSeason(), -1);
-//				persistEpisode(episode, persistedShow);
-//				persistedEpisodes.add(episode);
-//			}
-//		} else if (episodeRequest instanceof DoubleEpisodeRequest) {
-//			if (persistedEpisodes.size() < 2) {
-//				// should be 2 episodes
-//				DoubleEpisodeRequest doubleEpisodeRequest = (DoubleEpisodeRequest) episodeRequest;
-//				if (persistedEpisodes.size() == 1) {
-//					Episode presentEpisode = persistedEpisodes.get(0);
-//					int ep = doubleEpisodeRequest.getEpisode1() == presentEpisode.getEpisode()
-//							 ? doubleEpisodeRequest.getEpisode2()
-//							 : doubleEpisodeRequest.getEpisode1();
-//					Episode episode = new Episode(doubleEpisodeRequest.getSeason(), ep);
-//					persistEpisode(episode, persistedShow);
-//					persistedEpisodes.add(episode);
-//				} else {
-//					Episode episode1 = new Episode(doubleEpisodeRequest.getSeason(), doubleEpisodeRequest.getEpisode1());
-//					Episode episode2 = new Episode(doubleEpisodeRequest.getSeason(), doubleEpisodeRequest.getEpisode2());
-//					persistEpisode(episode2, persistedShow);
-//					persistEpisode(episode2, persistedShow);
-//					persistedEpisodes.add(episode1);
-//					persistedEpisodes.add(episode2);
-//				}
-//			}
-//		} else {
-//			throw new InvalidParameterException("EpisodeRequest of unsupported type: " + episodeRequest.getClass());
-//		}
 
 		// sometimes the same torrent returned from search for different episodes
 		// it can happen when there are torrents like s01e01-e04 will be returned for s01e(-1) request also
@@ -142,16 +102,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		return persistedEpisodes;
 	}
 
-//	private void persistEpisode(Episode episode, Show show) {
-//		episode.setShow(show);
-//		episodeDao.persist(episode);
-//		show.getEpisodes().add(episode);
-//	}
-
 	@Override
 	// persisting new shows here - must be persisted before the new transaction opens for each download
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	protected Collection<Episode> preDownloadPhase(Set<ShowRequest> episodeRequests) {
+	protected Collection<Episode> preDownloadPhase(Set<ShowRequest> episodeRequests, boolean forceDownload) {
 		// substitute show name with alias and seasons if needed
 		for (ShowRequest episodeRequest : new HashSet<>(episodeRequests)) {
 			showService.transformEpisodeRequest(episodeRequest);
@@ -171,14 +125,23 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 
 		Map<Episode, Set<EpisodeRequest>> episodesMap = createEpisodesToRequestsMap(episodeRequests, eps);
 
+		// the only place that persists full season Episode objects
 		addFullSeasonEpisodes(episodeRequests, episodesMap);
 		skipUnAiredEpisodes(episodeRequests, episodesMap);
-		skipScannedEpisodes(episodeRequests, eps, episodesMap);
 
 		// doesn't add new episodes, only requests on existing episodes - updates episodesMap
 		handleDoubleEpisodes(episodeRequests, eps, episodesMap);
 
-		// prepare cached episodes
+		Set<Episode> cachedEpisodes = skipCachedEpisodes(episodeRequests, episodesMap);
+
+		if (!forceDownload) {
+			skipScannedEpisodes(episodeRequests, eps, episodesMap);
+		}
+
+		return cachedEpisodes;
+	}
+
+	private Set<Episode> skipCachedEpisodes(Set<ShowRequest> episodeRequests, Map<Episode, Set<EpisodeRequest>> episodesMap) {
 		Set<Episode> cachedEpisodes = new HashSet<>();
 		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();

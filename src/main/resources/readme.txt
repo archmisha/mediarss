@@ -110,6 +110,8 @@ about your schedule in the site i think it would be better user experience if th
 
 add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03
 
+8,223 [WARN ] MoviesTorrentEntriesDownloader - Failed retrieving number of viewers for 'Devils of War (2013)':
+
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
     also partial seasons: Greys Anatomy Season 8 Episode 1-22
@@ -139,6 +141,7 @@ case 2: full season
 
 test this when removing and word completely in normalize
 Brothers & Sisters season 1 wont find cuz the result is Brothers and Sisters Season 1
+
 
 ===== 'NCIS: Los Angeles season 1 720p - why not exist???
 

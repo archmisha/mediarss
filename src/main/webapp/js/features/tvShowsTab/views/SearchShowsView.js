@@ -33,7 +33,9 @@ define([
 				showingResultsFor: '.shows-search-results-showing-results-for',
 				showingResultsForText: '.shows-search-results-showing-results-for-text',
 				didYouMean: '.shows-search-results-did-you-mean',
-				didYouMeanList: '.shows-search-results-did-you-mean-list'
+				didYouMeanList: '.shows-search-results-did-you-mean-list',
+				adminForceDownload: '.shows-search-admin-force-download',
+				adminForceDownloadCheckbox: '.shows-search-admin-force-download-checkbox'
 			},
 
 			events: {
@@ -50,10 +52,14 @@ define([
 			},
 
 			constructor: function(options) {
+				this.loggedInUserData = options.loggedInUserData;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 			},
 
 			onRender: function() {
+				if (this.loggedInUserData.user.admin) {
+					this.ui.adminForceDownload.show();
+				}
 			},
 
 			onKeyPress: function(event) {
@@ -76,6 +82,7 @@ define([
 				var title = this.ui.titleInput.val();
 				var season = this.ui.seasonInput.val();
 				var episode = this.ui.episodeInput.val();
+				var forceDownload = this.ui.adminForceDownloadCheckbox.attr('checked') ? true : false;
 
 				if (!title || title.trim().length == 0) {
 					return;
@@ -102,18 +109,18 @@ define([
 					title: title,
 					season: season,
 					episode: episode,
-					showId: showId
+					showId: showId,
+					forceDownload: forceDownload
 				}, function(searchResult) {
 					if (searchResult.episodes.length > 0) {
 						that.ui.resultsHeader.show();
 						that.onSearchResultsReceived(searchResult);
-					} else if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
-						that.ui.resultsHeader.show();
-						that.showDidYouMean(searchResult);
-						if (searchResult.actualSearchTerm === searchResult.originalSearchTerm) {
-							that.ui.noResultsStatus.fadeIn('slow');
-						}
 					} else {
+						if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
+							that.ui.resultsHeader.show();
+							that.showDidYouMean(searchResult);
+							that.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
+						}
 						that.ui.noResultsStatus.fadeIn('slow');
 					}
 				});
@@ -138,7 +145,7 @@ define([
 					this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, true);
 					this.showDidYouMean(searchResult);
 				} else {
-					this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm != searchResult.originalSearchTerm);
+					this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
 				}
 
 				this.ui.resultsCount.html(searchResult.episodes.length);

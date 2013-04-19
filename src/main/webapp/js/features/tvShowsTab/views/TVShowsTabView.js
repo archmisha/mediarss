@@ -41,7 +41,7 @@ define([
 					title: 'Search TV Shows',
 					description: 'Search for older episodes'
 				});
-				this.searchShowsView = new SearchShowsView();
+				this.searchShowsView = new SearchShowsView({loggedInUserData: this.loggedInUserData});
 
 				this.trackedShowsView = new TrackedShowsComponentView({
 					shows: this.initialData.shows,

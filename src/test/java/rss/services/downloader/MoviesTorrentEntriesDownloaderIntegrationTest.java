@@ -52,7 +52,7 @@ public class MoviesTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		ExecutorService executor = Mockito.mock(ExecutorService.class);
 
-		Collection<Movie> download = downloader.download(movieRequests, executor).getDownloaded();
+		Collection<Movie> download = downloader.download(movieRequests, executor, true).getDownloaded();
 
 		verify(executor, Mockito.times(0)).submit(any(Runnable.class));
 		assertEquals(1, download.size());

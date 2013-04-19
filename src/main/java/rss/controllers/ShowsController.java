@@ -138,11 +138,18 @@ public class ShowsController extends BaseController {
 	public EpisodeSearchResult search(@RequestParam("title") String title,
 									  @RequestParam(value = "season", required = false) Integer season,
 									  @RequestParam(value = "episode", required = false) Integer episode,
-									  @RequestParam(value = "showId", required = false) Long showId) {
+									  @RequestParam(value = "showId", required = false) Long showId,
+									  @RequestParam(value = "forceDownload", required = false) boolean forceDownload) {
 		season = applyDefaultValue(season, -1);
 		episode = applyDefaultValue(episode, -1);
 		showId = applyDefaultValue(showId, -1l);
 		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		// only admin is allowed to use forceDownload option
+		if (forceDownload) {
+			verifyAdminPermissions(user);
+		}
+
 		try {
 			Show show = showDao.find(showId);
 			ShowRequest episodeRequest;
@@ -153,7 +160,7 @@ public class ShowsController extends BaseController {
 			} else {
 				episodeRequest = new SingleEpisodeRequest(title, show, MediaQuality.HD720P, season, episode);
 			}
-			return showSearchService.search(episodeRequest, user);
+			return showSearchService.search(episodeRequest, user, forceDownload);
 		} catch (ShowNotFoundException e) {
 			return EpisodeSearchResult.createNoResults(title);
 		}

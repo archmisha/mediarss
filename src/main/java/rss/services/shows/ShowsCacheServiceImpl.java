@@ -82,6 +82,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 		String cur = ShowServiceImpl.normalize(show.getName());
 		show.setWords(cur.split(" ").length);
+		show.setNormalizedName(cur);
 
 		Collection<CachedShowSubset> permutationsList = new ArrayList<>();
 		for (ICombinatoricsVector<String> subSet : getSubsets(cur.split(" "))) {

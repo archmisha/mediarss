@@ -61,7 +61,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 	private ShowsCacheService showsCacheService;
 
 	@Override
-	public EpisodeSearchResult search(ShowRequest episodeRequest, User user) {
+	public EpisodeSearchResult search(ShowRequest episodeRequest, User user, boolean forceDownload) {
 		// saving original search term - it might change during the search
 		String originalSearchTerm = episodeRequest.getTitle();
 		String actualSearchTerm;
@@ -69,14 +69,17 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		DurationMeter duration = new DurationMeter();
 		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm);
 		duration.stop();
-		logService.info(getClass(), "Did you mean time - " + duration.getDuration() + "millis");
+		logService.info(getClass(), "Did you mean time - " + duration.getDuration() + " millis");
 
 		// first check which show we need
-		Show show = showDao.findByName(originalSearchTerm);
+		Show show = findShowByName(originalSearchTerm);
 		if (show != null) {
 			episodeRequest.setShow(show);
 			episodeRequest.setTitle(show.getName());
-			actualSearchTerm = originalSearchTerm = show.getName();
+			actualSearchTerm = show.getName();
+			if (originalSearchTerm.toLowerCase().equals(actualSearchTerm.toLowerCase())) {
+				originalSearchTerm = actualSearchTerm;
+			}
 			didYouMeanShows.remove(show); // don't show this show as did you mean, already showing results for it
 		} else if (didYouMeanShows.isEmpty()) {
 			return EpisodeSearchResult.createNoResults(originalSearchTerm);
@@ -95,7 +98,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 		downloadShowScheduleBeforeSearch(episodeRequest.getShow());
 
-		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest)).getDownloaded();
+		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest), forceDownload).getDownloaded();
 
 		Map<Torrent, Episode> episodeByTorrents = new HashMap<>();
 		final Map<Long, Episode> episodeByTorrentsForComparator = new HashMap<>();
@@ -141,6 +144,16 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 
 		return EpisodeSearchResult.createWithResult(originalSearchTerm, actualSearchTerm, result, entityConverter.toThinShows(didYouMeanShows));
+	}
+
+	private Show findShowByName(String name) {
+		String normalizedName = ShowServiceImpl.normalize(name);
+		for (CachedShow cachedShow : showsCacheService.getAll()) {
+			if (cachedShow.getNormalizedName().equals(normalizedName)) {
+				return showDao.find(cachedShow.getId());
+			}
+		}
+		return null;
 	}
 
 	private void downloadShowScheduleBeforeSearch(Show show) {
