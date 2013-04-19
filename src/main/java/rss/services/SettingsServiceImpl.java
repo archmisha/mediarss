@@ -72,7 +72,6 @@ public class SettingsServiceImpl implements SettingsService {
 		} catch (IOException e) {
 			log.error(getClass(), e.getMessage(), e);
 		}
-
 	}
 
 	private void loadSettingsFile() {

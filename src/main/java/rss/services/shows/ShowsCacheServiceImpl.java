@@ -15,8 +15,11 @@ import rss.services.log.LogService;
 import rss.util.DurationMeter;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,13 +40,15 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 	private Map<Long, CachedShow> cache;
 	private Map<CachedShow, Collection<CachedShowSubset>> showNameSubsets;
+	private ScheduledExecutorService executorService;
 
 	@PostConstruct
 	private void postConstruct() {
 		cache = new HashMap<>();
 		showNameSubsets = new HashMap<>();
 
-		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
+		executorService = Executors.newSingleThreadScheduledExecutor();
+		executorService.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				transactionTemplate.execute(new TransactionCallbackWithoutResult() {
@@ -54,6 +59,12 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 				});
 			}
 		}, 0, 1, TimeUnit.HOURS);
+	}
+
+	@PreDestroy
+	private void preDestroy() {
+		logService.info(getClass(), "Terminating shows cache reload job");
+		executorService.shutdown();
 	}
 
 	private void reloadCache() {
