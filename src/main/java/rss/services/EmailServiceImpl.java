@@ -4,10 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.UserDao;
-import rss.entities.Show;
 import rss.entities.User;
 import rss.services.downloader.MovieRequest;
-import rss.services.requests.EpisodeRequest;
 import rss.services.requests.ShowRequest;
 import rss.util.GoogleMail;
 
@@ -25,10 +23,11 @@ import java.util.List;
 @Service
 public class EmailServiceImpl implements EmailService {
 
-	public static final String APP_NAME = "Personalized Media RSS";
-	public static final String EMAIL_SIGNATURE = "\n\nMichael Dikman\n" + APP_NAME + " Team";
-	public static final String JOBS_TITLE_SUFFIX = " - Jobs";
-	public static final String USERS_TITLE_SUFFIX = " - Users";
+	private static final String APP_NAME = "Personalized Media RSS";
+	private static final String EMAIL_SIGNATURE = "\n\nMichael Dikman\n" + APP_NAME + " Team";
+	private static final String JOBS_TITLE_SUFFIX = " - Jobs";
+	private static final String USERS_TITLE_SUFFIX = " - Users";
+	private static final String ERRORS_TITLE_SUFFIX = " - Errors";
 
 	@Autowired
 	private UrlService urlService;
@@ -96,15 +95,6 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
-	public void notifyShowCreatedBlindly(Show show) {
-		notifyToAdmins(
-				JOBS_TITLE_SUFFIX,
-				"The following show was created without verification of tv.com url: \n" +
-				show + " - " + show.getTvComUrl(),
-				"Failed sending email of missing torrent");
-	}
-
-	@Override
 	public void sendPasswordRecoveryEmail(User user) {
 		try {
 			sendEmail(user.getEmail(), APP_NAME + " - password recovery",
@@ -146,6 +136,15 @@ public class EmailServiceImpl implements EmailService {
 				JOBS_TITLE_SUFFIX,
 				msg,
 				"Failed sending email of a failed job"
+		);
+	}
+
+	@Override
+	public void notifyOfError(String msg) {
+		notifyToAdmins(
+				ERRORS_TITLE_SUFFIX,
+				msg,
+				"Failed sending email of a n error"
 		);
 	}
 

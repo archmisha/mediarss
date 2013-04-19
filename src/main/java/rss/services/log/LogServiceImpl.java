@@ -1,5 +1,6 @@
 package rss.services.log;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -8,7 +9,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import rss.dao.UserDao;
 import rss.entities.User;
+import rss.services.EmailService;
 import rss.services.SessionService;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 /**
  * User: Michael Dikman
@@ -23,6 +29,9 @@ public class LogServiceImpl implements LogService {
 
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private EmailService emailService;
 
 	@Override
 	public void info(Class<?> aClass, String msg) {
@@ -45,13 +54,20 @@ public class LogServiceImpl implements LogService {
 	@Override
 	public void error(Class<?> aClass, String msg) {
 		Log log = LogFactory.getLog(aClass);
-		log.error(prepareMessage(msg));
+		String message = prepareMessage(msg);
+		log.error(message);
+
+		emailService.notifyOfError(message);
 	}
 
 	@Override
 	public void error(Class<?> aClass, String msg, Exception ex) {
 		Log log = LogFactory.getLog(aClass);
-		log.error(prepareMessage(msg), ex);
+		String message = prepareMessage(msg);
+		log.error(message, ex);
+
+		message += ("\r\n" + ExceptionUtils.getStackTrace(ex));
+		emailService.notifyOfError(message);
 	}
 
 	@Override

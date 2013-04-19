@@ -27,8 +27,6 @@ public interface EmailService {
 
 	void notifyOfMissingMovies(Collection<MovieRequest> missingRequests);
 
-	void notifyShowCreatedBlindly(Show show);
-
 	void sendPasswordRecoveryEmail(User user);
 
 	void sendEmailToAllUsers(String text);
@@ -36,4 +34,6 @@ public interface EmailService {
 	void notifyOfATicket(User user, String type, String content);
 
 	void notifyOfFailedJob(String msg);
+
+	void notifyOfError(String message);
 }
