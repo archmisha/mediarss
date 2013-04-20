@@ -12,8 +12,8 @@ import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
+import rss.services.movies.IMDBPreviewCacheService;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,21 +33,22 @@ public class MoviesController extends BaseController {
 	@Autowired
 	private TorrentDao torrentDao;
 
+	@Autowired
+	private IMDBPreviewCacheService imdbPreviewCacheService;
+
 	@RequestMapping(value = "/imdb/{movieId}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String getImdbPage(@PathVariable long movieId) {
 		Movie movie = movieDao.find(movieId);
+		return imdbPreviewCacheService.getImdbPreviewPage(movie);
+	}
 
-		String page = sessionService.getImdbMoviePage(movie.getId());
-		if (page != null) {
-			logService.debug(getClass(), "IMDB page for movie " + movie.getName() + " was found in cache");
-		} else {
-			page = movieService.getImdbPreviewPage(movie);
-			sessionService.setImdbMoviePage(movie.getId(), page);
-		}
-
-		return page;
+	@RequestMapping(value = "/imdb/css/{cssFileName}.css", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public String getImdbPage(@PathVariable String cssFileName) {
+		return imdbPreviewCacheService.getImdbCSS(cssFileName);
 	}
 
 	@RequestMapping(value = "/download", method = RequestMethod.POST)

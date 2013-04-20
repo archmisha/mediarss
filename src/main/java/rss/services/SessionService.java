@@ -20,8 +20,4 @@ public interface SessionService {
     void clearLoggedInUser();
 
 	boolean isUserLogged();
-
-	String getImdbMoviePage(long movieId);
-
-	void setImdbMoviePage(long movieId, String page);
 }

@@ -23,15 +23,12 @@ public class SessionServiceImpl implements SessionService {
 	private Long loggedInUserId;
 	private Date prevLoginDate;
 
-	private Map<Long, String> moviesImdbPageCache = new HashMap<>();
-
 	public void setLoggedInUser(User user) {
 		this.loggedInUserId = user.getId();
 		prevLoginDate = user.getLastLogin();
 		if (prevLoginDate == null) {
 			prevLoginDate = new Date();
 		}
-		moviesImdbPageCache.clear();
 	}
 
 	@Override
@@ -48,20 +45,9 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public String getImdbMoviePage(long movieId) {
-		return moviesImdbPageCache.get(movieId);
-	}
-
-	@Override
-	public void setImdbMoviePage(long movieId, String page) {
-		moviesImdbPageCache.put(movieId, page);
-	}
-
-	@Override
 	public void clearLoggedInUser() {
 		loggedInUserId = null;
 		prevLoginDate = null;
-		moviesImdbPageCache.clear();
 	}
 
 	@Override

@@ -60,6 +60,9 @@ change timezone on the machine
 ====
 http://www.thegeekstuff.com/2010/09/change-timezone-in-linux/
 
+creating a folder with all the jars of the webapp - lib-media-rss and mapping it in catalina.properties to lower the size of the war file copied each time
+
+
 
 last time added -XX:+UseCodeCacheFlushing to solve this:
 Java HotSpot(TM) Client VM warning: CodeCache is full. Compiler has been disabled.

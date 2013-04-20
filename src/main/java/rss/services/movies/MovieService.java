@@ -22,7 +22,5 @@ public interface MovieService {
 
 	void markMovieViewed(User user, long movieId);
 
-	String getImdbPreviewPage(Movie movie);
-
 	Pair<UserMovie,Boolean> addMovieDownload(User user, long movieId);
 }

@@ -69,60 +69,6 @@ public class MovieServiceImpl implements MovieService {
 	private TransactionTemplate transactionTemplate;
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public String getImdbPreviewPage(Movie movie) {
-		String page;
-		try {
-			DurationMeter durationMeter = new DurationMeter();
-			page = pageDownloader.downloadPage(movie.getImdbUrl());
-			page = cleanImdbPage(movie.getName(), page);
-			durationMeter.stop();
-			logService.debug(getClass(), "IMDB page download for movie " + movie.getName() + " took " + durationMeter.getDuration() + " millis");
-		} catch (Exception e) {
-			page = null;
-			logService.error(getClass(), e.getMessage(), e);
-		}
-		return page;
-	}
-
-	private String cleanImdbPage(String name, String page) {
-		DurationMeter durationMeter = new DurationMeter();
-		Document doc = Jsoup.parse(page);
-		doc.select("#maindetails_sidebar_bottom").remove();
-		doc.select("#nb20").remove();
-		doc.select("#titleRecs").remove();
-		doc.select("#titleBoardsTeaser").remove();
-		doc.select("div.article.contribute").remove();
-		doc.select("div.watch-bar").remove();
-		doc.select("#title_footer_links").remove();
-		doc.select("div.message_box").remove();
-		doc.select("#titleDidYouKnow").remove();
-		doc.select("#footer").remove();
-		doc.select("#root").removeAttr("id");
-		doc.select("script").remove();
-		doc.select("iframe").remove();
-		doc.select("link[type!=text/css").remove();
-		doc.select("#bottom_ad_wrapper").remove();
-		doc.select("#pagecontent").removeAttr("id"); // got the style of the top line
-		doc.select(".rightcornerlink").remove();
-		doc.select("div#content-2-wide").removeAttr("id");
-		doc.select("body").removeAttr("id");
-		doc.select("br.clear").remove();
-		doc.select("#content-1").removeAttr("id");
-		//message_box
-		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
-
-		String html = doc.html();
-		html = html.replace("http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/title-2354501989._V370594279_.css", "../../../style/imdb/title-2354501989._V370594279_.css");
-		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
-		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
-		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
-
-		durationMeter.stop();
-		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
-		return html;
-	}
-
-	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
 		ArrayList<UserMovieVO> result = new ArrayList<>();
 
