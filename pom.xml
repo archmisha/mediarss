@@ -340,12 +340,6 @@
 
         <resources>
             <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.java</include>
-                </includes>
-            </resource>
-            <resource>
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
@@ -493,17 +487,17 @@
                             <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/rhino-*.jar</packagingExcludes>
                         </configuration>
                     </plugin>
-            </plugins>
-        </build>
-    </profile>
+            <!--</plugins>-->
+        <!--</build>-->
+    <!--</profile>-->
 
-        <profile>
-            <id>test1</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
+        <!--<profile>-->
+            <!--<id>test1</id>-->
+            <!--<activation>-->
+                <!--<activeByDefault>false</activeByDefault>-->
+            <!--</activation>-->
+            <!--<build>-->
+                <!--<plugins>-->
                     <plugin>
                         <groupId>com.github.goldin</groupId>
                         <artifactId>copy-maven-plugin</artifactId>
@@ -519,8 +513,8 @@
                                     <resources>
                                         <resource>
                                             <targetPath>scp://root:ASDqwe123@208.115.203.158:/root</targetPath>
-                                            <file>${project.build.directory}/classes/readme.txt</file>
-                                            <!--<file>${project.build.directory}/${rss-feed-war}.war</file>-->
+                                            <!--<file>${project.build.directory}/classes/readme.txt</file>-->
+                                            <file>${project.build.directory}/${rss-feed-war}.war</file>
                                         </resource>
                                     </resources>
                                 </configuration>
