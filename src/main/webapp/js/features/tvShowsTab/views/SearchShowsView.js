@@ -44,7 +44,9 @@ define([
 				'keypress .shows-search-season': 'onKeyPress',
 				'keypress .shows-search-episode': 'onKeyPress',
 				'click .shows-search-results-did-you-mean-list': 'onDidYouMeanClick',
-				'click .shows-search-results-download-all-button': 'onDownloadAllClick'
+				'click .shows-search-results-download-all-button': 'onDownloadAllClick',
+				'keyup .shows-search-title': 'onShowTitleInputChange',
+				'keyup .shows-search-season': 'onShowSeasonInputChange'
 			},
 
 			regions: {
@@ -60,6 +62,8 @@ define([
 				if (this.loggedInUserData.user.admin) {
 					this.ui.adminForceDownload.show();
 				}
+				this.ui.seasonInput.prop('disabled', true);
+				this.ui.episodeInput.prop('disabled', true);
 			},
 
 			onKeyPress: function(event) {
@@ -210,6 +214,26 @@ define([
 
 					that.ui.downloadAllButton.hide();
 				});
+			},
+
+			onShowTitleInputChange: function() {
+				var title = this.ui.titleInput.val();
+				if (!title || title.trim().length == 0) {
+					this.ui.seasonInput.prop('disabled', true);
+					this.ui.episodeInput.prop('disabled', true);
+				} else {
+					this.ui.seasonInput.prop('disabled', false);
+					this.onShowSeasonInputChange();
+				}
+			},
+
+			onShowSeasonInputChange: function() {
+				var season = this.ui.seasonInput.val();
+				if (!season || season.trim().length == 0) {
+					this.ui.episodeInput.prop('disabled', true);
+				} else {
+					this.ui.episodeInput.prop('disabled', false);
+				}
 			}
 		});
 	});
