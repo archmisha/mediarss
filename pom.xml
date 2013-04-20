@@ -487,7 +487,17 @@
                             <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/rhino-*.jar</packagingExcludes>
                         </configuration>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
 
+        <profile>
+            <id>deploy</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
                     <plugin>
                         <groupId>com.github.goldin</groupId>
                         <artifactId>copy-maven-plugin</artifactId>
@@ -503,7 +513,6 @@
                                     <resources>
                                         <resource>
                                             <targetPath>scp://root:ASDqwe123@208.115.203.158:/root</targetPath>
-                                            <!--<file>${project.build.directory}/classes/readme.txt</file>-->
                                             <file>${project.build.directory}/${rss-feed-war}.war</file>
                                         </resource>
                                     </resources>
@@ -531,7 +540,10 @@
                                     <!-- copy new war file -->
                                     <!-- start tomcat -->
                                     <!-- set maintenance mode off -->
-                                    <command>cp -f webapps/media-rss.war backups/;./maintenance.sh start;./tomcat stop;rm -rf webapps/media-rss*;cp media-rss.war webapps/;./t.sh;./maintenance.sh stop;</command>
+                                    <command>cp -f webapps/media-rss.war backups/;./maintenance.sh start;./tomcat
+                                        stop;rm -rf webapps/media-rss*;cp media-rss.war webapps/;./t.sh;./maintenance.sh
+                                        stop;
+                                    </command>
                                 </configuration>
                             </execution>
                         </executions>
