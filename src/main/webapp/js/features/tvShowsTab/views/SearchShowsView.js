@@ -141,11 +141,9 @@ define([
 				lastSearchResult = searchResult;
 				var that = this;
 
+				this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
 				if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
-					this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, true);
 					this.showDidYouMean(searchResult);
-				} else {
-					this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
 				}
 
 				this.ui.resultsCount.html(searchResult.episodes.length);
