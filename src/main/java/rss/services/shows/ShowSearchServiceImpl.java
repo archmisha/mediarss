@@ -162,8 +162,10 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		// - show is being tracked
 		// - the last episode we have is aired after now
 		boolean shouldDownloadSchedule = true;
-		if (show.getScheduleDownloadDate() != null && show.isEnded()) {
-			shouldDownloadSchedule = false;
+		if (show.isEnded()) {
+			if (show.getScheduleDownloadDate() != null) {
+				shouldDownloadSchedule = false;
+			}
 		} else if (userDao.isShowBeingTracked(show)) {
 			shouldDownloadSchedule = false;
 		} else {
