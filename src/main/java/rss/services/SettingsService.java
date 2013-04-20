@@ -19,6 +19,8 @@ public interface SettingsService {
 
 	String getWebHostName();
 
+	boolean isDevEnvironment();
+
 	String getTorrentDownloadedPath();
 
 	int getTVComPagesToDownload();

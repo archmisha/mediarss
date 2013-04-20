@@ -167,6 +167,11 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
+	public boolean isDevEnvironment() {
+		return getWebHostName().equals("localhost");
+	}
+
+	@Override
 	public String getWebRootContext() {
 		return prop.getProperty("web.root.context");
 	}

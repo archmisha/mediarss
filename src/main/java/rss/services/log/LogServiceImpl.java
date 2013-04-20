@@ -11,6 +11,7 @@ import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SessionService;
+import rss.services.SettingsService;
 
 /**
  * User: Michael Dikman
@@ -28,6 +29,9 @@ public class LogServiceImpl implements LogService {
 
 	@Autowired
 	private EmailService emailService;
+
+	@Autowired
+	private SettingsService settingsService;
 
 	@Override
 	public void info(Class<?> aClass, String msg) {
@@ -53,10 +57,12 @@ public class LogServiceImpl implements LogService {
 		String message = prepareMessage(msg);
 		log.error(message);
 
-		try {
-			emailService.notifyOfError(message);
-		} catch (Exception e) {
-			log.error("Failed sending the error to admins by email: " + e.getMessage(), e);
+		if (!settingsService.isDevEnvironment()) {
+			try {
+				emailService.notifyOfError(message);
+			} catch (Exception e) {
+				log.error("Failed sending the error to admins by email: " + e.getMessage(), e);
+			}
 		}
 	}
 
@@ -66,11 +72,13 @@ public class LogServiceImpl implements LogService {
 		String message = prepareMessage(msg);
 		log.error(message, ex);
 
-		try {
-			message += ("\r\n" + ExceptionUtils.getStackTrace(ex));
-			emailService.notifyOfError(message);
-		} catch (Exception e) {
-			log.error("Failed sending the error to admins by email: " + e.getMessage(), e);
+		if (!settingsService.isDevEnvironment()) {
+			try {
+				message += ("\r\n" + ExceptionUtils.getStackTrace(ex));
+				emailService.notifyOfError(message);
+			} catch (Exception e) {
+				log.error("Failed sending the error to admins by email: " + e.getMessage(), e);
+			}
 		}
 	}
 
