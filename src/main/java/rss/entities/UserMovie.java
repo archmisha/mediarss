@@ -2,6 +2,8 @@ package rss.entities;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: dikmanm
@@ -14,6 +16,9 @@ import java.util.Date;
 		@NamedQuery(name = "UserMovie.findUserMovie",
 				query = "select t from UserMovie as t " +
 						"where t.user.id = :userId and t.movie.id = :movieId"),
+		@NamedQuery(name = "UserMovie.findUserMovies",
+				query = "select um from UserMovie as um join um.movie as m " +
+						"where m.id = :movieId"),
 		@NamedQuery(name = "UserMovie.findFutureUserMovies",
 				query = "select um from UserMovie as um join um.movie as m " +
 						"where um.user.id = :userId and m.torrentIds.size = 0"),
@@ -35,6 +40,13 @@ public class UserMovie extends BaseEntity {
 	@ManyToOne(targetEntity = Movie.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "movie_id")
 	private Movie movie;
+
+	@OneToMany(mappedBy = "userMovie", targetEntity = UserMovieTorrent.class)
+	private Set<UserMovieTorrent> userMovieTorrents;
+
+	public UserMovie() {
+		userMovieTorrents = new HashSet<>();
+	}
 
 	public User getUser() {
 		return user;
@@ -58,5 +70,13 @@ public class UserMovie extends BaseEntity {
 
 	public void setMovie(Movie movie) {
 		this.movie = movie;
+	}
+
+	public Set<UserMovieTorrent> getUserMovieTorrents() {
+		return userMovieTorrents;
+	}
+
+	public void setUserMovieTorrents(Set<UserMovieTorrent> userMovieTorrents) {
+		this.userMovieTorrents = userMovieTorrents;
 	}
 }

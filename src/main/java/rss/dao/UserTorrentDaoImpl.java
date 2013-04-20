@@ -21,7 +21,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("dateUploaded", dateUploaded);
 		params.put("userId", user.getId());
-		return super.findByNamedQueryAndNamedParams("MovieUserTorrent.findUserMoviesForUserFeed", params);
+		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findUserMoviesForUserFeed", params);
 	}
 
 	@Override
@@ -29,14 +29,14 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("dateAdded", dateAdded);
 		params.put("userId", user.getId());
-		return super.findByNamedQueryAndNamedParams("EpisodeUserTorrent.findEpisodesAddedSince", params);
+		return super.findByNamedQueryAndNamedParams("UserEpisodeTorrent.findEpisodesAddedSince", params);
 	}
 
 	@Override
 	public List<UserTorrent> findScheduledUserMovies(User user) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("userId", user.getId());
-		return super.findByNamedQueryAndNamedParams("MovieUserTorrent.findScheduledUserMovies", params);
+		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findScheduledUserMovies", params);
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("torrentId", torrentId);
 		params.put("userId", user.getId());
-		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("EpisodeUserTorrent.findUserTorrentByTorrentId", params));
+		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserTorrentByTorrentId", params));
 	}
 
 	@Override
@@ -52,14 +52,14 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("torrentId", torrentId);
 		params.put("userId", user.getId());
-		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("MovieUserTorrent.findUserTorrentByTorrentId", params));
+		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("UserMovieTorrent.findUserTorrentByTorrentId", params));
 	}
 
 	@Override
-	public List<UserTorrent> findEpisodeUserTorrentByTorrentId(long torrentId) {
+	public List<UserTorrent> findUserEpisodeTorrentByTorrentId(long torrentId) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("torrentId", torrentId);
-		return super.findByNamedQueryAndNamedParams("EpisodeUserTorrent.findUserTorrentByTorrentId2", params);
+		return super.findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserTorrentByTorrentId2", params);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		StringBuilder query = new StringBuilder();
 		List<Object> params = new ArrayList<>();
 
-		query.append("select t from EpisodeUserTorrent as t where user.id = :p0 and t.torrent.id in (");
+		query.append("select t from UserEpisodeTorrent as t where user.id = :p0 and t.torrent.id in (");
 		params.add(user.getId());
 		int counter = 1;
 		for (Episode episode : episodes) {
@@ -100,7 +100,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		StringBuilder query = new StringBuilder();
 		List<Object> params = new ArrayList<>();
 
-		query.append("select t from MovieUserTorrent as t where t.user.id = :p0 and t.torrent.id in (");
+		query.append("select t from UserMovieTorrent as t where t.user.id = :p0 and t.torrent.id in (");
 		params.add(user.getId());
 		int counter = 1;
 		for (Movie movie : movies) {

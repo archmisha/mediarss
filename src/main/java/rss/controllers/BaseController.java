@@ -84,22 +84,6 @@ public class BaseController {
 		return value;
 	}
 
-	protected int extractMandatoryInteger(HttpServletRequest request, String name) {
-		try {
-			return Integer.parseInt(extractString(request, name, true));
-		} catch (NumberFormatException e) {
-			throw new InvalidParameterException(name + " is not an integer");
-		}
-	}
-
-	protected int extractInteger(HttpServletRequest request, String name, int defaultValue) {
-		try {
-			return Integer.parseInt(extractString(request, name, false));
-		} catch (NumberFormatException e) {
-			return defaultValue;
-		}
-	}
-
 	@ExceptionHandler(InvalidParameterException.class)
 	@ResponseBody
 	public ExceptionResponse handleInvalidParameterException(InvalidParameterException ex) {

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.MediaRSSException;
 import rss.controllers.EntityConverter;
 import rss.controllers.vo.DownloadStatus;
 import rss.controllers.vo.UserMovieStatus;
@@ -28,6 +29,7 @@ import rss.util.DurationMeter;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 
 /**
@@ -90,7 +92,9 @@ public class MovieServiceImpl implements MovieService {
 		doc.select("#titleRecs").remove();
 		doc.select("#titleBoardsTeaser").remove();
 		doc.select("div.article.contribute").remove();
+		doc.select("div.watch-bar").remove();
 		doc.select("#title_footer_links").remove();
+		doc.select("div.message_box").remove();
 		doc.select("#titleDidYouKnow").remove();
 		doc.select("#footer").remove();
 		doc.select("#root").removeAttr("id");
@@ -104,9 +108,8 @@ public class MovieServiceImpl implements MovieService {
 		doc.select("body").removeAttr("id");
 		doc.select("br.clear").remove();
 		doc.select("#content-1").removeAttr("id");
+		//message_box
 		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
-		doc.body().append("<script>parent.resize_iframe()</script>");
-
 
 		String html = doc.html();
 		html = html.replace("http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/title-2354501989._V370594279_.css", "../../../style/imdb/title-2354501989._V370594279_.css");
@@ -121,14 +124,16 @@ public class MovieServiceImpl implements MovieService {
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
-		List<UserMovie> futureUserMovies = movieDao.findFutureUserMovies(user);
-
 		ArrayList<UserMovieVO> result = new ArrayList<>();
-		for (UserMovie userMovie : futureUserMovies) {
+
+		// first add movies without any torrents - future movies
+		for (UserMovie userMovie : movieDao.findFutureUserMovies(user)) {
 			result.add(entityConverter.toFutureMovie(userMovie.getMovie())
 					.withScheduledOn(userMovie.getUpdated())
 					.withAdded(userMovie.getUpdated()));
 		}
+
+		// then add movies that has torrents and the user selected a torrent to download
 		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user)) {
 			Torrent torrent = userTorrent.getTorrent();
 			Movie movie = movieDao.find(torrent);
@@ -138,7 +143,15 @@ public class MovieServiceImpl implements MovieService {
 					.withImdbUrl(movie.getImdbUrl())
 					.withAdded(userTorrent.getAdded());
 			userMovieVO.setViewed(true);
-			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
+			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true).withMovieId(movie.getId()));
+
+			// add the rest of the torrents of the movie
+			for (Long torrentId : movie.getTorrentIds()) {
+				if (torrentId != torrent.getId()) {
+					addTorrentToUserMovieVO(userMovieVO, torrentId);
+				}
+			}
+
 			result.add(userMovieVO);
 		}
 
@@ -165,7 +178,7 @@ public class MovieServiceImpl implements MovieService {
 			torrentsByIds.put(torrent.getId(), torrent);
 			Movie movie = moviesMapper.getMovie(torrent);
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true));
+			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true).withMovieId(movie.getId()));
 			updateLatestUploadDate(torrent, userMovieVO);
 		}
 
@@ -176,14 +189,8 @@ public class MovieServiceImpl implements MovieService {
 			// if at least one is not viewed - show as not viewed
 			for (Long torrentId : movie.getTorrentIds()) {
 				if (!torrentsByIds.containsKey(torrentId)) {
-					Torrent torrent = torrentDao.find(torrentId);
+					Torrent torrent = addTorrentToUserMovieVO(userMovieVO, torrentId);
 					torrentsByIds.put(torrent.getId(), torrent);
-					userMovieVO.addTorrentDownloadStatus(new UserMovieStatus(DownloadStatus.NONE)
-							.withTitle(torrent.getTitle())
-							.withTorrentId(torrent.getId())
-							.withUploadedDate(torrent.getDateUploaded())
-							.withScheduledOn(null));
-					updateLatestUploadDate(torrent, userMovieVO);
 				}
 			}
 		}
@@ -230,6 +237,18 @@ public class MovieServiceImpl implements MovieService {
 			}
 		});
 		return result;
+	}
+
+	private Torrent addTorrentToUserMovieVO(UserMovieVO userMovieVO, Long torrentId) {
+		Torrent torrent = torrentDao.find(torrentId);
+		userMovieVO.addTorrentDownloadStatus(new UserMovieStatus(DownloadStatus.NONE)
+				.withTitle(torrent.getTitle())
+				.withTorrentId(torrent.getId())
+				.withUploadedDate(torrent.getDateUploaded())
+				.withScheduledOn(null)
+				.withMovieId(userMovieVO.getId()));
+		updateLatestUploadDate(torrent, userMovieVO);
+		return torrent;
 	}
 
 
@@ -315,42 +334,69 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Override
+	public Pair<UserMovie, Boolean> addMovieDownload(User user, long movieId) {
+		Movie movie = movieDao.find(movieId);
+		return addMovieDownload(user, movie);
+	}
+
+	// boolean: true if already exists, false if new
+	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId) {
-		final String imdbUrl = IMDB_URL + imdbId;
-		Movie movie = movieDao.findByImdbUrl(imdbUrl);
-		if (movie == null) {
-			String partialPage;
-			try {
-				partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, MoviesTorrentEntriesDownloader.VIEWERS_PATTERN);
-			} catch (Exception e) {
-				// usually it is HTTP/1.1 404 Not Found
-				if (!e.getMessage().contains("404 Not Found")) {
-					logService.error(getClass(), "Failed downloading IMDB page " + imdbId + ": " + e.getMessage(), e);
+	public Pair<UserMovie, Boolean> addFutureMovieDownload(User user, String imdbId) {
+		try {
+			final String imdbUrl = IMDB_URL + imdbId;
+			Movie movie = movieDao.findByImdbUrl(imdbUrl);
+			if (movie == null) {
+				String partialPage;
+				try {
+					partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, MoviesTorrentEntriesDownloader.VIEWERS_PATTERN);
+				} catch (Exception e) {
+					// usually it is HTTP/1.1 404 Not Found
+					if (!e.getMessage().contains("404 Not Found")) {
+						logService.error(getClass(), "Failed downloading IMDB page " + imdbId + ": " + e.getMessage(), e);
+					}
+					return null;
 				}
-				return null;
+				Matcher oldYearMatcher = MoviesTorrentEntriesDownloader.OLD_YEAR_PATTERN.matcher(partialPage);
+				oldYearMatcher.find();
+				String name = oldYearMatcher.group(1);
+				name = StringEscapeUtils.unescapeHtml4(name);
+
+				// persisting the movie in a separate transaction cuz need the movie to be present then the downloader runs
+				// in order to have a separate transaction, needed a new thread ehre
+				final String finalName = name;
+				FutureTask<Movie> futureTask = new FutureTask<>(new Callable<Movie>() {
+					@Override
+					public Movie call() throws Exception {
+						return transactionTemplate.execute(new TransactionCallback<Movie>() {
+							@Override
+							public Movie doInTransaction(TransactionStatus arg0) {
+								Movie movie = new Movie(finalName, imdbUrl);
+								movieDao.persist(movie);
+								return movie;
+							}
+						});
+					}
+				});
+				ExecutorService executorService = Executors.newSingleThreadExecutor();
+				executorService.submit(futureTask);
+				executorService.shutdown();
+				movie = futureTask.get();
+
+				// uses a separate transaction
+				torrentzService.downloadMovie(movie, imdbId);
+
+				// refetch the movie in this transaction after it got torrents
+				movie = movieDao.find(movie.getId());
 			}
-			Matcher oldYearMatcher = MoviesTorrentEntriesDownloader.OLD_YEAR_PATTERN.matcher(partialPage);
-			oldYearMatcher.find();
-			String name = oldYearMatcher.group(1);
-			name = StringEscapeUtils.unescapeHtml4(name);
 
-			final String finalName = name;
-			movie = transactionTemplate.execute(new TransactionCallback<Movie>() {
-				@Override
-				public Movie doInTransaction(TransactionStatus arg0) {
-					Movie movie = new Movie(finalName, imdbUrl);
-					movieDao.persist(movie);
-					return movie;
-				}
-			});
-
-			// uses a separate transaction
-			torrentzService.downloadMovie(movie, imdbId);
+			return addMovieDownload(user, movie);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new MediaRSSException(e.getMessage(), e);
 		}
+	}
 
-		Pair<Movie, Boolean> futureMovieResult = new MutablePair<>(movie, true);
-
+	private Pair<UserMovie, Boolean> addMovieDownload(User user, Movie movie) {
 		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
 		if (userMovie == null) {
 			userMovie = new UserMovie();
@@ -358,10 +404,10 @@ public class MovieServiceImpl implements MovieService {
 			userMovie.setUser(user);
 			userMovie.setUpdated(new Date());
 			movieDao.persist(userMovie);
-			futureMovieResult.setValue(false);
+			return new MutablePair<>(userMovie, false);
 		}
 
-		return futureMovieResult;
+		return new MutablePair<>(userMovie, true);
 	}
 
 	@Override

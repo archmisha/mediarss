@@ -10,6 +10,11 @@
     <input type='text' size="8" class='admin-delete-show-id-input'>
     <button class='btn btn-small admin-delete-show-button'>Delete</button>
 </div>
+<div class='admin-delete-movie'>
+    <div class='admin-delete-show-title'>Completely delete untracked movie by ID:</div>
+    <input type='text' size="8" class='admin-delete-movie-id-input'>
+    <button class='btn btn-small admin-delete-movie-button'>Delete</button>
+</div>
 <div class='admin-access-stats-section'></div>
 <div class='admin-access-stats'></div>
 <div class='admin-notifications-section'></div>

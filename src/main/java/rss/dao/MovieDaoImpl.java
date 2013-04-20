@@ -70,6 +70,13 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 	}
 
 	@Override
+	public Collection<UserMovie> findUserMovies(long movieId) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("movieId", movieId);
+		return super.findByNamedQueryAndNamedParams("UserMovie.findUserMovies", params);
+	}
+
+	@Override
 	public Collection<User> findUsersForFutureMovie(Movie movie) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("movieId", movie.getId());

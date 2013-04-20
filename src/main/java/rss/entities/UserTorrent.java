@@ -54,14 +54,6 @@ public abstract class UserTorrent extends BaseEntity {
 		this.torrent = torrent;
 	}
 
-//	public void setIgnored(boolean ignored) {
-//		this.ignored = ignored;
-//	}
-
-//	public boolean isIgnored() {
-//		return ignored;
-//	}
-
 	public Date getDownloadDate() {
 		return downloadDate;
 	}

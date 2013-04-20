@@ -3,6 +3,7 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -160,7 +161,11 @@ public class ShowServiceImpl implements ShowService {
 							}
 						});
 					} catch (Exception e) {
-						logService.error(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "': " + e.getMessage(), e);
+						if (ExceptionUtils.getRootCauseMessage(e).contains("Read timed out")) {
+							logService.warn(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "' (Connection error)");
+						} else {
+							logService.error(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "': " + e.getMessage(), e);
+						}
 					}
 				}
 			});

@@ -90,7 +90,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 			Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
 			logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
 			for (User user : users) {
-				MovieUserTorrent userTorrent = new MovieUserTorrent();
+				UserMovieTorrent userTorrent = new UserMovieTorrent();
 				userTorrent.setUser(user);
 				userTorrent.setAdded(new Date());
 				userTorrent.setTorrent(persistedTorrent);

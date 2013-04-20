@@ -31,7 +31,7 @@ public class Movie extends Media {
 	private String name;
 
 	// this is only needed for movies, for tv shows better use tv.com
-	@Column(name = "imdb_url")
+	@Column(name = "imdb_url", unique = true)
 	private String imdbUrl;
 
 	@SuppressWarnings("UnusedDeclaration")

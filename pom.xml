@@ -366,6 +366,23 @@
                     </plugin>
 
                     <plugin>
+                        <groupId>com.keyboardsamurais.maven</groupId>
+                        <artifactId>maven-timestamp-plugin</artifactId>
+                        <version>1.0</version>
+                        <configuration>
+                            <propertyName>timestamp</propertyName>
+                            <timestampPattern>yyyy-MM-dd_HH-mm</timestampPattern>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>create</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.6</version>
@@ -405,6 +422,19 @@
                                               tofile="${webappDirectory}/require.js"/>
                                         <copy file="${project.build.directory}/require-web-1.0/scripts/js/main.js"
                                               tofile="${webappDirectory}/main.js"/>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>copy-war-to-deploy-folder</id>
+                                <phase>install</phase>
+                                <configuration>
+                                    <target>
+                                        <copy file="${project.build.directory}/${rss-feed-war}.war"
+                                              tofile="${project.build.directory}/../deploy/${rss-feed-war}-${timestamp}.war"/>
                                     </target>
                                 </configuration>
                                 <goals>
@@ -462,6 +492,65 @@
                             <warSourceExcludes>js/**,style/*.less,index_*.jsp</warSourceExcludes>
                             <packagingExcludes>WEB-INF/web.xml,WEB-INF/lib/rhino-*.jar</packagingExcludes>
                         </configuration>
+                    </plugin>
+            </plugins>
+        </build>
+    </profile>
+
+        <profile>
+            <id>test1</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.goldin</groupId>
+                        <artifactId>copy-maven-plugin</artifactId>
+                        <version>0.2.5</version>
+                        <executions>
+                            <execution>
+                                <id>deploy-archive</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <resources>
+                                        <resource>
+                                            <targetPath>scp://root:ASDqwe123@208.115.203.158:/root</targetPath>
+                                            <file>${project.build.directory}/classes/readme.txt</file>
+                                            <!--<file>${project.build.directory}/${rss-feed-war}.war</file>-->
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.goldin</groupId>
+                        <artifactId>sshexec-maven-plugin</artifactId>
+                        <version>0.2.5</version>
+                        <executions>
+                            <execution>
+                                <id>unpack-archive</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sshexec</goal>
+                                </goals>
+                                <configuration>
+                                    <location>scp://root:ASDqwe123@208.115.203.158:/root</location>
+                                    <!-- backup existing war -->
+                                    <!-- set maintenance mode on -->
+                                    <!-- stop tomcat -->
+                                    <!-- delete old war file -->
+                                    <!-- copy new war file -->
+                                    <!-- start tomcat -->
+                                    <!-- set maintenance mode off -->
+                                    <command>cp -f webapps/media-rss.war backups/;./maintenance.sh start;./tomcat stop;rm -rf webapps/media-rss*;cp media-rss.war webapps/;./t.sh;./maintenance.sh stop;</command>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

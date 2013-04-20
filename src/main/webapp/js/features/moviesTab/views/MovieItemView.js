@@ -34,6 +34,13 @@ define([
 				this.model.on('change:downloadStatus', function() {
 					that.updateDownloadStatus();
 				});
+				this.model.on('change:selected', function() {
+					if (that.model.get('selected')) {
+						that.$el.addClass('movie-item-selected');
+					} else {
+						that.$el.removeClass('movie-item-selected');
+					}
+				});
 			},
 
 			onRender: function() {
@@ -51,12 +58,12 @@ define([
 					});
 
 				this.ui.moviePreviewLink.fancybox({
-					'width'				: '800',
-					'height'			: '75%',
-					'autoScale'     	: false,
-					'transitionIn'		: 'none',
-					'transitionOut'		: 'none',
-					'type'				: 'iframe'
+					'width': '800',
+					'height': '75%',
+					'autoScale': false,
+					'transitionIn': 'none',
+					'transitionOut': 'none',
+					'type': 'iframe'
 				});
 			},
 
@@ -73,8 +80,8 @@ define([
 						that.$el.removeClass('movie-item-not-viewed');
 					}, 2000);
 				}
-				this.$el.parent().find('.movie-item').removeClass('movie-item-selected');
-				this.$el.addClass('movie-item-selected');
+//				this.$el.parent().find('.movie-item').removeClass('movie-item-selected');
+//				this.$el.addClass('movie-item-selected');
 				this.vent.trigger('movie-selected', this.model);
 			},
 

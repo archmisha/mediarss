@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import rss.controllers.vo.UserMovieVO;
 import rss.entities.Movie;
 import rss.entities.User;
+import rss.entities.UserMovie;
 
 import java.util.ArrayList;
 
@@ -17,9 +18,11 @@ public interface MovieService {
 
 	ArrayList<UserMovieVO> getAvailableMovies(User loggedInUser);
 
-	Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId);
+	Pair<UserMovie, Boolean> addFutureMovieDownload(User user, String imdbId);
 
 	void markMovieViewed(User user, long movieId);
 
 	String getImdbPreviewPage(Movie movie);
+
+	Pair<UserMovie,Boolean> addMovieDownload(User user, long movieId);
 }

@@ -74,7 +74,8 @@ define([
 
 			onMovieTorrentDownload: function(userTorrent) {
 				HttpUtils.post("rest/movies/download", {
-					torrentId: userTorrent.get('torrentId')
+					torrentId: userTorrent.get('torrentId'),
+					movieId: userTorrent.get('movieId')
 				}, function(res) {
 					userTorrent.set('downloadStatus', 'SCHEDULED');
 					userTorrent.set('scheduledDate', new Date());
@@ -96,11 +97,20 @@ define([
 			},
 
 			onMovieSelected: function(movieModel) {
+				this._selectMovieHelper(movieModel);
+			},
+
+			_selectMovieHelper: function(movieModel) {
 				// clicked twice the same movie
 				if (selectedMovie == movieModel) {
 					return;
 				}
 				selectedMovie = movieModel;
+
+				this.moviesCollection.forEach(function(curMovieModel) {
+					curMovieModel.set('selected', false);
+				});
+				movieModel.set('selected', true);
 
 				// update server that movie is viewed
 				if (!movieModel.get('viewed')) {
@@ -146,7 +156,11 @@ define([
 					that.ui.futureMoviesCounter.html(that.loggedInUserData.userMovies.length);
 					that.ui.moviesFilter.removeClass('filter-selected');
 					that.ui.futureMoviesFilter.addClass('filter-selected');
+					that.moviesListRegion.$el.addClass('future-movies-list');
 					that.moviesCollection.reset(that.loggedInUserData.userMovies);
+
+					var movieModel = that.moviesCollection.get(res.movieId);
+					that._selectMovieHelper(movieModel);
 				});
 			},
 
@@ -186,6 +200,10 @@ define([
 					if (that.ui.futureMoviesFilter.hasClass('filter-selected')) {
 						that.moviesCollection.reset(that.loggedInUserData.userMovies);
 					}
+
+					// must be before reset
+					that.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
+					that.movieTorrentCollection.reset();
 				});
 			}
 		});

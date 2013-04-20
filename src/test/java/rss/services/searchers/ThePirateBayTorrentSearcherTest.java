@@ -84,4 +84,18 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 //				searchResult.getTorrent().getUrl());
 //		assertEquals(6979, searchResult.getTorrent().getSeeders());
 	}
+
+	@Test
+	public void testParsePage2() {
+		String pirateBayId = "123";
+		String page = loadPage("piratebay-devils-of-war");
+		MovieRequest movieRequest = new MovieRequest("bla", null);
+		movieRequest.setPirateBayId(pirateBayId);
+
+		when(pageDownloader.downloadPage(any(String.class))).thenReturn(page);
+
+		SearchResult<Media> searchResult = searcher.search(movieRequest);
+
+		assertEquals("http://www.imdb.com/title/tt2675318", searchResult.getMetaData().getImdbUrl());
+	}
 }

@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.MediaRSSException;
 import rss.controllers.vo.UserVO;
-import rss.dao.EpisodeDao;
-import rss.dao.ShowDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserDao;
+import rss.dao.*;
 import rss.entities.*;
 import rss.services.EmailService;
 import rss.services.SessionService;
@@ -54,6 +51,9 @@ public class AdminController extends BaseController {
 
 	@Autowired
 	private TorrentDao torrentDao;
+
+	@Autowired
+	private MovieDao movieDao;
 
 	@RequestMapping(value = "/notification", method = RequestMethod.POST)
 	@ResponseBody
@@ -117,7 +117,7 @@ public class AdminController extends BaseController {
 		Show show = showDao.find(showId);
 		// allow deletion only if no one is tracking this show
 		if (userDao.isShowBeingTracked(show)) {
-			throw new MediaRSSException("Show is being tracked. Unable to delete");
+			throw new MediaRSSException("Show is being tracked. Unable to delete").doNotLog();
 		}
 
 		for (Episode episode : show.getEpisodes()) {
@@ -128,7 +128,7 @@ public class AdminController extends BaseController {
 				try {
 					episodeDao.find(torrentId);
 
-					for (UserTorrent userTorrent : userTorrentDao.findEpisodeUserTorrentByTorrentId(torrentId)) {
+					for (UserTorrent userTorrent : userTorrentDao.findUserEpisodeTorrentByTorrentId(torrentId)) {
 						userTorrentDao.delete(userTorrent);
 					}
 					torrentDao.delete(torrent);
@@ -144,5 +144,28 @@ public class AdminController extends BaseController {
 		showDao.delete(show);
 
 		return "Show '" + show.getName() + "' (id=" + show.getId() + ") was deleted";
+	}
+
+	@RequestMapping(value = "/movies/delete/{movieId}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public String deleteMovie(@PathVariable Long movieId) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		// allow deletion only if no one is tracking this movie
+		if (!movieDao.findUserMovies(movieId).isEmpty()) {
+			throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
+		}
+
+		Movie movie = movieDao.find(movieId);
+		for (Long torrentId : movie.getTorrentIds()) {
+			Torrent torrent = torrentDao.find(torrentId);
+			torrentDao.delete(torrent);
+		}
+		movie.getTorrentIds().clear();
+		movieDao.delete(movie);
+
+		return "Movie '" + movie.getName() + "' (id=" + movie.getId() + ") was deleted";
 	}
 }

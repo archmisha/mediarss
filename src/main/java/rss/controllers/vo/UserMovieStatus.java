@@ -19,6 +19,7 @@ public class UserMovieStatus {
 	private Date downloadDate;
 	private Date uploadedDate;
 	private Date scheduledDate;
+	private long movieId;
 
 	public UserMovieStatus(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
@@ -58,6 +59,15 @@ public class UserMovieStatus {
 
 	public UserMovieStatus withScheduledOn(Date scheduledOn) {
 		this.scheduledDate = scheduledOn;
+		return this;
+	}
+
+	public long getMovieId() {
+		return movieId;
+	}
+
+	public UserMovieStatus withMovieId(long movieId) {
+		this.movieId = movieId;
 		return this;
 	}
 

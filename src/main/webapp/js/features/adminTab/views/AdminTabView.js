@@ -35,12 +35,14 @@ define([
 
 			ui: {
 				showsComboBox: SHOWS_COMBO_BOX_SELECTOR,
-				deleteShowIdInput: '.admin-delete-show-id-input'
+				deleteShowIdInput: '.admin-delete-show-id-input',
+				deleteMovieIdInput: '.admin-delete-movie-id-input'
 			},
 
 			events: {
 				'click .admin-download-show-schedule-button': '_onDownloadShowScheduleButtonClick',
-				'click .admin-delete-show-button': '_onDeleteShowButtonClick'
+				'click .admin-delete-show-button': '_onDeleteShowButtonClick',
+				'click .admin-delete-movie-button': '_onDeleteMovieButtonClick'
 			},
 
 			constructor: function(options) {
@@ -136,6 +138,20 @@ define([
 				var that = this;
 				HttpUtils.get("rest/admin/shows/delete/" + showId, function(res) {
 					that.ui.deleteShowIdInput.val('');
+					MessageBox.info(res);
+				});
+			},
+
+			_onDeleteMovieButtonClick: function() {
+				var movieId = this.ui.deleteMovieIdInput.val();
+
+				if (!movieId || movieId.trim().length == 0) {
+					return;
+				}
+
+				var that = this;
+				HttpUtils.get("rest/admin/movies/delete/" + movieId, function(res) {
+					that.ui.deleteMovieIdInput.val('');
 					MessageBox.info(res);
 				});
 			}

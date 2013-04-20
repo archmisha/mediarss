@@ -105,11 +105,16 @@ sections to contain also the body - refactor
 movies:
   handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
   8,223 [WARN ] MoviesTorrentEntriesDownloader - Failed retrieving number of viewers for 'Devils of War (2013)':
+  movie with old year - scheduled as future but never wil lbe
+  movie preview - make css download pass through server so it can change icon urls, but dont store the css itself - cache it per server load
 shows:
   about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
   add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03 and also brothers and sisters s01e03
   normalization in searchers makes problem in results removing & or and changes the results also grey's anatomy vs greys anatomy is a problem
     brothers & sisters vs brothers sisters vs brothers and sisters
+  make episode disabled if season is empty and all disabled if no show name
+general:
+  out of memory - why?
 
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
@@ -191,8 +196,9 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download
         ... 27 more
 
 
+last time added -XX:+UseCodeCacheFlushing to solve this:
+Java HotSpot(TM) Client VM warning: CodeCache is full. Compiler has been disabled.
+Java HotSpot(TM) Client VM warning: Try increasing the code cache size using -XX:ReservedCodeCacheSize=
+Code Cache  [0xb5326000, 0xb5a7e000, 0xb7326000)
+ total_blobs=3911 nmethods=3719 adapters=124 free_code_cache=25254Kb largest_free_block=25854656
 
-changelog:
-shows schedule updates live on tracked shows being changed
-improved episode matching when downloading torrents
-other various bug fixes

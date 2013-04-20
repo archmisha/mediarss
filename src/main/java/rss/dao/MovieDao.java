@@ -30,4 +30,6 @@ public interface MovieDao extends Dao<Movie> {
 	List<UserMovie> findFutureUserMovies(User user);
 
 	Collection<User> findUsersForFutureMovie(Movie movie);
+
+	Collection<UserMovie> findUserMovies(long movieId);
 }
