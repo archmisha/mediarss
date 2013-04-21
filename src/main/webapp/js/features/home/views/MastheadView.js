@@ -4,10 +4,13 @@ define([
 	'handlebars',
 	'text!features/home/templates/masthead.tpl',
 	'MessageBox',
-	'HttpUtils'
+	'HttpUtils',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, MessageBox, HttpUtils) {
+	function(Marionette, Handlebars, template, MessageBox, HttpUtils, Utils) {
 		"use strict";
+
+		var SUPPORT_DIALOG_SELECTOR = '.masthead-support-box';
 
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
@@ -27,16 +30,16 @@ define([
 				this.initialData = options.initialData;
 			},
 
-			templateHelpers: function() {
-				return {
-					'username': this.user.firstName,
-					'updated-on': this.initialData.deploymentDate
-				};
+			onShow: function() {
+				var that = this;
+				Utils.waitForDisplayAndCreate(SUPPORT_DIALOG_SELECTOR, function() {
+					that.createSupportDialog();
+				});
 			},
 
-			onSupportClick: function() {
+			createSupportDialog: function() {
 				var that = this;
-				MessageBox.show($('.masthead-support-box'), {
+				this._supportDialog = MessageBox.createDialog($(SUPPORT_DIALOG_SELECTOR), {
 					hideOnContentClick: false,
 					closeBtn: false,
 					afterShow: function() {
@@ -47,8 +50,24 @@ define([
 						$('.masthead-support-cancel-button').on('click', function() {
 							$.fancybox.close();
 						});
+					},
+					afterClose: function() {
+						$('.masthead-support-submit-button').off('click');
+						$('.masthead-support-cancel-button').off('click');
+						that.ui.content.val('');
 					}
 				});
+			},
+
+			templateHelpers: function() {
+				return {
+					'username': this.user.firstName,
+					'updated-on': this.initialData.deploymentDate
+				};
+			},
+
+			onSupportClick: function() {
+				this._supportDialog.show();
 			},
 
 			onSubmitButtonClick: function() {

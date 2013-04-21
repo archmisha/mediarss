@@ -6,10 +6,13 @@ define([
 	'text!features/login/templates/login.tpl',
 	'components/header/views/HeaderView',
 	'features/login/views/LoginHeaderDescriptionView',
-	'MessageBox'
+	'MessageBox',
+	'utils/Utils'
 ],
-	function($, Marionette, Handlebars, template, HeaderView, LoginHeaderDescriptionView, MessageBox) {
+	function($, Marionette, Handlebars, template, HeaderView, LoginHeaderDescriptionView, MessageBox, Utils) {
 		"use strict";
+
+		var PASSWORD_RECOVERY_DIALOG_SELECTOR = '.login-forgot-password-box';
 
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
@@ -18,7 +21,6 @@ define([
 			ui: {
 				formContainer: '.login-form-container',
 				status: '.login-status',
-				passwordRecoveryBox: '.login-forgot-password-box',
 				passwordRecoveryEmailField: '.login-forgot-password-email-input',
 				passwordRecoverySubmitButton: '.login-forgot-password-btn'
 			},
@@ -40,6 +42,10 @@ define([
 				return false;
 			},
 
+			constructor: function(options) {
+				Marionette.Layout.prototype.constructor.apply(this, arguments);
+			},
+
 			onRender: function() {
 				this.ui.form = $('#login-form');
 				this.ui.formContainer.append(this.ui.form);
@@ -57,6 +63,36 @@ define([
 				setTimeout(function() {
 					that.ui.usernameField.focus();
 				}, 50);
+			},
+
+			onShow: function() {
+				var that = this;
+				Utils.waitForDisplayAndCreate(PASSWORD_RECOVERY_DIALOG_SELECTOR, function() {
+					that.createPasswordRecoveryDialog();
+				});
+			},
+
+			createPasswordRecoveryDialog: function() {
+				var that = this;
+				this._passwordRecoveryDialog = MessageBox.createDialog($(PASSWORD_RECOVERY_DIALOG_SELECTOR), {
+					hideOnContentClick: true,
+					afterShow: function() {
+						that.ui.passwordRecoveryEmailField.on('keypress', function(event) {
+							that.onForgotPasswordInputKeyPress(event);
+						});
+						that.ui.passwordRecoverySubmitButton.on('click', function() {
+							that.onForgotPasswordButtonClick();
+						});
+						setTimeout(function() {
+							that.ui.passwordRecoveryEmailField.focus();
+						}, 50);
+					},
+					afterClose: function() {
+						that.ui.passwordRecoveryEmailField.off('keypress');
+						that.ui.passwordRecoverySubmitButton.off('click');
+						that.ui.passwordRecoveryEmailField.val('');
+					}
+				});
 			},
 
 			onClose: function() {
@@ -106,28 +142,8 @@ define([
 			},
 
 			onForgotPasswordClick: function() {
-				var that = this;
 				this.hideStatusMessage();
-
-				MessageBox.show(this.ui.passwordRecoveryBox, {
-					hideOnContentClick: true,
-					afterShow: function() {
-						that.ui.passwordRecoveryEmailField.on('keypress', function(event) {
-							that.onForgotPasswordInputKeyPress(event);
-						});
-						that.ui.passwordRecoverySubmitButton.on('click', function() {
-							that.onForgotPasswordButtonClick();
-						});
-						setTimeout(function() {
-							that.ui.passwordRecoveryEmailField.focus();
-						}, 50);
-					},
-					afterClose: function() {
-						that.ui.passwordRecoveryEmailField.off('keypress');
-						that.ui.passwordRecoverySubmitButton.off('click');
-						that.ui.passwordRecoveryEmailField.val('');
-					}
-				});
+				this._passwordRecoveryDialog.show();
 			},
 
 			onForgotPasswordInputKeyPress: function(event) {

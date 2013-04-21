@@ -28,9 +28,16 @@ movies:
   handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
   8,223 [WARN ] MoviesTorrentEntriesDownloader - Failed retrieving number of viewers for 'Devils of War (2013)':
   movie with old year - scheduled as future but never will be - if there are no torrents for that mvie
-  movie preview - make css download pass through server so it can change icon urls, but dont store the css itself - cache it per server load
   what if shceduked an old movie but no hd torrent found - maybe will be scheduled for ever cuz there is no hd movie likae that....
   if found a movie wonce with 2 torrents. later when adding this movie again to some user, maybe now there are more torrent and better - we will not download them..
+  use everywhere the MvoeParseResult to not have the logic twice
+  change that movie requests will contain the movie id that was persisted before the download started and then no need to search for the mvie by name after torrent was found
+  movioe preiviw
+    make links simple text
+    remove awards section
+    remove videos photos section
+    ability to delete torrent in my movies with 1 v only and in available movies also
+    when click down button doesnt move to my movies only after refresh
 shows:
   about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
   add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03 and also brothers and sisters s01e03
@@ -39,6 +46,8 @@ shows:
   make episode disabled if season is empty and all disabled if no show name
 general:
   out of memory - why?
+support dialog
+  error message behind dialg when in work and no network
 
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
@@ -58,6 +67,9 @@ case 1: single episode
   take everything before s01e01
   do LD on the texts
   future: take akas use country US and attr Short title and Alternate title
+
+  should solve:
+  how to prevent when searching house from finding house of lies or house of cards
 case 2: full season
   take everything before season 1
   take only when after season 1 there is text or number > 100
@@ -67,20 +79,18 @@ case 2: full season
   then
   take the higher peers between the 2 options
 
-===== 'NCIS: Los Angeles season 1 720p - why not exist???
-2013-04-19 11:35:05,888 [INFO ] TVShowsTorrentEntriesDownloader - [archmisha@gmail.com(1)] - Skipping request 'NCIS: Los Angeles season 1 720p' because no such episodes exist
-
 when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
 
 if a show has ended and some user has it tracked - mark in the ui for him red alert
 
 schedule - if some show has an episode in more than 7 days - maybe should add it too
 schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to display more days?
+take all tracked shows, sort the episode airdates, take the 7 before now and the 7 after now (occurances)
 
 
 make subtitles be totally optional!
 
-how to prevent when searching house from finding house of lies or house of cards
+
 
 [ERROR] TVShowsTorrentEntriesDownloader - Failed retrieving "Homeland s02e06 720p": excuteAPI error: DownloadSubtitles
 java.lang.RuntimeException: excuteAPI error: DownloadSubtitles

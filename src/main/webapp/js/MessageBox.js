@@ -7,9 +7,14 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 		"use strict";
 
 		return {
-			show: function(element, options) {
+			createDialog: function(element, options) {
 				options = options || {};
-				element.fancybox(options).click();
+				var dialog = element.fancybox(options);
+				return {
+					show: function() {
+						dialog.click();
+					}
+				};
 			},
 
 			error: function(message) {
@@ -17,7 +22,9 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 					title: "Error",
 					content: message,
 					type: "error",
-					buttons: [{ value: "OK" }]
+					buttons: [
+						{ value: "OK" }
+					]
 				});
 			},
 
@@ -26,8 +33,10 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 					title: 'Authentication Timeout',
 					content: "An authentication timeout has been detected.<br/>The application will log out and redirect to login page.",
 					type: "error",
-					buttons: [{ value: "Proceed" }],
-					success: function (result) {
+					buttons: [
+						{ value: "Proceed" }
+					],
+					success: function(result) {
 						if (result == "Proceed") {
 							var url = window.parent.location.href;
 							url = url.substring(0, url.indexOf('#'));
