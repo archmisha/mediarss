@@ -76,7 +76,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 			// ignore future movies which are not release yet
 			if (imdbParseResult.isComingSoon()) {
-				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' because it is not yet released");
+				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' because it is not yet released (" + searchResult.getTorrent() + ")");
 				return Collections.emptyList();
 			}
 
