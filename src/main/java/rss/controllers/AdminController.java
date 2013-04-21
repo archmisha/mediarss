@@ -153,12 +153,16 @@ public class AdminController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
+		Movie movie = movieDao.find(movieId);
+		if (movie == null) {
+			return "Movie with id " + movie + " is not found";
+		}
+
 		// allow deletion only if no one is tracking this movie
 		if (!movieDao.findUserMovies(movieId).isEmpty()) {
 			throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
 		}
 
-		Movie movie = movieDao.find(movieId);
 		for (Long torrentId : movie.getTorrentIds()) {
 			Torrent torrent = torrentDao.find(torrentId);
 			torrentDao.delete(torrent);
