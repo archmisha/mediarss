@@ -11,13 +11,12 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.PageDownloader;
 import rss.services.SearchResult;
+import rss.services.movies.IMDBParseResult;
+import rss.services.movies.IMDBService;
 import rss.services.searchers.TorrentSearcher;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * User: Michael Dikman
@@ -26,14 +25,6 @@ import java.util.regex.Pattern;
  */
 @Service("moviesTorrentEntriesDownloader")
 public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Movie, MovieRequest> {
-
-//	public static final Pattern NAME_YEAR_PATTERN = Pattern.compile(".*?\\((\\d+)\\)");
-
-	public static final Pattern COMING_SOON_PATTERN = Pattern.compile("<div class=\"showtime\">.*?<h2>Coming Soon</h2>", Pattern.MULTILINE | Pattern.DOTALL);
-
-	public static final Pattern VIEWERS_PATTERN = Pattern.compile("<span itemprop=\"ratingCount\">([^<]*)</span>");
-
-	public static final Pattern OLD_YEAR_PATTERN = Pattern.compile("<meta name=\"title\" content=\"(.*?) - IMDb\" />");
 
 	@Autowired
 	private MovieDao movieDao;
@@ -46,10 +37,10 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	private TorrentDao torrentDao;
 
 	@Autowired
-	private PageDownloader pageDownloader;
+	private UserTorrentDao userTorrentDao;
 
 	@Autowired
-	private UserTorrentDao userTorrentDao;
+	private IMDBService imdbService;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -60,32 +51,51 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	protected List<Movie> onTorrentFound(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
-		String name = getMovieName(searchResult);
-		if (name == null) { // when inferring imdb url if year is too old skipping it
+		String escapedTorrentTitle = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
+
+		// if there is no IMDB ID - skip this movie
+		if (searchResult.getMetaData().getImdbUrl() == null) {
+			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", escapedTorrentTitle));
 			return Collections.emptyList();
 		}
 
-		Torrent torrent = searchResult.getTorrent();
-		Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
-		if (persistedTorrent == null) {
-			torrentDao.persist(torrent);
-			persistedTorrent = torrent;
-		}
+		Movie persistedMovie;
+		// if there is IMDB ID in the original request (meaning it came from ui)
+		if (movieRequest.getImdbId() != null) {
+			// compare IMDB ID and skip if no match
+			if (!movieRequest.getImdbId().equals(searchResult.getMetaData().getImdbUrl())) {
+				logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
+						escapedTorrentTitle, searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
+				return Collections.emptyList();
+			}
+			persistedMovie = movieDao.findByImdbUrl(movieRequest.getImdbId());
+		} else {
+			// if there is no IMDB ID in the original request (meaning it came from the movies job)
+			// download imdb page (for the first time)
+			IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(searchResult.getMetaData().getImdbUrl());
 
-		// set the quality of the torrent
-		for (MediaQuality mediaQuality : MediaQuality.topToBottom()) {
-			if (persistedTorrent.getTitle().contains(mediaQuality.toString())) {
-				persistedTorrent.setQuality(mediaQuality);
-				break;
+			// ignore future movies which are not release yet
+			if (imdbParseResult.isComingSoon()) {
+				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' because it is not yet released");
+				return Collections.emptyList();
+			}
+
+			// check for number of reviewers for the movie
+			if (imdbParseResult.getViewers() != -1 && imdbParseResult.getViewers() < 1000) {
+				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' due to low number of viewers in imdb: " + imdbParseResult.getViewers());
+				return Collections.emptyList();
+			}
+
+			persistedMovie = movieDao.findByName(imdbParseResult.getName());
+			if (persistedMovie == null) {
+				persistedMovie = new Movie(imdbParseResult.getName(), searchResult.getMetaData().getImdbUrl(), imdbParseResult.getYear());
+				movieDao.persist(persistedMovie);
 			}
 		}
-		persistedTorrent.setHash(movieRequest.getHash());
 
-		Movie persistedMovie = movieDao.findByName(name);
-		if (persistedMovie == null) {
-			persistedMovie = new Movie(name, searchResult.getMetaData().getImdbUrl());
-			movieDao.persist(persistedMovie);
-		} else if (persistedMovie.getTorrentIds().isEmpty()) {
+		Torrent persistedTorrent = persistTorrent(searchResult.getTorrent(), movieRequest.getHash());
+
+		if (persistedMovie.getTorrentIds().isEmpty()) {
 			// if movie already existed and had no torrents - this is the case where it is a future movie request by user
 			Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
 			logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
@@ -103,88 +113,28 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		return Collections.singletonList(persistedMovie);
 	}
 
+	private Torrent persistTorrent(Torrent torrent, String hash) {
+		Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
+		if (persistedTorrent == null) {
+			torrentDao.persist(torrent);
+			persistedTorrent = torrent;
+		}
+
+		// set the quality of the torrent
+		for (MediaQuality mediaQuality : MediaQuality.topToBottom()) {
+			if (persistedTorrent.getTitle().contains(mediaQuality.toString())) {
+				persistedTorrent.setQuality(mediaQuality);
+				break;
+			}
+		}
+		persistedTorrent.setHash(hash);
+		return persistedTorrent;
+	}
+
 	@Override
 	protected void onTorrentMissing(MovieRequest mediaRequest, SearchResult<Movie> searchResult) {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
-
-	private String getMovieName(SearchResult<Movie> searchResult) {
-		String name;
-
-		// if there is no imdbid - skip this movie
-		// if there is imdbid in the original request (meaning it came from ui) - compare imdbid and skip if no match
-		// if there is no imdbid i nthe original request (meaning it came from the movies job) - download imdb page (for the first time,
-		// should be some common service that parses it and returns an objects with status), skip non-release and low viewers number
-		// in case of ui, should skip all of the above in the controller level
-		// if coming from ui and nothing is found, need to compare release year. if older than 1 year ago - means there will be no hd torrent (not that its scheduled)
-
-		// if found a result then try to get the real title from IMDB
-		if (searchResult.getMetaData().getImdbUrl() != null) {
-			long from = System.currentTimeMillis();
-
-			try {
-				// imdb pages are large, downloading until a regular expression is satisfied and that chunk is returned
-				String partialPage = pageDownloader.downloadPageUntilFound(searchResult.getMetaData().getImdbUrl(), VIEWERS_PATTERN);
-				// check for old year
-				// <meta name="title" content="The Prestige (2006) - IMDb" />
-				Matcher oldYearMatcher = OLD_YEAR_PATTERN.matcher(partialPage);
-				oldYearMatcher.find();
-				name = oldYearMatcher.group(1);
-				name = StringEscapeUtils.unescapeHtml4(name);
-				logService.info(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
-//				if (isInvalidMovieYear(name)) {
-//					logService.info(getClass(), "Skipping movie '" + name + "' due to old year");
-//					return null;
-//				}
-
-				// ignore future movies which are not release yet
-				Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(partialPage);
-				if (comingSoonMatcher.find()) {
-					logService.info(getClass(), "Skipping movie '" + name + "' because it is not yet released");
-					return null;
-				}
-
-				// check for number of reviewers for the movie
-				Matcher viewersMatcher = VIEWERS_PATTERN.matcher(partialPage);
-				if (!viewersMatcher.find()) {
-					logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "': " + partialPage);
-				} else {
-					String viewers = viewersMatcher.group(1);
-					viewers = viewers.replaceAll(",", "");
-					int viewersNum = Integer.parseInt(viewers);
-					if (viewersNum < 1000) {
-						logService.info(getClass(), "Skipping movie '" + name + "' due to low number of viewers in imdb: " + viewersNum);
-						return null;
-					}
-				}
-				return name;
-			} catch (Exception e) {
-				logService.error(getClass(), "Failed downloading IMDB page " + searchResult.getMetaData().getImdbUrl() + ": " + e.getMessage(), e);
-			}
-		}
-
-		// no imdb url so can't infer the title from imdb
-		name = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
-//		logService.info(this.getClass(), String.format("No IMDB url for movie '%s', using torrent title as name", name));
-//		return name;
-		// decided not to download movies without IMDB url
-		logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", name));
-		return null;
-	}
-
-	/*private boolean isInvalidMovieYear(String name) {
-		Matcher matcher = NAME_YEAR_PATTERN.matcher(name);
-		if (matcher.find()) {
-			int year = Integer.parseInt(matcher.group(1));
-			int curYear = Calendar.getInstance().get(Calendar.YEAR);
-			int prevYear = curYear - 1;
-			if (year != curYear && year != prevYear) {
-				return true;
-			}
-		}
-
-		return false;
-	}*/
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)

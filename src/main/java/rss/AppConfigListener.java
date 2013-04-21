@@ -9,12 +9,18 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import rss.dao.MovieDao;
+import rss.entities.Movie;
 import rss.services.OOTBContentLoader;
 import rss.services.SettingsService;
+import rss.services.movies.IMDBService;
 import rss.util.QuartzJob;
 
 import javax.servlet.ServletContext;
@@ -49,6 +55,15 @@ public class AppConfigListener implements ServletContextListener {
 
 	@Autowired
 	private OOTBContentLoader ootbContentLoader;
+
+	@Autowired
+	private MovieDao movieDao;
+
+	@Autowired
+	private IMDBService imdbService;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -85,6 +100,18 @@ public class AppConfigListener implements ServletContextListener {
 		} catch (Exception e) {
 			log.error("Failed loading OOTB content: " + e.getMessage(), e);
 		}
+
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+				// one time movies upgrade
+				for (Movie movie : movieDao.findAll()) {
+					if (movie.getYear() == -1) {
+						movie.setYear(imdbService.extractMovieYear(movie));
+					}
+				}
+			}
+		});
 
 		try {
 			this.loadCronTriggerBeans(springContext);

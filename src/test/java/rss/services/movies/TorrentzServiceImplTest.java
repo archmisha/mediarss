@@ -66,7 +66,7 @@ public class TorrentzServiceImplTest extends BaseTest {
 			}
 		}).when(moviesTorrentEntriesDownloader).download(any(Collection.class));
 
-		Movie movie = new Movie(name, null);
+		Movie movie = new Movie(name, null, 123);
 		DownloadResult<Movie, MovieRequest> downloadResult = torrentzService.downloadMovie(movie, "123");
 //		Assert.assertTrue(downloadResult.getMissing().isEmpty());
 	}

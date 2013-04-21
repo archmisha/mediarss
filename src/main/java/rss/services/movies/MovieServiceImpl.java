@@ -3,8 +3,6 @@ package rss.services.movies;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -25,12 +23,12 @@ import rss.services.PageDownloader;
 import rss.services.SessionService;
 import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.log.LogService;
-import rss.util.DurationMeter;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * User: dikmanm
@@ -54,7 +52,7 @@ public class MovieServiceImpl implements MovieService {
 	private TorrentDao torrentDao;
 
 	@Autowired
-	private PageDownloader pageDownloader;
+	private IMDBService imdbService;
 
 	@Autowired
 	private LogService logService;
@@ -293,31 +291,20 @@ public class MovieServiceImpl implements MovieService {
 			final String imdbUrl = IMDB_URL + imdbId;
 			Movie movie = movieDao.findByImdbUrl(imdbUrl);
 			if (movie == null) {
-				String partialPage;
-				try {
-					partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, MoviesTorrentEntriesDownloader.VIEWERS_PATTERN);
-				} catch (Exception e) {
-					// usually it is HTTP/1.1 404 Not Found
-					if (!e.getMessage().contains("404 Not Found")) {
-						logService.error(getClass(), "Failed downloading IMDB page " + imdbId + ": " + e.getMessage(), e);
-					}
+				final IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(imdbUrl);
+				if (!imdbParseResult.isFound()) {
 					return null;
 				}
-				Matcher oldYearMatcher = MoviesTorrentEntriesDownloader.OLD_YEAR_PATTERN.matcher(partialPage);
-				oldYearMatcher.find();
-				String name = oldYearMatcher.group(1);
-				name = StringEscapeUtils.unescapeHtml4(name);
 
 				// persisting the movie in a separate transaction cuz need the movie to be present then the downloader runs
-				// in order to have a separate transaction, needed a new thread ehre
-				final String finalName = name;
+				// in order to have a separate transaction, needed a new thread here
 				FutureTask<Movie> futureTask = new FutureTask<>(new Callable<Movie>() {
 					@Override
 					public Movie call() throws Exception {
 						return transactionTemplate.execute(new TransactionCallback<Movie>() {
 							@Override
 							public Movie doInTransaction(TransactionStatus arg0) {
-								Movie movie = new Movie(finalName, imdbUrl);
+								Movie movie = new Movie(imdbParseResult.getName(), imdbUrl, imdbParseResult.getYear());
 								movieDao.persist(movie);
 								return movie;
 							}
@@ -332,8 +319,14 @@ public class MovieServiceImpl implements MovieService {
 				// uses a separate transaction
 				torrentzService.downloadMovie(movie, imdbId);
 
-				// refetch the movie in this transaction after it got torrents
+				// re-fetch the movie in this transaction after it got torrents
 				movie = movieDao.find(movie.getId());
+			}
+
+			// if movie is too old and there are no torrents now - then there won't be any. no point adding it to user as scheduled
+			Calendar c = Calendar.getInstance();
+			if (movie.getYear() < c.get(Calendar.YEAR) - 1 && movie.getTorrentIds().isEmpty()) {
+				throw new MediaRSSException("Unable to find torrents for movie '" + movie.getName() + "'").doNotLog();
 			}
 
 			return addMovieDownload(user, movie);

@@ -52,9 +52,6 @@ public class OOTBContentLoader {
 	private LogService logService;
 
 	@Autowired
-	private EpisodeDao episodeDao;
-
-	@Autowired
 	private ShowDao showDao;
 
 	@Autowired

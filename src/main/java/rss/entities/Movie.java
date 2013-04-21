@@ -34,13 +34,17 @@ public class Movie extends Media {
 	@Column(name = "imdb_url", unique = true)
 	private String imdbUrl;
 
+	@Column(name = "year")
+	private int year;
+
 	@SuppressWarnings("UnusedDeclaration")
 	private Movie() {
 	}
 
-	public Movie(String name, String imdbUrl) {
+	public Movie(String name, String imdbUrl, int year) {
 		this.name = name;
 		this.imdbUrl = imdbUrl;
+		this.year = year;
 	}
 
 	public String getName() {
@@ -79,5 +83,13 @@ public class Movie extends Media {
 
 	public String getImdbUrl() {
 		return imdbUrl;
+	}
+
+	public int getYear() {
+		return year;
+	}
+
+	public void setYear(int year) {
+		this.year = year;
 	}
 }
