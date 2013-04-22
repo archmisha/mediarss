@@ -51,8 +51,8 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 				}
 			} catch (Exception e) {
 				failedSearchers.add(torrentSearcher.getName());
-				// no need to print the exception stack trace - if its 'Read timed out' error
-				if (e.getMessage().contains("Read timed out")) {
+				// no need to print the exception stack trace - if its 'Read timed out' error or 'Connect to 1337x.org:80 timed out' error
+				if (e.getMessage().contains("timed out")) {
 					log.error(e.getMessage());
 				} else {
 					log.error(e.getMessage(), e);
