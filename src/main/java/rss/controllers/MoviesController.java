@@ -125,10 +125,13 @@ public class MoviesController extends BaseController {
 	public Map<String, Object> removeFutureMovie(@RequestParam("movieId") long movieId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		UserMovie userMovie = movieDao.findUserMovie(movieId, user);
-		for (UserMovieTorrent userMovieTorrent : userMovie.getUserMovieTorrents()) {
-			userTorrentDao.delete(userMovieTorrent);
+		// now idea how can happen, dima had it
+		if (userMovie != null) {
+			for (UserMovieTorrent userMovieTorrent : userMovie.getUserMovieTorrents()) {
+				userTorrentDao.delete(userMovieTorrent);
+			}
+			movieDao.delete(userMovie);
 		}
-		movieDao.delete(userMovie);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("message", "Movie '" + userMovie.getMovie().getName() + "' was removed from schedule for download");

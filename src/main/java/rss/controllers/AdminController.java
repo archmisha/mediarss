@@ -55,6 +55,9 @@ public class AdminController extends BaseController {
 	@Autowired
 	private MovieDao movieDao;
 
+	@Autowired
+	private SubtitlesDao subtitlesDao;
+
 	@RequestMapping(value = "/notification", method = RequestMethod.POST)
 	@ResponseBody
 	public void sendNotification(HttpServletRequest request) {
@@ -121,23 +124,7 @@ public class AdminController extends BaseController {
 		}
 
 		for (Episode episode : show.getEpisodes()) {
-			// episode is always connected to a single show - not a problem
-			for (Long torrentId : episode.getTorrentIds()) {
-				// delete the torrent only if it is connected to a single episode
-				Torrent torrent = torrentDao.find(torrentId);
-				try {
-					episodeDao.find(torrentId);
-
-					for (UserTorrent userTorrent : userTorrentDao.findUserEpisodeTorrentByTorrentId(torrentId)) {
-						userTorrentDao.delete(userTorrent);
-					}
-					torrentDao.delete(torrent);
-				} catch (NonUniqueResultException e) {
-					// if exception was thrown - it means the torrent is connected to multiple episodes
-				}
-			}
-
-			episode.getTorrentIds().clear();
+			showService.disconnectTorrentsFromEpisode(episode);
 			episodeDao.delete(episode);
 		}
 
@@ -165,7 +152,13 @@ public class AdminController extends BaseController {
 
 		for (Long torrentId : movie.getTorrentIds()) {
 			Torrent torrent = torrentDao.find(torrentId);
-			torrentDao.delete(torrent);
+			// happens when erasing a movie that has a commons torrent with other movie that also been erased
+			if (torrent != null) {
+				for (Subtitles subtitles : subtitlesDao.findByTorrent(torrent)) {
+					subtitlesDao.delete(subtitles);
+				}
+				torrentDao.delete(torrent);
+			}
 		}
 		movie.getTorrentIds().clear();
 		movieDao.delete(movie);

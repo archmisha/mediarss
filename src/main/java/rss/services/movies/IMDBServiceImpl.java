@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 @Service
 public class IMDBServiceImpl implements IMDBService {
 
-	public static final Pattern NAME_YEAR_PATTERN = Pattern.compile("\\([^\\d]*(\\d+)[^\\d]*\\)");
+	public static final Pattern NAME_YEAR_PATTERN = Pattern.compile("\\(?[^\\d]*(\\d+)[^\\d]*\\)?");
 	public static final Pattern COMING_SOON_PATTERN = Pattern.compile("<div class=\"showtime\">.*?<h2>Coming Soon</h2>", Pattern.MULTILINE | Pattern.DOTALL);
 	public static final Pattern NOT_YET_RELEASED_PATTERN = Pattern.compile("<div class=\"rating-ineligible\">.*?Not yet released.*?</div>", Pattern.MULTILINE | Pattern.DOTALL);
 	public static final Pattern VIEWERS_PATTERN = Pattern.compile("<span itemprop=\"ratingCount\">([^<]*)</span>");
@@ -85,10 +85,5 @@ public class IMDBServiceImpl implements IMDBService {
 		}
 
 		return Integer.parseInt(matcher.group(1));
-	}
-
-	@Override
-	public int extractMovieYear(Movie movie) {
-		return parseMovieYear(movie.getName());
 	}
 }

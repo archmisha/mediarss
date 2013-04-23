@@ -2,8 +2,13 @@ package rss.services.shows;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hibernate.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -15,12 +20,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import rss.EpisodesComparator;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
 import rss.controllers.vo.ShowsScheduleVO;
-import rss.dao.EpisodeDao;
-import rss.dao.ShowDao;
-import rss.dao.UserDao;
-import rss.entities.Episode;
-import rss.entities.MediaQuality;
-import rss.entities.Show;
+import rss.dao.*;
+import rss.entities.*;
 import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.SettingsService;
@@ -81,6 +82,18 @@ public class ShowServiceImpl implements ShowService {
 	@Autowired
 	private EmailService emailService;
 
+	@Autowired
+	private ShowSearchService showSearchService;
+
+	@Autowired
+	private SubtitlesDao subtitlesDao;
+
+	@Autowired
+	private TorrentDao torrentDao;
+
+	@Autowired
+	protected UserTorrentDao userTorrentDao;
+
 	@PostConstruct
 	private void postConstruct() {
 		showsProvider = new TVRageServiceImpl();
@@ -102,6 +115,7 @@ public class ShowServiceImpl implements ShowService {
 		name = name.replaceAll("[:&\\._\\+,\\(\\)!\\?/]", " ");
 		name = name.replaceAll("and", " ");
 		name = name.replaceAll("\\s+", " ");
+		name = name.trim();
 		return name;
 	}
 
@@ -111,6 +125,7 @@ public class ShowServiceImpl implements ShowService {
 		name = name.replaceAll("['\"\\-]", "");
 		name = name.replaceAll("[:\\._\\+,\\(\\)!\\?/]", " ");
 		name = name.replaceAll("\\s+", " ");
+		name = name.trim();
 		return name;
 	}
 
@@ -482,6 +497,36 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void disconnectTorrentsFromEpisode(Episode episode) {
+		// episode is always connected to a single show - not a problem
+		for (Long torrentId : episode.getTorrentIds()) {
+			// delete the torrent only if it is connected to a single episode
+			Torrent torrent = torrentDao.find(torrentId);
+			try {
+				episodeDao.find(torrent);
+
+				for (UserTorrent userTorrent : userTorrentDao.findUserEpisodeTorrentByTorrentId(torrentId)) {
+					userTorrentDao.delete(userTorrent);
+				}
+
+				for (Subtitles subtitles : subtitlesDao.findByTorrent(torrent)) {
+					subtitlesDao.delete(subtitles);
+				}
+
+				torrentDao.delete(torrent);
+			} catch (NonUniqueResultException e) {
+//				System.out.println("Aaaaa " + e.getMessage());
+//				e.printStackTrace();
+				// if exception was thrown - it means the torrent is connected to multiple episodes
+			}
+		}
+
+		episode.getTorrentIds().clear();
+		episodeDao.merge(episode);
+	}
+
+	@Override
 	public void persistEpisodeToShow(Show show, Episode episode) {
 		episodeDao.persist(episode);
 		episode.setShow(show);
@@ -489,12 +534,120 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public boolean isMatch(EpisodeRequest mediaRequest, String title) {
-		// need the space to avoid matching housewives to house
-		String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle()).toLowerCase() + " ";
+	public Set<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> movieRequests) {
+		if (movieRequests.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		// take everything before s01e01
+		// do LD on the texts
+		String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle());
 		String seasonEpisode = mediaRequest.getSeasonEpisode();
-		title = ShowServiceImpl.normalize(title.toLowerCase());
-		// startswith to avoid matching fullhouse to house
-		return title.startsWith(requestTitle) && title.contains(seasonEpisode);
+		Show show = mediaRequest.getShow();
+
+		List<Pair<Integer, MatchCandidate>> pairs = new ArrayList<>();
+		for (MatchCandidate movieRequest : movieRequests) {
+			String title = ShowServiceImpl.normalize(movieRequest.getText());
+
+			String titlePrefix = null;
+			String titleSuffix = null;
+
+			if (mediaRequest instanceof FullSeasonRequest) {
+				// take everything before season 1 or s01 the first of the 2
+				String fullSeasonEnum = "season " + mediaRequest.getSeason();
+				String shortSeasonEnum = "s" + StringUtils.leftPad(String.valueOf(mediaRequest.getSeason()), 2, '0');
+
+				int indexOfFullSeason = title.indexOf(fullSeasonEnum);
+				int indexOfShortSeason = title.indexOf(shortSeasonEnum);
+				if (indexOfFullSeason == -1) {
+					if (indexOfShortSeason != -1) {
+						titlePrefix = title.substring(0, indexOfShortSeason).trim();
+						titleSuffix = title.substring(indexOfFullSeason + shortSeasonEnum.length());
+					}
+				} else if (indexOfShortSeason == -1) {
+					titlePrefix = title.substring(0, indexOfFullSeason);
+					titleSuffix = title.substring(indexOfFullSeason + fullSeasonEnum.length());
+				} else if (indexOfFullSeason < indexOfShortSeason) {
+					titlePrefix = title.substring(0, indexOfFullSeason);
+					titleSuffix = title.substring(indexOfFullSeason + fullSeasonEnum.length());
+				} else {
+					titlePrefix = title.substring(0, indexOfShortSeason);
+					titleSuffix = title.substring(indexOfFullSeason + shortSeasonEnum.length());
+				}
+			} else {
+				int indexOfSeasonEpisode = title.indexOf(seasonEpisode);
+				if (indexOfSeasonEpisode != -1) {
+					// take everything before s01e01
+					titlePrefix = title.substring(0, indexOfSeasonEpisode);
+					titleSuffix = title.substring(indexOfSeasonEpisode + seasonEpisode.length());
+				}
+			}
+
+			// if we were in any of the conditions
+			if (titlePrefix != null) {
+				// show name is a heavier search than the title suffix one
+				titlePrefix = titlePrefix .trim();
+				boolean titleSuffixMatch = isTitleSuffixMatch(titleSuffix);
+				if (titleSuffixMatch && isShowNameMatch(titlePrefix, show)) {
+					pairs.add(new ImmutablePair<>(StringUtils.getLevenshteinDistance(titlePrefix, requestTitle), movieRequest));
+				} else {
+					logService.info(getClass(), "Removing '" + title + "' cuz a bad " + (titleSuffixMatch ? "show name" : "title suffix") + " match for '" + mediaRequest.toString() + "'");
+				}
+			}
+		}
+
+		Set<MatchCandidate> result = new HashSet<>();
+		if (pairs.isEmpty()) {
+			return result;
+		}
+
+		Collections.sort(pairs, new Comparator<Pair<Integer, MatchCandidate>>() {
+			@Override
+			public int compare(Pair<Integer, MatchCandidate> o1, Pair<Integer, MatchCandidate> o2) {
+				return Ints.compare(o1.getKey(), o2.getKey());
+			}
+		});
+		Pair<Integer, MatchCandidate> first = pairs.get(0);
+		int i;
+		for (i = 1; i < pairs.size(); ++i) {
+			if (!first.getKey().equals(pairs.get(i).getKey())) {
+				break;
+			}
+		}
+
+		// log skipped entries
+		for (Pair<Integer, MatchCandidate> pair : pairs.subList(i, pairs.size())) {
+			logService.info(getClass(), "Removing '" + pair.getValue().getText() + "' cuz a bad match for '" + mediaRequest.toString() + "'");
+		}
+
+		for (Pair<Integer, MatchCandidate> pair : pairs.subList(0, i)) {
+			result.add(pair.getValue());
+		}
+		return result;
+	}
+
+	private boolean isShowNameMatch(String title, Show show) {
+		for (Show curShow : showSearchService.statisticMatch(title)) {
+			if (curShow.equals(show)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isTitleSuffixMatch(String titleSuffix) {
+		titleSuffix = titleSuffix.trim();
+		// take only when after season 1 there is text or number > 100 or  nothing
+		if (StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
+			return true;
+		}
+
+		if (titleSuffix.length() >= 3) {
+			String t = titleSuffix.substring(0, 3);
+			if (NumberUtils.isNumber(t) && Integer.parseInt(t) >= 100) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

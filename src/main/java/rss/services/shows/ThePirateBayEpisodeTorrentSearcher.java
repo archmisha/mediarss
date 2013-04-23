@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
 import rss.entities.Torrent;
+import rss.services.downloader.MovieRequest;
 import rss.services.requests.EpisodeRequest;
 import rss.services.searchers.ThePirateBayTorrentSearcher;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * User: dikmanm
@@ -22,11 +25,25 @@ public class ThePirateBayEpisodeTorrentSearcher extends ThePirateBayTorrentSearc
 
 	@Override
 	protected void verifySearchResults(EpisodeRequest mediaRequest, List<Torrent> results) {
-		for (Torrent torrent : new ArrayList<>(results)) {
-			if (!showService.isMatch(mediaRequest, torrent.getTitle())) {
-				results.remove(torrent);
-				logService.info(getClass(), "Removing '" + torrent.getTitle() + "' cuz a bad match for '" + mediaRequest.toString() + "'");
-			}
+		List<ShowService.MatchCandidate> matchCandidates = new ArrayList<>();
+		for (final Torrent torrent : results) {
+			matchCandidates.add(new ShowService.MatchCandidate() {
+				@Override
+				public String getText() {
+					return torrent.getTitle();
+				}
+
+				@SuppressWarnings("unchecked")
+				@Override
+				public <T> T getObject() {
+					return (T) torrent;
+				}
+			});
+		}
+
+		results.clear();
+		for (ShowService.MatchCandidate matchCandidate : showService.filterMatching(mediaRequest, matchCandidates)) {
+			results.add(matchCandidate.<Torrent>getObject());
 		}
 	}
 

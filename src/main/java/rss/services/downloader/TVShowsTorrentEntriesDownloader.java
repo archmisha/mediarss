@@ -123,7 +123,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		expandFullShowRequests(episodeRequests, eps);
 		expandFullSeasonRequests(episodeRequests, eps);
 
-		Map<Episode, Set<EpisodeRequest>> episodesMap = createEpisodesToRequestsMap(episodeRequests, eps);
+		Map<Episode, Set<EpisodeRequest>> episodesMap = createEpisodesToRequestsMap(episodeRequests, eps, forceDownload);
 
 		// the only place that persists full season Episode objects
 		addFullSeasonEpisodes(episodeRequests, episodesMap);
@@ -132,9 +132,11 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		// doesn't add new episodes, only requests on existing episodes - updates episodesMap
 		handleDoubleEpisodes(episodeRequests, eps, episodesMap);
 
-		Set<Episode> cachedEpisodes = skipCachedEpisodes(episodeRequests, episodesMap);
-
-		if (!forceDownload) {
+		Set<Episode> cachedEpisodes;
+		if (forceDownload) {
+			cachedEpisodes = Collections.emptySet();
+		} else {
+			cachedEpisodes = skipCachedEpisodes(episodeRequests, episodesMap);
 			skipScannedEpisodes(episodeRequests, eps, episodesMap);
 		}
 
@@ -175,8 +177,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		}
 	}
 
+	// forceDownload is true then need to delete the previous torrents of the episode
 	private Map<Episode, Set<EpisodeRequest>> createEpisodesToRequestsMap(Set<ShowRequest> episodeRequests,
-																		  Map<String, Map<Integer, Pair<TreeSet<Episode>, Boolean>>> eps) {
+																		  Map<String, Map<Integer, Pair<TreeSet<Episode>, Boolean>>> eps,
+																		  boolean forceDownload) {
 		Map<String, EpisodesMapper> eps2 = new HashMap<>();
 		for (Map.Entry<String, Map<Integer, Pair<TreeSet<Episode>, Boolean>>> entry : eps.entrySet()) {
 			String showName = entry.getKey();
@@ -197,6 +201,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					logService.info(getClass(), "Skipping request '" + episodeRequest + "' because no such episodes exist");
 					episodeRequests.remove(episodeRequest);
 				} else {
+					// if not yet handled this episode
+					if (forceDownload && !episodesMap.containsKey(episode)) {
+						deleteTorrents(episode);
+					}
 					CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
 				}
 			} else if (episodeRequest instanceof DoubleEpisodeRequest) {
@@ -207,6 +215,14 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					logService.info(getClass(), "Skipping request '" + episodeRequest + "' because no such episodes exist");
 					episodeRequests.remove(episodeRequest);
 				} else {
+					// if not yet handled this episode
+					if (forceDownload && !episodesMap.containsKey(episode1)) {
+						deleteTorrents(episode1);
+					}
+					// if not yet handled this episode
+					if (forceDownload && !episodesMap.containsKey(episode2)) {
+						deleteTorrents(episode2);
+					}
 					CollectionUtils.safeSetPut(episodesMap, episode1, episodeRequest);
 					CollectionUtils.safeSetPut(episodesMap, episode2, episodeRequest);
 				}
@@ -222,6 +238,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 							episodeRequests.remove(episodeRequest);
 							break;
 						}
+						// if not yet handled this episode
+						if (forceDownload && !episodesMap.containsKey(episode)) {
+							deleteTorrents(episode);
+						}
 						CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
 					}
 				}
@@ -230,6 +250,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			}
 		}
 		return episodesMap;
+	}
+
+	private void deleteTorrents(Episode episode) {
+		showService.disconnectTorrentsFromEpisode(episode);
 	}
 
 	// skip episodes that already scanned, except the last 2 (those might still be updated later)

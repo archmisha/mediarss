@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.requests.MediaRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
+import rss.services.requests.MediaRequest;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -81,19 +81,31 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 
+		List<SearchResult<S>> searchResults = new ArrayList<>();
 		for (String result : results) {
 			SearchResult<S> searchResult = retrieveTorrentEntry(result);
-			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND &&
-				verifySearchResult(mediaRequest, searchResult.getTorrent().getTitle())) {
-				return searchResult;
+			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND) {
+				searchResults.add(searchResult);
 			}
 		}
 
-		return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		List<SearchResult<S>> filteredResults = filterMatching(mediaRequest, searchResults);
+
+		if (filteredResults.isEmpty()) {
+			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		}
+
+		return filteredResults.get(0);
 	}
 
-	protected boolean verifySearchResult(T mediaRequest, String title) {
-		return title.toLowerCase().contains(mediaRequest.getTitle().toLowerCase());
+	protected List<SearchResult<S>> filterMatching(T mediaRequest, List<SearchResult<S>> searchResults) {
+		List<SearchResult<S>> results = new ArrayList<>();
+		for (SearchResult<S> searchResult : searchResults) {
+			if (searchResult.getTorrent().getTitle().toLowerCase().contains(mediaRequest.getTitle().toLowerCase())) {
+				results.add(searchResult);
+			}
+		}
+		return results;
 	}
 
 	private SearchResult<S> retrieveTorrentEntry(String torrentUrl) {

@@ -17,10 +17,17 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 
 	@Override
 	public Subtitles find(Torrent torrent, SubtitleLanguage language) {
-		Map<String, Object> params = new HashMap<String, Object>(2);
+		Map<String, Object> params = new HashMap<>(2);
 		params.put("torrentId", torrent.getId());
 		params.put("language", language);
 		return uniqueResult(super.<Subtitles>findByNamedQueryAndNamedParams("Subtitles.find", params));
+	}
+
+	@Override
+	public Collection<Subtitles> findByTorrent(Torrent torrent) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("torrentId", torrent.getId());
+		return super.findByNamedQueryAndNamedParams("Subtitles.findByTorrent", params);
 	}
 
 	@Override

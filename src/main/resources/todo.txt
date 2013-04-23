@@ -38,6 +38,7 @@ movies:
     remove videos photos section
     ability to delete torrent in my movies with 1 v only and in available movies also
     when click down button doesnt move to my movies only after refresh
+    available movies list too long -sergey got 176
 shows:
   about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
   add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03 and also brothers and sisters s01e03
@@ -61,23 +62,8 @@ Showtime House vs house
 
 2013-04-17 19:53:24,400 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'How I Met Your Mother Season 07 720p' cuz a bad match for 'How I Met Your Mother season 7 720p'
 
-
 episode matching:
-case 1: single episode
-  take everything before s01e01
-  do LD on the texts
   future: take akas use country US and attr Short title and Alternate title
-
-  should solve:
-  how to prevent when searching house from finding house of lies or house of cards
-case 2: full season
-  take everything before season 1
-  take only when after season 1 there is text or number > 100
-  also
-  take everything before s01
-  take only when after s01 there is space
-  then
-  take the higher peers between the 2 options
 
 when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
 
@@ -128,3 +114,12 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: excuteAPI er
 Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download limit reached
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)
         ... 27 more
+
+
+
+
+
+
+movies:
+  people images - load late not coming
+  big image always forbidden 403

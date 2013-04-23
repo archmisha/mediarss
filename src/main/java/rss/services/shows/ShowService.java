@@ -5,8 +5,10 @@ import rss.controllers.vo.EpisodeSearchResult;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
 import rss.entities.User;
+import rss.services.downloader.MovieRequest;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Show;
+import rss.services.requests.MediaRequest;
 import rss.services.requests.ShowRequest;
 
 import java.util.Collection;
@@ -33,9 +35,16 @@ public interface ShowService {
 
 	ShowsScheduleVO getSchedule(Set<Show> shows);
 
-	boolean isMatch(EpisodeRequest mediaRequest, String title);
+	Set<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> movieRequests);
 
 	void persistEpisodeToShow(Show show, Episode episode);
 
 	Collection<Episode> findMissingFullSeasonEpisodes(Show show);
+
+	void disconnectTorrentsFromEpisode(Episode episode);
+
+	public interface MatchCandidate {
+		String getText();
+		<T> T getObject();
+	}
 }

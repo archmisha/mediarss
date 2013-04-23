@@ -1,5 +1,7 @@
 package rss.services.searchers;
 
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import rss.services.shows.ShowService;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -50,34 +54,22 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 	@Override
 	public SearchResult<Episode> search(EpisodeRequest episodeRequest) {
 		try {
-			// don't handle episode requests, only full season requests
-//			if (!(episodeRequest instanceof FullSeasonRequest)) {
-//				return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
-//			}
-
 			// search torrentz to get piratebay id and the use regular piratebay searcher
 			String page = pageDownloader.downloadPage(TORRENTZ_EPISODE_SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString(), "UTF-8"));
 			Set<MovieRequest> movieRequests = torrentzParser.parse(page);
 
-			for (MovieRequest movieRequest : new ArrayList<>(movieRequests)) {
-				if (!showService.isMatch(episodeRequest, movieRequest.getTitle())) {
-					movieRequests.remove(movieRequest);
-					logService.info(getClass(), "Removing '" + movieRequest.getTitle() + "' cuz a bad match for '" + episodeRequest.toString() + "'");
-				}
-			}
+			movieRequests = filterMatching(episodeRequest, movieRequests);
 
 			if (movieRequests.isEmpty()) {
 				return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 			}
 
-			int uploaders = -1;
-			MovieRequest bestRequest = null;
-			for (MovieRequest movieRequest : movieRequests) {
-				if (bestRequest == null || movieRequest.getUploaders() > uploaders) {
-					uploaders = movieRequest.getUploaders();
-					bestRequest = movieRequest;
+			MovieRequest bestRequest = new Ordering<MovieRequest>() {
+				@Override
+				public int compare(MovieRequest movieRequest1, MovieRequest movieRequest2) {
+					return Ints.compare(movieRequest1.getUploaders(), movieRequest2.getUploaders());
 				}
-			}
+			}.max(movieRequests);
 
 			String entryPage = pageDownloader.downloadPage(TorrentzServiceImpl.TORRENTZ_ENTRY_URL + bestRequest.getHash());
 			episodeRequest.setPirateBayId(torrentzParser.getPirateBayId(entryPage));
@@ -87,6 +79,30 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 		} catch (UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}
+	}
+
+	private Set<MovieRequest> filterMatching(EpisodeRequest episodeRequest, Set<MovieRequest> movieRequests) {
+		List<ShowService.MatchCandidate> matchCandidates = new ArrayList<>();
+		for (final MovieRequest movieRequest : movieRequests) {
+			matchCandidates.add(new ShowService.MatchCandidate() {
+				@Override
+				public String getText() {
+					return movieRequest.getTitle();
+				}
+
+				@SuppressWarnings("unchecked")
+				@Override
+				public <T> T getObject() {
+					return (T) movieRequest;
+				}
+			});
+		}
+
+		Set<MovieRequest> results = new HashSet<>();
+		for (ShowService.MatchCandidate matchCandidate : showService.filterMatching(episodeRequest, matchCandidates)) {
+			results.add(matchCandidate.<MovieRequest>getObject());
+		}
+		return results;
 	}
 
 	@Override

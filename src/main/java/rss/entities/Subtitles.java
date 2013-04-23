@@ -13,7 +13,10 @@ import javax.persistence.*;
 @NamedQueries({
 		@NamedQuery(name = "Subtitles.find",
 				query = "select s from Subtitles as s " +
-						"where s.torrent.id = :torrentId and s.language = :language")
+						"where s.torrent.id = :torrentId and s.language = :language"),
+		@NamedQuery(name = "Subtitles.findByTorrent",
+				query = "select s from Subtitles as s " +
+						"where s.torrent.id = :torrentId")
 })
 public class Subtitles extends BaseEntity {
 	private static final long serialVersionUID = 5929747050786576285L;

@@ -8,7 +8,5 @@ import rss.entities.Movie;
  */
 public interface IMDBService {
 
-	int extractMovieYear(Movie movie);
-
 	IMDBParseResult downloadMovieFromIMDB(String imdbUrl);
 }

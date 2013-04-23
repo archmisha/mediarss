@@ -101,18 +101,6 @@ public class AppConfigListener implements ServletContextListener {
 			log.error("Failed loading OOTB content: " + e.getMessage(), e);
 		}
 
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-				// one time movies upgrade
-				for (Movie movie : movieDao.findAll()) {
-					if (movie.getYear() == -1) {
-						movie.setYear(imdbService.extractMovieYear(movie));
-					}
-				}
-			}
-		});
-
 		try {
 			this.loadCronTriggerBeans(springContext);
 		} catch (Exception e) {

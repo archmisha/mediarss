@@ -67,7 +67,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		String actualSearchTerm;
 
 		DurationMeter duration = new DurationMeter();
-		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm);
+		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm, MAX_DID_YOU_MEAN);
 		duration.stop();
 		logService.info(getClass(), "Did you mean time - " + duration.getDuration() + " millis");
 
@@ -183,10 +183,14 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		}
 	}
 
+	public Collection<Show> statisticMatch(String name) {
+		return statisticMatch(name, Integer.MAX_VALUE);
+	}
+
 	// Levenshtein distance (LD)
 	// Don't use threshold, cuz maybe our name is shorter than the actual name... like spartacus: ....
 	// and we search simply for spartacus
-	public Collection<Show> statisticMatch(String name) {
+	private Collection<Show> statisticMatch(String name, int maxResults) {
 		name = ShowServiceImpl.normalize(name);
 		List<String> sortedNameSplit = Arrays.asList(name.split(" "));
 		final int nameWords = sortedNameSplit.size();
@@ -239,7 +243,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		List<CachedShow> matchesList = new ArrayList<>(matches);
 
 		// if found too many
-		if (matches.size() > MAX_DID_YOU_MEAN) {
+		if (matches.size() > maxResults) {
 			Collections.sort(matchesList, new Comparator<CachedShow>() {
 				@Override
 				public int compare(CachedShow o1, CachedShow o2) {
@@ -247,9 +251,8 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 				}
 			});
 		}
-
 		Collection<Show> result = new ArrayList<>();
-		for (CachedShow match : matchesList.subList(0, Math.min(matchesList.size(), MAX_DID_YOU_MEAN))) {
+		for (CachedShow match : matchesList.subList(0, Math.min(matchesList.size(), maxResults))) {
 			result.add(showDao.find(match.getId()));
 		}
 
