@@ -123,9 +123,12 @@ define([
 						if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
 							that.ui.resultsHeader.show();
 							that.showDidYouMean(searchResult);
-							that.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
+							that.setVisibleShowingResultsFor(searchResult.actualSearchTerm,
+								searchResult.actualSearchTerm != null && searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
 						}
-						that.ui.noResultsStatus.fadeIn('slow');
+						if (searchResult.actualSearchTerm != null) {
+							that.ui.noResultsStatus.fadeIn('slow');
+						}
 					}
 				});
 			},
