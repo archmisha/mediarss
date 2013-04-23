@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
 import rss.SubtitleLanguage;
-import rss.dao.ShowDao;
 import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.EmailService;

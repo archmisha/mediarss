@@ -10,9 +10,11 @@ define([
 	'features/homeTab/views/HomeTabView',
 	'features/tvShowsTab/views/TVShowsTabView',
 	'features/moviesTab/views/MoviesTabView',
-	'features/adminTab/views/AdminTabView'
+	'features/adminTab/views/AdminTabView',
+	'HttpUtils',
+	'MessageBox'
 ],
-	function(Marionette, StringUtils, RoutingPaths, LoginView, RegisterView, HomeView, HomeTabView, TVShowsTabView, MoviesTabView, AdminTabView) {
+	function(Marionette, StringUtils, RoutingPaths, LoginView, RegisterView, HomeView, HomeTabView, TVShowsTabView, MoviesTabView, AdminTabView, HttpUtils, MessageBox) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';
@@ -30,6 +32,8 @@ define([
 		tabToTitle[RoutingPaths.TVSHOWS] = BASE_TITLE + ' - TV Shows';
 		tabToTitle[RoutingPaths.MOVIES] = BASE_TITLE + ' - Movies';
 		tabToTitle[RoutingPaths.ADMIN] = BASE_TITLE + ' - Admin';
+
+		var isLoggedIn = false;
 
 		return Marionette.Controller.extend({
 
@@ -64,6 +68,8 @@ define([
 			},
 
 			logout: function() {
+				isLoggedIn = false;
+
 				// it is host:port/#logout here
 				var url = window.parent.location.href;
 				url = url.substring(0, url.lastIndexOf('/') + 1);
@@ -74,17 +80,27 @@ define([
 				var that = this;
 				var tab = tabToSelect.substring(tabToSelect.lastIndexOf("/") + 1);
 				$.get("rest/user/pre-login/" + tab).success(function(res) {
-					if (res.user && res.user != null) {
-						that._showHome(res.initialData, res.user);
+					if (res.success === false) {
+						if (res.message == 'User is not logged in') {
+							MessageBox.sessionTimeout();
+						} else {
+							MessageBox.error(res.message);
+						}
 					} else {
-						that._showLogin(res.initialData, tab);
+						if (res.user && res.user != null) {
+							that._showHome(res.initialData, res.user);
+						} else {
+							that._showLogin(res.initialData, tab);
+						}
 					}
 				}).error(function(res) {
-						console.log('error. data: ' + res);
+						MessageBox.error(res);
 					});
 			},
 
 			_showHome: function(initialData, loggedInUserData) {
+				isLoggedIn = true;
+
 				if (tabToSelect == null) {
 					tabToSelect = RoutingPaths.HOME;
 				}
