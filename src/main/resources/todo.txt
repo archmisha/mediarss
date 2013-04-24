@@ -34,7 +34,6 @@ movies:
   change that movie requests will contain the movie id that was persisted before the download started and then no need to search for the mvie by name after torrent was found
   movioe preiviw
     make links simple text
-    remove awards section
     remove videos photos section
     ability to delete torrent in my movies with 1 v only and in available movies also
     when click down button doesnt move to my movies only after refresh

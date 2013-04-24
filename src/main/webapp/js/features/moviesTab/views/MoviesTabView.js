@@ -1,5 +1,6 @@
 /*global define*/
 define([
+	'jquery',
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movies-tab.tpl',
@@ -12,7 +13,7 @@ define([
 	'MessageBox',
 	'fancybox'
 ],
-	function(Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox) {
+	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox) {
 		"use strict";
 
 		var selectedMovie = null;

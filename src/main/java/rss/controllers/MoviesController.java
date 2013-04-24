@@ -1,5 +1,6 @@
 package rss.controllers;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -7,13 +8,20 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
+import rss.dao.ImageDao;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.movies.IMDBPreviewCacheService;
+import rss.services.movies.IMDBPreviewCacheServiceImpl;
 
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +44,9 @@ public class MoviesController extends BaseController {
 	@Autowired
 	private IMDBPreviewCacheService imdbPreviewCacheService;
 
+	@Autowired
+	private ImageDao imageDao;
+
 	@RequestMapping(value = "/imdb/{movieId}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -49,6 +60,32 @@ public class MoviesController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String getImdbPage(@PathVariable String cssFileName) {
 		return imdbPreviewCacheService.getImdbCSS(cssFileName);
+	}
+
+	@RequestMapping(value = "/imdb/image/{imageFileName}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void getImdbMainImage(@PathVariable String imageFileName, HttpServletRequest request, ServletResponse response) {
+		// imageFileName can sometimes arrive without the suffix (like .jpg) for some reason
+		StringBuffer url = request.getRequestURL();
+		imageFileName = url.substring(url.indexOf("/imdb/image/") + "/imdb/image/".length());
+
+		try {
+//			response.setContentType("image/jpeg");
+
+			Image image = imageDao.find(imageFileName);
+			if (image == null) {
+				InputStream is = new URL(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imageFileName).openStream();
+				image = new Image(imageFileName, IOUtils.toByteArray(is));
+				imageDao.persist(image);
+				logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
+			}
+
+			IOUtils.copy(new ByteArrayInputStream(image.getData()), response.getOutputStream());
+			response.getOutputStream().flush();
+		} catch (Exception e) {
+			throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
+		}
 	}
 
 	@RequestMapping(value = "/download", method = RequestMethod.POST)

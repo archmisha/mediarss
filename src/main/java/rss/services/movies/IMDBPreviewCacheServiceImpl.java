@@ -1,7 +1,10 @@
 package rss.services.movies;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,6 +26,8 @@ import java.util.Map;
 public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 
 	public static final String IMDB_CSS_URL_PREFIX = "http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/";
+	public static final String IMDB_IMAGE_URL_PREFIX = "http://ia.media-imdb.com/images/M/";
+
 	@Autowired
 	private LogService logService;
 
@@ -119,9 +124,11 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		doc.select("#title_footer_links").remove();
 		doc.select("div.message_box").remove();
 		doc.select("#titleDidYouKnow").remove();
+		doc.select("#titleAwardsRanks").remove();
 		doc.select("#footer").remove();
 		doc.select("#root").removeAttr("id");
-		doc.select("script").remove();
+		// remove videos and photos section
+		doc.select("#titleMediaStrip").remove();
 		doc.select("iframe").remove();
 		doc.select("link[type!=text/css").remove();
 		doc.select("#bottom_ad_wrapper").remove();
@@ -132,9 +139,25 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		doc.select("br.clear").remove();
 		doc.select("#content-1").removeAttr("id");
 		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
+		doc.select("script").remove();
+
+		// replace people images
+		// <td class="primary_photo"> <a href="/name/nm0479471/?ref_=tt_cl_i2"><img width="32" height="44"
+		// loadlate="../../../rest/movies/imdb/main-image/MV5BMTMyNDA0MDI4OV5BMl5BanBnXkFtZTcwMDQzMzEwMw@@._V1_SY44_CR1,0,32,44_.jpg" class="loadlate hidden "
+		// src="../../images/imdb/name-2138558783._V397576332_.png" title="Shia LaBeouf" alt="Shia LaBeouf"></a> </td>
+		Elements photos = doc.select(".primary_photo img");
+		photos.removeAttr("class");
+		for (Element photo : photos) {
+			String src = photo.attr("loadlate").replace(IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
+			if (StringUtils.isBlank(src)) {
+				src = "../../images/imdb/person-no-image.png";
+			}
+			photo.attr("src", src);
+		}
 
 		String html = doc.html();
-//		html = html.replace("http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/title-2354501989._V370594279_.css", "../../../style/imdb/title-2354501989._V370594279_.css");
+		// replace the url of the main image of the movie
+		html = html.replace(IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
 		html = html.replaceFirst(IMDB_CSS_URL_PREFIX, "../../../rest/movies/imdb/css/");
 		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
 		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
