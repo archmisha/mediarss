@@ -3,6 +3,7 @@ package rss.controllers;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,17 +72,25 @@ public class MoviesController extends BaseController {
 		imageFileName = url.substring(url.indexOf("/imdb/image/") + "/imdb/image/".length());
 
 		try {
+			InputStream imageInput;
+			try {
 //			response.setContentType("image/jpeg");
 
-			Image image = imageDao.find(imageFileName);
-			if (image == null) {
-				InputStream is = new URL(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imageFileName).openStream();
-				image = new Image(imageFileName, IOUtils.toByteArray(is));
-				imageDao.persist(image);
-				logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
+				Image image = imageDao.find(imageFileName);
+				if (image == null) {
+					InputStream is = new URL(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imageFileName).openStream();
+					image = new Image(imageFileName, IOUtils.toByteArray(is));
+					imageDao.persist(image);
+					logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
+				}
+
+				imageInput = new ByteArrayInputStream(image.getData());
+			} catch (Exception e) {
+				logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
+				imageInput = new ClassPathResource("images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
 			}
 
-			IOUtils.copy(new ByteArrayInputStream(image.getData()), response.getOutputStream());
+			IOUtils.copy(imageInput, response.getOutputStream());
 			response.getOutputStream().flush();
 		} catch (Exception e) {
 			throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
