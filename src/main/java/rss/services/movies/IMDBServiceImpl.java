@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
@@ -34,6 +36,7 @@ public class IMDBServiceImpl implements IMDBService {
 	public static final Pattern OLD_YEAR_PATTERN = Pattern.compile("<meta name=\"title\" content=\"(.*?) - IMDb\" />");
 	public static final Pattern STORY_LINE_PATTERN = Pattern.compile("id=\"titleStoryLine\"");
 	public static final Pattern PEOPLE_IMAGES_PATTERN = Pattern.compile("<td class=\"primary_photo\">.*?loadlate=\"([^\"]+)\"", Pattern.MULTILINE | Pattern.DOTALL);
+	public static final Pattern MAIN_IMAGE_PATTERN = Pattern.compile("id=\"img_primary\".*?src=\"([^\"]+)\"", Pattern.MULTILINE | Pattern.DOTALL);
 
 	@Autowired
 	private PageDownloader pageDownloader;
@@ -46,7 +49,6 @@ public class IMDBServiceImpl implements IMDBService {
 
 	@Autowired
 	private ImageDao imageDao;
-	public static final Pattern MAIN_IMAGE_PATTERN = Pattern.compile("id=\"img_primary\".*?src=\"([^\"]+)\"", Pattern.MULTILINE | Pattern.DOTALL);
 
 	@Override
 	public IMDBParseResult downloadMovieFromIMDBAndImagesAsync(String imdbUrl) {
@@ -134,8 +136,8 @@ public class IMDBServiceImpl implements IMDBService {
 			getImage(imageUrl);
 		}
 
-
-		matcher = PEOPLE_IMAGES_PATTERN.matcher(page);
+		// main image
+		matcher = MAIN_IMAGE_PATTERN.matcher(page);
 		if (matcher.find()) {
 			String imageUrl = matcher.group(1);
 			getImage(imageUrl);
@@ -145,6 +147,7 @@ public class IMDBServiceImpl implements IMDBService {
  	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public InputStream getImage(String imageFileName) {
 		try {
 			InputStream imageInputStream;
