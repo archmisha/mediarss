@@ -17,8 +17,7 @@ define([
 				movieTitle: '.movie-item-title',
 				futureImage: '.movie-item-future-image',
 				subTitle: '.movie-sub-title',
-				scheduledOn: '.movie-scheduled-on',
-				moviePreviewLink: '.movie-show-preview'
+				scheduledOn: '.movie-scheduled-on'
 			},
 
 			events: {
@@ -57,7 +56,7 @@ define([
 						});
 					});
 
-				this.ui.moviePreviewLink.fancybox({
+				$('.movie-show-preview-' + this.model.get('id')).fancybox({
 					'width': '800',
 					'height': '75%',
 					'autoScale': false,
@@ -80,8 +79,7 @@ define([
 						that.$el.removeClass('movie-item-not-viewed');
 					}, 2000);
 				}
-//				this.$el.parent().find('.movie-item').removeClass('movie-item-selected');
-//				this.$el.addClass('movie-item-selected');
+
 				this.vent.trigger('movie-selected', this.model);
 			},
 
