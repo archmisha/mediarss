@@ -88,6 +88,7 @@ public class TorrentzServiceImpl implements TorrentzService {
 	}
 
 	private Set<MovieRequest> downloadByUrl(String url) {
+		logService.info(getClass(), "Downloading url: " + url);
 		String page = pageDownloader.downloadPage(url);
 		Set<MovieRequest> movieRequests = torrentzParser.parse(page);
 

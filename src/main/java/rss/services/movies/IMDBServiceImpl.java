@@ -123,7 +123,7 @@ public class IMDBServiceImpl implements IMDBService {
 			});
 			executorService.shutdown();
 		} else {
-			downloadImages(page, imdbUrl, imagesAsync);
+			downloadImages(page, imdbUrl);
 		}
 	}
 
@@ -149,7 +149,6 @@ public class IMDBServiceImpl implements IMDBService {
 		try {
 			InputStream imageInputStream;
 			try {
-
 				Image image = imageDao.find(imageFileName);
 				if (image == null) {
 					image = new Image(imageFileName, pageDownloader.downloadImage(imageFileName));
@@ -160,7 +159,7 @@ public class IMDBServiceImpl implements IMDBService {
 				imageInputStream = new ByteArrayInputStream(image.getData());
 			} catch (Exception e) {
 				logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
-				imageInputStream = new ClassPathResource("images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
+				imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
 			}
 			return imageInputStream;
 		} catch (Exception e) {
