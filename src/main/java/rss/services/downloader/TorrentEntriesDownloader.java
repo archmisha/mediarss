@@ -11,7 +11,6 @@ import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
-import rss.services.requests.ShowRequest;
 import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
@@ -66,12 +65,13 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 			@Override
 			public void run(final S mediaRequest) {
 				try {
+					final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+					final long from = System.currentTimeMillis();
+					final SearchResult<T> searchResult = downloadTorrent(mediaRequest);
+
 					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 						@Override
 						protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-							final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-							long from = System.currentTimeMillis();
-							SearchResult<T> searchResult = downloadTorrent(mediaRequest);
 							Torrent searchResultTorrent = searchResult.getTorrent();
 							switch (searchResult.getSearchStatus()) {
 								case NOT_FOUND:

@@ -562,7 +562,7 @@ public class ShowServiceImpl implements ShowService {
 				if (indexOfFullSeason == -1) {
 					if (indexOfShortSeason != -1) {
 						titlePrefix = title.substring(0, indexOfShortSeason).trim();
-						titleSuffix = title.substring(indexOfFullSeason + shortSeasonEnum.length());
+						titleSuffix = title.substring(indexOfShortSeason + shortSeasonEnum.length());
 					}
 				} else if (indexOfShortSeason == -1) {
 					titlePrefix = title.substring(0, indexOfFullSeason);
@@ -572,7 +572,7 @@ public class ShowServiceImpl implements ShowService {
 					titleSuffix = title.substring(indexOfFullSeason + fullSeasonEnum.length());
 				} else {
 					titlePrefix = title.substring(0, indexOfShortSeason);
-					titleSuffix = title.substring(indexOfFullSeason + shortSeasonEnum.length());
+					titleSuffix = title.substring(indexOfShortSeason + shortSeasonEnum.length());
 				}
 			} else {
 				int indexOfSeasonEpisode = title.indexOf(seasonEpisode);

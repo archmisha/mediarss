@@ -1,7 +1,5 @@
 package rss.services.searchers;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
@@ -11,6 +9,7 @@ import rss.services.requests.MediaRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -43,8 +42,8 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	}
 
 	@Override
-	protected String getSearchUrl() {
-		return SEARCH_URL;
+	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
+		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
 	}
 
 	@Override

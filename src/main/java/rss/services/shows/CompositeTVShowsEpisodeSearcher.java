@@ -19,6 +19,10 @@ import java.util.Collection;
 @Service("compositeTVShowsEpisodeSearcher")
 public class CompositeTVShowsEpisodeSearcher extends CompositeTorrentSearcher {
 
+	@Autowired
+	@Qualifier("publichdSearcher")
+	private TorrentSearcher publichdSearcher;
+
     @Autowired
     @Qualifier("episodeTorrentSearcher1337x")
     private TorrentSearcher episodeSearcher1337x;
@@ -38,6 +42,6 @@ public class CompositeTVShowsEpisodeSearcher extends CompositeTorrentSearcher {
 
     @Override
     protected Collection<? extends TorrentSearcher<MediaRequest, Media>> getTorrentSearchers() {
-        return Arrays.<TorrentSearcher<MediaRequest, Media>>asList(torrentzEpisodeSearcher, thePirateBayEpisodeSearcher, episodeSearcher1337x);
+        return Arrays.<TorrentSearcher<MediaRequest, Media>>asList(torrentzEpisodeSearcher, thePirateBayEpisodeSearcher, episodeSearcher1337x, publichdSearcher);
     }
 }

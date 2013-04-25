@@ -75,6 +75,8 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 			episodeRequest.setPirateBayId(torrentzParser.getPirateBayId(entryPage));
 			episodeRequest.setHash(bestRequest.getHash());
 
+			// search the pirate bay only if found pirateBay id, otherwise will be searched later anyway regularily
+			// also can use published here cuz got hash, but will be searched later on anyway
 			return thePirateBayEpisodeSearcher.search(episodeRequest);
 		} catch (UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);

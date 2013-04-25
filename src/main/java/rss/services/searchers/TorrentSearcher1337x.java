@@ -9,6 +9,8 @@ import rss.services.SearchResult;
 import rss.services.requests.MediaRequest;
 
 import javax.annotation.PostConstruct;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,8 +56,8 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	}
 
 	@Override
-	protected String getSearchUrl() {
-		return SEARCH_URL;
+	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
+		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
 	}
 
 	protected SearchResult<S> parseSearchResults(T mediaRequest, String url, String page) {

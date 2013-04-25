@@ -1,14 +1,13 @@
 package rss.services.searchers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import rss.services.PageDownloader;
-import rss.services.requests.MediaRequest;
 import rss.entities.Media;
+import rss.services.PageDownloader;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
+import rss.services.requests.MediaRequest;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -25,15 +24,15 @@ public abstract class AbstractTorrentSearcher<T extends MediaRequest, S extends 
 	@Autowired
 	protected LogService logService;
 
-    @Override
-    public SearchResult<S> search(T mediaRequest) {
-        String url = null;
-        try {
-            url = String.format(getSearchUrl(), URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
+	@Override
+	public SearchResult<S> search(T mediaRequest) {
+		String url = null;
+		try {
+			url = getSearchUrl(mediaRequest);
+		} catch (UnsupportedEncodingException e) {
 			logService.error(getClass(), "Failed encoding: " + url + " error: " + e.getMessage(), e);
-            return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
-        }
+			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		}
 
 		String page;
 		try {
@@ -43,23 +42,23 @@ public abstract class AbstractTorrentSearcher<T extends MediaRequest, S extends 
 			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
 		}
 
-        SearchResult<S> searchResult = parseSearchResults(mediaRequest, url, page);
-        if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
-            return searchResult;
-        }
+		SearchResult<S> searchResult = parseSearchResults(mediaRequest, url, page);
+		if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
+			return searchResult;
+		}
 
-        // check aging
-        Calendar now = Calendar.getInstance();
-        now.setTime(new Date());
-        now.add(Calendar.HOUR_OF_DAY, -4);
-        if (searchResult.getTorrent().getDateUploaded().after(now.getTime())) {
-            searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
-        }
+		// check aging
+		Calendar now = Calendar.getInstance();
+		now.setTime(new Date());
+		now.add(Calendar.HOUR_OF_DAY, -4);
+		if (searchResult.getTorrent().getDateUploaded().after(now.getTime())) {
+			searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
+		}
 
-        return searchResult;
-    }
+		return searchResult;
+	}
 
-    protected abstract String getSearchUrl();
+	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
 
-    protected abstract SearchResult<S> parseSearchResults(T mediaRequest, String url, String page);
+	protected abstract SearchResult<S> parseSearchResults(T mediaRequest, String url, String page);
 }
