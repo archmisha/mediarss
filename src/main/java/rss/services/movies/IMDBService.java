@@ -2,6 +2,8 @@ package rss.services.movies;
 
 import rss.entities.Movie;
 
+import java.io.InputStream;
+
 /**
  * User: dikmanm
  * Date: 21/04/13 21:54
@@ -9,4 +11,8 @@ import rss.entities.Movie;
 public interface IMDBService {
 
 	IMDBParseResult downloadMovieFromIMDB(String imdbUrl);
+
+	IMDBParseResult downloadMovieFromIMDBAndImagesAsync(String imdbUrl);
+
+	InputStream getImage(String imageFileName);
 }

@@ -291,7 +291,7 @@ public class MovieServiceImpl implements MovieService {
 			final String imdbUrl = IMDB_URL + imdbId;
 			Movie movie = movieDao.findByImdbUrl(imdbUrl);
 			if (movie == null) {
-				final IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(imdbUrl);
+				final IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDBAndImagesAsync(imdbUrl);
 				if (!imdbParseResult.isFound()) {
 					return null;
 				}
@@ -317,7 +317,7 @@ public class MovieServiceImpl implements MovieService {
 				movie = futureTask.get();
 
 				// uses a separate transaction
-				torrentzService.downloadMovie(movie, imdbId);
+				torrentzService.downloadMovie(movie, imdbUrl);
 
 				// re-fetch the movie in this transaction after it got torrents
 				movie = movieDao.find(movie.getId());

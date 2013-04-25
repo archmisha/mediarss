@@ -12,5 +12,5 @@ public interface TorrentzService {
 
 	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
 
-	DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie, String imdbId);
+	DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie, String imdbUrl);
 }

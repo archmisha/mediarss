@@ -196,6 +196,11 @@ public class OOTBContentLoader {
 			return null;
 		}
 
+		@Override
+		public byte[] downloadImage(String url) {
+			throw new UnsupportedOperationException();
+		}
+
 		private InputStream getFileInputStream(String path) throws IOException {
 			ClassPathResource classPathResource = new ClassPathResource(path, OOTBContentLoader.class.getClassLoader());
 			if (classPathResource.exists()) {

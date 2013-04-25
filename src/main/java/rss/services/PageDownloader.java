@@ -16,6 +16,8 @@ public interface PageDownloader {
 
 	String downloadPage(String url);
 
+	byte[] downloadImage(String url);
+
 	String downloadPage(String url, Map<String, String> headers);
 
 	List<Cookie> sendPostRequest(String url, Map<String, String> params);

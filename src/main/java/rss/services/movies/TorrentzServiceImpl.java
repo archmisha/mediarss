@@ -75,11 +75,11 @@ public class TorrentzServiceImpl implements TorrentzService {
 
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie, String imdbId) {
+	public DownloadResult<Movie, MovieRequest> downloadMovie(Movie movie, String imdbUrl) {
 		try {
 			Set<MovieRequest> movieRequests = downloadByUrl(TORRENTZ_MOVIE_SEARCH_URL + URLEncoder.encode(movie.getName(), "UTF-8"));
 			for (MovieRequest movieRequest : movieRequests) {
-				movieRequest.setImdbId(imdbId);
+				movieRequest.setImdbId(imdbUrl);
 			}
 			return moviesTorrentEntriesDownloader.download(movieRequests);
 		} catch (UnsupportedEncodingException e) {

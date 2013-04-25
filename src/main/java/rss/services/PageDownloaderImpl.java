@@ -71,6 +71,17 @@ public class PageDownloaderImpl implements PageDownloader {
 		return downloadPage(url, Collections.<String, String>emptyMap(), streamExtractor);
 	}
 
+	@Override
+	public byte[] downloadImage(String url) {
+		return downloadPage(url, Collections.<String, String>emptyMap(), new ResponseStreamExtractor<byte[]>() {
+			@Override
+			public byte[] extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
+				byte[] res = IOUtils.toByteArray(httpResponse.getEntity().getContent());
+				return res;
+			}
+		});
+	}
+
 	public String downloadPage(String url) {
 		return downloadPage(url, Collections.<String, String>emptyMap());
 	}
