@@ -128,6 +128,12 @@ require([
 					radius: 4
 				}
 			};
+
+			// preload error dialog images
+			$(['images/jqueryMessageBox/error.jpg',
+				'images/jqueryMessageBox/msgBoxBackGround.png']).each(function() {
+					$('<img />').attr('src',this).appendTo('body').css('display','none');
+				});
 		});
 
 		app.start();

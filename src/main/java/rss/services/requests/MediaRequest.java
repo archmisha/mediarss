@@ -12,6 +12,7 @@ public abstract class MediaRequest implements Serializable {
 	private static final long serialVersionUID = 5299194875537926970L;
 
 	protected String pirateBayId;
+	private String kickAssTorrentsId;
 	private String imdbId;
 	private String hash;
 	private String title;
@@ -63,6 +64,14 @@ public abstract class MediaRequest implements Serializable {
 
 	public void setPirateBayId(String pirateBayId) {
 		this.pirateBayId = pirateBayId;
+	}
+
+	public void setKickAssTorrentsId(String kickAssTorrentsId) {
+		this.kickAssTorrentsId = kickAssTorrentsId;
+	}
+
+	public String getKickAssTorrentsId() {
+		return kickAssTorrentsId;
 	}
 
 	public String getImdbId() {

@@ -79,7 +79,8 @@ define([
 			_preLoginWrapper: function() {
 				var that = this;
 				var tab = tabToSelect.substring(tabToSelect.lastIndexOf("/") + 1);
-				$.get("rest/user/pre-login/" + tab).success(function(res) {
+				HttpUtils.get("rest/user/pre-login/" + tab, function(res) {
+//						$.get("rest/user/pre-login/" + tab).success(function(res) {
 					if (res.success === false) {
 						if (res.message == 'User is not logged in') {
 							MessageBox.sessionTimeout();
@@ -93,9 +94,7 @@ define([
 							that._showLogin(res.initialData, tab);
 						}
 					}
-				}).error(function(res) {
-						MessageBox.error(res);
-					});
+				}, false);
 			},
 
 			_showHome: function(initialData, loggedInUserData) {
@@ -123,32 +122,28 @@ define([
 				var that = this;
 				var login = new LoginView();
 				login.on('login', function(options) {
-					$.post("rest/user/login", {
+					HttpUtils.post("rest/user/login", {
 						username: options.username,
 						password: options.password,
 						includeInitialData: initialData == undefined,
 						tab: tab
-					}).success(function(res) {
-							if (res.success === undefined) {
-								if (initialData == undefined) {
-									initialData = res.initialData;
-								}
-								that._showHome(initialData, res.user /*loggedInUserData*/);
-							} else {
-								login.showStatusMessage(res.message);
+					}, function(res) {
+						if (res.success === undefined) {
+							if (initialData == undefined) {
+								initialData = res.initialData;
 							}
-						}).error(function(res) {
-							console.log('error. data: ' + res);
-						});
+							that._showHome(initialData, res.user /*loggedInUserData*/);
+						} else {
+							login.showStatusMessage(res.message);
+						}
+					}, false);
 				});
 				login.on('forgot-password', function(options) {
-					$.post("rest/user/forgot-password", {
+					HttpUtils.post("rest/user/forgot-password", {
 						email: options.email
-					}).success(function(res) {
-							login.showStatusMessage(res.message);
-						}).error(function(res) {
-							console.log('error. data: ' + res);
-						});
+					}, function(res) {
+						login.showStatusMessage(res.message);
+					}, false);
 				});
 				mainRegion.show(login);
 			},

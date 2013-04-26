@@ -17,10 +17,7 @@ define(['MessageBox', 'Spinner'],
 					.success(function(res) {
 						that._handleSuccess(res, success, mask);
 					}).error(function(res) {
-						if (mask === undefined || mask === true) {
-							Spinner.unmask();
-						}
-						MessageBox.error(res);
+						that._handleError(res, mask);
 					});
 			},
 
@@ -34,12 +31,20 @@ define(['MessageBox', 'Spinner'],
 					.success(function(res) {
 						that._handleSuccess(res, success, mask);
 					}).error(function(res) {
-						if (mask === undefined || mask === true) {
-							Spinner.unmask();
-						}
-
-						MessageBox.error(res);
+						that._handleError(res, mask);
 					});
+			},
+
+			_handleError: function(res, mask) {
+				if (mask === undefined || mask === true) {
+					Spinner.unmask();
+				}
+
+				if (res.readyState === 0 && res.status === 0) {
+					MessageBox.error('Unable to communicate with the server');
+				} else {
+					MessageBox.error(res);
+				}
 			},
 
 			_handleSuccess: function(res, success, mask) {
