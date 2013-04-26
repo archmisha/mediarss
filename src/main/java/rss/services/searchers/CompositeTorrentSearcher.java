@@ -7,8 +7,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.entities.Media;
-import rss.services.requests.MediaRequest;
 import rss.services.SearchResult;
+import rss.services.requests.MediaRequest;
+import rss.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +55,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 			} catch (Exception e) {
 				failedSearchers.add(torrentSearcher.getName());
 				// no need to print the exception stack trace - if its 'Read timed out' error or 'Connect to 1337x.org:80 timed out' error
-				if (ExceptionUtils.getRootCause(e).getMessage().contains("timed out")) {
+				if (Utils.isRootCauseMessageContains(e, "timed out")) {
 					log.error(e.getMessage());
 				} else {
 					log.error(e.getMessage(), e);

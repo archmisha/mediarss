@@ -1,6 +1,7 @@
 package rss.services;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.http.*;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -19,15 +20,15 @@ import org.springframework.stereotype.Service;
 import rss.ConnectionTimeoutException;
 import rss.MediaRSSException;
 import rss.services.log.LogService;
+import rss.util.Utils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * User: dikmanm
@@ -47,7 +48,7 @@ public class PageDownloaderImpl implements PageDownloader {
 		ResponseStreamExtractor<String> streamExtractor = new ResponseStreamExtractor<String>() {
 			@Override
 			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
-				InputStream is = httpResponse.getEntity().getContent();
+				InputStream is = extractInputStreamFromResponse(httpResponse);
 				byte[] arr = new byte[1000];
 				int read = is.read(arr);
 				String str = new String(arr);
@@ -90,10 +91,18 @@ public class PageDownloaderImpl implements PageDownloader {
 		return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
 			@Override
 			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
-				String res = IOUtils.toString(httpResponse.getEntity().getContent());
-				return res;
+				return IOUtils.toString(extractInputStreamFromResponse(httpResponse));
 			}
 		});
+	}
+
+	private InputStream extractInputStreamFromResponse(HttpResponse httpResponse) throws IOException {
+		InputStream is = httpResponse.getEntity().getContent();
+		Header contentEncoding = httpResponse.getEntity().getContentEncoding();
+		if (contentEncoding != null && contentEncoding.toString().contains("gzip")) {
+			is = new GZIPInputStream(is);
+		}
+		return is;
 	}
 
 	private <T> T downloadPage(String url, Map<String, String> headers, ResponseStreamExtractor<T> streamExtractor) {
@@ -126,7 +135,7 @@ public class PageDownloaderImpl implements PageDownloader {
 
 			HttpPost httpPost = new HttpPost(url);
 
-			if (url.indexOf("?") > -1) {
+			if (url.contains("?")) {
 				for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
 					String[] arr = str.split("=");
 					httpPost.getParams().setParameter(arr[0], arr[1]);
@@ -190,7 +199,7 @@ public class PageDownloaderImpl implements PageDownloader {
 
 			return streamExtractor.extractResponseStream(httpClient, httpResponse);
 		} catch (Exception e) {
-			if (e.getMessage().contains("Connection timed out")) {
+			if (Utils.isRootCauseMessageContains(e, "Connection timed out")) {
 				throw new ConnectionTimeoutException("Url: " + url + ". Connection timed out", e);
 			}
 			throw new RuntimeException(e.getMessage(), e);

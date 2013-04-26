@@ -34,6 +34,7 @@ import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
+import rss.util.Utils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -176,7 +177,7 @@ public class ShowServiceImpl implements ShowService {
 							}
 						});
 					} catch (Exception e) {
-						if (ExceptionUtils.getRootCauseMessage(e).contains("Read timed out")) {
+						if (Utils.isRootCauseMessageContains(e, "Read timed out")) {
 							logService.warn(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "' (Connection error)");
 						} else {
 							logService.error(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "': " + e.getMessage(), e);

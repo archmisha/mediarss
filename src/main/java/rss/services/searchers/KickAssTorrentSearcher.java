@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
 
 	private static final String HOST_NAME_URL_PART = "kickasstorrents.com";
-	private static final String ENTRY_URL = "http://kat.ph/";
+	private static final String ENTRY_URL = "http://kickasstorrents.com/";
 	public static final Pattern IMDB_URL_PATTERN = Pattern.compile("(http://www.imdb.com/title/\\w+)");
 
 	@Autowired
@@ -64,7 +64,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			int idx = page.indexOf(titlePrefix) + titlePrefix.length();
 			String title = page.substring(idx, page.indexOf("</span>", idx)).trim();
 
-			String seedersPrefix = "<span itemprop=\"name\">";
+			String seedersPrefix = "<strong itemprop=\"seeders\">";
 			idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();
 			String seedersStr = page.substring(idx, page.indexOf("</strong>", idx));
 			int seeders = Integer.parseInt(seedersStr);
@@ -75,10 +75,10 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 
 			String uploadedPrefix = "Added on ";
 			idx = page.indexOf(uploadedPrefix, idx) + uploadedPrefix.length();
-			String uploadedStr = page.substring(idx, page.indexOf("<", idx)).trim();
-			// Oct 15, 2006
-			SimpleDateFormat sdf = new SimpleDateFormat("M dd, yyyy");
-			Date uploaded = sdf.parse(uploadedStr);
+			String uploadedStr = page.substring(idx, page.indexOf(" in <", idx)).trim();
+			// Oct 15, 2006, for some reason without the locale won't parse the month
+			SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
+			Date uploaded = sdf.parse(uploadedStr/*.replaceAll("\\p{Cntrl}", "")*/);
 
 			String hashPrefix = "hash: '";
 			idx = page.indexOf(hashPrefix) + hashPrefix.length();
@@ -90,7 +90,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent, page));
 			return searchResult;
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getKickAssTorrentsId() + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
 	}
