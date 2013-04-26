@@ -1,5 +1,6 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +24,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 	private static Log log = LogFactory.getLog(CompositeTorrentSearcher.class);
 
 	// episodeSearcher1337x is slower cuz need to download 2 pages instead of one
+	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SearchResult<Media> search(MediaRequest mediaRequest) {
@@ -52,7 +54,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 			} catch (Exception e) {
 				failedSearchers.add(torrentSearcher.getName());
 				// no need to print the exception stack trace - if its 'Read timed out' error or 'Connect to 1337x.org:80 timed out' error
-				if (e.getMessage().contains("timed out")) {
+				if (ExceptionUtils.getRootCause(e).getMessage().contains("timed out")) {
 					log.error(e.getMessage());
 				} else {
 					log.error(e.getMessage(), e);
