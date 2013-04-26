@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
 import rss.dao.ImageDao;
@@ -115,12 +115,7 @@ public class IMDBServiceImpl implements IMDBService {
 			executorService.submit(new Runnable() {
 				@Override
 				public void run() {
-					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-						@Override
-						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-							downloadImages(page, imdbUrl);
-						}
-					});
+					downloadImages(page, imdbUrl);
 				}
 			});
 			executorService.shutdown();
@@ -144,31 +139,36 @@ public class IMDBServiceImpl implements IMDBService {
 		} else {
 			logService.error(getClass(), "Failed parsing main image of movie: " + imdbUrl);
 		}
- 	}
+	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	// creating a new transaction to store the image quickly and avoid unique index violation due to long transactions
-	public InputStream getImage(String imageFileName) {
-		try {
-			InputStream imageInputStream;
-			try {
-				Image image = imageDao.find(imageFileName);
-				if (image == null) {
-					image = new Image(imageFileName, pageDownloader.downloadImage(imageFileName));
-					imageDao.persist(image);
-					logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
-				}
+	public InputStream getImage(final String imageFileName) {
+		return transactionTemplate.execute(new TransactionCallback<InputStream>() {
+			@Override
+			public InputStream doInTransaction(TransactionStatus transactionStatus) {
+				try {
+					InputStream imageInputStream;
+					try {
+						Image image = imageDao.find(imageFileName);
+						if (image == null) {
+							image = new Image(imageFileName, pageDownloader.downloadImage(imageFileName));
+							imageDao.persist(image);
+							logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
+						}
 
-				imageInputStream = new ByteArrayInputStream(image.getData());
-			} catch (Exception e) {
-				logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
-				imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
+						imageInputStream = new ByteArrayInputStream(image.getData());
+					} catch (Exception e) {
+						logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
+						imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
+					}
+					return imageInputStream;
+				} catch (Exception e) {
+					throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
+				}
 			}
-			return imageInputStream;
-		} catch (Exception e) {
-			throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
-		}
+		});
 	}
 
 	private int parseMovieYear(String name) {
