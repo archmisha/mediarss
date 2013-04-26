@@ -56,20 +56,26 @@ define([
 						});
 					});
 
+				var that = this;
 				$('.movie-show-preview-' + this.model.get('id')).fancybox({
 					'width': '800',
 					'height': '75%',
 					'autoScale': false,
 					'transitionIn': 'none',
 					'transitionOut': 'none',
-					'type': 'iframe'
+					'type': 'iframe',
+					'beforeLoad': function() {
+						that.onMovieClick(null);
+						return true;
+					}
 				});
 			},
 
 			onMovieClick: function(event) {
 				// if remove icon was clicked, then ignore selection
-				if ($(event.target).hasClass('future-movie-item-remove-image') ||
-					$(event.target).hasClass('movie-show-preview-image')) {
+				if (event != null &&
+					($(event.target).hasClass('future-movie-item-remove-image') ||
+						$(event.target).hasClass('movie-show-preview-image'))) {
 					return;
 				}
 

@@ -147,7 +147,8 @@ public class IMDBServiceImpl implements IMDBService {
  	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	// creating a new transaction to store the image quickly and avoid unique index violation due to long transactions
 	public InputStream getImage(String imageFileName) {
 		try {
 			InputStream imageInputStream;
