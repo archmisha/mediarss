@@ -69,37 +69,50 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
+	protected boolean validateSearchResult(ShowRequest mediaRequest, SearchResult<Episode> searchResult) {
+		return true;
+	}
+
+	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	protected List<Episode> onTorrentFound(ShowRequest episodeRequest, SearchResult<Episode> searchResult) {
+//	protected List<Episode> onTorrentFound(ShowRequest episodeRequest, SearchResult<Episode> searchResult) {
+	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult<Episode>>> results) {
+		List<Episode> res = new ArrayList<>();
+		for (Pair<ShowRequest, SearchResult<Episode>> pair : results) {
+			SearchResult<Episode> searchResult = pair.getValue();
+			ShowRequest showRequest = pair.getKey();
+
 //		Show persistedShow = showDao.find(episodeRequest.getShow().getId());
-		Torrent torrent = searchResult.getTorrent();
+			Torrent torrent = searchResult.getTorrent();
 
-		List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) episodeRequest);
+			List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) showRequest);
 
-		// sometimes the same torrent returned from search for different episodes
-		// it can happen when there are torrents like s01e01-e04 will be returned for s01e(-1) request also
-		Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
-		if (persistedTorrent == null) {
-			torrentDao.persist(torrent);
-			persistedTorrent = torrent;
+			// sometimes the same torrent returned from search for different episodes
+			// it can happen when there are torrents like s01e01-e04 will be returned for s01e(-1) request also
+			Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
+			if (persistedTorrent == null) {
+				torrentDao.persist(torrent);
+				persistedTorrent = torrent;
 
-			// handle subtitles - cant try-catch here, cuz it tried to insert the new entities first and if failed we
-			// don't know and un-persisted episode with torrent null is returned! if want try catch need in separate transaction or something
-			// download subtitles only if enabled for this show for any user
+				// handle subtitles - cant try-catch here, cuz it tried to insert the new entities first and if failed we
+				// don't know and un-persisted episode with torrent null is returned! if want try catch need in separate transaction or something
+				// download subtitles only if enabled for this show for any user
 //			for (Episode persistedEpisode : persistedEpisodes) {
 //				List<SubtitleLanguage> subtitlesLanguages = episodeDao.getSubtitlesLanguages(persistedEpisode);
 //				if (!subtitlesLanguages.isEmpty()) {
 //					subtitlesService.downloadEpisodeSubtitles(torrent, persistedEpisode, subtitlesLanguages);
 //				}
 //			}
-		}
+			}
 
-		for (Episode persistedEpisode : persistedEpisodes) {
-			persistedEpisode.getTorrentIds().add(persistedTorrent.getId());
-			persistedEpisode.setScanDate(new Date());
-		}
+			for (Episode persistedEpisode : persistedEpisodes) {
+				persistedEpisode.getTorrentIds().add(persistedTorrent.getId());
+				persistedEpisode.setScanDate(new Date());
+			}
 
-		return persistedEpisodes;
+			res.addAll(persistedEpisodes);
+		}
+		return res;
 	}
 
 	@Override

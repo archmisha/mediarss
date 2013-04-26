@@ -17,9 +17,9 @@ import java.util.Date;
 		@NamedQuery(name = "Movie.findByTorrent",
 				query = "select m from Movie as m join m.torrentIds as tid " +
 						"where :torrentId = tid"),
-		@NamedQuery(name = "Movie.findByName",
-				query = "select m from Movie as m " +
-						"where m.name = :name"),
+//		@NamedQuery(name = "Movie.findByName",
+//				query = "select m from Movie as m " +
+//						"where m.name = :name"),
 		@NamedQuery(name = "Movie.findByImdbUrl",
 				query = "select m from Movie as m " +
 						"where m.imdbUrl = :imdbUrl")

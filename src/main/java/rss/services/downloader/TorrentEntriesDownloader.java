@@ -1,5 +1,7 @@
 package rss.services.downloader;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
@@ -7,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Media;
+import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
@@ -15,10 +18,7 @@ import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +58,8 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 		// first query the cache and those that are not found in cache divide between the threads
 		Collection<T> cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
 
-		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
+		final ConcurrentLinkedQueue<Pair<S, SearchResult<T>>> results = new ConcurrentLinkedQueue<>();
+//		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
 		final Class aClass = getClass();
 		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, logService, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
@@ -89,14 +90,16 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 									// do nothing - its not missing cuz no need to  email and not found
 									break;
 								case FOUND:
-									List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
-									if (!mediaList.isEmpty()) {
+									if ( validateSearchResult(mediaRequest, searchResult)) {
+//									List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
+//									if (!mediaList.isEmpty()) {
 										// printing the returned torrent and not the original , as it might undergone some transformations
 										logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
 												searchResultTorrent.getTitle(),
 												System.currentTimeMillis() - from,
 												searchResult.getSource()));
-										result.addAll(mediaList);
+										results.add(new ImmutablePair<>(mediaRequest, searchResult));
+//										result.addAll(mediaList);
 									}
 									break;
 							}
@@ -108,6 +111,9 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 			}
 		});
 
+		Collection<T> result = new ArrayList<>();
+
+		result.addAll(processSearchResults(results));
 
 		// add cached torrents to the list
 		result.addAll(cachedTorrentEntries);
@@ -119,7 +125,9 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 
 	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy, boolean forceDownload);
 
-	protected abstract List<T> onTorrentFound(S mediaRequest, SearchResult<T> searchResult);
+	protected abstract boolean validateSearchResult(S mediaRequest, SearchResult<T> searchResult);
+
+	protected abstract List<T> processSearchResults(Collection<Pair<S, SearchResult<T>>> results);
 
 	protected abstract SearchResult<T> downloadTorrent(S request);
 }

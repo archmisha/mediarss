@@ -17,8 +17,7 @@ import rss.services.log.LogService;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,31 +143,42 @@ public class IMDBServiceImpl implements IMDBService {
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	// creating a new transaction to store the image quickly and avoid unique index violation due to long transactions
+	// need new thread for the new transaction
 	public InputStream getImage(final String imageFileName) {
-		return transactionTemplate.execute(new TransactionCallback<InputStream>() {
+		Future<InputStream> future = Executors.newSingleThreadExecutor().submit(new Callable<InputStream>() {
 			@Override
-			public InputStream doInTransaction(TransactionStatus transactionStatus) {
-				try {
-					InputStream imageInputStream;
-					try {
-						Image image = imageDao.find(imageFileName);
-						if (image == null) {
-							image = new Image(imageFileName, pageDownloader.downloadImage(imageFileName));
-							imageDao.persist(image);
-							logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
-						}
+			public InputStream call() throws Exception {
+				return transactionTemplate.execute(new TransactionCallback<InputStream>() {
+					@Override
+					public InputStream doInTransaction(TransactionStatus transactionStatus) {
+						try {
+							InputStream imageInputStream;
+							try {
+								Image image = imageDao.find(imageFileName);
+								if (image == null) {
+									image = new Image(imageFileName, pageDownloader.downloadImage(imageFileName));
+									imageDao.persist(image);
+									logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
+								}
 
-						imageInputStream = new ByteArrayInputStream(image.getData());
-					} catch (Exception e) {
-						logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
-						imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
+								imageInputStream = new ByteArrayInputStream(image.getData());
+							} catch (Exception e) {
+								logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
+								imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
+							}
+							return imageInputStream;
+						} catch (Exception e) {
+							throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
+						}
 					}
-					return imageInputStream;
-				} catch (Exception e) {
-					throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
-				}
+				});
 			}
 		});
+		try {
+			return future.get();
+		} catch (InterruptedException | ExecutionException e) {
+			throw new MediaRSSException(e.getMessage(), e);
+		}
 	}
 
 	private int parseMovieYear(String name) {

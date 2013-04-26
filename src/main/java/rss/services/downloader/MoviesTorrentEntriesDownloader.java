@@ -2,6 +2,7 @@ package rss.services.downloader;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import rss.services.SearchResult;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
 import rss.services.searchers.TorrentSearcher;
+import rss.util.CollectionUtils;
 
 import java.util.*;
 
@@ -50,71 +52,103 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	protected List<Movie> onTorrentFound(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
-		String escapedTorrentTitle = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
-
+	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
 		// if there is no IMDB ID - skip this movie
 		if (searchResult.getMetaData().getImdbUrl() == null) {
+			String escapedTorrentTitle = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
 			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", escapedTorrentTitle));
-			return Collections.emptyList();
+			return false;
 		}
 
-		Movie persistedMovie;
-		// if there is IMDB ID in the original request (meaning it came from ui)
-		if (movieRequest.getImdbId() != null) {
-			// compare IMDB ID and skip if no match
-			if (!movieRequest.getImdbId().equals(searchResult.getMetaData().getImdbUrl())) {
-				logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
-						escapedTorrentTitle, searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
-				return Collections.emptyList();
+		return true;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	protected List<Movie> processSearchResults(Collection<Pair<MovieRequest, SearchResult<Movie>>> results) {
+		// first group by search result imdbid, because there might be duplications
+		Map<String, List<Pair<MovieRequest, SearchResult<Movie>>>> imdbIdMap = new HashMap<>();
+		for (Pair<MovieRequest, SearchResult<Movie>> pair : results) {
+			SearchResult<Movie> searchResult = pair.getValue();
+			CollectionUtils.safeListPut(imdbIdMap, searchResult.getMetaData().getImdbUrl(), pair);
+		}
+
+		List<Movie> res = new ArrayList<>();
+		for (Map.Entry<String, List<Pair<MovieRequest, SearchResult<Movie>>>> entry : imdbIdMap.entrySet()) {
+			String imdbId = entry.getKey();
+			List<Pair<MovieRequest, SearchResult<Movie>>> pairs = entry.getValue();
+
+			// if its from the ui, the movie is already downloaded and stored. otherwise if its not already stored need to download it
+			Movie persistedMovie = getMovieHelper(imdbId);
+			if (persistedMovie == null) {
+				continue;
 			}
-			persistedMovie = movieDao.findByImdbUrl(movieRequest.getImdbId());
-		} else {
+
+			for (Pair<MovieRequest, SearchResult<Movie>> pair : pairs) {
+				SearchResult<Movie> searchResult = pair.getValue();
+				MovieRequest movieRequest = pair.getKey();
+
+				// if there is IMDB ID in the original request (meaning it came from ui)
+				// if there is no IMDB ID in the original request (meaning it came from the movies job)
+				// download imdb page (for the first time) - using the getMovieHelper()
+				if (movieRequest.getImdbId() != null) {
+					// compare IMDB ID and skip if no match
+					if (!movieRequest.getImdbId().equals(searchResult.getMetaData().getImdbUrl())) {
+						String escapedTorrentTitle = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
+						logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
+								escapedTorrentTitle, searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
+						continue;
+					}
+				}
+
+				Torrent persistedTorrent = persistTorrent(searchResult.getTorrent(), movieRequest.getHash());
+
+				if (persistedMovie.getTorrentIds().isEmpty()) {
+					// if movie already existed and had no torrents - this is the case where it is a future movie request by user
+					Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
+					if (!users.isEmpty()) {
+						logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
+						for (User user : users) {
+							UserMovieTorrent userTorrent = new UserMovieTorrent();
+							userTorrent.setUser(user);
+							userTorrent.setAdded(new Date());
+							userTorrent.setTorrent(persistedTorrent);
+							userTorrentDao.persist(userTorrent);
+						}
+					}
+				}
+
+				persistedMovie.getTorrentIds().add(persistedTorrent.getId());
+			}
+
+			res.add(persistedMovie);
+		}
+		return res;
+	}
+
+	private Movie getMovieHelper(String imdbId) {
+		Movie movie = movieDao.findByImdbUrl(imdbId);
+		if (movie == null) {
 			// if there is no IMDB ID in the original request (meaning it came from the movies job)
 			// download imdb page (for the first time)
-			IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(searchResult.getMetaData().getImdbUrl());
+			IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(imdbId);
 
 			// ignore future movies which are not release yet
 			if (imdbParseResult.isComingSoon()) {
-				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' because it is not yet released (" + searchResult.getTorrent() + ")");
-				return Collections.emptyList();
+				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' because it is not yet released (imdbId=" + imdbId + ")");
+				return null;
 			}
 
 			// check for number of reviewers for the movie
 			if (imdbParseResult.getViewers() != -1 && imdbParseResult.getViewers() < 1000) {
 				logService.info(getClass(), "Skipping movie '" + imdbParseResult.getName() + "' due to low number of viewers in imdb: " + imdbParseResult.getViewers());
-				return Collections.emptyList();
+				return null;
 			}
 
-			// now that imdbid is mandatory, better query by it than by name
-//			persistedMovie = movieDao.findByName(imdbParseResult.getName());
-			persistedMovie = movieDao.findByImdbUrl(searchResult.getMetaData().getImdbUrl());
-			if (persistedMovie == null) {
-				persistedMovie = new Movie(imdbParseResult.getName(), searchResult.getMetaData().getImdbUrl(), imdbParseResult.getYear());
-				movieDao.persist(persistedMovie);
-			}
+			movie = new Movie(imdbParseResult.getName(), imdbId, imdbParseResult.getYear());
+			movieDao.persist(movie);
 		}
-
-		Torrent persistedTorrent = persistTorrent(searchResult.getTorrent(), movieRequest.getHash());
-
-		if (persistedMovie.getTorrentIds().isEmpty()) {
-			// if movie already existed and had no torrents - this is the case where it is a future movie request by user
-			Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
-			if (!users.isEmpty()) {
-				logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
-				for (User user : users) {
-					UserMovieTorrent userTorrent = new UserMovieTorrent();
-					userTorrent.setUser(user);
-					userTorrent.setAdded(new Date());
-					userTorrent.setTorrent(persistedTorrent);
-					userTorrentDao.persist(userTorrent);
-				}
-			}
-		}
-
-		persistedMovie.getTorrentIds().add(persistedTorrent.getId());
-
-		return Collections.singletonList(persistedMovie);
+		return movie;
 	}
 
 	private Torrent persistTorrent(Torrent torrent, String hash) {
