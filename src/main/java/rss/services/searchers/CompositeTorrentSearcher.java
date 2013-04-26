@@ -65,7 +65,7 @@ public abstract class CompositeTorrentSearcher implements TorrentSearcher<MediaR
 			return successfulSearchResult;
 		}
 
-		return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		return SearchResult.createNotFound();
 	}
 
 	protected abstract boolean shouldFailOnNoIMDBUrl();

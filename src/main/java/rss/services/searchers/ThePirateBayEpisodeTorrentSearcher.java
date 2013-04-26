@@ -1,4 +1,4 @@
-package rss.services.shows;
+package rss.services.searchers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,7 @@ import rss.entities.Torrent;
 import rss.services.downloader.MovieRequest;
 import rss.services.requests.EpisodeRequest;
 import rss.services.searchers.ThePirateBayTorrentSearcher;
+import rss.services.shows.ShowService;
 
 import java.util.ArrayList;
 import java.util.HashSet;

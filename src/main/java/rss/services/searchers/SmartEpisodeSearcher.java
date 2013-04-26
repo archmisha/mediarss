@@ -1,4 +1,4 @@
-package rss.services.shows;
+package rss.services.searchers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,7 +10,6 @@ import rss.services.requests.EpisodeRequest;
 import rss.entities.MediaQuality;
 import rss.services.SearchResult;
 import rss.services.requests.ShowRequest;
-import rss.services.searchers.TorrentSearcher;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
@@ -67,7 +66,7 @@ public class SmartEpisodeSearcher implements TorrentSearcher<ShowRequest, Episod
                 msgPrefix = "Episode \"" + modifiedEpisode.toString() + "\" is not found. ";
             }
         }
-        return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+        return SearchResult.createNotFound();
     }
 
     @Override

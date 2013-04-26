@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
 import rss.services.SearchResult;
-import rss.services.movies.PublichdSearcher;
 import rss.services.requests.EpisodeRequest;
 import rss.services.shows.ShowService;
 

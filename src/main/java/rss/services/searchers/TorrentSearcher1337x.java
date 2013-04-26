@@ -75,12 +75,12 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		} catch (Exception e) {
 			// in case of an error in parsing, printing the page so be able to reproduce
 			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		if (results.isEmpty()) {
 //			log.info("There were no search results for: \"" + tvShowEpisode.toQueryString() + "\" url=" + url);
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		List<SearchResult<S>> searchResults = new ArrayList<>();
@@ -94,7 +94,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		List<SearchResult<S>> filteredResults = filterMatching(mediaRequest, searchResults);
 
 		if (filteredResults.isEmpty()) {
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		return filteredResults.get(0);
@@ -115,7 +115,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		try {
 			page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
 		} catch (Exception e) {
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		int idx = page.indexOf("<div class=\"topHead\">");

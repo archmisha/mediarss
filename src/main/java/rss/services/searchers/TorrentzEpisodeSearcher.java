@@ -7,14 +7,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.entities.Episode;
-import rss.services.requests.EpisodeRequest;
-import rss.services.requests.FullSeasonRequest;
 import rss.services.PageDownloader;
 import rss.services.SearchResult;
 import rss.services.downloader.MovieRequest;
 import rss.services.log.LogService;
 import rss.services.movies.TorrentzServiceImpl;
 import rss.services.parsers.TorrentzParser;
+import rss.services.requests.EpisodeRequest;
 import rss.services.shows.ShowService;
 
 import java.io.UnsupportedEncodingException;
@@ -45,7 +44,6 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 	private PageDownloader pageDownloader;
 
 	@Autowired
-	@Qualifier("torrentzParser")
 	private TorrentzParser torrentzParser;
 
 	@Autowired
@@ -61,7 +59,7 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 			movieRequests = filterMatching(episodeRequest, movieRequests);
 
 			if (movieRequests.isEmpty()) {
-				return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+				return SearchResult.createNotFound();
 			}
 
 			MovieRequest bestRequest = new Ordering<MovieRequest>() {
@@ -75,9 +73,13 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 			episodeRequest.setPirateBayId(torrentzParser.getPirateBayId(entryPage));
 			episodeRequest.setHash(bestRequest.getHash());
 
-			// search the pirate bay only if found pirateBay id, otherwise will be searched later anyway regularily
+			// search the pirate bay only if found pirateBay id, otherwise will be searched later in general search anyways
 			// also can use published here cuz got hash, but will be searched later on anyway
-			return thePirateBayEpisodeSearcher.search(episodeRequest);
+			if (episodeRequest.getPirateBayId() != null) {
+				return thePirateBayEpisodeSearcher.search(episodeRequest);
+			}
+
+			return SearchResult.createNotFound();
 		} catch (UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}

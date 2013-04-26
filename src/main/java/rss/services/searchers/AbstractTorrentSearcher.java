@@ -31,7 +31,7 @@ public abstract class AbstractTorrentSearcher<T extends MediaRequest, S extends 
 			url = getSearchUrl(mediaRequest);
 		} catch (UnsupportedEncodingException e) {
 			logService.error(getClass(), "Failed encoding: " + url + " error: " + e.getMessage(), e);
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		String page;
@@ -39,7 +39,7 @@ public abstract class AbstractTorrentSearcher<T extends MediaRequest, S extends 
 			page = pageDownloader.downloadPage(url);
 		} catch (Exception e) {
 			logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		SearchResult<S> searchResult = parseSearchResults(mediaRequest, url, page);

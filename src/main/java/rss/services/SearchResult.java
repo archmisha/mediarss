@@ -35,6 +35,10 @@ public class SearchResult<T extends Media> {
         metaData = new MetaData();
     }
 
+	public static <S extends Media> SearchResult<S> createNotFound() {
+		return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+	}
+
     public SearchStatus getSearchStatus() {
         return searchStatus;
     }

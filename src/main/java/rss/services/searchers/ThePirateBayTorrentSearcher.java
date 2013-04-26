@@ -95,7 +95,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 			return searchResult;
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 	}
 
@@ -104,12 +104,12 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 
 		if (results.isEmpty()) {
 			//			log.info("There were no search results for: " + tvShowEpisode.toQueryString() + " url=" + url);
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		verifySearchResults(mediaRequest, results);
 		if (results.isEmpty()) {
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		if (results.size() > 1) {

@@ -1,4 +1,4 @@
-package rss.services.movies;
+package rss.services.searchers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,7 +7,6 @@ import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.requests.MediaRequest;
-import rss.services.searchers.AbstractTorrentSearcher;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,7 +46,7 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends A
 			if (!page.contains("Bad ID!")) { // in that case just id not found - not a parsing problem
 				log.error("Failed parsing page of " + mediaRequest.toString() + ": " + page);
 			}
-			return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+			return SearchResult.createNotFound();
 		}
 
 		String title = matcher.group(1).trim(); // sometimes comes with line break at the end - ruins log
@@ -76,7 +75,7 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends A
 		if (isMatching(mediaRequest, searchResult)) {
 			return searchResult;
 		}
-		return new SearchResult<>(SearchResult.SearchStatus.NOT_FOUND);
+		return SearchResult.createNotFound();
 	}
 
 	protected boolean isMatching(T mediaRequest, SearchResult<S> searchResult) {
