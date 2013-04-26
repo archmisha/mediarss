@@ -30,6 +30,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
 
 	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
+	private static final Pattern KICKASS_TORRENTS_ID = Pattern.compile("<a href=\"http://www.kickasstorrents.com/([^\"/]+)\"");
 
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
@@ -76,9 +77,17 @@ public class TorrentzParserImpl implements TorrentzParser {
 	}
 
 	public String getPirateBayId(String page) {
-		Matcher pirateBayIdMatcher = PIRATE_BAY_ID.matcher(page);
-		if (pirateBayIdMatcher.find()) {
-			return pirateBayIdMatcher.group(1);
+		Matcher matcher = PIRATE_BAY_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
+
+	public String getKickAssTorrentsId(String page) {
+		Matcher matcher = KICKASS_TORRENTS_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
 		}
 		return null;
 	}

@@ -12,4 +12,6 @@ public interface TorrentzParser {
     <T> Set<T> parse(String page);
 
 	String getPirateBayId(String page);
+
+	String getKickAssTorrentsId(String page);
 }

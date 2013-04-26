@@ -41,6 +41,10 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 	private TorrentSearcher<EpisodeRequest, Episode> thePirateBayEpisodeSearcher;
 
 	@Autowired
+	@Qualifier("kickAssTorrentEpisodeSearcher")
+	private TorrentSearcher<EpisodeRequest, Episode> kicksAssTorrentsEpisodeSearcher;
+
+	@Autowired
 	private PageDownloader pageDownloader;
 
 	@Autowired
@@ -71,12 +75,16 @@ public class TorrentzEpisodeSearcher implements TorrentSearcher<EpisodeRequest, 
 
 			String entryPage = pageDownloader.downloadPage(TorrentzServiceImpl.TORRENTZ_ENTRY_URL + bestRequest.getHash());
 			episodeRequest.setPirateBayId(torrentzParser.getPirateBayId(entryPage));
+			episodeRequest.setKickAssTorrentsId(torrentzParser.getKickAssTorrentsId(entryPage));
 			episodeRequest.setHash(bestRequest.getHash());
 
 			// search the pirate bay only if found pirateBay id, otherwise will be searched later in general search anyways
 			// also can use published here cuz got hash, but will be searched later on anyway
 			if (episodeRequest.getPirateBayId() != null) {
 				return thePirateBayEpisodeSearcher.search(episodeRequest);
+			}
+			if (episodeRequest.getKickAssTorrentsId() != null) {
+				return kicksAssTorrentsEpisodeSearcher.search(episodeRequest);
 			}
 
 			return SearchResult.createNotFound();
