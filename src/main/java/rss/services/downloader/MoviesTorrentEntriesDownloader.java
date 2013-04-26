@@ -86,7 +86,9 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 				return Collections.emptyList();
 			}
 
-			persistedMovie = movieDao.findByName(imdbParseResult.getName());
+			// now that imdbid is mandatory, better query by it than by name
+//			persistedMovie = movieDao.findByName(imdbParseResult.getName());
+			persistedMovie = movieDao.findByImdbUrl(searchResult.getMetaData().getImdbUrl());
 			if (persistedMovie == null) {
 				persistedMovie = new Movie(imdbParseResult.getName(), searchResult.getMetaData().getImdbUrl(), imdbParseResult.getYear());
 				movieDao.persist(persistedMovie);

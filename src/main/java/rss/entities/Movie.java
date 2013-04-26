@@ -1,6 +1,7 @@
 package rss.entities;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * User: Michael Dikman
@@ -37,11 +38,16 @@ public class Movie extends Media {
 	@Column(name = "year")
 	private int year;
 
+	@Column(name = "created")
+	private Date created;
+
 	@SuppressWarnings("UnusedDeclaration")
 	private Movie() {
+		created = new Date();
 	}
 
 	public Movie(String name, String imdbUrl, int year) {
+		this();
 		this.name = name;
 		this.imdbUrl = imdbUrl;
 		this.year = year;
