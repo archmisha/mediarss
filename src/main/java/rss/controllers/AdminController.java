@@ -118,6 +118,10 @@ public class AdminController extends BaseController {
 		verifyAdminPermissions(user);
 
 		Show show = showDao.find(showId);
+		if (show == null) {
+			return "Show with id " + show + " is not found";
+		}
+
 		// allow deletion only if no one is tracking this show
 		if (userDao.isShowBeingTracked(show)) {
 			throw new MediaRSSException("Show is being tracked. Unable to delete").doNotLog();
