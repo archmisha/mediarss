@@ -103,10 +103,16 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		Map<Torrent, Episode> episodeByTorrents = new HashMap<>();
 		final Map<Long, Episode> episodeByTorrentsForComparator = new HashMap<>();
 		for (Episode episode : downloaded) {
-			for (Long torrentId : episode.getTorrentIds()) {
+			for (Long torrentId : new ArrayList<>(episode.getTorrentIds())) {
 				Torrent torrent = torrentDao.find(torrentId);
-				episodeByTorrents.put(torrent, episode);
-				episodeByTorrentsForComparator.put(torrent.getId(), episode);
+
+				// some weird bug
+				if (torrent == null) {
+					episode.getTorrentIds().remove(torrentId);
+				} else {
+					episodeByTorrents.put(torrent, episode);
+					episodeByTorrentsForComparator.put(torrent.getId(), episode);
+				}
 			}
 		}
 
