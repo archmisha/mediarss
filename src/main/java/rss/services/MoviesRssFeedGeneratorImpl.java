@@ -13,6 +13,7 @@ import rss.entities.Subtitles;
 import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserTorrent;
+import rss.services.log.LogService;
 
 import java.util.*;
 
@@ -24,8 +25,6 @@ import java.util.*;
 @Service("moviesRssFeedGeneratorImpl")
 public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
-    private static Log log = LogFactory.getLog(MoviesRssFeedGeneratorImpl.class);
-
     @Autowired
     private UserDao userDao;
 
@@ -34,6 +33,9 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
 	@Autowired
 	private UserTorrentDao userTorrentDao;
+
+	@Autowired
+	private LogService logService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -54,7 +56,7 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
         String rssFeed = rssFeedBuilder.build("Movies RSS personalized feed",
                 "RSS feed of movies selected by the user in the past " + backlogDays + " days", torrentEntries, Collections.<Subtitles>emptyList());
 
-        log.info(String.format("Generated movies feed for " + user + " (%d millis)", System.currentTimeMillis() - from));
+		logService.info(getClass(), String.format("Generated movies feed for %s (%d millis)", user, System.currentTimeMillis() - from));
         return rssFeed;
     }
 

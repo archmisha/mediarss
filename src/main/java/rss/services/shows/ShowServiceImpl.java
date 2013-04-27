@@ -4,7 +4,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -178,9 +177,9 @@ public class ShowServiceImpl implements ShowService {
 						});
 					} catch (Exception e) {
 						if (Utils.isRootCauseMessageContains(e, "Read timed out")) {
-							logService.warn(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "' (Connection error)");
+							logService.warn(aClass, String.format("Failed downloading info for show '%s' (Connection error)", downloadedShow.getName()));
 						} else {
-							logService.error(aClass, "Failed downloading info for show '" + downloadedShow.getName() + "': " + e.getMessage(), e);
+							logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
 						}
 					}
 				}
@@ -217,7 +216,7 @@ public class ShowServiceImpl implements ShowService {
 					try {
 						downloadScheduleHelper(downloadScheduleResult);
 					} catch (Exception e) {
-						logService.error(aClass, "Failed downloading schedule of show \"" + nonTransactionShow + "\" " + e.getMessage(), e);
+						logService.error(aClass, String.format("Failed downloading schedule of show '%s': %s", nonTransactionShow, e.getMessage()), e);
 					}
 				}
 			});
@@ -587,12 +586,13 @@ public class ShowServiceImpl implements ShowService {
 			// if we were in any of the conditions
 			if (titlePrefix != null) {
 				// show name is a heavier search than the title suffix one
-				titlePrefix = titlePrefix .trim();
+				titlePrefix = titlePrefix.trim();
 				boolean titleSuffixMatch = isTitleSuffixMatch(titleSuffix);
 				if (titleSuffixMatch && isShowNameMatch(titlePrefix, show)) {
 					pairs.add(new ImmutablePair<>(StringUtils.getLevenshteinDistance(titlePrefix, requestTitle), movieRequest));
 				} else {
-					logService.info(getClass(), "Removing '" + title + "' cuz a bad " + (titleSuffixMatch ? "show name" : "title suffix") + " match for '" + mediaRequest.toString() + "'");
+					logService.info(getClass(), String.format("Removing '%s' cuz a bad %s match for '%s'",
+							title, (titleSuffixMatch ? "show name" : "title suffix"), mediaRequest.toString()));
 				}
 			}
 		}

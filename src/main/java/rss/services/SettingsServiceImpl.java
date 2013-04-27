@@ -55,7 +55,7 @@ public class SettingsServiceImpl implements SettingsService {
 					watchFile(new File(System.getProperty("user.home")).getAbsolutePath(), SETTINGS_FILENAME);
 				} catch (Exception e) {
 					if (shouldRun) {
-						log.error(getClass(), "Failed setting up file watcher for " + SETTINGS_FILENAME + "; " + e.getMessage(), e);
+						log.error(getClass(), String.format("Failed setting up file watcher for %s: %s", SETTINGS_FILENAME, e.getMessage()), e);
 					}
 				}
 			}

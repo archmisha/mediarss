@@ -13,6 +13,7 @@ import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
 import rss.SubtitleLanguage;
+import rss.services.log.LogService;
 import rss.util.CollectionUtils;
 
 import java.util.*;
@@ -24,8 +25,6 @@ import java.util.*;
  */
 @Service("tVShowsRssFeedGeneratorImpl")
 public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
-
-	private static Log log = LogFactory.getLog(TVShowsRssFeedGeneratorImpl.class);
 
 	@Autowired
 	private UserDao userDao;
@@ -41,6 +40,9 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 
 	@Autowired
 	private SubtitlesDao subtitlesDao;
+
+	@Autowired
+	private LogService logService;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -86,7 +88,7 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		user.setLastShowsFeedGenerated(downloadDate);
 		userDao.merge(user);
 
-		log.info(String.format("Generated shows feed for " + user + " (%d millis)", System.currentTimeMillis() - from));
+		logService.info(getClass(), String.format("Generated shows feed for %s (%d millis)", user, System.currentTimeMillis() - from));
 		return rssFeed;
 	}
 
