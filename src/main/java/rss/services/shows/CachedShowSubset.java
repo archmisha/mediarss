@@ -9,7 +9,7 @@ public class CachedShowSubset {
 	private int words;
 
 	public CachedShowSubset(String subset, int words) {
-		this.subset = subset;
+		this.subset = subset.intern();
 		this.words = words;
 	}
 

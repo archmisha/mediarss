@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Media;
-import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.services.SearchResult;
 import rss.services.log.LogService;
@@ -90,7 +89,7 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 									// do nothing - its not missing cuz no need to  email and not found
 									break;
 								case FOUND:
-									if ( validateSearchResult(mediaRequest, searchResult)) {
+									if (validateSearchResult(mediaRequest, searchResult)) {
 //									List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
 //									if (!mediaList.isEmpty()) {
 										// printing the returned torrent and not the original , as it might undergone some transformations

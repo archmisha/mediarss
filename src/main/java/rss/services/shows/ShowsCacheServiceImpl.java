@@ -78,7 +78,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		}
 
 		duration.stop();
-		logService.info(getClass(), "Loaded shows cache (" + duration.getDuration() + " millis)");
+		logService.info(getClass(), String.format("Loaded shows cache (%d millis)", duration.getDuration()));
 	}
 
 	@Override
@@ -92,11 +92,13 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		cache.put(show.getId(), show);
 
 		String cur = ShowServiceImpl.normalize(show.getName());
-		show.setWords(cur.split(" ").length);
+		String[] arr = cur.split(" ");
+
+		show.setWords(arr.length);
 		show.setNormalizedName(cur);
 
 		Collection<CachedShowSubset> permutationsList = new ArrayList<>();
-		for (ICombinatoricsVector<String> subSet : getSubsets(cur.split(" "))) {
+		for (ICombinatoricsVector<String> subSet : getSubsets(arr)) {
 			List<String> permutation = subSet.getVector();
 			Collections.sort(permutation);
 			permutationsList.add(new CachedShowSubset(StringUtils.join(permutation, " "), permutation.size()));
@@ -127,7 +129,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	}
 
 	@Override
-	public List<Map.Entry<CachedShow, Collection<CachedShowSubset>>> getShowsSubsets() {
-		return new ArrayList<>(showNameSubsets.entrySet());
+	public Collection<Map.Entry<CachedShow, Collection<CachedShowSubset>>> getShowsSubsets() {
+		return Collections.unmodifiableSet(showNameSubsets.entrySet());
 	}
 }

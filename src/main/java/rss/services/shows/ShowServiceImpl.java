@@ -103,7 +103,7 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	private void saveNewShow(Show show) {
-		logService.info(getClass(), "It is a new show! - Persisting '" + show.getName() + "' (tvrage_id=" + show.getTvRageId() + ")");
+		logService.info(getClass(), String.format("It is a new show! - Persisting '%s' (tvrage_id=%d)", show.getName(), show.getTvRageId()));
 		showDao.persist(show);
 		showsCacheService.put(show);
 		downloadFullSchedule(show);
