@@ -51,7 +51,7 @@ public class PageDownloaderImpl implements PageDownloader {
 				InputStream is = extractInputStreamFromResponse(httpResponse);
 				byte[] arr = new byte[1000];
 				int read = is.read(arr);
-				String str = new String(arr);
+				String str = new String(arr, "UTF-8");
 				Matcher matcher = pattern.matcher(str);
 				if (matcher.find()) {
 					return str;
@@ -63,8 +63,8 @@ public class PageDownloaderImpl implements PageDownloader {
 					if (read == -1) {
 						break;
 					}
-					sb.append(new String(arr, 0, read));
-					matcher = pattern.matcher(sb);
+					sb.append(new String(arr, 0, read, "UTF-8"));
+					matcher.reset(sb);
 				}
 				return sb.toString();
 			}
