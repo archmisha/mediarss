@@ -21,6 +21,8 @@ import java.util.Set;
  */
 public interface ShowService {
 
+	void saveNewShow(Show show);
+
 	void transformEpisodeRequest(ShowRequest episodeRequest);
 
 	void downloadShowList();

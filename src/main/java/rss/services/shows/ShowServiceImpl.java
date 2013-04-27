@@ -102,7 +102,9 @@ public class ShowServiceImpl implements ShowService {
 		showsProvider.setPageDownloader(pageDownloader);
 	}
 
-	private void saveNewShow(Show show) {
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void saveNewShow(Show show) {
 		logService.info(getClass(), String.format("It is a new show! - Persisting '%s' (tvrage_id=%d)", show.getName(), show.getTvRageId()));
 		showDao.persist(show);
 		showsCacheService.put(show);
@@ -163,7 +165,11 @@ public class ShowServiceImpl implements ShowService {
 						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 							@Override
 							protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-								Show show = showDao.findByName(downloadedShow.getName());
+								Show show = showDao.findByTvRageId(downloadedShow.getTvRageId());
+								if (show == null) {
+									show = showDao.findByName(downloadedShow.getName());
+								}
+
 								if (show == null) {
 									saveNewShow(downloadedShow);
 								} else {
@@ -231,7 +237,7 @@ public class ShowServiceImpl implements ShowService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadScheduleResult downloadFullSchedule(final Show show) {
-		logService.info(getClass(), "Downloading full schedule for '" + show + "'");
+		logService.info(getClass(), String.format("Downloading full schedule for '%s'", show));
 		// need to re-query so it will be in this transaction
 		Collection<Episode> episodes = showsProvider.downloadSchedule(show);
 		DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
@@ -251,7 +257,7 @@ public class ShowServiceImpl implements ShowService {
 			} else {
 				episodesToDownload.add(new SingleEpisodeRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
 			}
-			logService.info(getClass(), "Will try to download torrents of " + episode);
+			logService.debug(getClass(), "Will try to download torrents of " + episode);
 		}
 
 		final Set<ShowRequest> missing = new HashSet<>();

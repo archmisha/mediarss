@@ -1,7 +1,6 @@
 package rss.services;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.http.*;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -25,7 +24,10 @@ import rss.util.Utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -91,7 +93,7 @@ public class PageDownloaderImpl implements PageDownloader {
 		return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
 			@Override
 			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
-				return IOUtils.toString(extractInputStreamFromResponse(httpResponse));
+				return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
 			}
 		});
 	}

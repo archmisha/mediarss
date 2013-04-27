@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
-import rss.dao.EpisodeDao;
 import rss.dao.ShowDao;
 import rss.entities.Episode;
 import rss.entities.Show;
@@ -96,30 +95,36 @@ public class OOTBContentLoader {
 			for (final Show show : shows) {
 				// filter out not ended shows
 //				if (show.isEnded()) {
-					final Show persistedShow = showDao.findByName(show.getName());
-					if (persistedShow == null) {
-						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-							@Override
-							protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-								// had to copy paste from ShowServiceImpl
+				Show persistedShow = showDao.findByTvRageId(show.getTvRageId());
+				if (persistedShow == null) {
+					persistedShow = showDao.findByName(show.getName());
+				}
+
+				if (persistedShow == null) {
+					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+						@Override
+						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+//							showService.saveNewShow(show);
+								// had to copy paste from ShowServiceImpl in order to override the pageDownloader instance
 								showDao.persist(show);
 								showsCacheService.put(show);
 								Collection<Episode> episodes = tvRageService.downloadSchedule(show);
 								for (Episode episode : episodes) {
 									showService.persistEpisodeToShow(show, episode);
 								}
-							}
-						});
-						counter++;
-					} else if (persistedShow.getTvRageId() == -1) {
-						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-							@Override
-							protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-								// update existing shows with tvrage id
-								persistedShow.setTvRageId(show.getTvRageId());
-							}
-						});
-					}
+						}
+					});
+					counter++;
+				} else if (persistedShow.getTvRageId() == -1) {
+					final Show finalPersistedShow = persistedShow;
+					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+						@Override
+						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+							// update existing shows with tvrage id
+							finalPersistedShow.setTvRageId(show.getTvRageId());
+						}
+					});
+				}
 //				}
 				i++;
 				if (i % 500 == 0) {
@@ -156,7 +161,7 @@ public class OOTBContentLoader {
 			try {
 				if (url.startsWith(TVRageServiceImpl.SHOW_LIST_URL)) {
 					if (showsListPage == null) {
-						showsListPage = IOUtils.toString(getFileInputStream("ootb" + File.separator + "tvrage-shows-list" + File.separator + "tvrage-shows-list-2013-02-25.xml"));
+						showsListPage = IOUtils.toString(getFileInputStream("ootb" + File.separator + "tvrage-shows-list" + File.separator + "tvrage-shows-list-2013-02-25.xml"), "UTF-8");
 					}
 
 					StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" +
@@ -186,7 +191,7 @@ public class OOTBContentLoader {
 					ZipFile zip = new ZipFile(file);
 
 					ZipEntry entry = zip.getEntry(tvRageShowId + ".xml");
-					return IOUtils.toString(zip.getInputStream(entry));
+					return IOUtils.toString(zip.getInputStream(entry), "UTF-8");
 				}
 			} catch (IOException e) {
 				logService.error(getClass(), e.getMessage(), e);

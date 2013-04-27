@@ -303,7 +303,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					episodeRequests.removeAll(episodeRequest);
 					// removing to skip in the following iteration loop
 					episodesMap.remove(episode);
-					logService.info(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest, ", ") + "' - already scanned and airdate is older than 14 days ago");
+					logService.debug(getClass(), "Skipping downloading '" + StringUtils.join(episodeRequest, ", ") + "' - already scanned and airdate is older than 14 days ago");
 				}
 			}
 		}
