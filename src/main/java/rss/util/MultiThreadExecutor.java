@@ -1,5 +1,7 @@
 package rss.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import rss.services.log.LogService;
 
 import java.util.Collection;
@@ -12,7 +14,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class MultiThreadExecutor {
 
-	public static <T> void execute(ExecutorService executorService, Collection<T> list, LogService logService, final MultiThreadExecutorTask<T> task) {
+	private static  final Log log = LogFactory.getLog(MultiThreadExecutor.class);
+
+	public static <T> void execute(ExecutorService executorService, Collection<T> list, final MultiThreadExecutorTask<T> task) {
 		for (final T element : list) {
 			executorService.submit(new Runnable() {
 				@Override
@@ -26,7 +30,7 @@ public class MultiThreadExecutor {
 		try {
 			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
 		} catch (InterruptedException e) {
-			logService.error(MultiThreadExecutor.class, "Error waiting for tasks to execute: " + e.getMessage(), e);
+			log.error("Error waiting for tasks to execute: " + e.getMessage(), e);
 		}
 	}
 

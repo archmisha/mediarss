@@ -62,8 +62,8 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
-	protected void onTorrentMissing(ShowRequest episodeRequest, SearchResult<Episode> searchResult) {
-		for (Episode episode : episodeDao.find((EpisodeRequest) episodeRequest)) {
+	protected void processMissingRequests(Collection<ShowRequest> missing) {
+		for (Episode episode : episodeDao.find(missing)) {
 			episode.setScanDate(new Date());
 		}
 	}
@@ -74,8 +74,6 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-//	protected List<Episode> onTorrentFound(ShowRequest episodeRequest, SearchResult<Episode> searchResult) {
 	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult<Episode>>> results) {
 		List<Episode> res = new ArrayList<>();
 		for (Pair<ShowRequest, SearchResult<Episode>> pair : results) {
@@ -117,7 +115,6 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 
 	@Override
 	// persisting new shows here - must be persisted before the new transaction opens for each download
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	protected Collection<Episode> preDownloadPhase(Set<ShowRequest> episodeRequests, boolean forceDownload) {
 		// substitute show name with alias and seasons if needed
 		for (ShowRequest episodeRequest : new HashSet<>(episodeRequests)) {

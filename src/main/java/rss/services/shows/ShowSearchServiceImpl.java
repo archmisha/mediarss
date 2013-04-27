@@ -202,7 +202,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		final Set<CachedShow> matches = new HashSet<>();
 		final MutableInt bestLD = new MutableInt(Integer.MAX_VALUE);
 		// 5 is best from tries on my laptop (tried 1, 5, 10, 20, 30)
-		MultiThreadExecutor.execute(Executors.newFixedThreadPool(5), showsCacheService.getShowsSubsets(), logService,
+		MultiThreadExecutor.execute(Executors.newFixedThreadPool(5), showsCacheService.getShowsSubsets(),
 				new MultiThreadExecutor.MultiThreadExecutorTask<Map.Entry<CachedShow, Collection<CachedShowSubset>>>() {
 					@Override
 					public void run(Map.Entry<CachedShow, Collection<CachedShowSubset>> entry) {

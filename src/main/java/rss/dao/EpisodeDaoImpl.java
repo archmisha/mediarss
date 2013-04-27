@@ -5,11 +5,9 @@ import rss.SubtitleLanguage;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Torrent;
-import rss.services.requests.DoubleEpisodeRequest;
-import rss.services.requests.EpisodeRequest;
-import rss.services.requests.FullSeasonRequest;
-import rss.services.requests.SingleEpisodeRequest;
+import rss.services.requests.*;
 
+import java.security.InvalidParameterException;
 import java.util.*;
 
 /**
@@ -22,11 +20,11 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 
 	@Override
 	public List<Episode> find(EpisodeRequest episodeRequest) {
-		return find(Collections.singletonList(episodeRequest));
+		return find(Collections.<ShowRequest>singletonList(episodeRequest));
 	}
 
 	@Override
-	public List<Episode> find(Collection<EpisodeRequest> episodeRequests) {
+	public List<Episode> find(Collection<ShowRequest> episodeRequests) {
 		if (episodeRequests.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -37,14 +35,19 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		String orPart = " or ";
 		query.append("select t from Episode as t where ");
 		int counter = 0;
-		for (EpisodeRequest episodeRequest : episodeRequests) {
+		for (ShowRequest episodeRequest : episodeRequests) {
 			if (episodeRequest instanceof SingleEpisodeRequest) {
-				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((SingleEpisodeRequest)episodeRequest).getEpisode());
+				SingleEpisodeRequest ser = (SingleEpisodeRequest) episodeRequest;
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), ser.getSeason(), ser.getEpisode());
 			} else if (episodeRequest instanceof DoubleEpisodeRequest) {
-				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode1());
-				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), ((DoubleEpisodeRequest)episodeRequest).getEpisode2());
+				DoubleEpisodeRequest der = (DoubleEpisodeRequest) episodeRequest;
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), der.getSeason(), der.getEpisode1());
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), der.getSeason(), der.getEpisode2());
 			} else if (episodeRequest instanceof FullSeasonRequest) {
-				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), episodeRequest.getSeason(), -1);
+				FullSeasonRequest fsr = (FullSeasonRequest)episodeRequest;
+				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), fsr.getSeason(), -1);
+			} else {
+				throw new IllegalArgumentException("Cannot search for requests of type: " + episodeRequest.getClass());
 			}
 		}
 		query.delete(query.length() - orPart.length(), query.length());

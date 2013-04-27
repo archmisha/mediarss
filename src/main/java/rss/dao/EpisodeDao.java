@@ -5,6 +5,7 @@ import rss.services.requests.EpisodeRequest;
 import rss.entities.Torrent;
 import rss.SubtitleLanguage;
 import rss.entities.Episode;
+import rss.services.requests.ShowRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 public interface EpisodeDao extends Dao<Episode> {
 
-	List<Episode> find(Collection<EpisodeRequest> episodes);
+	List<Episode> find(Collection<ShowRequest> episodes);
 
 	List<Episode> find(EpisodeRequest episodeRequest);
 

@@ -45,13 +45,11 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	private IMDBService imdbService;
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
 	protected SearchResult<Movie> downloadTorrent(MovieRequest movieRequest) {
 		return compositeMoviesSearcher.search(movieRequest);
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
 	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
 		// if there is no IMDB ID - skip this movie
 		if (searchResult.getMetaData().getImdbUrl() == null) {
@@ -64,7 +62,6 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
 	protected List<Movie> processSearchResults(Collection<Pair<MovieRequest, SearchResult<Movie>>> results) {
 		// first group by search result imdbid, because there might be duplications
 		Map<String, List<Pair<MovieRequest, SearchResult<Movie>>>> imdbIdMap = new HashMap<>();
@@ -170,12 +167,11 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	}
 
 	@Override
-	protected void onTorrentMissing(MovieRequest mediaRequest, SearchResult<Movie> searchResult) {
+	protected void processMissingRequests(Collection<MovieRequest> missing) {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
 	protected Collection<Movie> preDownloadPhase(Set<MovieRequest> requests, boolean forceDownload) {
 		Set<Movie> result = new HashSet<>();
 

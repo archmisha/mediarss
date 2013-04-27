@@ -3,10 +3,8 @@ package rss.services.downloader;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Media;
 import rss.entities.Torrent;
@@ -34,20 +32,17 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 	@Autowired
 	protected LogService logService;
 
-	@Autowired
-	private TransactionTemplate transactionTemplate;
-
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadResult<T, S> download(Collection<S> mediaRequests) {
 		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_EPISODES), false);
 	}
 
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadResult<T, S> download(Collection<S> mediaRequests, boolean forceDownload) {
 		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_EPISODES), forceDownload);
 	}
 
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadResult<T, S> download(Collection<S> mediaRequests, ExecutorService executorService, boolean forceDownload) {
 		// copying to avoid UnsupportedOperationException if immutable collections is given
 		final Set<S> mediaRequestsCopy = new HashSet<>(mediaRequests);
@@ -58,54 +53,43 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 		Collection<T> cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
 
 		final ConcurrentLinkedQueue<Pair<S, SearchResult<T>>> results = new ConcurrentLinkedQueue<>();
-//		final ConcurrentLinkedQueue<T> result = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
 		final Class aClass = getClass();
-		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, logService, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
+		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
 			@Override
 			public void run(final S mediaRequest) {
 				try {
-					final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 					final long from = System.currentTimeMillis();
 					final SearchResult<T> searchResult = downloadTorrent(mediaRequest);
-
-					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-						@Override
-						protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-							Torrent searchResultTorrent = searchResult.getTorrent();
-							switch (searchResult.getSearchStatus()) {
-								case NOT_FOUND:
-									onTorrentMissing(mediaRequest, searchResult);
-									logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
-											mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
-											System.currentTimeMillis() - from));
-									missing.add(mediaRequest);
-									break;
-								case AWAITING_AGING:
-									logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
-											searchResultTorrent.getTitle(),
-											DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
-											System.currentTimeMillis() - from));
-									// do nothing - its not missing cuz no need to  email and not found
-									break;
-								case FOUND:
-									if (validateSearchResult(mediaRequest, searchResult)) {
-//									List<T> mediaList = onTorrentFound(mediaRequest, searchResult);
-//									if (!mediaList.isEmpty()) {
-										// printing the returned torrent and not the original , as it might undergone some transformations
-										logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
-												searchResultTorrent.getTitle(),
-												System.currentTimeMillis() - from,
-												searchResult.getSource()));
-										results.add(new ImmutablePair<>(mediaRequest, searchResult));
-//										result.addAll(mediaList);
-									}
-									break;
+					final Torrent searchResultTorrent = searchResult.getTorrent();
+					switch (searchResult.getSearchStatus()) {
+						case NOT_FOUND:
+							logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
+									mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
+									System.currentTimeMillis() - from));
+							missing.add(mediaRequest);
+							break;
+						case AWAITING_AGING:
+							final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+							logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
+									searchResultTorrent.getTitle(),
+									DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
+									System.currentTimeMillis() - from));
+							// do nothing - its not missing cuz no need to  email and not found
+							break;
+						case FOUND:
+							if (validateSearchResult(mediaRequest, searchResult)) {
+								// printing the returned torrent and not the original , as it might undergone some transformations
+								logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
+										searchResultTorrent.getTitle(),
+										System.currentTimeMillis() - from,
+										searchResult.getSource()));
+								results.add(new ImmutablePair<>(mediaRequest, searchResult));
 							}
-						}
-					});
+							break;
+					}
 				} catch (Exception e) {
-					logService.error(aClass, "Failed retrieving \"" + mediaRequest.toString() + "\": " + e.getMessage(), e);
+					logService.error(aClass, String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()), e);
 				}
 			}
 		});
@@ -117,10 +101,12 @@ public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaR
 		// add cached torrents to the list
 		result.addAll(cachedTorrentEntries);
 
+		processMissingRequests(missing);
+
 		return new DownloadResult<>(result, missing);
 	}
 
-	protected abstract void onTorrentMissing(S mediaRequest, SearchResult<T> searchResult);
+	protected abstract void processMissingRequests(Collection<S> missing);
 
 	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy, boolean forceDownload);
 
