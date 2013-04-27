@@ -25,29 +25,18 @@ make all tooltips be one line
 sections to contain also the body - refactor
 
 movies:
-  handle the case of a movie not out yet: Iron Man: Rise of Technovore (Video 2013) then there are no viewers yet and no point printing the warning
-  8,223 [WARN ] MoviesTorrentEntriesDownloader - Failed retrieving number of viewers for 'Devils of War (2013)':
-  movie with old year - scheduled as future but never will be - if there are no torrents for that mvie
-  what if shceduked an old movie but no hd torrent found - maybe will be scheduled for ever cuz there is no hd movie likae that....
   if found a movie wonce with 2 torrents. later when adding this movie again to some user, maybe now there are more torrent and better - we will not download them..
-  use everywhere the MvoeParseResult to not have the logic twice
   change that movie requests will contain the movie id that was persisted before the download started and then no need to search for the mvie by name after torrent was found
   movioe preiviw
     make links simple text
-    remove videos photos section
     ability to delete torrent in my movies with 1 v only and in available movies also
     when click down button doesnt move to my movies only after refresh
     available movies list too long -sergey got 176
 shows:
   about your schedule in the site i think it would be better user experience if the user could choose time zone for the series release.
   add kickass torrents parser and add it to torrentz parsing like piratebay - to check need to be able to download how i met your mother s02.e03 and also brothers and sisters s01e03
-  normalization in searchers makes problem in results removing & or and changes the results also grey's anatomy vs greys anatomy is a problem
-    brothers & sisters vs brothers sisters vs brothers and sisters
-  make episode disabled if season is empty and all disabled if no show name
 general:
   out of memory - why?
-support dialog
-  error message behind dialg when in work and no network
 
 when searching in torrentz, how to know that the result are what we need and not something else, need to verify somehow (house vs housewifes... the right season got back
     anatomy grey seaosn 8 vs s08 vs season 8 720p....)
