@@ -149,7 +149,8 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		Elements photos = doc.select(".primary_photo img");
 		photos.removeAttr("class");
 		for (Element photo : photos) {
-			String src = photo.attr("loadlate").replace(IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
+			// avoiding usage of regex of String.replace method
+			String src = org.apache.commons.lang3.StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
 			if (StringUtils.isBlank(src)) {
 				src = "../../images/imdb/person-no-image.png";
 			}
@@ -158,11 +159,12 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 
 		String html = doc.html();
 		// replace the url of the main image of the movie
-		html = html.replace(IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
-		html = html.replaceFirst(IMDB_CSS_URL_PREFIX, "../../../rest/movies/imdb/css/");
-		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
-		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
-		html = html.replace("http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
+		// avoiding usage of regex of String.replace method
+		html = org.apache.commons.lang3.StringUtils.replace(html, IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
+		html = org.apache.commons.lang3.StringUtils.replace(html, IMDB_CSS_URL_PREFIX, "../../../rest/movies/imdb/css/");
+		html = org.apache.commons.lang3.StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
+		html = org.apache.commons.lang3.StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
+		html = org.apache.commons.lang3.StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
 
 		durationMeter.stop();
 		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");

@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * User: dikmanm
@@ -108,13 +109,17 @@ public class ShowServiceImpl implements ShowService {
 		downloadFullSchedule(show);
 	}
 
+	private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("['\"\\-]");
+	private static final Pattern NORMALIZE_TO_SPACE_PATTERN = Pattern.compile("[:&\\._\\+,\\(\\)!\\?/]");
+	private static final Pattern NORMALIZE_SPACES_PATTERN = Pattern.compile("\\s+");
 
 	public static String normalize(String name) {
 		name = name.toLowerCase();
-		name = name.replaceAll("['\"\\-]", "");
-		name = name.replaceAll("[:&\\._\\+,\\(\\)!\\?/]", " ");
-		name = name.replaceAll("and", " ");
-		name = name.replaceAll("\\s+", " ");
+		name = NORMALIZE_TO_NOTHING_PATTERN.matcher(name).replaceAll("");
+		name = NORMALIZE_TO_SPACE_PATTERN.matcher(name).replaceAll(" ");
+		// avoiding usage of regex of String.replace method
+		name = org.apache.commons.lang3.StringUtils.replace(name, "and", " ");
+		name = NORMALIZE_SPACES_PATTERN.matcher(name).replaceAll(" ");
 		name = name.trim();
 		return name;
 	}
@@ -122,9 +127,9 @@ public class ShowServiceImpl implements ShowService {
 	// not normalizing: and, &
 	public static String normalizeFoQueryString(String name) {
 		name = name.toLowerCase();
-		name = name.replaceAll("['\"\\-]", "");
-		name = name.replaceAll("[:\\._\\+,\\(\\)!\\?/]", " ");
-		name = name.replaceAll("\\s+", " ");
+		name = NORMALIZE_TO_NOTHING_PATTERN.matcher(name).replaceAll("");
+		name = NORMALIZE_TO_SPACE_PATTERN.matcher(name).replaceAll(" ");
+		name = NORMALIZE_SPACES_PATTERN.matcher(name).replaceAll(" ");
 		name = name.trim();
 		return name;
 	}
