@@ -14,6 +14,7 @@ import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserTorrent;
 import rss.services.log.LogService;
+import rss.util.DateUtils;
 
 import java.util.*;
 
@@ -48,7 +49,7 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
         Collection<Torrent> torrentEntries = new ArrayList<>();
         int backlogDays = 7;
-        for (UserTorrent userTorrent : userTorrentDao.findUserMoviesForUserFeed(getUploadedDate(backlogDays), user)) {
+        for (UserTorrent userTorrent : userTorrentDao.findUserMoviesForUserFeed(DateUtils.getPastDate(backlogDays), user)) {
             userTorrent.setDownloadDate(downloadDate);
             torrentEntries.add(userTorrent.getTorrent());
         }
@@ -60,10 +61,5 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
         return rssFeed;
     }
 
-    private Date getUploadedDate(int backlogDays) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        c.add(Calendar.DAY_OF_MONTH, -backlogDays);
-        return c.getTime();
-    }
+
 }

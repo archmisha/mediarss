@@ -19,7 +19,6 @@ import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,7 +38,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	protected LogService logService;
 
 	private Map<Long, CachedShow> cache;
-	private Map<CachedShow, Collection<CachedShowSubset>> showNameSubsets;
+	private Map<CachedShow, CachedShowSubset[]> showNameSubsets;
 	private ScheduledExecutorService executorService;
 
 	@PostConstruct
@@ -97,14 +96,16 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		show.setWords(arr.length);
 		show.setNormalizedName(cur);
 
-		Collection<CachedShowSubset> permutationsList = new ArrayList<>();
-		for (ICombinatoricsVector<String> subSet : getSubsets(arr)) {
+		List<ICombinatoricsVector<String>> subsets = getSubsets(arr).generateAllObjects();
+		CachedShowSubset[] cachedShowSubsets = new CachedShowSubset[subsets.size()];
+		int i = 0;
+		for (ICombinatoricsVector<String> subSet : subsets) {
 			List<String> permutation = subSet.getVector();
 			Collections.sort(permutation);
-			permutationsList.add(new CachedShowSubset(StringUtils.join(permutation, " "), permutation.size()));
+			cachedShowSubsets[i++] = new CachedShowSubset(StringUtils.join(permutation, " "), permutation.size());
 		}
 
-		showNameSubsets.put(show, permutationsList);
+		showNameSubsets.put(show, cachedShowSubsets);
 	}
 
 	private Generator<String> getSubsets(String[] arr) {
@@ -124,12 +125,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	}
 
 	@Override
-	public Collection<CachedShowSubset> getShowNameSubsets(CachedShow show) {
-		return showNameSubsets.get(show);
-	}
-
-	@Override
-	public Collection<Map.Entry<CachedShow, Collection<CachedShowSubset>>> getShowsSubsets() {
-		return Collections.unmodifiableSet(showNameSubsets.entrySet());
+	public Collection<Map.Entry<CachedShow, CachedShowSubset[]>> getShowsSubsets() {
+		return showNameSubsets.entrySet();
 	}
 }

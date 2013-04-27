@@ -15,6 +15,7 @@ import rss.entities.*;
 import rss.SubtitleLanguage;
 import rss.services.log.LogService;
 import rss.util.CollectionUtils;
+import rss.util.DateUtils;
 
 import java.util.*;
 
@@ -69,8 +70,9 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		}
 
 		// also add user episodes
+		// add everything added since last feed generated with 7 days buffer
 		int backlogDays = 7;
-		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(getBacklogDate(user, backlogDays), user)) {
+		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(DateUtils.getPastDate(user.getLastShowsFeedGenerated(), backlogDays), user)) {
 			userTorrent.setDownloadDate(downloadDate);
 			torrentEntries.add(userTorrent.getTorrent());
 		}
@@ -90,13 +92,5 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 
 		logService.info(getClass(), String.format("Generated shows feed for %s (%d millis)", user, System.currentTimeMillis() - from));
 		return rssFeed;
-	}
-
-	// add everything added since last feed generated with 7 days buffer
-	private Date getBacklogDate(User user, int backlogDays) {
-		Calendar c = Calendar.getInstance();
-		c.setTime(user.getLastShowsFeedGenerated());
-		c.add(Calendar.DAY_OF_MONTH, -backlogDays);
-		return c.getTime();
 	}
 }

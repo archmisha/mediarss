@@ -25,6 +25,7 @@ import rss.services.searchers.TorrentSearcher;
 import rss.services.shows.EpisodesMapper;
 import rss.services.shows.ShowService;
 import rss.util.CollectionUtils;
+import rss.util.DateUtils;
 
 import java.security.InvalidParameterException;
 import java.util.*;
@@ -274,8 +275,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			return;
 		}
 
-		Calendar c = Calendar.getInstance();
-		c.add(Calendar.DAY_OF_MONTH, -14);
+		Date backlogDate = DateUtils.getPastDate(14);
 		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();
 			// skip if already scanned and
@@ -283,7 +283,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			// 2. if its a full season and its last episode aired 14 days ago (only finished seasons here, unaired seasons filtered before)
 			if (episode.getScanDate() != null) {
 				boolean shouldRemoveEpisode = false;
-				if (episode.getEpisode() > 0 && episode.getAirDate() != null && episode.getAirDate().before(c.getTime())) {
+				if (episode.getEpisode() > 0 && episode.getAirDate() != null && episode.getAirDate().before(backlogDate)) {
 					shouldRemoveEpisode = true;
 				} else if (episode.getEpisode() == -1) {
 					TreeSet<Episode> episodes = eps.get(episode.getShow().getName()).get(episode.getSeason()).getKey();
@@ -291,7 +291,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					if (!episodes.isEmpty()) {
 						Episode ep = episodes.last();
 						if (ep.getEpisode() > 0) {
-							if (episode.getAirDate() != null && episode.getAirDate().before(c.getTime())) {
+							if (episode.getAirDate() != null && episode.getAirDate().before(backlogDate)) {
 								shouldRemoveEpisode = true;
 							}
 						}

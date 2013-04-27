@@ -209,9 +209,9 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		final MutableInt bestLD = new MutableInt(Integer.MAX_VALUE);
 		// 5 is best from tries on my laptop (tried 1, 5, 10, 20, 30)
 		MultiThreadExecutor.execute(Executors.newFixedThreadPool(5), showsCacheService.getShowsSubsets(),
-				new MultiThreadExecutor.MultiThreadExecutorTask<Map.Entry<CachedShow, Collection<CachedShowSubset>>>() {
+				new MultiThreadExecutor.MultiThreadExecutorTask<Map.Entry<CachedShow, CachedShowSubset[]>>() {
 					@Override
-					public void run(Map.Entry<CachedShow, Collection<CachedShowSubset>> entry) {
+					public void run(Map.Entry<CachedShow, CachedShowSubset[]> entry) {
 						CachedShow show = entry.getKey();
 						if (show.getWords() < nameWords) {
 							// if show has less words that the search term - it doesn't match
@@ -240,7 +240,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 						if (matches.isEmpty() || ld <= bestLD.getValue()) {
 							matches.add(show);
 							bestLD.setValue(ld);
-							logService.debug(getClass(), "show=" + show.getName() + " ld=" + ld);
+							logService.debug(getClass(), String.format("show=%s ld=%s", show.getName(), ld));
 						}
 						lock.unlock();
 					}
@@ -262,7 +262,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			result.add(showDao.find(match.getId()));
 		}
 
-		logService.debug(getClass(), "Show statistic match end for: " + name + " found: " + StringUtils.join(result.toArray(), ","));
+		logService.debug(getClass(), String.format("Show statistic match end for: %s found: %s", name, StringUtils.join(result.toArray(), ",")));
 		return result;
 	}
 }

@@ -1,6 +1,5 @@
 package rss.services.movies;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +18,13 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.PageDownloader;
 import rss.services.SessionService;
-import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.log.LogService;
+import rss.util.DateUtils;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * User: dikmanm
@@ -78,7 +74,7 @@ public class MovieServiceImpl implements MovieService {
 		}
 
 		// then add movies that has torrents and the user selected a torrent to download
-		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user)) {
+		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user, 14)) {
 			Torrent torrent = userTorrent.getTorrent();
 			Movie movie = movieDao.find(torrent);
 			UserMovieVO userMovieVO = new UserMovieVO()
@@ -204,11 +200,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	private Set<Movie> getLatestMovies() {
-		Calendar c = Calendar.getInstance();
-		c.setTime(sessionService.getPrevLoginDate());
-		c.add(Calendar.DAY_OF_MONTH, -7);
-		Date uploadedFromDate = c.getTime();
-		return new HashSet<>(movieDao.findUploadedSince(uploadedFromDate));
+		return new HashSet<>(movieDao.findUploadedSince(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7)));
 	}
 
 	public class UserMoviesVOContainer {

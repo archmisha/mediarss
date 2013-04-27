@@ -275,4 +275,15 @@ public class DateUtils {
 	 */
 	public static Date MAX_DATE = new Date(Long.MAX_VALUE);
 
+
+	public static Date getPastDate(int backlogDays) {
+		return getPastDate(new Date(), backlogDays);
+	}
+
+	public static Date getPastDate(Date date, int backlogDays) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.DAY_OF_MONTH, -backlogDays);
+		return c.getTime();
+	}
 }
