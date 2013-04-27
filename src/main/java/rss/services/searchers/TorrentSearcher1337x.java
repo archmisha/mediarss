@@ -1,5 +1,6 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
@@ -122,6 +123,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		String titlePrefix = "<h2>";
 		idx = page.indexOf(titlePrefix, idx) + titlePrefix.length();
 		String title = page.substring(idx, page.indexOf("</h2>", idx));
+		title = StringEscapeUtils.unescapeHtml4(title);
 
 		String dateUploadedPrefix = "date uploaded</span>";
 		idx = page.indexOf(dateUploadedPrefix, idx) + dateUploadedPrefix.length();

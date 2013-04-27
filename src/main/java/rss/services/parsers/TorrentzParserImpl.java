@@ -71,8 +71,9 @@ public class TorrentzParserImpl implements TorrentzParser {
 	}
 
 	private String stripTags(String name) {
-		name = name.replaceAll("<b>", "");
-		name = name.replaceAll("</b>", "");
+		// avoiding usage of regex of String.replace method
+		name = org.apache.commons.lang3.StringUtils.replace(name, "<b>", "");
+		name = org.apache.commons.lang3.StringUtils.replace(name, "</b>", "");
 		return name;
 	}
 

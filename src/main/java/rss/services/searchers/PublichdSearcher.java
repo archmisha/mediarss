@@ -1,5 +1,6 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends A
 		}
 
 		String title = matcher.group(1).trim(); // sometimes comes with line break at the end - ruins log
+		title = StringEscapeUtils.unescapeHtml4(title);
 		String link = matcher.group(2);
 		String uploadDataString = matcher.group(3);
 		int seeders = Integer.parseInt(matcher.group(4));

@@ -1,5 +1,6 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
@@ -61,6 +62,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 			String titlePrefix = "<div id=\"title\">";
 			int idx = page.indexOf(titlePrefix);
 			String title = page.substring(idx + titlePrefix.length(), page.indexOf("</div>", idx)).trim();
+			title = StringEscapeUtils.unescapeHtml4(title);
 
 			String urlPrefix = "<div class=\"download\">";
 			idx = page.indexOf(urlPrefix);
@@ -175,6 +177,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 
 				idx = page.indexOf(">", idx) + ">".length();
 				String title = page.substring(idx, page.indexOf("</a>", idx));
+				title = StringEscapeUtils.unescapeHtml4(title);
 
 				idx = page.indexOf(urlPrefix, idx) + urlPrefix.length();
 				String torrentUrl = page.substring(idx, page.indexOf("\"", idx));

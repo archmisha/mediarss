@@ -1,5 +1,6 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
@@ -63,6 +64,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			String titlePrefix = "<span itemprop=\"name\">";
 			int idx = page.indexOf(titlePrefix) + titlePrefix.length();
 			String title = page.substring(idx, page.indexOf("</span>", idx)).trim();
+			title = StringEscapeUtils.unescapeHtml4(title);
 
 			String seedersPrefix = "<strong itemprop=\"seeders\">";
 			idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();

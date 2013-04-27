@@ -50,7 +50,8 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     @Transient
     private String sourcePageUrl;
 
-    protected Torrent() {
+    private Torrent() {
+		created = new Date();
     }
 
     public Torrent(String title, String url, Date dateUploaded, int seeders) {
@@ -58,7 +59,7 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     }
 
     public Torrent(String title, String url, Date dateUploaded, int seeders, String sourcePageUrl) {
-        created = new Date();
+        this();
         this.title = title;
         this.url = url;
         this.dateUploaded = dateUploaded;

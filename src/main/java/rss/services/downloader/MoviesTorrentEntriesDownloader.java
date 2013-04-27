@@ -53,8 +53,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
 		// if there is no IMDB ID - skip this movie
 		if (searchResult.getMetaData().getImdbUrl() == null) {
-			String escapedTorrentTitle = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
-			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", escapedTorrentTitle));
+			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", searchResult.getTorrent().getTitle()));
 			return false;
 		}
 
@@ -91,9 +90,8 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 				if (movieRequest.getImdbId() != null) {
 					// compare IMDB ID and skip if no match
 					if (!movieRequest.getImdbId().equals(searchResult.getMetaData().getImdbUrl())) {
-						String escapedTorrentTitle = StringEscapeUtils.unescapeHtml4(searchResult.getTorrent().getTitle());
 						logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
-								escapedTorrentTitle, searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
+								searchResult.getTorrent().getTitle(), searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
 						continue;
 					}
 				}
