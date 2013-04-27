@@ -126,7 +126,7 @@ public class MoviesController extends BaseController {
 				// take where max seeders
 				int seeders = -1;
 				Torrent theTorrent = null;
-				for (Torrent torrent : torrentDao.findByIds(movie.getTorrentIds())) {
+				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
 					if (seeders == -1 || seeders < torrent.getSeeders()) {
 						seeders = torrent.getSeeders();
 						theTorrent = torrent;

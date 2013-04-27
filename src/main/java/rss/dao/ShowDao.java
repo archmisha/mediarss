@@ -15,9 +15,9 @@ public interface ShowDao extends Dao<Show> {
 
     Show findByName(String name);
 
-	Collection<Show> findNotEnded();
+//	Collection<Show> findNotEnded();
 
-	List<Show> autoCompleteShowNames(String term);
+//	List<Show> autoCompleteShowNames(String term);
 
 	List<CachedShow> findCachedShows();
 

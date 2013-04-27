@@ -54,7 +54,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	public String getImdbPreviewPage(Movie movie) {
 		String page = moviePreviewPages.get(movie.getId());
 		if (page != null) {
-			logService.debug(getClass(), "IMDB page for movie " + movie.getName() + " was found in cache");
+			logService.debug(getClass(), String.format("IMDB page for movie %s was found in cache", movie.getName()));
 			return page;
 		}
 
@@ -63,7 +63,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 			page = pageDownloader.downloadPage(movie.getImdbUrl());
 			page = cleanImdbPage(movie.getName(), page);
 			durationMeter.stop();
-			logService.debug(getClass(), "IMDB page download for movie " + movie.getName() + " took " + durationMeter.getDuration() + " millis");
+			logService.debug(getClass(), String.format("IMDB page download for movie %s took %d millis", movie.getName(), durationMeter.getDuration()));
 		} catch (Exception e) {
 			page = null;
 			logService.error(getClass(), e.getMessage(), e);
@@ -86,14 +86,14 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 			css = pageDownloader.downloadPage(IMDB_CSS_URL_PREFIX + cssFileName);
 			css = cleanCSSFile(cssFileName, css);
 			durationMeter.stop();
-			logService.debug(getClass(), "IMDB CSS file '" + cssFileName + "' download took " + durationMeter.getDuration() + " millis");
+			logService.debug(getClass(), String.format("IMDB CSS file '%s' download took %d millis", cssFileName, durationMeter.getDuration()));
 		} catch (Exception e) {
 			css = null;
 			logService.error(getClass(), e.getMessage(), e);
 		}
 
 		movieCss.put(cssFileName, css);
-		logService.info(getClass(), "Inserting a new CSS file '" + cssFileName + "' into the cache (total size: " + movieCss.size() + ")");
+		logService.info(getClass(), String.format("Inserting a new CSS file '%s' into the cache (total size: %d)", cssFileName, movieCss.size()));
 
 		return css;
 	}
@@ -137,6 +137,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		doc.select("div#content-2-wide").removeAttr("id");
 		doc.select("body").removeAttr("id");
 		doc.select("br.clear").remove();
+		doc.select("#titleFAQ").remove();
 		doc.select("#content-1").removeAttr("id");
 		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
 		doc.select("script").remove();

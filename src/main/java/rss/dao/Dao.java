@@ -1,6 +1,8 @@
 package rss.dao;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -13,9 +15,11 @@ public interface Dao<T> {
 
 	void persist(T t);
 
-	public T find(Long primaryKey);
+	T find(Long primaryKey);
 
-	public List<T> findAll();
+	Collection<T> find(Set<Long> ids);
+
+	List<T> findAll();
 
 	void delete(T t);
 }

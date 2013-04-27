@@ -14,7 +14,7 @@ import java.util.*;
 @Repository
 public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 
-	@Override
+	/*@Override
 	public Collection<Torrent> find(Set<String> titles) {
 		if (titles.isEmpty()) {
 			return Collections.emptyList();
@@ -34,7 +34,7 @@ public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 		query.delete(query.length() - orPart.length(), query.length());
 
 		return find(query.toString(), params.toArray());
-	}
+	}*/
 
 	@Override
 	public Collection<Torrent> findByHash(Set<String> hashes) {
@@ -63,14 +63,5 @@ public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("url", url);
 		return uniqueResult(super.<Torrent>findByNamedQueryAndNamedParams("Torrent.findByUrl", params));
-	}
-
-	@Override
-	public Collection<Torrent> findByIds(Set<Long> torrentIds) {
-		Collection<Torrent> result = new ArrayList<>();
-		for (Long torrentId : torrentIds) {
-			result.add(super.find(torrentId));
-		}
-		return result;
 	}
 }

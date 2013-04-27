@@ -20,10 +20,10 @@ import java.util.Set;
 				query = "select b from Show as b where lower(b.name) = :name"),
 		@NamedQuery(name = "Show.findByTvRageId",
 				query = "select b from Show as b where b.tvRageId = :tvRageId"),
-		@NamedQuery(name = "Show.autoCompleteShowNames",
-				query = "select b from Show as b where lower(b.name) like :term"),
-		@NamedQuery(name = "Show.getNotEnded",
-				query = "select b from Show as b where b.ended = false"),
+//		@NamedQuery(name = "Show.autoCompleteShowNames",
+//				query = "select b from Show as b where lower(b.name) like :term"),
+//		@NamedQuery(name = "Show.getNotEnded",
+//				query = "select b from Show as b where b.ended = false"),
 		@NamedQuery(name = "Show.findCachedShows",
 				query = "select new rss.services.shows.CachedShow(b.id, b.name, b.ended) from Show as b")
 })

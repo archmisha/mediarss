@@ -24,18 +24,18 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 		return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByName", params));
 	}
 
-	@Override
+	/*@Override
 	public Collection<Show> findNotEnded() {
 		Map<String, Object> params = new HashMap<>(0);
 		return super.findByNamedQueryAndNamedParams("Show.getNotEnded", params);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public List<Show> autoCompleteShowNames(String term) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("term", "%" + term.toLowerCase() + "%");
 		return super.findByNamedQueryAndNamedParams("Show.autoCompleteShowNames", params);
-	}
+	}*/
 
 	@Override
 	public List<CachedShow> findCachedShows() {

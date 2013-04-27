@@ -68,7 +68,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		MovieRequest movieRequest = new MovieRequest("name", "hash");
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(new SearchResult<Media>(SearchResult.SearchStatus.NOT_FOUND));
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -83,7 +83,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(new SearchResult<Media>(torrent, "source", SearchResult.SearchStatus.AWAITING_AGING));
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -98,7 +98,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(new SearchResult<Media>(torrent, "source", SearchResult.SearchStatus.FOUND));
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -120,7 +120,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class)))
 				.thenReturn("<meta name=\"title\" content=\"" + movieRequest.getTitle() + " (1966) - IMDb\" /><span itemprop=\"ratingCount\">1001</span>");
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -142,7 +142,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class)))
 				.thenReturn("<meta name=\"title\" content=\"" + movieRequest.getTitle() + " (1966) - IMDb\" /><span itemprop=\"ratingCount\">1001</span>");
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -167,7 +167,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 				return loadPage("imdb-arrow");
 			}
 		});
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -196,7 +196,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 				return loadPage("imdb-argo");
 			}
 		});
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -221,7 +221,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 				return loadPage("imdb-low-users");
 			}
 		});
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
@@ -246,7 +246,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 				return loadPage("future-movie-no-viewers");
 			}
 		});
-		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
+//		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);

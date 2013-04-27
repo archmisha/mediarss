@@ -2,14 +2,14 @@ package rss.dao;
 
 
 import org.hibernate.NonUniqueResultException;
+import rss.entities.Torrent;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.lang.reflect.ParameterizedType;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -80,6 +80,14 @@ public class BaseDaoJPA<T> implements Dao<T> {
 			throw new IllegalArgumentException("primaryKey is null");
 		}
 		return em.find(persistentClass, primaryKey);
+	}
+
+	public Collection<T> find(Set<Long> ids) {
+		Collection<T> result = new ArrayList<>();
+		for (Long id : ids) {
+			result.add(find(id));
+		}
+		return result;
 	}
 
 	@SuppressWarnings({"unchecked"})
