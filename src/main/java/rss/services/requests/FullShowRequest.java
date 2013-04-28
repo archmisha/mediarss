@@ -2,9 +2,6 @@ package rss.services.requests;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.util.StringUtils;
-
-import javax.naming.OperationNotSupportedException;
 
 /**
  * User: Michael Dikman

@@ -1,8 +1,8 @@
 package rss.services.requests;
 
+import org.apache.commons.lang3.StringUtils;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.util.StringUtils;
 
 /**
  * User: Michael Dikman
@@ -23,9 +23,9 @@ public class DoubleEpisodeRequest extends EpisodeRequest {
 	}
 
 	public String getSeasonEpisode() {
-		return "s" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(getSeason()), 2, '0') +
-			   "e" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode1), 2, '0') +
-			   "e" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode2), 2, '0');
+		return "s" + StringUtils.leftPad(String.valueOf(getSeason()), 2, '0') +
+			   "e" + StringUtils.leftPad(String.valueOf(episode1), 2, '0') +
+			   "e" + StringUtils.leftPad(String.valueOf(episode2), 2, '0');
 	}
 
 	@Override

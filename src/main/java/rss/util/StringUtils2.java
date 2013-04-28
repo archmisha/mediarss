@@ -5,7 +5,7 @@ package rss.util;
  * Date: 22/12/12
  * Time: 15:44
  */
-public class StringUtils {
+public class StringUtils2 {
 
 	public static int indexOf(String seq, String searchSeq, int defaultValue) {
 		int index = searchSeq.indexOf(seq);

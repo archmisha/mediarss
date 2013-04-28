@@ -3,6 +3,7 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.primitives.Ints;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,7 +33,7 @@ import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
-import rss.util.StringUtils;
+import rss.util.StringUtils2;
 import rss.util.Utils;
 
 import javax.annotation.PostConstruct;
@@ -120,7 +121,7 @@ public class ShowServiceImpl implements ShowService {
 		name = NORMALIZE_TO_NOTHING_PATTERN.matcher(name).replaceAll("");
 		name = NORMALIZE_TO_SPACE_PATTERN.matcher(name).replaceAll(" ");
 		// avoiding usage of regex of String.replace method
-		name = org.apache.commons.lang3.StringUtils.replace(name, "and", " ");
+		name = StringUtils.replace(name, "and", " ");
 		name = NORMALIZE_SPACES_PATTERN.matcher(name).replaceAll(" ");
 		name = name.trim();
 		return name;
@@ -140,7 +141,7 @@ public class ShowServiceImpl implements ShowService {
 	// substitute show name with alias and seasons if needed
 	public void transformEpisodeRequest(ShowRequest showRequest) {
 		String alias = settingsService.getShowAlias(showRequest.getShow().getName());
-		if (!org.apache.commons.lang3.StringUtils.isBlank(alias)) {
+		if (!StringUtils.isBlank(alias)) {
 			showRequest.setTitle(alias);
 
 			if (showRequest instanceof EpisodeRequest) {
@@ -565,10 +566,10 @@ public class ShowServiceImpl implements ShowService {
 			if (mediaRequest instanceof FullSeasonRequest) {
 				// take everything before season 1 or s01 the first of the 2
 				String fullSeasonEnum = "season " + mediaRequest.getSeason();
-				String shortSeasonEnum = "s" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(mediaRequest.getSeason()), 2, '0');
+				String shortSeasonEnum = "s" + StringUtils.leftPad(String.valueOf(mediaRequest.getSeason()), 2, '0');
 
-				int indexOfFullSeason = StringUtils.indexOf(fullSeasonEnum, title, Integer.MAX_VALUE);
-				int indexOfShortSeason = StringUtils.indexOf(shortSeasonEnum, title, Integer.MAX_VALUE);
+				int indexOfFullSeason = StringUtils2.indexOf(fullSeasonEnum, title, Integer.MAX_VALUE);
+				int indexOfShortSeason = StringUtils2.indexOf(shortSeasonEnum, title, Integer.MAX_VALUE);
 				int indexOfSeason = Math.min(indexOfShortSeason, indexOfFullSeason);
 				if (indexOfSeason == Integer.MAX_VALUE) {
 					continue;
@@ -593,7 +594,7 @@ public class ShowServiceImpl implements ShowService {
 				titlePrefix = titlePrefix.trim();
 				boolean titleSuffixMatch = isTitleSuffixMatch(titleSuffix);
 				if (titleSuffixMatch && isShowNameMatch(titlePrefix, show)) {
-					pairs.add(new ImmutablePair<>(org.apache.commons.lang3.StringUtils.getLevenshteinDistance(titlePrefix, requestTitle), candidate));
+					pairs.add(new ImmutablePair<>(StringUtils.getLevenshteinDistance(titlePrefix, requestTitle), candidate));
 				} else {
 					logService.info(getClass(), String.format("Removing '%s' cuz a bad %s match for '%s'",
 							title, (titleSuffixMatch ? "show name" : "title suffix"), mediaRequest.toString()));
@@ -643,7 +644,7 @@ public class ShowServiceImpl implements ShowService {
 	private boolean isTitleSuffixMatch(String titleSuffix) {
 		titleSuffix = titleSuffix.trim();
 		// take only when after season 1 there is text or number > 100 or  nothing
-		if (org.apache.commons.lang3.StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
+		if (StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
 			return true;
 		}
 

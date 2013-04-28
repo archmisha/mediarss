@@ -1,7 +1,7 @@
 package rss.entities;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Index;
-import rss.util.StringUtils;
 
 import javax.persistence.*;
 import java.text.SimpleDateFormat;
@@ -89,9 +89,9 @@ public class Episode extends Media {
 	}
 
 	public String getSeasonEpisode() {
-		StringBuilder sb = new StringBuilder().append("s").append(org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(season), 2, '0'));
+		StringBuilder sb = new StringBuilder().append("s").append(StringUtils.leftPad(String.valueOf(season), 2, '0'));
 		if (episode > 0) {
-			sb.append("e").append(org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode), 2, '0'));
+			sb.append("e").append(StringUtils.leftPad(String.valueOf(episode), 2, '0'));
 		}
 		return sb.toString();
 	}
