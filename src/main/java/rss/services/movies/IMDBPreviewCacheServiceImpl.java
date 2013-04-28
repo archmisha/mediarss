@@ -34,6 +34,9 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	@Autowired
 	private PageDownloader pageDownloader;
 
+	@Autowired
+	private IMDBService imdbService;
+
 	private static final int MAX_MOVIE_PREVIEWS_CACHE = 20;
 
 	// +1 cuz when reaching max will add the new one and then remove the oldest one
@@ -70,6 +73,9 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		}
 
 		moviePreviewPages.put(movie.getId(), page);
+
+		// pre-download movie images, so no concurrency issue arrise when the browser tries to fetch the images
+		imdbService.downloadImages(page, movie.getImdbUrl());
 
 		return page;
 	}

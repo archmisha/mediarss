@@ -123,7 +123,9 @@ public class IMDBServiceImpl implements IMDBService {
 		}
 	}
 
-	private void downloadImages(String page, String imdbUrl) {
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public void downloadImages(String page, String imdbUrl) {
 		Matcher matcher = PEOPLE_IMAGES_PATTERN.matcher(page);
 		while (matcher.find()) {
 			String imageUrl = matcher.group(1);

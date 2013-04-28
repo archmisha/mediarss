@@ -15,4 +15,6 @@ public interface IMDBService {
 	IMDBParseResult downloadMovieFromIMDBAndImagesAsync(String imdbUrl);
 
 	InputStream getImage(String imageFileName);
+
+	 void downloadImages(String page, String imdbUrl);
 }

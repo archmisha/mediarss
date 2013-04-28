@@ -113,7 +113,7 @@ public class MovieServiceImpl implements MovieService {
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 
 		// get all userMovies related to the latest movie "names"
-		for (UserTorrent userTorrent : userTorrentDao.findUserMovies(latestMovies, user)) {
+		for (UserTorrent userTorrent : userTorrentDao.findUserMovies(user, latestMovies)) {
 			Torrent torrent = userTorrent.getTorrent();
 			torrentsByIds.put(torrent.getId(), torrent);
 			Movie movie = moviesMapper.getMovie(torrent);
