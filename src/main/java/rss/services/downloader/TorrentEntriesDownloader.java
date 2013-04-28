@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
  * Date: 02/12/12
  * Time: 23:49
  */
-public abstract class TorrentEntriesDownloader<T extends Media, S extends MediaRequest> {
+public abstract class TorrentEntriesDownloader<S extends MediaRequest, T extends Media> {
 
 	public static final int MAX_CONCURRENT_EPISODES = 15;
 
