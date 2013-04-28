@@ -3,7 +3,7 @@ package rss.services.searchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.entities.Media;
 import rss.services.PageDownloader;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 

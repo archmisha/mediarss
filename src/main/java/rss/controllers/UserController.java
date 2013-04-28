@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
-import rss.SubtitleLanguage;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.EmailService;

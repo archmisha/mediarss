@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.shows;
 
 import java.util.Collection;
 

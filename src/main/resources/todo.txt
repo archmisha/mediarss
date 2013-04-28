@@ -71,7 +71,7 @@ make subtitles be totally optional!
 
 [ERROR] TVShowsTorrentEntriesDownloader - Failed retrieving "Homeland s02e06 720p": excuteAPI error: DownloadSubtitles
 java.lang.RuntimeException: excuteAPI error: DownloadSubtitles
-        at rss.services.SubtitlesServiceImpl.downloadEpisodeSubtitles(SubtitlesServiceImpl.java:143)
+        at rss.services.subtitles.SubtitlesServiceImpl.downloadEpisodeSubtitles(SubtitlesServiceImpl.java:143)
         at sun.reflect.GeneratedMethodAccessor73.invoke(Unknown Source)
         at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
         at java.lang.reflect.Method.invoke(Unknown Source)
@@ -99,8 +99,8 @@ java.lang.RuntimeException: excuteAPI error: DownloadSubtitles
 Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: excuteAPI error: DownloadSubtitles
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:198)
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.download(OpenSubtitlesAPI.java:149)
-        at rss.services.SubtitlesServiceImpl.createSubtitles(SubtitlesServiceImpl.java:178)
-        at rss.services.SubtitlesServiceImpl.downloadEpisodeSubtitles(SubtitlesServiceImpl.java:134)
+        at rss.services.subtitles.SubtitlesServiceImpl.createSubtitles(SubtitlesServiceImpl.java:178)
+        at rss.services.subtitles.SubtitlesServiceImpl.downloadEpisodeSubtitles(SubtitlesServiceImpl.java:134)
         ... 24 more
 Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download limit reached
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)

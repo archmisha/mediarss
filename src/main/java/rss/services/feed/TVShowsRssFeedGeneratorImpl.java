@@ -1,11 +1,11 @@
-package rss.services;
+package rss.services.feed;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.SubtitleLanguage;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.dao.SubtitlesDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;

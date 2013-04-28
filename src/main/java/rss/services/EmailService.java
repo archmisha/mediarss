@@ -1,9 +1,7 @@
 package rss.services;
 
-import rss.entities.Show;
 import rss.entities.User;
-import rss.services.downloader.MovieRequest;
-import rss.services.requests.EpisodeRequest;
+import rss.services.requests.MovieRequest;
 import rss.services.requests.ShowRequest;
 
 import java.util.Collection;

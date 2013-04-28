@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.searchers;
 
 import rss.entities.Media;
 import rss.entities.Torrent;

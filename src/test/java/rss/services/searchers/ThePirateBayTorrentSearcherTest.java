@@ -8,8 +8,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
 import rss.entities.Media;
 import rss.services.PageDownloader;
-import rss.services.SearchResult;
-import rss.services.downloader.MovieRequest;
+import rss.services.searchers.SearchResult;
+import rss.services.requests.MovieRequest;
 
 import java.util.Calendar;
 import java.util.Date;

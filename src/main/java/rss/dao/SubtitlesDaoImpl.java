@@ -1,7 +1,7 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.SubtitleLanguage;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
 

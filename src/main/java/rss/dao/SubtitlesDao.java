@@ -1,7 +1,7 @@
 package rss.dao;
 
 import rss.entities.Subtitles;
-import rss.SubtitleLanguage;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.entities.Torrent;
 
 import java.util.Collection;

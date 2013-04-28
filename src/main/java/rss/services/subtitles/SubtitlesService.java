@@ -1,7 +1,6 @@
-package rss.services;
+package rss.services.subtitles;
 
 import rss.entities.Subtitles;
-import rss.SubtitleLanguage;
 import rss.entities.Episode;
 import rss.entities.Torrent;
 

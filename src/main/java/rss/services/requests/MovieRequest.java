@@ -1,4 +1,4 @@
-package rss.services.downloader;
+package rss.services.requests;
 
 import rss.services.requests.MediaRequest;
 

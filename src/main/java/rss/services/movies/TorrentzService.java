@@ -2,7 +2,7 @@ package rss.services.movies;
 
 import rss.entities.Movie;
 import rss.services.downloader.DownloadResult;
-import rss.services.downloader.MovieRequest;
+import rss.services.requests.MovieRequest;
 
 /**
  * User: dikmanm

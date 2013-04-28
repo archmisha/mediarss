@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.downloader.MovieRequest;
+import rss.services.requests.MovieRequest;
 import rss.services.requests.ShowRequest;
 import rss.util.GoogleMail;
 

@@ -4,12 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Movie;
 import rss.services.EmailService;
 import rss.services.JobRunner;
 import rss.services.downloader.DownloadResult;
-import rss.services.downloader.MovieRequest;
+import rss.services.requests.MovieRequest;
 import rss.util.QuartzJob;
 
 /**

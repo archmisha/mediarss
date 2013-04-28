@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.subtitles;
 
 import com.googlecode.opensubtitlesjapi.LANGUAGE;
 import com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI;
@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.dao.SubtitlesDao;
 import rss.entities.Subtitles;
+import rss.services.SettingsService;
 import rss.services.log.LogService;
-import rss.SubtitleLanguage;
 import rss.entities.Episode;
 import rss.entities.Torrent;
 

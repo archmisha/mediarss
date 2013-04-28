@@ -13,6 +13,7 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.entities.Movie;
 import rss.entities.Torrent;
+import rss.services.requests.MovieRequest;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;

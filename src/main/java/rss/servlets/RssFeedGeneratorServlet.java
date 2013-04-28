@@ -12,7 +12,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.RssFeedGenerator;
+import rss.services.feed.RssFeedGenerator;
 import rss.services.UrlService;
 
 import javax.servlet.ServletContext;

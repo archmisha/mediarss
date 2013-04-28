@@ -3,7 +3,7 @@ package rss.dao;
 import rss.entities.Show;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Torrent;
-import rss.SubtitleLanguage;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.entities.Episode;
 import rss.services.requests.ShowRequest;
 

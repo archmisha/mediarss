@@ -1,4 +1,4 @@
-package rss;
+package rss.services.subtitles;
 
 import java.util.ArrayList;
 import java.util.Collection;

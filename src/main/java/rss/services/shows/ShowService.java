@@ -1,14 +1,10 @@
 package rss.services.shows;
 
 import com.google.common.base.Predicate;
-import rss.controllers.vo.EpisodeSearchResult;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
-import rss.entities.User;
-import rss.services.downloader.MovieRequest;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Show;
-import rss.services.requests.MediaRequest;
 import rss.services.requests.ShowRequest;
 
 import java.util.Collection;

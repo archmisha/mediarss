@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
-import rss.services.downloader.MovieRequest;
+import rss.services.requests.MovieRequest;
 
 import java.util.HashSet;
 import java.util.Set;

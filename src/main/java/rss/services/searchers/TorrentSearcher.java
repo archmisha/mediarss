@@ -2,7 +2,7 @@ package rss.services.searchers;
 
 import rss.services.requests.MediaRequest;
 import rss.entities.Media;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 
 /**
  * User: Michael Dikman

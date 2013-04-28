@@ -8,7 +8,7 @@ import rss.entities.Torrent;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.PageDownloader;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

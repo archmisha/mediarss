@@ -6,7 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.requests.MediaRequest;
 
 import java.text.ParseException;

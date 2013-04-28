@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.feed;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
+import rss.services.SettingsService;
+import rss.services.subtitles.SubtitlesService;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

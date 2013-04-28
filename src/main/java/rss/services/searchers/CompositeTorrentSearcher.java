@@ -6,7 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.entities.Media;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.requests.MediaRequest;
 import rss.util.Utils;
 

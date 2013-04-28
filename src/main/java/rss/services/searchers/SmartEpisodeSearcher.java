@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import rss.entities.Episode;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.MediaQuality;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.requests.ShowRequest;
 
 import javax.annotation.PostConstruct;

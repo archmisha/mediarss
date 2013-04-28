@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.util.MultiThreadExecutor;

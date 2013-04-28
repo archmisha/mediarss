@@ -1,7 +1,7 @@
 package rss.entities;
 
 import org.hibernate.annotations.Index;
-import rss.SubtitleLanguage;
+import rss.services.subtitles.SubtitleLanguage;
 
 import javax.persistence.*;
 import java.util.Date;

@@ -13,6 +13,7 @@ import rss.dao.TorrentDao;
 import rss.services.*;
 import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
+import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowsProvider;
 import rss.services.searchers.SmartEpisodeSearcher;

@@ -14,7 +14,7 @@ import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
-import rss.services.SubtitlesService;
+import rss.services.subtitles.SubtitlesService;
 import rss.services.requests.FullSeasonRequest;
 import rss.services.requests.FullShowRequest;
 import rss.services.requests.ShowRequest;

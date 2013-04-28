@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.feed;
 
 import rss.entities.User;
 

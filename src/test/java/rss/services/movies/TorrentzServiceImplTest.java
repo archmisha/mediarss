@@ -13,7 +13,7 @@ import rss.BaseTest;
 import rss.entities.Movie;
 import rss.services.PageDownloader;
 import rss.services.downloader.DownloadResult;
-import rss.services.downloader.MovieRequest;
+import rss.services.requests.MovieRequest;
 import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.parsers.TorrentzParser;
 import rss.services.parsers.TorrentzParserImpl;

@@ -1,15 +1,7 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.SubtitleLanguage;
-import rss.entities.Episode;
 import rss.entities.Image;
-import rss.entities.Show;
-import rss.entities.Torrent;
-import rss.services.requests.DoubleEpisodeRequest;
-import rss.services.requests.EpisodeRequest;
-import rss.services.requests.FullSeasonRequest;
-import rss.services.requests.SingleEpisodeRequest;
 
 import java.util.*;
 

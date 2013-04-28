@@ -1,20 +1,18 @@
 package rss.services.downloader;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
+import rss.services.requests.MovieRequest;
 import rss.services.searchers.TorrentSearcher;
 import rss.util.CollectionUtils;
 

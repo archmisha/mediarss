@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.requests.MediaRequest;
 
 import javax.annotation.PostConstruct;

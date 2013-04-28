@@ -11,7 +11,7 @@ import rss.entities.Media;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.PageDownloader;
-import rss.services.SearchResult;
+import rss.services.searchers.SearchResult;
 import rss.services.requests.SingleEpisodeRequest;
 
 import java.util.Calendar;
