@@ -6,8 +6,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import rss.EpisodesComparator;
 import rss.MediaRSSException;
 import rss.ShowNotFoundException;
@@ -208,35 +206,13 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 			if (episodeRequest instanceof SingleEpisodeRequest) {
 				EpisodesMapper episodesMapper = eps2.get(episodeRequest.getShow().getName());
 				Episode episode = episodesMapper.get(episodeRequest.getSeason(), ((SingleEpisodeRequest) episodeRequest).getEpisode());
-				if (episode == null) {
-					logService.info(getClass(), "Skipping request '" + episodeRequest + "' because no such episodes exist");
-					episodeRequests.remove(episodeRequest);
-				} else {
-					// if not yet handled this episode
-					if (forceDownload && !episodesMap.containsKey(episode)) {
-						deleteTorrents(episode);
-					}
-					CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
-				}
+				createEpisodesToRequestsMapHelper(episode, episodeRequest, episodeRequests, episodesMap, forceDownload);
 			} else if (episodeRequest instanceof DoubleEpisodeRequest) {
 				EpisodesMapper episodesMapper = eps2.get(episodeRequest.getShow().getName());
 				Episode episode1 = episodesMapper.get(episodeRequest.getSeason(), ((DoubleEpisodeRequest) episodeRequest).getEpisode1());
 				Episode episode2 = episodesMapper.get(episodeRequest.getSeason(), ((DoubleEpisodeRequest) episodeRequest).getEpisode2());
-				if (episode1 == null || episode2 == null) {
-					logService.info(getClass(), "Skipping request '" + episodeRequest + "' because no such episodes exist");
-					episodeRequests.remove(episodeRequest);
-				} else {
-					// if not yet handled this episode
-					if (forceDownload && !episodesMap.containsKey(episode1)) {
-						deleteTorrents(episode1);
-					}
-					// if not yet handled this episode
-					if (forceDownload && !episodesMap.containsKey(episode2)) {
-						deleteTorrents(episode2);
-					}
-					CollectionUtils.safeSetPut(episodesMap, episode1, episodeRequest);
-					CollectionUtils.safeSetPut(episodesMap, episode2, episodeRequest);
-				}
+				createEpisodesToRequestsMapHelper(episode1, episodeRequest, episodeRequests, episodesMap, forceDownload);
+				createEpisodesToRequestsMapHelper(episode2, episodeRequest, episodeRequests, episodesMap, forceDownload);
 			} else if (episodeRequest instanceof FullSeasonRequest) {
 				Map<Integer, Pair<TreeSet<Episode>, Boolean>> map = eps.get(episodeRequest.getShow().getName());
 				if (!map.containsKey(episodeRequest.getSeason())) {
@@ -244,16 +220,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 					episodeRequests.remove(episodeRequest);
 				} else {
 					for (Episode episode : map.get(episodeRequest.getSeason()).getKey()) {
-						if (episode == null) {
-							logService.info(getClass(), "Skipping request '" + episodeRequest + "' because no such episodes exist");
-							episodeRequests.remove(episodeRequest);
-							break;
-						}
-						// if not yet handled this episode
-						if (forceDownload && !episodesMap.containsKey(episode)) {
-							deleteTorrents(episode);
-						}
-						CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
+						createEpisodesToRequestsMapHelper(episode, episodeRequest, episodeRequests, episodesMap, forceDownload);
 					}
 				}
 			} else {
@@ -263,11 +230,27 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 		return episodesMap;
 	}
 
+	private void createEpisodesToRequestsMapHelper(Episode episode,
+												   EpisodeRequest episodeRequest,
+												   Set<ShowRequest> episodeRequests,
+												   Map<Episode, Set<EpisodeRequest>> episodesMap,
+												   boolean forceDownload) {
+		if (episode == null) {
+			logService.info(getClass(), "Skipping request '" + episodeRequest + "' because no such episodes exist");
+			episodeRequests.remove(episodeRequest);
+		} else {
+			// if not yet handled this episode
+			if (forceDownload && !episodesMap.containsKey(episode)) {
+				deleteTorrents(episode);
+			}
+			CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
+		}
+	}
+
 	private void deleteTorrents(Episode episode) {
 		showService.disconnectTorrentsFromEpisode(episode);
 	}
 
-	// skip episodes that already scanned, except the last 2 (those might still be updated later)
 	private void skipScannedEpisodes(Set<ShowRequest> episodeRequests,
 									 Map<String, Map<Integer, Pair<TreeSet<Episode>, Boolean>>> eps,
 									 Map<Episode, Set<EpisodeRequest>> episodesMap) {
