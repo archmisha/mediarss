@@ -23,7 +23,9 @@ public class DoubleEpisodeRequest extends EpisodeRequest {
 	}
 
 	public String getSeasonEpisode() {
-		return "s" + StringUtils.pad(getSeason(), 2) + "e" + StringUtils.pad(episode1, 2) + "e" + StringUtils.pad(episode2, 2);
+		return "s" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(getSeason()), 2, '0') +
+			   "e" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode1), 2, '0') +
+			   "e" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode2), 2, '0');
 	}
 
 	@Override

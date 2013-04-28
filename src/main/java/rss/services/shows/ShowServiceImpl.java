@@ -3,7 +3,6 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.primitives.Ints;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,6 +32,7 @@ import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
+import rss.util.StringUtils;
 import rss.util.Utils;
 
 import javax.annotation.PostConstruct;
@@ -140,7 +140,7 @@ public class ShowServiceImpl implements ShowService {
 	// substitute show name with alias and seasons if needed
 	public void transformEpisodeRequest(ShowRequest showRequest) {
 		String alias = settingsService.getShowAlias(showRequest.getShow().getName());
-		if (!StringUtils.isBlank(alias)) {
+		if (!org.apache.commons.lang3.StringUtils.isBlank(alias)) {
 			showRequest.setTitle(alias);
 
 			if (showRequest instanceof EpisodeRequest) {
@@ -545,20 +545,19 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public Set<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> movieRequests) {
-		if (movieRequests.isEmpty()) {
+	public Set<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> matchCandidates) {
+		if (matchCandidates.isEmpty()) {
 			return Collections.emptySet();
 		}
 
 		// take everything before s01e01
 		// do LD on the texts
 		String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle());
-		String seasonEpisode = mediaRequest.getSeasonEpisode();
 		Show show = mediaRequest.getShow();
 
 		List<Pair<Integer, MatchCandidate>> pairs = new ArrayList<>();
-		for (MatchCandidate movieRequest : movieRequests) {
-			String title = ShowServiceImpl.normalize(movieRequest.getText());
+		for (MatchCandidate candidate : matchCandidates) {
+			String title = ShowServiceImpl.normalize(candidate.getText());
 
 			String titlePrefix = null;
 			String titleSuffix = null;
@@ -566,26 +565,20 @@ public class ShowServiceImpl implements ShowService {
 			if (mediaRequest instanceof FullSeasonRequest) {
 				// take everything before season 1 or s01 the first of the 2
 				String fullSeasonEnum = "season " + mediaRequest.getSeason();
-				String shortSeasonEnum = "s" + StringUtils.leftPad(String.valueOf(mediaRequest.getSeason()), 2, '0');
+				String shortSeasonEnum = "s" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(mediaRequest.getSeason()), 2, '0');
 
-				int indexOfFullSeason = title.indexOf(fullSeasonEnum);
-				int indexOfShortSeason = title.indexOf(shortSeasonEnum);
-				if (indexOfFullSeason == -1) {
-					if (indexOfShortSeason != -1) {
-						titlePrefix = title.substring(0, indexOfShortSeason).trim();
-						titleSuffix = title.substring(indexOfShortSeason + shortSeasonEnum.length());
-					}
-				} else if (indexOfShortSeason == -1) {
-					titlePrefix = title.substring(0, indexOfFullSeason);
-					titleSuffix = title.substring(indexOfFullSeason + fullSeasonEnum.length());
-				} else if (indexOfFullSeason < indexOfShortSeason) {
-					titlePrefix = title.substring(0, indexOfFullSeason);
-					titleSuffix = title.substring(indexOfFullSeason + fullSeasonEnum.length());
-				} else {
-					titlePrefix = title.substring(0, indexOfShortSeason);
-					titleSuffix = title.substring(indexOfShortSeason + shortSeasonEnum.length());
+				int indexOfFullSeason = StringUtils.indexOf(fullSeasonEnum, title, Integer.MAX_VALUE);
+				int indexOfShortSeason = StringUtils.indexOf(shortSeasonEnum, title, Integer.MAX_VALUE);
+				int indexOfSeason = Math.min(indexOfShortSeason, indexOfFullSeason);
+				if (indexOfSeason == Integer.MAX_VALUE) {
+					continue;
 				}
+				int seasonEnumLength = indexOfSeason == indexOfShortSeason ? shortSeasonEnum.length() : fullSeasonEnum.length();
+
+				titlePrefix = title.substring(0, indexOfSeason);
+				titleSuffix = title.substring(indexOfSeason + seasonEnumLength);
 			} else {
+				String seasonEpisode = mediaRequest.getSeasonEpisode();
 				int indexOfSeasonEpisode = title.indexOf(seasonEpisode);
 				if (indexOfSeasonEpisode != -1) {
 					// take everything before s01e01
@@ -600,7 +593,7 @@ public class ShowServiceImpl implements ShowService {
 				titlePrefix = titlePrefix.trim();
 				boolean titleSuffixMatch = isTitleSuffixMatch(titleSuffix);
 				if (titleSuffixMatch && isShowNameMatch(titlePrefix, show)) {
-					pairs.add(new ImmutablePair<>(StringUtils.getLevenshteinDistance(titlePrefix, requestTitle), movieRequest));
+					pairs.add(new ImmutablePair<>(org.apache.commons.lang3.StringUtils.getLevenshteinDistance(titlePrefix, requestTitle), candidate));
 				} else {
 					logService.info(getClass(), String.format("Removing '%s' cuz a bad %s match for '%s'",
 							title, (titleSuffixMatch ? "show name" : "title suffix"), mediaRequest.toString()));
@@ -650,7 +643,7 @@ public class ShowServiceImpl implements ShowService {
 	private boolean isTitleSuffixMatch(String titleSuffix) {
 		titleSuffix = titleSuffix.trim();
 		// take only when after season 1 there is text or number > 100 or  nothing
-		if (StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
+		if (org.apache.commons.lang3.StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
 			return true;
 		}
 

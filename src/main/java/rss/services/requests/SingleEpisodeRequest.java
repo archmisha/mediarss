@@ -21,7 +21,8 @@ public class SingleEpisodeRequest extends EpisodeRequest {
 	}
 
 	public String getSeasonEpisode() {
-		return "s" + StringUtils.pad(getSeason(), 2) + "e" + StringUtils.pad(episode, 2);
+		return "s" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(getSeason()), 2, '0') +
+			   "e" + org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode), 2, '0');
 	}
 
 	@Override

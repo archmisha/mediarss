@@ -89,9 +89,9 @@ public class Episode extends Media {
 	}
 
 	public String getSeasonEpisode() {
-		StringBuilder sb = new StringBuilder().append("s").append(StringUtils.pad(season, 2));
+		StringBuilder sb = new StringBuilder().append("s").append(org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(season), 2, '0'));
 		if (episode > 0) {
-			sb.append("e").append(StringUtils.pad(episode, 2));
+			sb.append("e").append(org.apache.commons.lang3.StringUtils.leftPad(String.valueOf(episode), 2, '0'));
 		}
 		return sb.toString();
 	}

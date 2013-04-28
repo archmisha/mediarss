@@ -108,3 +108,14 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download
 
 
 
+
+
+
+
+subtitles
+job to download periodically
+scan data in subtitles like in episodes and make logic when to skip
+downloader for subtitles
+query name should be by the torrent name
+search doesnt work on subcenter:
+  seach for show name if match then can append the season / episode to the url
