@@ -34,6 +34,7 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     private String url;
 
     @Column(name = "date_uploaded")
+	@Index(name = "date_uploaded_idx")
     private Date dateUploaded;
 
     @Column(name = "quality")

@@ -1,5 +1,7 @@
 package rss.entities;
 
+import org.hibernate.annotations.Index;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.HashSet;
@@ -12,6 +14,10 @@ import java.util.Set;
 @SuppressWarnings("UnusedDeclaration")
 @Entity
 @Table(name = "user_movie")
+@org.hibernate.annotations.Table(appliesTo = "user_movie",
+		indexes = {
+				@Index(name = "user_movie_userId_movieId_idx", columnNames = {"user_id", "movie_id"})
+		})
 @NamedQueries({
 		@NamedQuery(name = "UserMovie.findUserMovie",
 				query = "select t from UserMovie as t " +

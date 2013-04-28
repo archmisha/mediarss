@@ -1,5 +1,6 @@
 package rss.entities;
 
+import org.hibernate.annotations.Index;
 import rss.SubtitleLanguage;
 
 import javax.persistence.*;
@@ -10,6 +11,9 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "subtitles")
+@org.hibernate.annotations.Table(appliesTo = "subtitles", indexes = {
+		@Index(name = "subtitles_language_torrent_id_idx", columnNames = {"language", "torrent_id"})
+})
 @NamedQueries({
 		@NamedQuery(name = "Subtitles.find",
 				query = "select s from Subtitles as s " +

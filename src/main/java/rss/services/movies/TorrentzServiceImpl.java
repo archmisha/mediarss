@@ -13,6 +13,7 @@ import rss.services.downloader.MovieRequest;
 import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.log.LogService;
 import rss.services.parsers.TorrentzParser;
+import rss.util.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -93,8 +94,17 @@ public class TorrentzServiceImpl implements TorrentzService {
 		Set<MovieRequest> movieRequests = torrentzParser.parse(page);
 
 		for (MovieRequest movieRequest : movieRequests) {
-			String entryPage = pageDownloader.downloadPage(TORRENTZ_ENTRY_URL + movieRequest.getHash());
-			movieRequest.setPirateBayId(torrentzParser.getPirateBayId(entryPage));
+			String curUrl = TORRENTZ_ENTRY_URL + movieRequest.getHash();
+			try {
+				String entryPage = pageDownloader.downloadPage(curUrl);
+				movieRequest.setPirateBayId(torrentzParser.getPirateBayId(entryPage));
+			} catch (Exception e) {
+				if (Utils.isRootCauseMessageContains(e, "timed out")) {
+					logService.warn(getClass(), String.format("Failed downloading '%s': %s", curUrl, e.getMessage()));
+				} else {
+					throw e;
+				}
+			}
 		}
 
 		return movieRequests;

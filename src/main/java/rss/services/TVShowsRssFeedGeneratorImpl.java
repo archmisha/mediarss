@@ -1,18 +1,16 @@
 package rss.services;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.SubtitleLanguage;
 import rss.dao.SubtitlesDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.SubtitleLanguage;
 import rss.services.log.LogService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
@@ -72,14 +70,14 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		// also add user episodes
 		// add everything added since last feed generated with 7 days buffer
 		int backlogDays = 7;
-		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(DateUtils.getPastDate(user.getLastShowsFeedGenerated(), backlogDays), user)) {
+		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(user, DateUtils.getPastDate(user.getLastShowsFeedGenerated(), backlogDays))) {
 			userTorrent.setDownloadDate(downloadDate);
 			torrentEntries.add(userTorrent.getTorrent());
 		}
 
 		// add subtitles
 		Collection<Subtitles> subtitles;
-		if ( user.getSubtitles() != null ) {
+		if (user.getSubtitles() != null) {
 			subtitles = subtitlesDao.find(torrentEntries, user.getSubtitles(), SubtitleLanguage.ENGLISH);
 		} else {
 			subtitles = Collections.emptyList();

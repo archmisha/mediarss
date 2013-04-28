@@ -14,8 +14,10 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "episode")
-@org.hibernate.annotations.Table(appliesTo = "episode",
-		indexes = {@Index(name = "ep_showid_season_episode_idx", columnNames = {"show_id", "season", "episode"})})
+@org.hibernate.annotations.Table(appliesTo = "episode", indexes = {
+		@Index(name = "ep_showid_season_episode_idx", columnNames = {"show_id", "season", "episode"}),
+		@Index(name = "ep_airdate_showId_idx", columnNames = {"air_date", "show_id"})
+})
 @NamedQueries({
 		@NamedQuery(name = "Episode.getSubtitlesLanguages",
 				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e " +
@@ -37,9 +39,11 @@ public class Episode extends Media {
 	// eager cuz need it later for comparator stuff of show name
 	@ManyToOne(targetEntity = Show.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "show_id")
+	@Index(name = "episode_showid_idx")
 	private Show show;
 
 	@Column(name = "air_date")
+	@Index(name = "episode_airdate_idx")
 	private Date airDate;
 
 	@Column(name = "scan_date")

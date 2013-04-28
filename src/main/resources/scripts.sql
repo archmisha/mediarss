@@ -14,3 +14,10 @@ insert into user values(1,'2012-12-11 21:15:29','archmisha@gmail.com',1,'Michael
 
 insert into user values(1,'2012-12-11 21:15:29','archmisha@gmail.com',1,'2013-01-05 18:09:45','2013-01-05 18:03:55','2013-01-05 18:21:59','123456','84ad17ad','archmisha',null)
 insert into user values(2,'2012-12-11 21:26:25','dim4iksh@gmail.com',2,'2012-12-14 19:21:13','2012-12-14 19:22:51','2013-01-05 18:03:13','123456','zrqqmac2','dim4iksh',null)
+
+
+
+indexes to be created manually:
+@org.hibernate.annotations.Table(appliesTo = "movie_torrentids", indexes = {
+		@Index(name = "movie_torrentids_torrentIds_idx", columnNames = {"torrentids"})
+})

@@ -49,7 +49,7 @@ root@media-rss:~#
 
 
 
-enable tomcat compressionThe following torrents were not found
+enable tomcat compression
 
 
 install speed_mon

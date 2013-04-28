@@ -26,7 +26,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	}
 
 	@Override
-	public List<UserTorrent> findEpisodesAddedSince(Date dateAdded, User user) {
+	public List<UserTorrent> findEpisodesAddedSince(User user, Date dateAdded) {
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("dateAdded", dateAdded);
 		params.put("userId", user.getId());
@@ -94,7 +94,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	}
 
 	@Override
-	public Collection<UserTorrent> findUserMovies(Collection<Movie> movies, User user) {
+	public Collection<UserTorrent> findUserMovies(User user, Collection<Movie> movies) {
 		if (movies.isEmpty()) {
 			return Collections.emptyList();
 		}

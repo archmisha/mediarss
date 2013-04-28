@@ -58,6 +58,12 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		return queryObject.getResultList();
 	}
 
+	protected final <E> List<E> findByNativeQuery(Class clazz, final String ejbqlString, final Object... values) {
+		Query queryObject = em.createNativeQuery(ejbqlString, clazz);
+		setParameters(queryObject, values);
+		return queryObject.getResultList();
+	}
+
 	private Query setParameters(Query queryObject, final Object... values) {
 		if (values != null) {
 			for (int i = 0; i < values.length; i++) {

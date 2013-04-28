@@ -1,5 +1,7 @@
 package rss.entities;
 
+import org.hibernate.annotations.Index;
+
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -11,6 +13,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "user_episode_torrent")
+@org.hibernate.annotations.Table(appliesTo = "user_episode_torrent", indexes = {
+		@Index(name = "user_episode_torrent_userId_added_idx", columnNames = {"user_id", "added"})
+})
 @NamedQueries({
 		@NamedQuery(name = "UserEpisodeTorrent.findEpisodesAddedSince",
 				query = "select ut from UserEpisodeTorrent as ut " +

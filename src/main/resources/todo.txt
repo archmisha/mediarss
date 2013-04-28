@@ -65,6 +65,9 @@ take all tracked shows, sort the episode airdates, take the 7 before now and the
 make subtitles be totally optional!
 
 
+2013-04-28 00:02:22,149 [INFO ] ShowServiceImpl - Removing 'survivor africa season 3' cuz a bad show name match for 'Survivor season 3'
+
+
 
 [ERROR] TVShowsTorrentEntriesDownloader - Failed retrieving "Homeland s02e06 720p": excuteAPI error: DownloadSubtitles
 java.lang.RuntimeException: excuteAPI error: DownloadSubtitles
@@ -105,6 +108,3 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download
 
 
 
-might be a problem with the transaction annotations in TorrentEntiresDownload
-annotations might workk on ly on public methods ,and there are on protected also
-and there are too many transactions there, should minimize. maybe threads wont open a transaction or something.
