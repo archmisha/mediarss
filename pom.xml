@@ -543,7 +543,7 @@
                                     <!-- wait for 200 seconds to let tomcat startup -->
                                     <!-- set maintenance mode off -->
                                     <command>cp -f webapps/media-rss.war backups/;./maintenance.sh start;
-                                        ./tomcat stop;rm -rf webapps/media-rss*;cp media-rss.war webapps/;
+                                        ./tomcat stop;sleep 10;rm -rf webapps/media-rss*;cp media-rss.war webapps/;
                                         ./t.sh;sleep 200;./maintenance.sh stop
                                     </command>
                                 </configuration>
