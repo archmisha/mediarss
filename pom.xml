@@ -540,10 +540,11 @@
                                     <!-- delete old war file -->
                                     <!-- copy new war file -->
                                     <!-- start tomcat -->
+                                    <!-- wait for 200 seconds to let tomcat startup -->
                                     <!-- set maintenance mode off -->
                                     <command>cp -f webapps/media-rss.war backups/;./maintenance.sh start;
                                         ./tomcat stop;rm -rf webapps/media-rss*;cp media-rss.war webapps/;
-                                        ./t.sh;./maintenance.sh stop
+                                        ./t.sh;sleep 200;./maintenance.sh stop
                                     </command>
                                 </configuration>
                             </execution>
