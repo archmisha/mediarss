@@ -4,7 +4,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -13,8 +12,8 @@ import rss.dao.JobStatusDao;
 import rss.entities.JobStatus;
 import rss.services.log.LogService;
 import rss.util.DurationMeter;
+import rss.util.Utils;
 
-import javax.annotation.PostConstruct;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -69,11 +68,17 @@ public abstract class JobRunner extends QuartzJobBean {
 				try {
 					statusMessage = JobRunner.this.run();
 				} catch (Exception e) {
-					logService.error(aClass, e.getMessage(), e);
-					statusMessage = "Failed";
 					StringWriter sw = new StringWriter();
-					e.printStackTrace(new PrintWriter(sw));
-					emailService.notifyOfFailedJob("Job " + JobRunner.this.name + " fail at " + durationMeter.getStartTime() + "\r\n\r\n" + sw);
+					if (Utils.isRootCauseMessageContains(e, "timed out")) {
+						logService.error(aClass, e.getMessage());
+						sw.append(e.getMessage());
+					} else {
+						logService.error(aClass, e.getMessage(), e);
+						e.printStackTrace(new PrintWriter(sw));
+					}
+
+					statusMessage = "Failed";
+					emailService.notifyOfFailedJob("Job " + JobRunner.this.name + " fail at " + durationMeter.getStartTime() + ":\r\n\r\n" + sw);
 				}
 
 				durationMeter.stop();

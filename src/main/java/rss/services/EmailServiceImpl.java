@@ -149,6 +149,11 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	private void notifyToAdmins(String titleSuffix, String msg, String errorMsg) {
+		// don't send admins notifications from dev env
+		if (settingsService.isDevEnvironment()) {
+			return;
+		}
+
 		try {
 			sendEmail(settingsService.getAdministratorEmails(), APP_NAME + titleSuffix,
 					msg +
