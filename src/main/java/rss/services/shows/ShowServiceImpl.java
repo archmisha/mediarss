@@ -188,8 +188,8 @@ public class ShowServiceImpl implements ShowService {
 							}
 						});
 					} catch (Exception e) {
-						if (Utils.isRootCauseMessageContains(e, "Read timed out")) {
-							logService.warn(aClass, String.format("Failed downloading info for show '%s' (Connection error)", downloadedShow.getName()));
+						if (Utils.isRootCauseMessageContains(e, "timed out")) {
+							logService.warn(aClass, String.format("Failed downloading info for show '%s' (Connection timed out)", downloadedShow.getName()));
 						} else {
 							logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
 						}
@@ -546,9 +546,9 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public Set<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> matchCandidates) {
+	public List<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> matchCandidates) {
 		if (matchCandidates.isEmpty()) {
-			return Collections.emptySet();
+			return Collections.emptyList();
 		}
 
 		// take everything before s01e01
@@ -602,9 +602,9 @@ public class ShowServiceImpl implements ShowService {
 			}
 		}
 
-		Set<MatchCandidate> result = new HashSet<>();
+
 		if (pairs.isEmpty()) {
-			return result;
+			return Collections.emptyList();
 		}
 
 		Collections.sort(pairs, new Comparator<Pair<Integer, MatchCandidate>>() {
@@ -626,6 +626,7 @@ public class ShowServiceImpl implements ShowService {
 			logService.info(getClass(), "Removing '" + pair.getValue().getText() + "' cuz a bad match for '" + mediaRequest.toString() + "'");
 		}
 
+		List<MatchCandidate> result = new ArrayList<>();
 		for (Pair<Integer, MatchCandidate> pair : pairs.subList(0, i)) {
 			result.add(pair.getValue());
 		}

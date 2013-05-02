@@ -1,14 +1,13 @@
 package rss.services.searchers;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
-import rss.services.requests.EpisodeRequest;
 import rss.entities.MediaQuality;
-import rss.services.searchers.SearchResult;
+import rss.entities.Torrent;
+import rss.services.log.LogService;
+import rss.services.requests.EpisodeRequest;
 import rss.services.requests.ShowRequest;
 
 import javax.annotation.PostConstruct;
@@ -25,109 +24,106 @@ import java.util.regex.Pattern;
 @Service("smartEpisodeSearcher")
 public class SmartEpisodeSearcher implements TorrentSearcher<ShowRequest, Episode> {
 
-    private static Log log = LogFactory.getLog(SmartEpisodeSearcher.class);
+	@Autowired
+	@Qualifier("compositeEpisodeSearcher")
+	private TorrentSearcher<ShowRequest, Episode> compositeEpisodeSearcher;
 
-    @Autowired
-    @Qualifier("compositeTVShowsEpisodeSearcher")
-    private TorrentSearcher<ShowRequest, Episode> compositeEpisodeSearcher;
+	@Autowired
+	private LogService logService;
 
-    private List<EpisodeModificator> episodeModificators;
+	private List<EpisodeModificator> episodeModificators;
 
-    @PostConstruct
-    private void postConstruct() {
-        episodeModificators = Arrays.asList(
-                new DoNothingEpisodeModificator(),
-                new NormalQualityEpisodeModificator(),
-                new ShowNameEndsWithYearEpisodeModificator());
-    }
+	@PostConstruct
+	private void postConstruct() {
+		episodeModificators = Arrays.asList(
+				new DoNothingEpisodeModificator(),
+				new NormalQualityEpisodeModificator(),
+				new ShowNameEndsWithYearEpisodeModificator());
+	}
 
-    @Override
-    public SearchResult<Episode> search(ShowRequest episodeRequest) {
-        String msgPrefix = null;
-        for (EpisodeModificator episodeModificator : episodeModificators) {
-			ShowRequest modifiedEpisode = episodeModificator.modify(episodeRequest);
-            if (modifiedEpisode != null) {
-                if (msgPrefix != null) { // skipping the first one
-                    log.info(msgPrefix + episodeModificator.getDescription() + " (modificator: " + episodeModificator.getClass().getSimpleName() + ").");
-                }
+	@Override
+	public String getName() {
+		return this.getClass().getSimpleName();
+	}
 
-                SearchResult<Episode> searchResult = compositeEpisodeSearcher.search(modifiedEpisode);
-                if (searchResult.getSearchStatus() != SearchResult.SearchStatus.NOT_FOUND) {
-                    if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND) {
-                        // overwrite with the original episode, without transformations - so the original will be cached in db. otherwise won't find it later
-                        // overriding only the name, as its one of the transformations. but the quality want to leave the real one
-                        // ugly a bit - need to be consistent with the transformations
-                        // todo: think dont need anymore
-//                        searchResult.getMedia().setName(tvShowEpisode.getName());
-                    }
-                    searchResult.getTorrent().setQuality(modifiedEpisode.getQuality());
-                    return searchResult;
-                }
-                msgPrefix = "Episode \"" + modifiedEpisode.toString() + "\" is not found. ";
-            }
-        }
-        return SearchResult.createNotFound();
-    }
+	@Override
+	public SearchResult search(ShowRequest episodeRequest) {
+		String msgPrefix = null;
+		for (EpisodeModificator episodeModificator : episodeModificators) {
+			ShowRequest modifiedRequest = episodeModificator.modify(episodeRequest);
+			if (modifiedRequest != null) {
+				if (msgPrefix != null) { // skipping the first one
+					logService.info(getClass(), String.format("%s %s (modificator: %s).",
+							msgPrefix, episodeModificator.getDescription(), episodeModificator.getClass().getSimpleName()));
+				}
 
-    @Override
-    public String getName() {
-        return this.getClass().getSimpleName();
-    }
+				SearchResult searchResult = compositeEpisodeSearcher.search(episodeRequest);
+				if (searchResult.getSearchStatus() != SearchResult.SearchStatus.NOT_FOUND) {
+					// update the quality, cuz one of the modificators search with different qualities, so
+					// maybe found with diff quality than originally requested
+					for (Torrent torrent : searchResult.getTorrents()) {
+						torrent.setQuality(modifiedRequest.getQuality());
+					}
 
-    private interface EpisodeModificator {
+					return searchResult;
+				}
+
+				msgPrefix = "Episode \"" + modifiedRequest.toString() + "\" is not found.";
+			}
+		}
+		return SearchResult.createNotFound();
+	}
+
+	private interface EpisodeModificator {
 		ShowRequest modify(ShowRequest episodeRequest);
 
-        String getDescription();
-    }
+		String getDescription();
+	}
 
-    private class DoNothingEpisodeModificator implements EpisodeModificator {
-        @Override
-        public ShowRequest modify(ShowRequest episodeRequest) {
-            return episodeRequest;
-        }
+	private class DoNothingEpisodeModificator implements EpisodeModificator {
+		@Override
+		public ShowRequest modify(ShowRequest episodeRequest) {
+			return episodeRequest;
+		}
 
-        @Override
-        public String getDescription() {
-            return "";
-        }
-    }
+		@Override
+		public String getDescription() {
+			return "";
+		}
+	}
 
-    private class NormalQualityEpisodeModificator implements EpisodeModificator {
-        @Override
-        public ShowRequest modify(ShowRequest episodeRequest) {
-            EpisodeRequest copy = episodeRequest.copy();
-            copy.setQuality(MediaQuality.NORMAL);
-            return copy;
-        }
+	private class NormalQualityEpisodeModificator implements EpisodeModificator {
+		@Override
+		public ShowRequest modify(ShowRequest episodeRequest) {
+			EpisodeRequest copy = episodeRequest.copy();
+			copy.setQuality(MediaQuality.NORMAL);
+			return copy;
+		}
 
-        @Override
-        public String getDescription() {
-            return "Trying to find with non HD quality.";
-        }
-    }
+		@Override
+		public String getDescription() {
+			return "Trying to find with non HD quality.";
+		}
+	}
 
-    private class ShowNameEndsWithYearEpisodeModificator implements EpisodeModificator {
+	private static class ShowNameEndsWithYearEpisodeModificator implements EpisodeModificator {
 
-        private Pattern p;
+		private static Pattern p = Pattern.compile("(.+) \\(\\d+\\)");
 
-        private ShowNameEndsWithYearEpisodeModificator() {
-            p = Pattern.compile("(.+) \\(\\d+\\)");
-        }
+		@Override
+		public ShowRequest modify(ShowRequest episodeRequest) {
+			Matcher matcher = p.matcher(episodeRequest.getTitle());
+			if (matcher.find()) {
+				EpisodeRequest copy = episodeRequest.copy();
+				copy.setTitle(matcher.group(1));
+				return copy;
+			}
+			return null;
+		}
 
-        @Override
-        public ShowRequest modify(ShowRequest episodeRequest) {
-            Matcher matcher = p.matcher(episodeRequest.getTitle());
-            if (matcher.find()) {
-                EpisodeRequest copy = episodeRequest.copy();
-                copy.setTitle(matcher.group(1));
-                return copy;
-            }
-            return null;
-        }
-
-        @Override
-        public String getDescription() {
-            return "Trying without the year suffix.";
-        }
-    }
+		@Override
+		public String getDescription() {
+			return "Trying without the year suffix.";
+		}
+	}
 }

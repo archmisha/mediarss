@@ -1,13 +1,15 @@
-package rss.services.searchers;
+package rss.services.searchers.simple;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.searchers.SearchResult;
+import rss.services.PageDownloader;
+import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
+import rss.services.searchers.SearchResult;
+import rss.services.searchers.SimpleTorrentSearcher;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,14 +23,17 @@ import java.util.regex.Pattern;
  * Time: 19:17
  */
 @Service("publichdSearcher")
-public class PublichdSearcher<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
-
-	private static Log log = LogFactory.getLog(PublichdSearcher.class);
+public class PublichdSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
 	public static final String NAME = "publichd.se";
 	public static final String PUBLICHD_TORRENT_URL = "http://" + NAME + "/index.php?page=torrent-details&id=";
 	public static final Pattern PATTERN = Pattern.compile("<tag:torrents\\[\\].download /><a href=\".*?\">(.*?)<a href=(.*?)>.*AddDate</b></td>.*?>(.*?)</td>.*?seeds: (\\d+)", Pattern.DOTALL);
-	public static final Pattern IMDB_URL_PATTERN = Pattern.compile("www.imdb.com/title/(.*?)[\"/<]");
+
+	@Autowired
+	private PageDownloader pageDownloader;
+
+	@Autowired
+	protected LogService logService;
 
 	@Override
 	public String getName() {
@@ -37,15 +42,37 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends A
 
 	@Override
 	protected String getSearchUrl(T mediaRequest) {
-		return PUBLICHD_TORRENT_URL + mediaRequest.getHash();
+		// todo: currently not handling search
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	protected SearchResult<S> parseSearchResults(T mediaRequest, String url, String page) {
+	public SearchResult search(T mediaRequest) {
+		// todo: currently not handling search
+		return SearchResult.createNotFound();
+	}
+
+	@Override
+	public SearchResult searchById(T mediaRequest) {
+		if (mediaRequest.getHash() == null) {
+			return SearchResult.createNotFound();
+		}
+
+		String page = pageDownloader.downloadPage(PUBLICHD_TORRENT_URL + mediaRequest.getHash());
+		return parseSingleEntry(mediaRequest, page);
+	}
+
+	@Override
+	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
+		// todo: currently not handling search
+		return SearchResult.createNotFound();
+	}
+
+	private SearchResult parseSingleEntry(T mediaRequest, String page) {
 		Matcher matcher = PATTERN.matcher(page);
 		if (!matcher.find()) {
 			if (!page.contains("Bad ID!")) { // in that case just id not found - not a parsing problem
-				log.error("Failed parsing page of " + mediaRequest.toString() + ": " + page);
+				logService.error(getClass(), "Failed parsing page of " + mediaRequest.toString() + ": " + page);
 			}
 			return SearchResult.createNotFound();
 		}
@@ -61,29 +88,15 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends A
 		try {
 			uploadDate = formatter.parse(uploadDataString);
 		} catch (ParseException e) {
-			log.error("Failed parsing date '" + uploadDataString + "': " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing date '" + uploadDataString + "': " + e.getMessage(), e);
 		}
 
-		String imdbUrl = null;
-		matcher = IMDB_URL_PATTERN.matcher(page);
-		if (matcher.find()) {
-			imdbUrl = "http://www.imdb.com/title/" + matcher.group(1);
-		}
+		String imdbUrl = getImdbUrl(page, title);
 
 		Torrent movieTorrent = new Torrent(title, link, uploadDate, seeders);
-		SearchResult<S> searchResult = new SearchResult<>(movieTorrent, NAME);
+		SearchResult searchResult = new SearchResult(NAME);
+		searchResult.addTorrent(movieTorrent);
 		searchResult.getMetaData().setImdbUrl(imdbUrl);
-
-		if (isMatching(mediaRequest, searchResult)) {
-			return searchResult;
-		}
-		return SearchResult.createNotFound();
-	}
-
-	protected boolean isMatching(T mediaRequest, SearchResult<S> searchResult) {
-		if (searchResult.getTorrent().getTitle().toLowerCase().contains(mediaRequest.getTitle().toLowerCase())) {
-			return true;
-		}
-		return false;
+		return searchResult;
 	}
 }

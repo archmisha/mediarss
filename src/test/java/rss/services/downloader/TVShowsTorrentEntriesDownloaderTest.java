@@ -71,7 +71,7 @@ public class TVShowsTorrentEntriesDownloaderTest extends BaseTest {
 		Episode episode = new Episode(2, 1);
 
 		when(episodeDao.find(any(Collection.class))).thenReturn(Collections.singletonList(episode));
-		when(smartEpisodeSearcher.search(episodeRequest)).thenReturn(new SearchResult<Episode>(SearchResult.SearchStatus.NOT_FOUND));
+		when(smartEpisodeSearcher.search(episodeRequest)).thenReturn(new SearchResult(SearchResult.SearchStatus.NOT_FOUND));
 //		when(showService.findShow(any(String.class))).thenReturn(Collections.singletonList(show));
 //		when(tvComService.getEpisodesCount(show, 2)).thenReturn(5);
 

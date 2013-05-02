@@ -2,7 +2,11 @@ package rss.services.requests;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.searchers.MatcherVisitor;
+import rss.services.shows.ShowService;
 import rss.services.shows.ShowServiceImpl;
+
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -51,5 +55,10 @@ public abstract class EpisodeRequest extends ShowRequest {
 
 	public void setSeason(int season) {
 		this.season = season;
+	}
+
+	@Override
+	public List<ShowService.MatchCandidate> visit(MatcherVisitor visitor,  List<ShowService.MatchCandidate> matchCandidates) {
+		return visitor.filterMatching(this, matchCandidates);
 	}
 }

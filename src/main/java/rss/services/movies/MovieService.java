@@ -5,6 +5,8 @@ import rss.controllers.vo.UserMovieVO;
 import rss.entities.Movie;
 import rss.entities.User;
 import rss.entities.UserMovie;
+import rss.services.downloader.DownloadResult;
+import rss.services.requests.MovieRequest;
 
 import java.util.ArrayList;
 
@@ -22,5 +24,7 @@ public interface MovieService {
 
 	void markMovieViewed(User user, long movieId);
 
-	Pair<UserMovie,Boolean> addMovieDownload(User user, long movieId);
+	Pair<UserMovie, Boolean> addMovieDownload(User user, long movieId);
+
+	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
 }

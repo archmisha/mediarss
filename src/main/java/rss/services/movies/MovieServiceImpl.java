@@ -19,7 +19,13 @@ import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
 import rss.services.SessionService;
+import rss.services.downloader.DownloadResult;
+import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.log.LogService;
+import rss.services.requests.MovieRequest;
+import rss.services.searchers.composite.torrentz.TorrentzParser;
+import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
+import rss.services.searchers.composite.torrentz.TorrentzResult;
 import rss.util.DateUtils;
 
 import java.io.Serializable;
@@ -57,10 +63,13 @@ public class MovieServiceImpl implements MovieService {
 	private EntityConverter entityConverter;
 
 	@Autowired
-	private TorrentzService torrentzService;
+	private MoviesTorrentEntriesDownloader moviesTorrentEntriesDownloader;
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
+
+	@Autowired
+	private TorrentzParser torrentzParser;
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
@@ -309,7 +318,10 @@ public class MovieServiceImpl implements MovieService {
 				movie = futureTask.get();
 
 				// uses a separate transaction
-				torrentzService.downloadMovie(movie, imdbUrl);
+//				torrentzService.downloadMovie(movie);
+				MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
+				movieRequest.setImdbId(imdbId);
+				moviesTorrentEntriesDownloader.download(Collections.singleton(movieRequest));
 
 				// re-fetch the movie in this transaction after it got torrents
 				movie = movieDao.find(movie.getId());
@@ -352,5 +364,32 @@ public class MovieServiceImpl implements MovieService {
 			movieDao.persist(userMovie);
 		}
 		userMovie.setUpdated(new Date());
+	}
+
+	@Override
+	public DownloadResult<Movie, MovieRequest> downloadLatestMovies() {
+		logService.info(getClass(), "Downloading '" + TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d" + "'");
+		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d");
+
+		// retry with 7 days
+		if (torrentzResults.isEmpty()) {
+			logService.info(getClass(), "Nothing found, downloading '" + TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "7d" + "'");
+			torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "7d");
+		}
+
+		List<MovieRequest> movieRequests = new ArrayList<>();
+		// filter out old year movies
+		int curYear = Calendar.getInstance().get(Calendar.YEAR);
+		int prevYear = curYear - 1;
+		for (TorrentzResult torrentzResult : torrentzResults) {
+			String name = torrentzResult.getTitle();
+			if (!name.contains(String.valueOf(curYear)) && !name.contains(String.valueOf(prevYear))) {
+				logService.info(getClass(), "Skipping movie '" + name + "' due to old year");
+			} else {
+				movieRequests.add(new MovieRequest(torrentzResult.getTitle(), torrentzResult.getHash()));
+			}
+		}
+
+		return moviesTorrentEntriesDownloader.download(movieRequests);
 	}
 }

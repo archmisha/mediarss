@@ -1,5 +1,6 @@
 package rss.services.movies;
 
+import StringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,6 +28,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 
 	public static final String IMDB_CSS_URL_PREFIX = "http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/";
 	public static final String IMDB_IMAGE_URL_PREFIX = "http://ia.media-imdb.com/images/M/";
+	public static final String REST_IMAGE_URL_PREFIX = "../../../rest/movies/imdb/image/";
 
 	@Autowired
 	private LogService logService;
@@ -156,7 +158,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		photos.removeAttr("class");
 		for (Element photo : photos) {
 			// avoiding usage of regex of String.replace method
-			String src = org.apache.commons.lang3.StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
+			String src = StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
 			if (StringUtils.isBlank(src)) {
 				src = "../../images/imdb/person-no-image.png";
 			}
@@ -166,11 +168,11 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		String html = doc.html();
 		// replace the url of the main image of the movie
 		// avoiding usage of regex of String.replace method
-		html = org.apache.commons.lang3.StringUtils.replace(html, IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
-		html = org.apache.commons.lang3.StringUtils.replace(html, IMDB_CSS_URL_PREFIX, "../../../rest/movies/imdb/css/");
-		html = org.apache.commons.lang3.StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
-		html = org.apache.commons.lang3.StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
-		html = org.apache.commons.lang3.StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
+		html = StringUtils.replace(html, IMDB_IMAGE_URL_PREFIX, REST_IMAGE_URL_PREFIX);
+		html = StringUtils.replace(html, IMDB_CSS_URL_PREFIX, "../../../rest/movies/imdb/css/");
+		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
+		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
+		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
 
 		durationMeter.stop();
 		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");

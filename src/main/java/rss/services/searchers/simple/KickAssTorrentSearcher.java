@@ -1,4 +1,4 @@
-package rss.services.searchers;
+package rss.services.searchers.simple;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,16 +6,14 @@ import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
-import rss.services.searchers.SearchResult;
 import rss.services.requests.MediaRequest;
+import rss.services.searchers.SearchResult;
+import rss.services.searchers.SimpleTorrentSearcher;
 
-import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * User: Michael Dikman
@@ -23,11 +21,10 @@ import java.util.regex.Pattern;
  * Time: 14:35
  */
 @Service("kickAssTorrentSearcher")
-public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
+public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
 	private static final String HOST_NAME_URL_PART = "kickasstorrents.com";
 	private static final String ENTRY_URL = "http://kickasstorrents.com/";
-	public static final Pattern IMDB_URL_PATTERN = Pattern.compile("(http://www.imdb.com/title/\\w+)");
 
 	@Autowired
 	private PageDownloader pageDownloader;
@@ -39,27 +36,32 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 
 	@Override
 	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		// currently not handling search
+		// todo: currently not handling search
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public SearchResult<S> search(T mediaRequest) {
-		if (mediaRequest.getKickAssTorrentsId() != null) {
-			String page = pageDownloader.downloadPage(ENTRY_URL + mediaRequest.getKickAssTorrentsId());
-			return parseTorrentPage(mediaRequest, page);
-		} else {
-			// currently not handling search
-			throw new UnsupportedOperationException();
-		}
+	public SearchResult search(T mediaRequest) {
+		// todo: currently not handling search
+		return SearchResult.createNotFound();
 	}
 
-	protected SearchResult<S> parseSearchResults(T mediaRequest, String url, String page) {
+	@Override
+	public SearchResult searchById(T mediaRequest) {
+		if (mediaRequest.getKickAssTorrentsId() == null) {
+			return SearchResult.createNotFound();
+		}
+
+		String page = pageDownloader.downloadPage(ENTRY_URL + mediaRequest.getKickAssTorrentsId());
+		return parseTorrentPage(mediaRequest, page);
+	}
+
+	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
 		// currently not handling search
 		throw new UnsupportedOperationException();
 	}
 
-	private SearchResult<S> parseTorrentPage(T mediaRequest, String page) {
+	private SearchResult parseTorrentPage(T mediaRequest, String page) {
 		try {
 			String titlePrefix = "<span itemprop=\"name\">";
 			int idx = page.indexOf(titlePrefix) + titlePrefix.length();
@@ -88,26 +90,13 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
 			torrent.setHash(hash);
-			SearchResult<S> searchResult = new SearchResult<>(torrent, getName());
-			searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent, page));
+			SearchResult searchResult = new SearchResult(getName());
+			searchResult.addTorrent(torrent);
+			searchResult.getMetaData().setImdbUrl(getImdbUrl(page, title));
 			return searchResult;
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getKickAssTorrentsId() + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
-	}
-
-	private String getImdbUrl(Torrent torrent, String page) {
-		Matcher matcher = IMDB_URL_PATTERN.matcher(page);
-		if (matcher.find()) {
-			return matcher.group(1);
-		} else {
-			logNoImdbFound(torrent);
-		}
-		return null;
-	}
-
-	protected void logNoImdbFound(Torrent torrent) {
-		logService.info(getClass(), "Didn't find IMDB url for: " + torrent.getTitle());
 	}
 }

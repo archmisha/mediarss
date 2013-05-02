@@ -33,7 +33,7 @@ public interface ShowService {
 
 	ShowsScheduleVO getSchedule(Set<Show> shows);
 
-	Set<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> movieRequests);
+	List<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> movieRequests);
 
 	void persistEpisodeToShow(Show show, Episode episode);
 

@@ -20,6 +20,9 @@ showlistdownloader runs tooo long - why?
 when doing action shown session timeout dialog but when clickin tab redirected to login wothout message
 
 
+
+movies and episode torrentz is a mess when call who and make less classes service parser searcher....
+
 save all jobs run history not only the last one
 make all tooltips be one line
 sections to contain also the body - refactor

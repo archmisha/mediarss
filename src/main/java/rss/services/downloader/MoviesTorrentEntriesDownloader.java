@@ -9,10 +9,10 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.searchers.SearchResult;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
 import rss.services.requests.MovieRequest;
+import rss.services.searchers.SearchResult;
 import rss.services.searchers.TorrentSearcher;
 import rss.util.CollectionUtils;
 
@@ -24,7 +24,7 @@ import java.util.*;
  * Time: 09:10
  */
 @Service("moviesTorrentEntriesDownloader")
-public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Movie, MovieRequest> {
+public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<MovieRequest, Movie> {
 
 	@Autowired
 	private MovieDao movieDao;
@@ -43,15 +43,15 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	private IMDBService imdbService;
 
 	@Override
-	protected SearchResult<Movie> downloadTorrent(MovieRequest movieRequest) {
+	protected SearchResult downloadTorrent(MovieRequest movieRequest) {
 		return compositeMoviesSearcher.search(movieRequest);
 	}
 
 	@Override
-	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult<Movie> searchResult) {
+	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult searchResult) {
 		// if there is no IMDB ID - skip this movie
 		if (searchResult.getMetaData().getImdbUrl() == null) {
-			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", searchResult.getTorrent().getTitle()));
+			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", movieRequest.getTitle()));
 			return false;
 		}
 
@@ -59,18 +59,18 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	}
 
 	@Override
-	protected List<Movie> processSearchResults(Collection<Pair<MovieRequest, SearchResult<Movie>>> results) {
+	protected List<Movie> processSearchResults(Collection<Pair<MovieRequest, SearchResult>> results) {
 		// first group by search result imdbid, because there might be duplications
-		Map<String, List<Pair<MovieRequest, SearchResult<Movie>>>> imdbIdMap = new HashMap<>();
-		for (Pair<MovieRequest, SearchResult<Movie>> pair : results) {
-			SearchResult<Movie> searchResult = pair.getValue();
+		Map<String, List<Pair<MovieRequest, SearchResult>>> imdbIdMap = new HashMap<>();
+		for (Pair<MovieRequest, SearchResult> pair : results) {
+			SearchResult searchResult = pair.getValue();
 			CollectionUtils.safeListPut(imdbIdMap, searchResult.getMetaData().getImdbUrl(), pair);
 		}
 
 		List<Movie> res = new ArrayList<>();
-		for (Map.Entry<String, List<Pair<MovieRequest, SearchResult<Movie>>>> entry : imdbIdMap.entrySet()) {
+		for (Map.Entry<String, List<Pair<MovieRequest, SearchResult>>> entry : imdbIdMap.entrySet()) {
 			String imdbId = entry.getKey();
-			List<Pair<MovieRequest, SearchResult<Movie>>> pairs = entry.getValue();
+			List<Pair<MovieRequest, SearchResult>> pairs = entry.getValue();
 
 			// if its from the ui, the movie is already downloaded and stored. otherwise if its not already stored need to download it
 			Movie persistedMovie = getMovieHelper(imdbId);
@@ -78,8 +78,8 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 				continue;
 			}
 
-			for (Pair<MovieRequest, SearchResult<Movie>> pair : pairs) {
-				SearchResult<Movie> searchResult = pair.getValue();
+			for (Pair<MovieRequest, SearchResult> pair : pairs) {
+				SearchResult searchResult = pair.getValue();
 				MovieRequest movieRequest = pair.getKey();
 
 				// if there is IMDB ID in the original request (meaning it came from ui)
@@ -89,29 +89,31 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 					// compare IMDB ID and skip if no match
 					if (!movieRequest.getImdbId().equals(searchResult.getMetaData().getImdbUrl())) {
 						logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
-								searchResult.getTorrent().getTitle(), searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
+								movieRequest.getTitle(), searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
 						continue;
 					}
 				}
 
-				Torrent persistedTorrent = persistTorrent(searchResult.getTorrent(), movieRequest.getHash());
+				for (Torrent torrent : searchResult.getTorrents()) {
+					Torrent persistedTorrent = persistTorrent(torrent, movieRequest.getHash());
 
-				if (persistedMovie.getTorrentIds().isEmpty()) {
-					// if movie already existed and had no torrents - this is the case where it is a future movie request by user
-					Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
-					if (!users.isEmpty()) {
-						logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
-						for (User user : users) {
-							UserMovieTorrent userTorrent = new UserMovieTorrent();
-							userTorrent.setUser(user);
-							userTorrent.setAdded(new Date());
-							userTorrent.setTorrent(persistedTorrent);
-							userTorrentDao.persist(userTorrent);
+					if (persistedMovie.getTorrentIds().isEmpty()) {
+						// if movie already existed and had no torrents - this is the case where it is a future movie request by user
+						Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
+						if (!users.isEmpty()) {
+							logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
+							for (User user : users) {
+								UserMovieTorrent userTorrent = new UserMovieTorrent();
+								userTorrent.setUser(user);
+								userTorrent.setAdded(new Date());
+								userTorrent.setTorrent(persistedTorrent);
+								userTorrentDao.persist(userTorrent);
+							}
 						}
 					}
-				}
 
-				persistedMovie.getTorrentIds().add(persistedTorrent.getId());
+					persistedMovie.getTorrentIds().add(persistedTorrent.getId());
+				}
 			}
 
 			res.add(persistedMovie);

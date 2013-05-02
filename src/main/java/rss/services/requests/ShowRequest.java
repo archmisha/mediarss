@@ -2,6 +2,10 @@ package rss.services.requests;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.searchers.MatcherVisitor;
+import rss.services.shows.ShowService;
+
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -13,7 +17,7 @@ public abstract class ShowRequest extends MediaRequest {
 	private Show show;
 
 	public ShowRequest(String title, Show show, MediaQuality quality) {
-		super(title);
+		super(title, 1);
 		this.quality = quality;
 		this.show = show;
 	}
@@ -35,4 +39,10 @@ public abstract class ShowRequest extends MediaRequest {
 	}
 
 	public abstract EpisodeRequest copy();
+
+
+	@Override
+	public List<ShowService.MatchCandidate> visit(MatcherVisitor visitor,  List<ShowService.MatchCandidate> matchCandidates) {
+		throw new UnsupportedOperationException();
+	}
 }

@@ -1,13 +1,18 @@
-package rss.services.searchers;
+package rss.services.searchers.simple;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
-import rss.services.searchers.SearchResult;
 import rss.services.requests.MediaRequest;
+import rss.services.searchers.SearchResult;
+import rss.services.searchers.SimpleTorrentSearcher;
+import rss.services.shows.ShowService;
 
 import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
@@ -29,11 +34,10 @@ import java.util.regex.Pattern;
  * <span class="seed">982</span>
  */
 @Service("episodeSearcher1337x")
-public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> extends AbstractTorrentSearcher<T, S> {
+public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
 	private static final String HOST_NAME_URL_PART = "1337x.org";
 	private static final String SEARCH_URL = "http://" + HOST_NAME_URL_PART + "/search/%s/0/";
-	public static final Pattern IMDB_URL_PATTERN = Pattern.compile("(http://www.imdb.com/title/\\w+)");
 
 	@Autowired
 	private PageDownloader pageDownloader;
@@ -52,6 +56,12 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	}
 
 	@Override
+	public SearchResult searchById(T mediaRequest) {
+		// todo: handle that case
+		return SearchResult.createNotFound();
+	}
+
+	@Override
 	public String getName() {
 		return HOST_NAME_URL_PART;
 	}
@@ -61,7 +71,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
 	}
 
-	protected SearchResult<S> parseSearchResults(T mediaRequest, String url, String page) {
+	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
 		List<String> results = new ArrayList<>();
 
 		try {
@@ -80,44 +90,47 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		}
 
 		if (results.isEmpty()) {
-//			log.info("There were no search results for: \"" + tvShowEpisode.toQueryString() + "\" url=" + url);
 			return SearchResult.createNotFound();
 		}
 
-		List<SearchResult<S>> searchResults = new ArrayList<>();
+		SearchResult searchResult = new SearchResult(getName());
+		List<Torrent> torrents = new ArrayList<>();
 		for (String result : results) {
-			SearchResult<S> searchResult = retrieveTorrentEntry(result);
-			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND) {
-				searchResults.add(searchResult);
+			try {
+				Pair<Torrent, String> pair = retrieveTorrentEntry(result);
+				torrents.add(pair.getKey());
+
+				if (StringUtils.isBlank(searchResult.getMetaData().getImdbUrl())) {
+					searchResult.getMetaData().setImdbUrl(pair.getValue());
+				}
+			} catch (Exception e) {
+				logService.error(getClass(), e.getMessage(), e);
+				// just skip
 			}
 		}
+		if (torrents.isEmpty()) {
+			return SearchResult.createNotFound();
+		}
 
-		List<SearchResult<S>> filteredResults = filterMatching(mediaRequest, searchResults);
 
+		List<ShowService.MatchCandidate> filteredResults = filterMatchingResults(mediaRequest, torrents);
 		if (filteredResults.isEmpty()) {
 			return SearchResult.createNotFound();
 		}
 
-		return filteredResults.get(0);
+		//todo: sort the results
+		List<ShowService.MatchCandidate> subFilteredResults = filteredResults.subList(0, Math.min(filteredResults.size(), mediaRequest.getResultsLimit()));
+
+		// now for the final results - should download the actual page to get the imdb info if exists
+		for (ShowService.MatchCandidate matchCandidate : subFilteredResults) {
+			searchResult.addTorrent(matchCandidate.<Torrent>getObject());
+		}
+
+		return searchResult;
 	}
 
-	protected List<SearchResult<S>> filterMatching(T mediaRequest, List<SearchResult<S>> searchResults) {
-		List<SearchResult<S>> results = new ArrayList<>();
-		for (SearchResult<S> searchResult : searchResults) {
-			if (searchResult.getTorrent().getTitle().toLowerCase().contains(mediaRequest.getTitle().toLowerCase())) {
-				results.add(searchResult);
-			}
-		}
-		return results;
-	}
-
-	private SearchResult<S> retrieveTorrentEntry(String torrentUrl) {
-		String page;
-		try {
-			page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
-		} catch (Exception e) {
-			return SearchResult.createNotFound();
-		}
+	private Pair<Torrent, String> retrieveTorrentEntry(String torrentUrl) {
+		String page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
 
 		int idx = page.indexOf("<div class=\"topHead\">");
 		String titlePrefix = "<h2>";
@@ -143,17 +156,8 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		String url = page.substring(idx, page.indexOf("\"", idx));
 
 		Torrent torrent = new Torrent(title, url, dateUploadedAgo, seeders);
-		SearchResult<S> searchResult = new SearchResult<>(torrent, getName());
-
-		Matcher imdbUrlMatcher = IMDB_URL_PATTERN.matcher(page);
-		if (imdbUrlMatcher.find()) {
-			String imdbUrl = imdbUrlMatcher.group(1);
-			searchResult.getMetaData().setImdbUrl(imdbUrl);
-		} else {
-			logService.info(getClass(), "Didn't find IMDB url for: " + title);
-		}
-
-		return searchResult;
+		String imdbUrl = getImdbUrl(page, title);
+		return new ImmutablePair<>(torrent, imdbUrl);
 	}
 
 	// 1 week 6 days ago, 17 minutes ago, 1 month ago, 3 years 5 months ago, 2 months 1 week ago, 21 hours 15 minutes ago

@@ -16,9 +16,8 @@ import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
-import rss.services.searchers.SearchResult;
-import rss.services.subtitles.SubtitlesService;
 import rss.services.requests.*;
+import rss.services.searchers.SearchResult;
 import rss.services.searchers.TorrentSearcher;
 import rss.services.shows.EpisodesMapper;
 import rss.services.shows.ShowService;
@@ -34,7 +33,7 @@ import java.util.*;
  * Time: 23:49
  */
 @Service("tVShowsTorrentEntriesDownloader")
-public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Episode, ShowRequest> {
+public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<ShowRequest, Episode> {
 
 	@Autowired
 	private EpisodeDao episodeDao;
@@ -50,13 +49,10 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	private ShowService showService;
 
 	@Autowired
-	private SubtitlesService subtitlesService;
-
-	@Autowired
 	private ShowDao showDao;
 
 	@Override
-	protected SearchResult<Episode> downloadTorrent(ShowRequest episodeRequest) {
+	protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
 		return smartEpisodeSearcher.search(episodeRequest);
 	}
 
@@ -68,19 +64,19 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Ep
 	}
 
 	@Override
-	protected boolean validateSearchResult(ShowRequest mediaRequest, SearchResult<Episode> searchResult) {
+	protected boolean validateSearchResult(ShowRequest mediaRequest, SearchResult searchResult) {
 		return true;
 	}
 
 	@Override
-	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult<Episode>>> results) {
+	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult>> results) {
 		List<Episode> res = new ArrayList<>();
-		for (Pair<ShowRequest, SearchResult<Episode>> pair : results) {
-			SearchResult<Episode> searchResult = pair.getValue();
+		for (Pair<ShowRequest, SearchResult> pair : results) {
+			SearchResult searchResult = pair.getValue();
 			ShowRequest showRequest = pair.getKey();
 
-//		Show persistedShow = showDao.find(episodeRequest.getShow().getId());
-			Torrent torrent = searchResult.getTorrent();
+			// todo: assuming there is only one here. fix that
+			Torrent torrent = searchResult.getTorrents().get(0);
 
 			List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) showRequest);
 

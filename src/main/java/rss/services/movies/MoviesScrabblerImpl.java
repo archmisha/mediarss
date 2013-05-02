@@ -23,8 +23,9 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 	@Autowired
 	private EmailService emailService;
 
+
 	@Autowired
-	private TorrentzService torrentzService;
+	private MovieService movieService;
 
 	public MoviesScrabblerImpl() {
 		super(JOB_NAME);
@@ -35,7 +36,7 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 		return transactionTemplate.execute(new TransactionCallback<String>() {
 			@Override
 			public String doInTransaction(TransactionStatus arg0) {
-				DownloadResult<Movie, MovieRequest> downloadResult = torrentzService.downloadLatestMovies();
+				DownloadResult<Movie, MovieRequest> downloadResult = movieService.downloadLatestMovies();
 				emailService.notifyOfMissingMovies(downloadResult.getMissing());
 				return null;
 			}

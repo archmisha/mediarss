@@ -1,6 +1,10 @@
 package rss.services.requests;
 
+import rss.services.searchers.MatcherVisitor;
+import rss.services.shows.ShowService;
+
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -16,17 +20,33 @@ public abstract class MediaRequest implements Serializable {
 	private String imdbId;
 	private String hash;
 	private String title;
+	private int uploaders;
+private int resultsLimit;
 
-	protected MediaRequest() {
+	protected MediaRequest(int resultsLimit) {
+		this.resultsLimit = resultsLimit;
 	}
 
-	protected MediaRequest(String title) {
+	protected MediaRequest(String title, int resultsLimit) {
+		this(resultsLimit);
 		this.title = title;
 	}
 
-	protected MediaRequest(String title, String hash) {
-		this.title = title;
+	protected MediaRequest(String title, String hash, int resultsLimit) {
+		this(title, resultsLimit);
 		this.hash = hash;
+	}
+
+	public int getResultsLimit() {
+		return resultsLimit;
+	}
+
+	public int getUploaders() {
+		return uploaders;
+	}
+
+	public void setUploaders(int uploaders) {
+		this.uploaders = uploaders;
 	}
 
 	public String getHash() {
@@ -98,4 +118,6 @@ public abstract class MediaRequest implements Serializable {
 	public int hashCode() {
 		return title != null ? title.hashCode() : 0;
 	}
+
+	public abstract List<ShowService.MatchCandidate> visit(MatcherVisitor visitor, List<ShowService.MatchCandidate> matchCandidates);
 }

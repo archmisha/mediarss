@@ -1,6 +1,7 @@
 package rss.services.movies;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -155,17 +156,21 @@ public class IMDBServiceImpl implements IMDBService {
 					public InputStream doInTransaction(TransactionStatus transactionStatus) {
 						try {
 							InputStream imageInputStream;
+							String imdbImageUrl = null;
 							try {
 								Image image = imageDao.find(imageFileName);
 								if (image == null) {
-									image = new Image(imageFileName, pageDownloader.downloadImage(imageFileName));
+									// replace back the imdb url prefix instead of the local rest call
+									imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.REST_IMAGE_URL_PREFIX, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX);
+									image = new Image(imageFileName, pageDownloader.downloadImage(imdbImageUrl));
 									imageDao.persist(image);
 									logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
 								}
 
 								imageInputStream = new ByteArrayInputStream(image.getData());
 							} catch (Exception e) {
-								logService.error(getClass(), "Failed fetching image " + imageFileName + ": " + e.getMessage() + ". Using default person-no-image", e);
+								logService.error(getClass(), String.format("Failed fetching image %s: %s. Using default person-no-image",
+										(imdbImageUrl != null ? imdbImageUrl : imageFileName), e.getMessage()), e);
 								imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
 							}
 							return imageInputStream;

@@ -1,0 +1,116 @@
+package rss.services.searchers.composite.torrentz;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import rss.services.PageDownloader;
+import rss.services.log.LogService;
+import rss.services.requests.MediaRequest;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * User: dikmanm
+ * Date: 01/05/13 22:14
+ */
+@Service
+public class TorrentzParserImpl implements TorrentzParser {
+
+	public static final String HOST_NAME = "http://torrentz.eu/";
+
+	// need to skip entries like /z/...
+	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
+
+	// removed filters: highres
+	public static final String FILTERS = "+-shows+-porn+-brrip+-episodes";
+
+	public static final String TORRENTZ_ENTRY_URL = HOST_NAME;
+	public static final String TORRENTZ_LATEST_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + FILTERS + "+added%3A";
+	public static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+hd+video" + FILTERS + "+";
+	public static final String TORRENTZ_EPISODE_SEARCH_URL = HOST_NAME + "verifiedP?f=";
+
+	// no need in that already doing it in the search url
+	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
+
+	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
+	private static final Pattern KICKASS_TORRENTS_ID = Pattern.compile("<a href=\"http://www.kickasstorrents.com/([^\"/]+)\"");
+
+	@Autowired
+	protected LogService logService;
+
+	@Autowired
+	protected PageDownloader pageDownloader;
+
+	public Set<TorrentzResult> downloadByUrl(String url) {
+		String page = pageDownloader.downloadPage(url);
+		Set<TorrentzResult> mediaRequests = parse(page);
+		return mediaRequests;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Set<TorrentzResult> parse(String page) {
+		Set<TorrentzResult> movies = new HashSet<>();
+		Matcher matcher = ENTRY_CONTENT_PATTERN.matcher(page);
+		while (matcher.find()) {
+			String hash = matcher.group(1);
+			String name = matcher.group(2);
+			String type = matcher.group(3);
+			String size = matcher.group(4);
+			String uploaders = matcher.group(5);
+
+			name = stripTags(name);
+			name = StringEscapeUtils.unescapeHtml4(name);
+			type = stripTags(type);
+			uploaders = uploaders.replaceAll(",", "");
+
+			boolean skip = false;
+			for (String keyword : TYPES_TO_SKIP) {
+				if (type.contains(keyword)) {
+					logService.info(getClass(), "Skipping movie '" + name + "' due to type: '" + type + "'");
+					skip = true;
+				}
+			}
+
+			if (!skip) {
+				TorrentzResult movieRequest = new TorrentzResult(name, hash, Integer.parseInt(uploaders));
+				movies.add(movieRequest);
+			}
+		}
+
+		return movies;
+	}
+
+	private String stripTags(String name) {
+		// avoiding usage of regex of String.replace method
+		name = org.apache.commons.lang3.StringUtils.replace(name, "<b>", "");
+		name = org.apache.commons.lang3.StringUtils.replace(name, "</b>", "");
+		return name;
+	}
+
+	public void enrichRequestWithSearcherIds(MediaRequest mediaRequest) {
+		String entryPage = pageDownloader.downloadPage(TORRENTZ_ENTRY_URL + mediaRequest.getHash());
+		mediaRequest.setPirateBayId(getPirateBayId(entryPage));
+		mediaRequest.setKickAssTorrentsId(getKickAssTorrentsId(entryPage));
+//		mediaRequest.setHash(mediaRequest.getHash());
+	}
+
+
+	protected String getPirateBayId(String page) {
+		Matcher matcher = PIRATE_BAY_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
+
+	protected String getKickAssTorrentsId(String page) {
+		Matcher matcher = KICKASS_TORRENTS_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
+}
