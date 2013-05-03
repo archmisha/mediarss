@@ -60,9 +60,6 @@ public class MovieServiceImpl implements MovieService {
 	private LogService logService;
 
 	@Autowired
-	private EntityConverter entityConverter;
-
-	@Autowired
 	private MoviesTorrentEntriesDownloader moviesTorrentEntriesDownloader;
 
 	@Autowired
@@ -73,36 +70,46 @@ public class MovieServiceImpl implements MovieService {
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
-		ArrayList<UserMovieVO> result = new ArrayList<>();
+		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
+		Set<Movie> movies = new HashSet<>();
 
 		// first add movies without any torrents - future movies
 		for (UserMovie userMovie : movieDao.findFutureUserMovies(user)) {
-			result.add(entityConverter.toFutureMovie(userMovie.getMovie())
-					.withScheduledOn(userMovie.getUpdated())
-					.withAdded(userMovie.getUpdated()));
+			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(userMovie.getMovie());
+			userMovieVO.withScheduledOn(userMovie.getUpdated())
+					.withAdded(userMovie.getUpdated());
+			userMovieVO.setViewed(true);
+			userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
+			movies.add(userMovie.getMovie());
 		}
 
 		// then add movies that has torrents and the user selected a torrent to download
 		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user, 14)) {
 			Torrent torrent = userTorrent.getTorrent();
 			Movie movie = movieDao.find(torrent);
-			UserMovieVO userMovieVO = new UserMovieVO()
-					.withId(movie.getId())
-					.withTitle(movie.getName())
-					.withImdbUrl(movie.getImdbUrl())
-					.withAdded(userTorrent.getAdded());
+			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
+			userMovieVO.withAdded(userTorrent.getAdded());
 			userMovieVO.setViewed(true);
 			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true).withMovieId(movie.getId()));
+			movies.add(movie);
+		}
 
-			// add the rest of the torrents of the movie
+		// for all the movies add the rest of the torrents (which are not in userTorrents)
+		for (Movie movie : movies) {
+			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
+			Set<Long> torrentIds = new HashSet<>();
+			for (UserMovieStatus userMovieStatus : userMovieVO.getTorrents()) {
+				torrentIds.add(userMovieStatus.getTorrentId());
+			}
 			for (Long torrentId : movie.getTorrentIds()) {
-				if (torrentId != torrent.getId()) {
+				if (!torrentIds.contains(torrentId)) {
 					addTorrentToUserMovieVO(userMovieVO, torrentId);
 				}
 			}
-
-			result.add(userMovieVO);
 		}
+
+		ArrayList<UserMovieVO> result = new ArrayList<>();
+		result.addAll(userMoviesVOContainer.getUserMovies());
 
 		Collections.sort(result, new Comparator<UserMovieVO>() {
 			@Override

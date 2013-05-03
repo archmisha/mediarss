@@ -57,14 +57,4 @@ public class EntityConverter {
 		}
 		return userVO;
 	}
-
-	public UserMovieVO toFutureMovie(Movie movie) {
-		UserMovieVO userMovieVO = new UserMovieVO()
-				.withId(movie.getId())
-				.withTitle(movie.getName())
-				.withImdbUrl(movie.getImdbUrl());
-		userMovieVO.setViewed(true);
-		userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
-		return userMovieVO;
-	}
 }
