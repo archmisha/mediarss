@@ -18,12 +18,12 @@ public class StringUtils2 {
 
 	static {
 		patterns = new HashMap<>();
-		patterns.put(Calendar.MINUTE, Pattern.compile("(\\d+).*minutes?"));
-		patterns.put(Calendar.HOUR_OF_DAY, Pattern.compile("(\\d+).*hours?"));
-		patterns.put(Calendar.DAY_OF_MONTH, Pattern.compile("(\\d+).*days?"));
-		patterns.put(Calendar.WEEK_OF_MONTH, Pattern.compile("(\\d+).*weeks?"));
-		patterns.put(Calendar.MONTH, Pattern.compile("(\\d+).*months?"));
-		patterns.put(Calendar.YEAR, Pattern.compile("(\\d+).*years?"));
+		patterns.put(Calendar.MINUTE, Pattern.compile("(\\d+)\\s+minutes?", Pattern.DOTALL));
+		patterns.put(Calendar.HOUR_OF_DAY, Pattern.compile("(\\d+)\\s+hours?", Pattern.DOTALL));
+		patterns.put(Calendar.DAY_OF_MONTH, Pattern.compile("(\\d+)\\s+days?", Pattern.DOTALL));
+		patterns.put(Calendar.WEEK_OF_MONTH, Pattern.compile("(\\d+)\\s+weeks?", Pattern.DOTALL));
+		patterns.put(Calendar.MONTH, Pattern.compile("(\\d+)\\s+months?", Pattern.DOTALL));
+		patterns.put(Calendar.YEAR, Pattern.compile("(\\d+)\\s+years?", Pattern.DOTALL));
 	}
 
 	public static int indexOf(String seq, String searchSeq, int defaultValue) {

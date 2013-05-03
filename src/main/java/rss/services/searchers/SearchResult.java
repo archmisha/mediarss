@@ -1,5 +1,6 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.StringUtils;
 import rss.entities.Torrent;
 
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ public class SearchResult {
 	private SearchStatus searchStatus;
 	private List<Torrent> torrents;
 	private String source;
-	private MetaData metaData;
 
 	public SearchResult(String source) {
 		this(SearchStatus.FOUND);
@@ -30,7 +30,6 @@ public class SearchResult {
 	public SearchResult(SearchStatus searchStatus) {
 		torrents = new ArrayList<>();
 		this.searchStatus = searchStatus;
-		metaData = new MetaData();
 	}
 
 	public static SearchResult createNotFound() {
@@ -68,20 +67,14 @@ public class SearchResult {
 		return source;
 	}
 
-	public MetaData getMetaData() {
-		return metaData;
-	}
-
-	public class MetaData {
-		private String imdbUrl;
-
-		public String getImdbUrl() {
-			return imdbUrl;
+	public String getImdbId() {
+		for (Torrent torrent : torrents) {
+			if (!StringUtils.isBlank(torrent.getImdbid())) {
+				return torrent.getImdbid();
+			}
 		}
 
-		public void setImdbUrl(String imdbUrl) {
-			this.imdbUrl = imdbUrl;
-		}
+		return null;
 	}
 
 	public String getTorrentTitles() {

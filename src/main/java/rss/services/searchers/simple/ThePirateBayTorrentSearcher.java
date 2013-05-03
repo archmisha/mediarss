@@ -58,7 +58,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	}
 
 	@Override
-	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
+	protected Torrent parseTorrentPage(T mediaRequest, String page) {
 		try {
 			String titlePrefix = "<div id=\"title\">";
 			int idx = page.indexOf(titlePrefix);
@@ -93,27 +93,12 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
 			torrent.setHash(hash);
-			SearchResult searchResult = new SearchResult(getName());
-			searchResult.getMetaData().setImdbUrl(parseImdbUrl(page, title));
-			searchResult.addTorrent(torrent);
-			return searchResult;
+			torrent.setImdbid(parseImdbUrl(page, title));
+			return torrent;
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
-			return SearchResult.createNotFound();
-		}
-	}
-
-	// might be in the headers of the torrent or in the content as plain text
-	protected String getImdbUrl(Torrent torrent) {
-		String page;
-		try {
-			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
-		} catch (Exception e) {
-			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
 			return null;
 		}
-
-		return parseImdbUrl(page, torrent.getTitle());
 	}
 
 	protected List<Torrent> parseSearchResultsPage(MediaRequest mediaRequest, String page) {

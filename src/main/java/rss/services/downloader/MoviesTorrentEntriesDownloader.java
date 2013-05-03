@@ -50,7 +50,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 	@Override
 	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult searchResult) {
 		// if there is no IMDB ID - skip this movie
-		if (searchResult.getMetaData().getImdbUrl() == null) {
+		if (searchResult.getImdbId() == null) {
 			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", movieRequest.getTitle()));
 			return false;
 		}
@@ -64,7 +64,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		Map<String, List<Pair<MovieRequest, SearchResult>>> imdbIdMap = new HashMap<>();
 		for (Pair<MovieRequest, SearchResult> pair : results) {
 			SearchResult searchResult = pair.getValue();
-			CollectionUtils.safeListPut(imdbIdMap, searchResult.getMetaData().getImdbUrl(), pair);
+			CollectionUtils.safeListPut(imdbIdMap, searchResult.getImdbId(), pair);
 		}
 
 		List<Movie> res = new ArrayList<>();
@@ -87,9 +87,9 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 				// download imdb page (for the first time) - using the getMovieHelper()
 				if (movieRequest.getImdbId() != null) {
 					// compare IMDB ID and skip if no match
-					if (!movieRequest.getImdbId().equals(searchResult.getMetaData().getImdbUrl())) {
+					if (!movieRequest.getImdbId().equals(searchResult.getImdbId())) {
 						logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
-								movieRequest.getTitle(), searchResult.getMetaData().getImdbUrl(), movieRequest.getImdbId()));
+								movieRequest.getTitle(), searchResult.getImdbId(), movieRequest.getImdbId()));
 						continue;
 					}
 				}

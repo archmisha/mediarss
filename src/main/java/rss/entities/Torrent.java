@@ -48,6 +48,9 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     @Transient
     private String sourcePageUrl;
 
+	@Transient
+	private String imdbid;
+
     public Torrent(String title, String url, Date dateUploaded, int seeders) {
         this(title, url, dateUploaded, seeders, null);
     }
@@ -119,6 +122,14 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
 
 	public String getHash() {
 		return hash;
+	}
+
+	public String getImdbid() {
+		return imdbid;
+	}
+
+	public void setImdbid(String imdbid) {
+		this.imdbid = imdbid;
 	}
 
 	@Override

@@ -4,14 +4,10 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.PageDownloader;
 import rss.services.requests.*;
-import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
@@ -31,9 +27,6 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	public static final String NAME = "kat.ph";
 	private static final String ENTRY_URL = "http://" + NAME;
 	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
-
-	@Autowired
-	private PageDownloader pageDownloader;
 
 	@Override
 	public String getName() {
@@ -64,19 +57,6 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	}
 
 	@Override
-	protected String getImdbUrl(Torrent torrent) {
-		String page;
-		try {
-			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
-		} catch (Exception e) {
-			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
-			return null;
-		}
-
-		return parseImdbUrl(page, torrent.getTitle());
-	}
-
-	@Override
 	protected String getSearchByIdUrl(T mediaRequest) {
 		if (mediaRequest.getSearcherId(NAME) != null) {
 			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
@@ -95,7 +75,8 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 				String kickAssTorrentsId = a.attr("href");
 				String title = StringEscapeUtils.unescapeHtml4(a.text());
 				String magnetLink = element.select(".imagnet").attr("href");
-				String age = StringEscapeUtils.unescapeHtml4(element.select("td.center").get(2).text());
+				// text for some reason did problems with the &nbsp; conversion
+				String age = element.select("td.center").get(2).html().replaceAll("&nbsp;", " ");
 				int seeders = Integer.parseInt(element.select("td.green.center").text());
 
 				Torrent torrent = new Torrent(title, magnetLink, StringUtils2.parseDateUploaded(age), seeders, ENTRY_URL + kickAssTorrentsId);
@@ -110,7 +91,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	}
 
 	@Override
-	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
+	protected Torrent parseTorrentPage(T mediaRequest, String page) {
 		try {
 			String titlePrefix = "<span itemprop=\"name\">";
 			int idx = page.indexOf(titlePrefix) + titlePrefix.length();
@@ -137,15 +118,13 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			idx = page.indexOf(hashPrefix) + hashPrefix.length();
 			String hash = page.substring(idx, page.indexOf("'", idx)).trim();
 
-			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
+			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders);
 			torrent.setHash(hash);
-			SearchResult searchResult = new SearchResult(getName());
-			searchResult.addTorrent(torrent);
-			searchResult.getMetaData().setImdbUrl(parseImdbUrl(page, title));
-			return searchResult;
+			torrent.setImdbid(parseImdbUrl(page, title));
+			return torrent;
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
-			return SearchResult.createNotFound();
+			return null;
 		}
 	}
 }

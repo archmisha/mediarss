@@ -69,23 +69,18 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	}
 
 	@Override
-	protected String getImdbUrl(Torrent torrent) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
-	}
-
-	@Override
 	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override
-	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
+	protected Torrent parseTorrentPage(T mediaRequest, String page) {
 		Matcher matcher = PATTERN.matcher(page);
 		if (!matcher.find()) {
 			if (!page.contains("Bad ID!")) { // in that case just id not found - not a parsing problem
 				logService.error(getClass(), "Failed parsing page of " + mediaRequest.toString() + ": " + page);
 			}
-			return SearchResult.createNotFound();
+			return null;
 		}
 
 		String title = matcher.group(1).trim(); // sometimes comes with line break at the end - ruins log
@@ -102,12 +97,8 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 			logService.error(getClass(), "Failed parsing date '" + uploadDataString + "': " + e.getMessage(), e);
 		}
 
-		String imdbUrl = parseImdbUrl(page, title);
-
-		Torrent movieTorrent = new Torrent(title, link, uploadDate, seeders);
-		SearchResult searchResult = new SearchResult(NAME);
-		searchResult.addTorrent(movieTorrent);
-		searchResult.getMetaData().setImdbUrl(imdbUrl);
-		return searchResult;
+		Torrent torrent = new Torrent(title, link, uploadDate, seeders);
+		torrent.setImdbid(parseImdbUrl(page, title));
+		return torrent;
 	}
 }

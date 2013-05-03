@@ -48,7 +48,7 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 		assertEquals(4, c.get(Calendar.MONTH)+1);
 		assertEquals(5, c.get(Calendar.DAY_OF_MONTH));
 
-		assertEquals("http://www.imdb.com/title/tt1321870", searchResult.getMetaData().getImdbUrl());
+		assertEquals("http://www.imdb.com/title/tt1321870", searchResult.getImdbId());
 		assertEquals(SearchResult.SearchStatus.FOUND, searchResult.getSearchStatus());
 		assertEquals("Gangster.Squad.2013.720p.BluRay.x264-SPARKS [PublicHD]", searchResult.getTorrents().get(0).getTitle());
 		assertEquals("A6B3FE8895B278CE06FBCA825AA400A2DBF101A2", searchResult.getTorrents().get(0).getHash());
@@ -95,6 +95,6 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 
 		SearchResult searchResult = searcher.search(movieRequest);
 
-		assertEquals("http://www.imdb.com/title/tt2675318", searchResult.getMetaData().getImdbUrl());
+		assertEquals("http://www.imdb.com/title/tt2675318", searchResult.getImdbId());
 	}
 }

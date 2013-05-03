@@ -98,10 +98,17 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		}
 
 		String page = pageDownloader.downloadPage(url);
-		return parseTorrentPage(mediaRequest, page);
+		Torrent torrent = parseTorrentPage(mediaRequest, page);
+		if (torrent == null) {
+			return SearchResult.createNotFound();
+		}
+
+		SearchResult searchResult = new SearchResult(getName());
+		searchResult.addTorrent(torrent);
+		return searchResult;
 	}
 
-	protected abstract SearchResult parseTorrentPage(T mediaRequest, String page);
+	protected abstract Torrent parseTorrentPage(T mediaRequest, String page);
 
 	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
 		List<Torrent> torrents = parseSearchResultsPage(mediaRequest, page);
@@ -128,8 +135,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		// now for the final results - should download the actual page to get the imdb info if exists
 		if (mediaRequest instanceof MovieRequest) {
 			for (Torrent torrent : searchResult.getTorrents()) {
-				if (StringUtils.isBlank(searchResult.getMetaData().getImdbUrl())) {
-					searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent));
+				if (StringUtils.isBlank(searchResult.getImdbId())) {
+					torrent.setImdbid(getImdbUrl(torrent));
 				}
 			}
 		}
@@ -143,7 +150,18 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 
 	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);
 
-	protected abstract String getImdbUrl(Torrent torrent);
+	// might be in the headers of the torrent or in the content as plain text
+	private String getImdbUrl(Torrent torrent) {
+		String page;
+		try {
+			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
+		} catch (Exception e) {
+			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
+			return null;
+		}
+
+		return parseImdbUrl(page, torrent.getTitle());
+	}
 
 	// reverse sort by seeders
 	protected void sortResults(List<ShowService.MatchCandidate> filteredResults) {

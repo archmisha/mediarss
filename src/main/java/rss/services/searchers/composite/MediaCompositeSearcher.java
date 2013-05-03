@@ -24,7 +24,7 @@ public abstract class MediaCompositeSearcher<T extends MediaRequest, S extends M
 				case FOUND:
 					compositeSearcherData.setSuccessfulSearchResult(searchResult); // save a successful result for the end, if searching for IMDB url fails
 					// case of no IMDB url
-					if (shouldFailOnNoIMDBUrl() && searchResult.getMetaData().getImdbUrl() == null) {
+					if (shouldFailOnNoIMDBUrl() && searchResult.getImdbId() == null) {
 						compositeSearcherData.getNoIMDBUrlSearchers().add(torrentzSearcher.getName());
 					} else {
 						// dont log, super will log

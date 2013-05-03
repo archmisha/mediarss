@@ -1,80 +1,101 @@
 package rss.services.searchers.simple;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import rss.BaseTest;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.PageDownloader;
-import rss.services.searchers.SearchResult;
 import rss.services.requests.SingleEpisodeRequest;
+import rss.services.searchers.SearchResult;
+import rss.services.shows.ShowService;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 /**
  * User: dikmanm
  * Date: 25/01/13 01:35
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TorrentSearcher1337xTest  extends BaseTest {
+public class TorrentSearcher1337xTest extends BaseTest {
 
 	@Mock
 	private PageDownloader pageDownloader;
+
+	@Mock
+	private ShowService showService;
 
 	@InjectMocks
 	private TorrentSearcher1337x torrentSearcher1337x = new TorrentSearcher1337x();
 
 	@Test
 	public void testUploadedOn1() {
-		String page = loadPage("suits-s01e01-search-results");
+		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("suits-s01e01-search-results")).thenReturn(loadPage("suits-s01e01"));
+		mockFilterReturnAll();
 
-		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("suits-s01e01"));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
 
-		SearchResult searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
+		Calendar supposedTobe = Calendar.getInstance();
+		supposedTobe.add(Calendar.YEAR, -1);
+		supposedTobe.add(Calendar.MONTH, -7);
 
 		Date dateUploaded = searchResult.getTorrents().get(0).getDateUploaded();
 		Calendar c = Calendar.getInstance();
 		c.setTime(dateUploaded);
-		assertEquals(2011, c.get(Calendar.YEAR));
-		assertEquals(8, c.get(Calendar.MONTH)+1);
+		assertEquals(supposedTobe.get(Calendar.YEAR), c.get(Calendar.YEAR));
+		assertEquals(supposedTobe.get(Calendar.MONTH) + 1, c.get(Calendar.MONTH) + 1);
 	}
 
 	@Test
 	public void testImdbUrlParse() {
-		String page = loadPage("1337x-taken2-search-results");
+		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-taken2-search-results")).thenReturn(loadPage("1337x-taken2"));
+		mockFilterReturnAll();
 
-		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-taken2"));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
 
-		SearchResult searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
-
-		assertEquals("http://www.imdb.com/title/tt1397280", searchResult.getMetaData().getImdbUrl());
+		assertEquals("http://www.imdb.com/title/tt1397280", searchResult.getImdbId());
 	}
 
 	@Test
 	public void testImdbUrlParse2() {
-		String page = loadPage("1337x-rise-of-the-guardians-search-results");
+		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-rise-of-the-guardians-search-results")).thenReturn(loadPage("1337x-rise-of-the-guardians"));
+		mockFilterReturnAll();
 
-		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-rise-of-the-guardians"));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
 
-		SearchResult searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
-
-		assertEquals("http://www.imdb.com/title/tt1446192", searchResult.getMetaData().getImdbUrl());
+		assertEquals("http://www.imdb.com/title/tt1446192", searchResult.getImdbId());
 	}
 
 	@Test
 	public void testNoResults() {
-		String page = loadPage("1337x-no-results");
+		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-no-results"));
 
-		SearchResult searchResult = torrentSearcher1337x.parseSearchResults(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1), "", page);
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
+		mockFilterReturnAll();
 
 		assertEquals(SearchResult.SearchStatus.NOT_FOUND, searchResult.getSearchStatus());
 	}
+
+	private void mockFilterReturnAll() {
+		Mockito.doAnswer(new Answer<List<ShowService.MatchCandidate>>() {
+			@Override
+			public List<ShowService.MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
+				List<ShowService.MatchCandidate> matchCandidates = (List<ShowService.MatchCandidate>) invocationOnMock.getArguments()[1];
+				return matchCandidates;
+			}
+		}).when(showService).filterMatching(any(SingleEpisodeRequest.class), any(List.class));
+	}
+
 }
