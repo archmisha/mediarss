@@ -9,6 +9,7 @@ import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
+import rss.services.requests.MovieRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.services.shows.ShowService;
@@ -26,7 +27,7 @@ import java.util.*;
 @Service("thePirateBayTorrentSearcher")
 public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
-	private static final String NAME = "thepiratebay.se";
+	public static final String NAME = "thepiratebay.se";
 	private static final String HOST_NAME_URL_PART = "http://" + NAME;
 	// 0/7/0 orders by seeders - this solves multiple pages problem, what is important will be on the first page
 	private static final String SEARCH_URL = HOST_NAME_URL_PART + "/search/%s/0/7/0";
@@ -49,16 +50,15 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	}
 
 	@Override
-	public SearchResult searchById(T mediaRequest) {
-		if (mediaRequest.getPirateBayId() == null) {
-			return SearchResult.createNotFound();
+	protected String getSearchByIdUrl(T mediaRequest) {
+		if (mediaRequest.getSearcherId(NAME) != null) {
+			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
 		}
-
-		String page = pageDownloader.downloadPage(ENTRY_URL + mediaRequest.getPirateBayId());
-		return parseTorrentPage(mediaRequest, page);
+		return null;
 	}
 
-	private SearchResult parseTorrentPage(T mediaRequest, String page) {
+	@Override
+	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
 		try {
 			String titlePrefix = "<div id=\"title\">";
 			int idx = page.indexOf(titlePrefix);
@@ -94,49 +94,17 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
 			torrent.setHash(hash);
 			SearchResult searchResult = new SearchResult(getName());
-			searchResult.getMetaData().setImdbUrl(getImdbUrl(page, title));
+			searchResult.getMetaData().setImdbUrl(parseImdbUrl(page, title));
 			searchResult.addTorrent(torrent);
 			return searchResult;
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getPirateBayId() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
-	}
-
-	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
-		List<Torrent> torrents = parseSearchResultsPage(mediaRequest, page);
-		if (torrents.isEmpty()) {
-			return SearchResult.createNotFound();
-		}
-
-		List<ShowService.MatchCandidate> filteredResults = filterMatchingResults(mediaRequest, torrents);
-		if (filteredResults.isEmpty()) {
-			return SearchResult.createNotFound();
-		}
-
-		if (filteredResults.size() > 1) {
-			sortResults(filteredResults);
-		}
-
-		List<ShowService.MatchCandidate> subFilteredResults = filteredResults.subList(0, Math.min(filteredResults.size(), mediaRequest.getResultsLimit()));
-
-		// now for the final results - should download the actual page to get the imdb info if exists
-		SearchResult searchResult = new SearchResult(getName());
-		for (ShowService.MatchCandidate matchCandidate : subFilteredResults) {
-			searchResult.addTorrent(matchCandidate.<Torrent>getObject());
-		}
-
-		for (Torrent torrent : searchResult.getTorrents()) {
-			if (StringUtils.isBlank(searchResult.getMetaData().getImdbUrl())) {
-				searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent));
-			}
-		}
-
-		return searchResult;
 	}
 
 	// might be in the headers of the torrent or in the content as plain text
-	private String getImdbUrl(Torrent torrent) {
+	protected String getImdbUrl(Torrent torrent) {
 		String page;
 		try {
 			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
@@ -145,10 +113,10 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 			return null;
 		}
 
-		return getImdbUrl(page, torrent.getTitle());
+		return parseImdbUrl(page, torrent.getTitle());
 	}
 
-	private List<Torrent> parseSearchResultsPage(MediaRequest mediaRequest, String page) {
+	protected List<Torrent> parseSearchResultsPage(MediaRequest mediaRequest, String page) {
 		List<Torrent> results = new ArrayList<>();
 		try {
 			int idx = page.indexOf("<td class=\"vertTh\">");
@@ -195,7 +163,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		return results;
 	}
 
-	private void sortResults(List<ShowService.MatchCandidate> results) {
+	protected void sortResults(List<ShowService.MatchCandidate> results) {
 		// sort by seeders
 		Collections.sort(results, new Comparator<ShowService.MatchCandidate>() {
 			@Override

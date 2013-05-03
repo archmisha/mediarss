@@ -37,6 +37,9 @@ public class Movie extends Media {
 	@Column(name = "year")
 	private int year;
 
+	private Movie() {
+	}
+
 	public Movie(String name, String imdbUrl, int year) {
 		this.name = name;
 		this.imdbUrl = imdbUrl;

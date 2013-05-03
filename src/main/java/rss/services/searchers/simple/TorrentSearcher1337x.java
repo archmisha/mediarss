@@ -13,13 +13,13 @@ import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.services.shows.ShowService;
+import rss.util.StringUtils2;
 
-import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -38,27 +38,15 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 
 	private static final String HOST_NAME_URL_PART = "1337x.org";
 	private static final String SEARCH_URL = "http://" + HOST_NAME_URL_PART + "/search/%s/0/";
+	private static final String ENTRY_URL = "http://" + HOST_NAME_URL_PART;
 
 	@Autowired
 	private PageDownloader pageDownloader;
 
-	private Map<Integer, Pattern> patterns;
-
-	@PostConstruct
-	public void postConstruct() {
-		patterns = new HashMap<>();
-		patterns.put(Calendar.MINUTE, Pattern.compile("(\\d+) minutes?"));
-		patterns.put(Calendar.HOUR_OF_DAY, Pattern.compile("(\\d+) hours?"));
-		patterns.put(Calendar.DAY_OF_MONTH, Pattern.compile("(\\d+) days?"));
-		patterns.put(Calendar.WEEK_OF_MONTH, Pattern.compile("(\\d+) weeks?"));
-		patterns.put(Calendar.MONTH, Pattern.compile("(\\d+) months?"));
-		patterns.put(Calendar.YEAR, Pattern.compile("(\\d+) years?"));
-	}
-
 	@Override
-	public SearchResult searchById(T mediaRequest) {
+	protected String getSearchByIdUrl(T mediaRequest) {
 		// todo: handle that case
-		return SearchResult.createNotFound();
+		return null;
 	}
 
 	@Override
@@ -129,8 +117,23 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		return searchResult;
 	}
 
+	@Override
+	protected String getImdbUrl(Torrent torrent) {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	@Override
+	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	@Override
+	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
+		return null;
+	}
+
 	private Pair<Torrent, String> retrieveTorrentEntry(String torrentUrl) {
-		String page = pageDownloader.downloadPage("http://" + HOST_NAME_URL_PART + torrentUrl);
+		String page = pageDownloader.downloadPage(ENTRY_URL + torrentUrl);
 
 		int idx = page.indexOf("<div class=\"topHead\">");
 		String titlePrefix = "<h2>";
@@ -142,7 +145,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		idx = page.indexOf(dateUploadedPrefix, idx) + dateUploadedPrefix.length();
 		idx = page.indexOf(">", idx) + ">".length();
 		String dateUploadedAgoString = page.substring(idx, page.indexOf("</span>", idx));
-		Date dateUploadedAgo = parseDateUploaded(dateUploadedAgoString);
+		Date dateUploadedAgo = StringUtils2.parseDateUploaded(dateUploadedAgoString);
 
 		String seedersPrefix = "seeders</span>";
 		idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();
@@ -156,28 +159,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 		String url = page.substring(idx, page.indexOf("\"", idx));
 
 		Torrent torrent = new Torrent(title, url, dateUploadedAgo, seeders);
-		String imdbUrl = getImdbUrl(page, title);
+		String imdbUrl = parseImdbUrl(page, title);
 		return new ImmutablePair<>(torrent, imdbUrl);
-	}
-
-	// 1 week 6 days ago, 17 minutes ago, 1 month ago, 3 years 5 months ago, 2 months 1 week ago, 21 hours 15 minutes ago
-	// 1 day 55 minutes ago, 20 hours 28 seconds ago
-	// ignoring the seconds part
-	private Date parseDateUploaded(String str) {
-		// remove the ago suffix
-		String suffix = " ago";
-		if (str.endsWith(suffix)) {
-			str = str.substring(0, str.length() - suffix.length());
-		}
-
-		Calendar now = Calendar.getInstance();
-		for (Map.Entry<Integer, Pattern> entry : patterns.entrySet()) {
-			Matcher matcher = entry.getValue().matcher(str);
-			if (matcher.find()) {
-				int value = Integer.parseInt(matcher.group(1));
-				now.add(entry.getKey(), -value);
-			}
-		}
-		return now.getTime();
 	}
 }

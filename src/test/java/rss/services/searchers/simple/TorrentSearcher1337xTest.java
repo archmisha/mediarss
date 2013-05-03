@@ -32,11 +32,6 @@ public class TorrentSearcher1337xTest  extends BaseTest {
 	@InjectMocks
 	private TorrentSearcher1337x torrentSearcher1337x = new TorrentSearcher1337x();
 
-	@Before
-	public void beforeClass() {
-		torrentSearcher1337x.postConstruct();
-	}
-
 	@Test
 	public void testUploadedOn1() {
 		String page = loadPage("suits-s01e01-search-results");

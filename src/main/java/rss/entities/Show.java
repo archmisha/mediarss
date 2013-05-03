@@ -28,14 +28,12 @@ import java.util.Set;
 				query = "select new rss.services.shows.CachedShow(b.id, b.name, b.ended) from Show as b")
 })
 public class Show extends BaseEntity {
+
 	private static final long serialVersionUID = -4408596786454177485L;
 
 	@Column(name = "name", unique = true)
 	@Index(name ="show_name_idx")
 	private String name;
-
-	@Column(name = "created")
-	private Date created;
 
 	@Column(name = "tvcom_url")
 	private String tvComUrl;
@@ -53,7 +51,6 @@ public class Show extends BaseEntity {
 	private int tvRageId;
 
 	public Show() {
-		created = new Date();
 		episodes = new HashSet<>();
 	}
 

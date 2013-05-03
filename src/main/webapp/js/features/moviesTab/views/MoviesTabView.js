@@ -74,13 +74,15 @@ define([
 			},
 
 			onMovieTorrentDownload: function(userTorrent) {
+				var that = this;
 				HttpUtils.post("rest/movies/download", {
 					torrentId: userTorrent.get('torrentId'),
 					movieId: userTorrent.get('movieId')
 				}, function(res) {
-					userTorrent.set('downloadStatus', 'SCHEDULED');
-					userTorrent.set('scheduledDate', new Date());
-					selectedMovie.set('downloadStatus', 'SCHEDULED');
+					that._updateAllMovies(res);
+//					userTorrent.set('downloadStatus', 'SCHEDULED');
+//					userTorrent.set('scheduledDate', new Date());
+//					selectedMovie.set('downloadStatus', 'SCHEDULED');
 				});
 			},
 
@@ -151,18 +153,22 @@ define([
 				HttpUtils.post("rest/movies/future/add", {imdbId: imdbId}, function(res) {
 					that.ui.imdbIdInput.val('');
 					MessageBox.info(res.message);
-
-					that.loggedInUserData = res.user;
-					that.ui.moviesCounter.html(that.loggedInUserData.availableMovies.length);
-					that.ui.futureMoviesCounter.html(that.loggedInUserData.userMovies.length);
-					that.ui.moviesFilter.removeClass('filter-selected');
-					that.ui.futureMoviesFilter.addClass('filter-selected');
-					that.moviesListRegion.$el.addClass('future-movies-list');
-					that.moviesCollection.reset(that.loggedInUserData.userMovies);
-
-					var movieModel = that.moviesCollection.get(res.movieId);
-					that._selectMovieHelper(movieModel);
+					that._updateAllMovies(res);
 				});
+			},
+
+			_updateAllMovies: function(res) {
+				var that = this;
+				that.loggedInUserData = res.user;
+				that.ui.moviesCounter.html(that.loggedInUserData.availableMovies.length);
+				that.ui.futureMoviesCounter.html(that.loggedInUserData.userMovies.length);
+				that.ui.moviesFilter.removeClass('filter-selected');
+				that.ui.futureMoviesFilter.addClass('filter-selected');
+				that.moviesListRegion.$el.addClass('future-movies-list');
+				that.moviesCollection.reset(that.loggedInUserData.userMovies);
+
+				var movieModel = that.moviesCollection.get(res.movieId);
+				that._selectMovieHelper(movieModel);
 			},
 
 			onFutureMoviesFilterClick: function() {

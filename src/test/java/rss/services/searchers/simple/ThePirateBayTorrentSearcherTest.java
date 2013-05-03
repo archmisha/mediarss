@@ -35,7 +35,7 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 		String pirateBayId = "123";
 		String page = loadPage("piratebay-gangster-squad");
 		MovieRequest movieRequest = new MovieRequest("bla", null);
-		movieRequest.setPirateBayId(pirateBayId);
+		movieRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, pirateBayId);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(page);
 
@@ -62,7 +62,7 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 		String pirateBayId = "123";
 		String page = loadPage("piratebay-broken-city");
 		MovieRequest movieRequest = new MovieRequest("bla", null);
-		movieRequest.setPirateBayId(pirateBayId);
+		movieRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, pirateBayId);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(page);
 
@@ -89,7 +89,7 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 		String pirateBayId = "123";
 		String page = loadPage("piratebay-devils-of-war");
 		MovieRequest movieRequest = new MovieRequest("bla", null);
-		movieRequest.setPirateBayId(pirateBayId);
+		movieRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, pirateBayId);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(page);
 

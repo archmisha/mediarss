@@ -1,19 +1,24 @@
 package rss.services.searchers.simple;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
-import rss.services.requests.MediaRequest;
+import rss.services.requests.*;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.util.StringUtils2;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * User: Michael Dikman
@@ -23,45 +28,89 @@ import java.util.Locale;
 @Service("kickAssTorrentSearcher")
 public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
-	private static final String HOST_NAME_URL_PART = "kickasstorrents.com";
-	private static final String ENTRY_URL = "http://kickasstorrents.com/";
+	public static final String NAME = "kat.ph";
+	private static final String ENTRY_URL = "http://" + NAME;
+	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
 
 	@Autowired
 	private PageDownloader pageDownloader;
 
 	@Override
 	public String getName() {
-		return HOST_NAME_URL_PART;
+		return NAME;
 	}
 
 	@Override
 	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		// todo: currently not handling search
-		throw new UnsupportedOperationException();
+		// todo: need some kind of visitor here
+		if (mediaRequest instanceof EpisodeRequest) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("season:").append(((EpisodeRequest) mediaRequest).getSeason());
+			if (mediaRequest instanceof SingleEpisodeRequest) {
+				sb.append(" episode:").append(((SingleEpisodeRequest) mediaRequest).getEpisode());
+			} else if (mediaRequest instanceof FullSeasonRequest) {
+				// its ok
+			} else {
+				throw new IllegalArgumentException(mediaRequest.getClass() + " is not supported");
+			}
+			//"greys anatomy category:tv season:1 episode:1"
+			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+		} else if (mediaRequest instanceof MovieRequest) {
+			// http://kat.ph/usearch/iron%20man%20category:movies/
+			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:movies " + mediaRequest.toQueryString(), "UTF-8");
+		} else {
+			throw new IllegalArgumentException(mediaRequest.getClass() + " is not supported");
+		}
 	}
 
 	@Override
-	public SearchResult search(T mediaRequest) {
-		// todo: currently not handling search
-		return SearchResult.createNotFound();
-	}
-
-	@Override
-	public SearchResult searchById(T mediaRequest) {
-		if (mediaRequest.getKickAssTorrentsId() == null) {
-			return SearchResult.createNotFound();
+	protected String getImdbUrl(Torrent torrent) {
+		String page;
+		try {
+			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
+		} catch (Exception e) {
+			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
+			return null;
 		}
 
-		String page = pageDownloader.downloadPage(ENTRY_URL + mediaRequest.getKickAssTorrentsId());
-		return parseTorrentPage(mediaRequest, page);
+		return parseImdbUrl(page, torrent.getTitle());
 	}
 
-	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
-		// currently not handling search
-		throw new UnsupportedOperationException();
+	@Override
+	protected String getSearchByIdUrl(T mediaRequest) {
+		if (mediaRequest.getSearcherId(NAME) != null) {
+			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
+		}
+		return null;
 	}
 
-	private SearchResult parseTorrentPage(T mediaRequest, String page) {
+	@Override
+	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+		List<Torrent> results = new ArrayList<>();
+		try {
+			Document doc = Jsoup.parse(page);
+			for (Element element : doc.select(".odd,.even")) {
+				// take second a tag
+				Element a = element.select(".torrentname a").get(1);
+				String kickAssTorrentsId = a.attr("href");
+				String title = StringEscapeUtils.unescapeHtml4(a.text());
+				String magnetLink = element.select(".imagnet").attr("href");
+				String age = StringEscapeUtils.unescapeHtml4(element.select("td.center").get(2).text());
+				int seeders = Integer.parseInt(element.select("td.green.center").text());
+
+				Torrent torrent = new Torrent(title, magnetLink, StringUtils2.parseDateUploaded(age), seeders, ENTRY_URL + kickAssTorrentsId);
+				results.add(torrent);
+			}
+		} catch (Exception e) {
+			// in case of an error in parsing, printing the page so be able to reproduce
+			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			return Collections.emptyList(); // could maybe return the partial results collected up until now
+		}
+		return results;
+	}
+
+	@Override
+	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
 		try {
 			String titlePrefix = "<span itemprop=\"name\">";
 			int idx = page.indexOf(titlePrefix) + titlePrefix.length();
@@ -92,10 +141,10 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			torrent.setHash(hash);
 			SearchResult searchResult = new SearchResult(getName());
 			searchResult.addTorrent(torrent);
-			searchResult.getMetaData().setImdbUrl(getImdbUrl(page, title));
+			searchResult.getMetaData().setImdbUrl(parseImdbUrl(page, title));
 			return searchResult;
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getKickAssTorrentsId() + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
 	}

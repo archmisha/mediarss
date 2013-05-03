@@ -10,10 +10,12 @@ import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.services.shows.ShowService;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,13 +55,11 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	}
 
 	@Override
-	public SearchResult searchById(T mediaRequest) {
-		if (mediaRequest.getHash() == null) {
-			return SearchResult.createNotFound();
+	protected String getSearchByIdUrl(T mediaRequest) {
+		if (mediaRequest.getHash() != null) {
+			return PUBLICHD_TORRENT_URL + mediaRequest.getHash();
 		}
-
-		String page = pageDownloader.downloadPage(PUBLICHD_TORRENT_URL + mediaRequest.getHash());
-		return parseSingleEntry(mediaRequest, page);
+		return null;
 	}
 
 	@Override
@@ -68,7 +68,18 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 		return SearchResult.createNotFound();
 	}
 
-	private SearchResult parseSingleEntry(T mediaRequest, String page) {
+	@Override
+	protected String getImdbUrl(Torrent torrent) {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	@Override
+	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	@Override
+	protected SearchResult parseTorrentPage(T mediaRequest, String page) {
 		Matcher matcher = PATTERN.matcher(page);
 		if (!matcher.find()) {
 			if (!page.contains("Bad ID!")) { // in that case just id not found - not a parsing problem
@@ -91,7 +102,7 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 			logService.error(getClass(), "Failed parsing date '" + uploadDataString + "': " + e.getMessage(), e);
 		}
 
-		String imdbUrl = getImdbUrl(page, title);
+		String imdbUrl = parseImdbUrl(page, title);
 
 		Torrent movieTorrent = new Torrent(title, link, uploadDate, seeders);
 		SearchResult searchResult = new SearchResult(NAME);

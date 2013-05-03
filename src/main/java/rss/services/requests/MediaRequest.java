@@ -4,7 +4,9 @@ import rss.services.searchers.MatcherVisitor;
 import rss.services.shows.ShowService;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: Michael Dikman
@@ -15,16 +17,16 @@ public abstract class MediaRequest implements Serializable {
 
 	private static final long serialVersionUID = 5299194875537926970L;
 
-	protected String pirateBayId;
-	private String kickAssTorrentsId;
 	private String imdbId;
 	private String hash;
 	private String title;
 	private int uploaders;
-private int resultsLimit;
+	private int resultsLimit;
+	private Map<String, String> searcherIds;
 
 	protected MediaRequest(int resultsLimit) {
 		this.resultsLimit = resultsLimit;
+		searcherIds = new HashMap<>();
 	}
 
 	protected MediaRequest(String title, int resultsLimit) {
@@ -78,20 +80,12 @@ private int resultsLimit;
 		this.title = title;
 	}
 
-	public String getPirateBayId() {
-		return pirateBayId;
+	public void setSearcherId(String searcher, String id) {
+		this.searcherIds.put(searcher, id);
 	}
 
-	public void setPirateBayId(String pirateBayId) {
-		this.pirateBayId = pirateBayId;
-	}
-
-	public void setKickAssTorrentsId(String kickAssTorrentsId) {
-		this.kickAssTorrentsId = kickAssTorrentsId;
-	}
-
-	public String getKickAssTorrentsId() {
-		return kickAssTorrentsId;
+	public String getSearcherId(String searcher) {
+		return this.searcherIds.get(searcher);
 	}
 
 	public String getImdbId() {

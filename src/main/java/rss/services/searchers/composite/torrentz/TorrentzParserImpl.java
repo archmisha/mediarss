@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
+import rss.services.searchers.simple.KickAssTorrentSearcher;
+import rss.services.searchers.simple.ThePirateBayTorrentSearcher;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -92,8 +94,8 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	public void enrichRequestWithSearcherIds(MediaRequest mediaRequest) {
 		String entryPage = pageDownloader.downloadPage(TORRENTZ_ENTRY_URL + mediaRequest.getHash());
-		mediaRequest.setPirateBayId(getPirateBayId(entryPage));
-		mediaRequest.setKickAssTorrentsId(getKickAssTorrentsId(entryPage));
+		mediaRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, entryPage);
+		mediaRequest.setSearcherId(KickAssTorrentSearcher.NAME, entryPage);
 //		mediaRequest.setHash(mediaRequest.getHash());
 	}
 

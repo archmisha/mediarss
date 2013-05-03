@@ -27,15 +27,7 @@ public class Image extends BaseEntity  {
 	@Lob
 	private byte[] data;
 
-	@Column(name = "created")
-	private Date created;
-
-	public Image() {
-		this.created = new Date();
-	}
-
 	public Image(String key, byte[] data) {
-		this();
 		this.key = key;
 		this.data = data;
 	}

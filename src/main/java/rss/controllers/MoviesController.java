@@ -82,7 +82,7 @@ public class MoviesController extends BaseController {
 	@RequestMapping(value = "/download", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void movieDownload(@RequestParam("torrentId") long torrentId, @RequestParam("movieId") long movieId) {
+	public Map<String, Object> movieDownload(@RequestParam("torrentId") long torrentId, @RequestParam("movieId") long movieId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Torrent torrent = torrentDao.find(torrentId);
 		Pair<UserMovie, Boolean> futureMovieResult = movieService.addMovieDownload(user, movieId);
@@ -94,6 +94,11 @@ public class MoviesController extends BaseController {
 		if (user.getSubtitles() != null) {
 //			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
 		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("user", createUserResponse(user, MOVIES_TAB));
+		result.put("movieId", movieId);
+		return result;
 	}
 
 	@RequestMapping(value = "/view", method = RequestMethod.POST)

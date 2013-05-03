@@ -49,9 +49,6 @@ public class User extends BaseEntity {
 	@Column(name = "feed_hash")
 	private String feedHash;
 
-	@Column(name = "created")
-	private Date created;
-
 	@Column(name = "last_shows_feed_generated")
 	private Date lastShowsFeedGenerated;
 
@@ -97,14 +94,6 @@ public class User extends BaseEntity {
 
 	public String getPassword() {
 		return password;
-	}
-
-	public Date getCreated() {
-		return created;
-	}
-
-	public void setCreated(Date created) {
-		this.created = created;
 	}
 
 	public Date getLastShowsFeedGenerated() {

@@ -35,6 +35,10 @@ public class MatcherVisitor {
 	}
 
 	private List<ShowService.MatchCandidate> filterByQuality(List<ShowService.MatchCandidate> matchCandidates, MediaQuality... qualities) {
+		if (matchCandidates.isEmpty()) {
+			return Collections.emptyList();
+		}
+
 		// map candidates by quality
 		Map<MediaQuality, List<ShowService.MatchCandidate>> map = new HashMap<>();
 		for (ShowService.MatchCandidate candidate : matchCandidates) {

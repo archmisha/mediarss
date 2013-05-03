@@ -1,18 +1,17 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
+import rss.services.requests.MovieRequest;
 import rss.services.shows.ShowService;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,8 +57,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		}
 
 		// check aging
-		// if all torrents are awaigin aging then leave them, but if there is at least one that is not
-		// then return it
+		// if all torrents are awaiting aging then leave them, but if there is at least one that is not then return it
 		Calendar now = Calendar.getInstance();
 		now.setTime(new Date());
 		now.add(Calendar.HOUR_OF_DAY, -4);
@@ -82,7 +80,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		return searchResult;
 	}
 
-	protected String getImdbUrl(String page, String title) {
+	protected String parseImdbUrl(String page, String title) {
 		Matcher matcher = IMDB_URL_PATTERN.matcher(page);
 		if (matcher.find()) {
 			return "http://" + matcher.group(1);
@@ -90,6 +88,73 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 			logService.debug(getClass(), "Didn't find IMDB url for: " + title);
 		}
 		return null;
+	}
+
+	// no need to validate results in here, cuz arrive directly by url, thus no need in a common method in the upper level
+	public SearchResult searchById(T mediaRequest) {
+		String url = this.getSearchByIdUrl(mediaRequest);
+		if (url == null) {
+			return SearchResult.createNotFound();
+		}
+
+		String page = pageDownloader.downloadPage(url);
+		return parseTorrentPage(mediaRequest, page);
+	}
+
+	protected abstract SearchResult parseTorrentPage(T mediaRequest, String page);
+
+	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
+		List<Torrent> torrents = parseSearchResultsPage(mediaRequest, page);
+		if (torrents.isEmpty()) {
+			return SearchResult.createNotFound();
+		}
+
+		List<ShowService.MatchCandidate> filteredResults = filterMatchingResults(mediaRequest, torrents);
+		if (filteredResults.isEmpty()) {
+			return SearchResult.createNotFound();
+		}
+
+		if (filteredResults.size() > 1) {
+			sortResults(filteredResults);
+		}
+
+		List<ShowService.MatchCandidate> subFilteredResults = filteredResults.subList(0, Math.min(filteredResults.size(), mediaRequest.getResultsLimit()));
+
+		SearchResult searchResult = new SearchResult(getName());
+		for (ShowService.MatchCandidate matchCandidate : subFilteredResults) {
+			searchResult.addTorrent(matchCandidate.<Torrent>getObject());
+		}
+
+		// now for the final results - should download the actual page to get the imdb info if exists
+		if (mediaRequest instanceof MovieRequest) {
+			for (Torrent torrent : searchResult.getTorrents()) {
+				if (StringUtils.isBlank(searchResult.getMetaData().getImdbUrl())) {
+					searchResult.getMetaData().setImdbUrl(getImdbUrl(torrent));
+				}
+			}
+		}
+
+		return searchResult;
+	}
+
+	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
+
+	protected abstract String getSearchByIdUrl(T mediaRequest);
+
+	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);
+
+	protected abstract String getImdbUrl(Torrent torrent);
+
+	// reverse sort by seeders
+	protected void sortResults(List<ShowService.MatchCandidate> filteredResults) {
+		Collections.sort(filteredResults, new Comparator<ShowService.MatchCandidate>() {
+			@Override
+			public int compare(ShowService.MatchCandidate o1, ShowService.MatchCandidate o2) {
+				Torrent torrent1 = o1.getObject();
+				Torrent torrent2 = o2.getObject();
+				return new Integer(torrent2.getSeeders()).compareTo(torrent1.getSeeders());
+			}
+		});
 	}
 
 	private ShowService.MatchCandidate toMatchCandidate(final Torrent torrent) {
@@ -114,11 +179,4 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		}
 		return mediaRequest.visit(new MatcherVisitor(showService), matchCandidates);
 	}
-
-	// no need to validate results in here, cuz arrive directly by url, thus no need in a common method i nthe upper level
-	public abstract SearchResult searchById(T mediaRequest);
-
-	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
-
-	protected abstract SearchResult parseSearchResults(T mediaRequest, String url, String page);
 }
