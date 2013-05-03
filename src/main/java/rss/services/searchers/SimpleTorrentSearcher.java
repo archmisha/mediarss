@@ -51,7 +51,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 			return SearchResult.createNotFound();
 		}
 
-		SearchResult searchResult = parseSearchResults(mediaRequest, url, page);
+		SearchResult searchResult = parseSearchResults(mediaRequest, page);
 		if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
 			return searchResult;
 		}
@@ -80,16 +80,6 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		return searchResult;
 	}
 
-	protected String parseImdbUrl(String page, String title) {
-		Matcher matcher = IMDB_URL_PATTERN.matcher(page);
-		if (matcher.find()) {
-			return "http://" + matcher.group(1);
-		} else {
-			logService.debug(getClass(), "Didn't find IMDB url for: " + title);
-		}
-		return null;
-	}
-
 	// no need to validate results in here, cuz arrive directly by url, thus no need in a common method in the upper level
 	public SearchResult searchById(T mediaRequest) {
 		String url = this.getSearchByIdUrl(mediaRequest);
@@ -108,9 +98,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		return searchResult;
 	}
 
-	protected abstract Torrent parseTorrentPage(T mediaRequest, String page);
-
-	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
+	private SearchResult parseSearchResults(T mediaRequest, String page) {
 		List<Torrent> torrents = parseSearchResultsPage(mediaRequest, page);
 		if (torrents.isEmpty()) {
 			return SearchResult.createNotFound();
@@ -150,6 +138,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 
 	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);
 
+	protected abstract Torrent parseTorrentPage(T mediaRequest, String page);
+
 	// might be in the headers of the torrent or in the content as plain text
 	private String getImdbUrl(Torrent torrent) {
 		String page;
@@ -161,6 +151,16 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		}
 
 		return parseImdbUrl(page, torrent.getTitle());
+	}
+
+	protected String parseImdbUrl(String page, String title) {
+		Matcher matcher = IMDB_URL_PATTERN.matcher(page);
+		if (matcher.find()) {
+			return "http://" + matcher.group(1);
+		} else {
+			logService.debug(getClass(), "Didn't find IMDB url for: " + title);
+		}
+		return null;
 	}
 
 	// reverse sort by seeders

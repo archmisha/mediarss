@@ -14,6 +14,7 @@ import rss.services.shows.ShowService;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -63,14 +64,8 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	}
 
 	@Override
-	protected SearchResult parseSearchResults(T mediaRequest, String url, String page) {
-		// todo: currently not handling search
-		return SearchResult.createNotFound();
-	}
-
-	@Override
 	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return Collections.emptyList();
 	}
 
 	@Override

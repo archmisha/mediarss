@@ -37,6 +37,8 @@ public class Movie extends Media {
 	@Column(name = "year")
 	private int year;
 
+	// for hibernate
+	@SuppressWarnings("UnusedDeclaration")
 	private Movie() {
 	}
 

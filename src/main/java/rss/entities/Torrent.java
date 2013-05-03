@@ -51,6 +51,10 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
 	@Transient
 	private String imdbid;
 
+	// for hibernate
+	@SuppressWarnings("UnusedDeclaration")
+	private Torrent() {}
+
     public Torrent(String title, String url, Date dateUploaded, int seeders) {
         this(title, url, dateUploaded, seeders, null);
     }
