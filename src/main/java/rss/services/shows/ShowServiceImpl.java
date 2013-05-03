@@ -128,7 +128,7 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	// not normalizing: and, &
-	public static String normalizeFoQueryString(String name) {
+	public static String normalizeForQueryString(String name) {
 		name = name.toLowerCase();
 		name = NORMALIZE_TO_NOTHING_PATTERN.matcher(name).replaceAll("");
 		name = NORMALIZE_TO_SPACE_PATTERN.matcher(name).replaceAll(" ");

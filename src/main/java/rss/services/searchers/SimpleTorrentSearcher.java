@@ -75,6 +75,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 			searchResult.getTorrents().clear();
 			searchResult.addTorrent(readyTorrent);
 			searchResult.setSearchStatus(SearchResult.SearchStatus.FOUND);
+			return searchResult;
 		}
 
 		searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);

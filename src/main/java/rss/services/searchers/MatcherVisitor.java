@@ -1,11 +1,12 @@
 package rss.services.searchers;
 
+import rss.entities.MediaQuality;
 import rss.services.requests.EpisodeRequest;
 import rss.services.requests.MovieRequest;
 import rss.services.shows.ShowService;
+import rss.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -20,7 +21,7 @@ public class MatcherVisitor {
 	}
 
 	public List<ShowService.MatchCandidate> filterMatching(EpisodeRequest episodeRequest, List<ShowService.MatchCandidate> matchCandidates) {
-		return showService.filterMatching(episodeRequest, matchCandidates);
+		return filterByQuality(showService.filterMatching(episodeRequest, matchCandidates), MediaQuality.HD720P, MediaQuality.HD1080P, MediaQuality.NORMAL);
 	}
 
 	public List<ShowService.MatchCandidate> filterMatching(MovieRequest movieRequest, List<ShowService.MatchCandidate> matchCandidates) {
@@ -30,6 +31,27 @@ public class MatcherVisitor {
 				results.add(searchResult);
 			}
 		}
-		return results;
+		return filterByQuality(results, MediaQuality.HD720P, MediaQuality.HD1080P);
+	}
+
+	private List<ShowService.MatchCandidate> filterByQuality(List<ShowService.MatchCandidate> matchCandidates, MediaQuality... qualities) {
+		// map candidates by quality
+		Map<MediaQuality, List<ShowService.MatchCandidate>> map = new HashMap<>();
+		for (ShowService.MatchCandidate candidate : matchCandidates) {
+			for (MediaQuality quality : qualities) {
+				if (candidate.getText().contains(quality.toString())) {
+					CollectionUtils.safeListPut(map, quality, candidate);
+					break;
+				}
+			}
+		}
+
+		// go over the qualities in order received and return what ever is found
+		for (MediaQuality quality : qualities) {
+			if (map.containsKey(quality) && !map.get(quality).isEmpty()) {
+				return map.get(quality);
+			}
+		}
+		return Collections.emptyList();
 	}
 }
