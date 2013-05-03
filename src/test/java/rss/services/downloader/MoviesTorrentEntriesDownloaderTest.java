@@ -115,7 +115,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
 		String imdbUrl = "some imdb url";
-		torrent.setImdbid(imdbUrl);
+		torrent.setImdbId(imdbUrl);
 
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class)))
@@ -137,7 +137,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
 		String imdbUrl = "some imdb url";
-		torrent.setImdbid(imdbUrl);
+		torrent.setImdbId(imdbUrl);
 
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class)))
@@ -158,7 +158,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
 		String imdbUrl = "http://www.imdb.com/title/tt2193021/";
-		torrent.setImdbid(imdbUrl);
+		torrent.setImdbId(imdbUrl);
 
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class))).then(new Answer<String>() {
@@ -187,7 +187,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
 		String imdbUrl = "http://www.imdb.com/title/tt2402582/";
-		torrent.setImdbid(imdbUrl);
+		torrent.setImdbId(imdbUrl);
 
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class))).then(new Answer<String>() {
@@ -212,7 +212,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
 		String imdbUrl = "http://www.imdb.com/title/tt2402582/";
-		torrent.setImdbid(imdbUrl);
+		torrent.setImdbId(imdbUrl);
 
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class))).then(new Answer<String>() {
@@ -237,7 +237,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
 		String imdbUrl = "url";
-		torrent.setImdbid(imdbUrl);
+		torrent.setImdbId(imdbUrl);
 
 		// using MatcherResult implementation cuz otherwise Mockito screws up the Matcher object
 		when(pageDownloader.downloadPageUntilFound(eq(imdbUrl), any(Pattern.class))).then(new Answer<String>() {

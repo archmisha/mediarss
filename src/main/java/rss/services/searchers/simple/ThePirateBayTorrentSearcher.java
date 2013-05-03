@@ -1,7 +1,6 @@
 package rss.services.searchers.simple;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
@@ -9,8 +8,6 @@ import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
-import rss.services.requests.MovieRequest;
-import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.services.shows.ShowService;
 
@@ -93,7 +90,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
 			torrent.setHash(hash);
-			torrent.setImdbid(parseImdbUrl(page, title));
+			torrent.setImdbId(parseImdbUrl(page, title));
 			return torrent;
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by piratebay id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);

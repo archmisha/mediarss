@@ -49,7 +49,7 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     private String sourcePageUrl;
 
 	@Transient
-	private String imdbid;
+	private String imdbId;
 
 	// for hibernate
 	@SuppressWarnings("UnusedDeclaration")
@@ -128,12 +128,12 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
 		return hash;
 	}
 
-	public String getImdbid() {
-		return imdbid;
+	public String getImdbId() {
+		return imdbId;
 	}
 
-	public void setImdbid(String imdbid) {
-		this.imdbid = imdbid;
+	public void setImdbId(String imdbId) {
+		this.imdbId = imdbId;
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
-import rss.services.shows.ShowService;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -93,7 +92,7 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 		}
 
 		Torrent torrent = new Torrent(title, link, uploadDate, seeders);
-		torrent.setImdbid(parseImdbUrl(page, title));
+		torrent.setImdbId(parseImdbUrl(page, title));
 		return torrent;
 	}
 }

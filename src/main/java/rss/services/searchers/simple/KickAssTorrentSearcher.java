@@ -120,7 +120,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders);
 			torrent.setHash(hash);
-			torrent.setImdbid(parseImdbUrl(page, title));
+			torrent.setImdbId(parseImdbUrl(page, title));
 			return torrent;
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);

@@ -69,8 +69,8 @@ public class SearchResult {
 
 	public String getImdbId() {
 		for (Torrent torrent : torrents) {
-			if (!StringUtils.isBlank(torrent.getImdbid())) {
-				return torrent.getImdbid();
+			if (!StringUtils.isBlank(torrent.getImdbId())) {
+				return torrent.getImdbId();
 			}
 		}
 

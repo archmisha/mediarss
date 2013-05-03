@@ -124,7 +124,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		if (mediaRequest instanceof MovieRequest) {
 			for (Torrent torrent : searchResult.getTorrents()) {
 				if (StringUtils.isBlank(searchResult.getImdbId())) {
-					torrent.setImdbid(getImdbUrl(torrent));
+					torrent.setImdbId(getImdbUrl(torrent));
 				}
 			}
 		}
