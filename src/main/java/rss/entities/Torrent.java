@@ -24,9 +24,6 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
 
     private static final long serialVersionUID = -8358871423354442763L;
 
-    @Column(name = "created")
-    private Date created;
-
     @Column(name = "title")
     private String title;
 
@@ -51,16 +48,11 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     @Transient
     private String sourcePageUrl;
 
-    private Torrent() {
-		created = new Date();
-    }
-
     public Torrent(String title, String url, Date dateUploaded, int seeders) {
         this(title, url, dateUploaded, seeders, null);
     }
 
     public Torrent(String title, String url, Date dateUploaded, int seeders, String sourcePageUrl) {
-        this();
         this.title = title;
         this.url = url;
         this.dateUploaded = dateUploaded;
@@ -77,10 +69,6 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
         sb.append(", dateUploaded=").append(dateUploaded);
         sb.append('}');
         return sb.toString();
-    }
-
-    public Date getCreated() {
-        return created;
     }
 
     public void setTitle(String title) {
@@ -124,11 +112,6 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     public void setQuality(MediaQuality quality) {
         this.quality = quality;
     }
-
-
-//    public void setMedia(Media media) {
-//        this.media = media;
-//    }
 
 	public void setHash(String hash) {
 		this.hash = hash;

@@ -41,9 +41,13 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 	@Autowired
 	private TorrentDao torrentDao;
 
+//	@Autowired
+//	@Qualifier("smartEpisodeSearcher")
+//	private TorrentSearcher<ShowRequest, Episode> smartEpisodeSearcher;
+
 	@Autowired
-	@Qualifier("smartEpisodeSearcher")
-	private TorrentSearcher<ShowRequest, Episode> smartEpisodeSearcher;
+	@Qualifier("compositeEpisodeSearcher")
+	private TorrentSearcher<ShowRequest, Episode> compositeEpisodeSearcher;
 
 	@Autowired
 	private ShowService showService;
@@ -53,7 +57,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 
 	@Override
 	protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
-		return smartEpisodeSearcher.search(episodeRequest);
+		return compositeEpisodeSearcher.search(episodeRequest);
 	}
 
 	@Override

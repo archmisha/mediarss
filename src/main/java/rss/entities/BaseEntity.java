@@ -1,6 +1,7 @@
 package rss.entities;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.*;
 
@@ -18,12 +19,14 @@ public abstract class BaseEntity implements Serializable {
 
 	@Id
 	@Column(name = "id")
-//	@GeneratedValue(strategy = GenerationType.AUTO)
 	@GeneratedValue(strategy = GenerationType.TABLE)
-	@XStreamOmitField
 	protected long id;
 
+	@Column(name = "created")
+	private Date created;
+
 	protected BaseEntity() {
+		created = new Date();
 	}
 
 	public long getId() {
@@ -32,5 +35,9 @@ public abstract class BaseEntity implements Serializable {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Date getCreated() {
+		return created;
 	}
 }
