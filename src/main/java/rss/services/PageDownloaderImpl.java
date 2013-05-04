@@ -19,11 +19,13 @@ import org.springframework.stereotype.Service;
 import rss.ConnectionTimeoutException;
 import rss.MediaRSSException;
 import rss.services.log.LogService;
+import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -163,6 +165,12 @@ public class PageDownloaderImpl implements PageDownloader {
 		try {
 			coolDownStatus.authorizeAccess(url); // blocks until authorized
 
+			if ("true".equalsIgnoreCase(System.getProperty("webproxy"))) {
+				if (url.contains(TorrentzParserImpl.NAME)) {
+					httpRequest.setURI(new URL("http://anonymouse.org/cgi-bin/anon-www.cgi/" + url).toURI());
+				}
+			}
+
 			httpClient = new DefaultHttpClient();
 
 			// inverted for easy null handling
@@ -180,10 +188,10 @@ public class PageDownloaderImpl implements PageDownloader {
 //			Exception ex = null;
 //			while (retries > 0) {
 //				try {
-					httpResponse = retryClient.execute(httpRequest);
+			httpResponse = retryClient.execute(httpRequest);
 //					retries = -1; // stop retry
 //				} catch (TruncatedChunkException e) {
-					// need to retry
+			// need to retry
 //					log.info(getClass(), "Retrying to download page: " + url);
 //					retries--;
 //					ex = e;

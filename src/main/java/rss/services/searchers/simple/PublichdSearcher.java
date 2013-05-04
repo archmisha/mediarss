@@ -32,9 +32,6 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	public static final Pattern PATTERN = Pattern.compile("<tag:torrents\\[\\].download /><a href=\".*?\">(.*?)<a href=(.*?)>.*AddDate</b></td>.*?>(.*?)</td>.*?seeds: (\\d+)", Pattern.DOTALL);
 
 	@Autowired
-	private PageDownloader pageDownloader;
-
-	@Autowired
 	protected LogService logService;
 
 	@Override

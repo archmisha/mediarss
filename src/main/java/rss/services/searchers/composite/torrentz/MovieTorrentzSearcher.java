@@ -33,9 +33,11 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest, Movie>
 		List<SearchResult> results = new ArrayList<>();
 		SearchResult awaitingAgingResult = null;
 		for (TorrentzResult foundRequest : foundRequests) {
-			torrentzParser.enrichRequestWithSearcherIds(originalRequest);
+			MovieRequest curRequest = new MovieRequest(foundRequest.getTitle(), foundRequest.getHash());
+			curRequest.setUploaders(foundRequest.getUploaders());
+			torrentzParser.enrichRequestWithSearcherIds(curRequest);
 			CompositeSearcherData compositeSearcherData = new CompositeSearcherData();
-			super.searchHelper(new MovieRequest(foundRequest.getTitle(), foundRequest.getHash()), compositeSearcherData);
+			super.searchHelper(curRequest, compositeSearcherData);
 			SearchResult searchResult = compositeSearcherData.getSuccessfulSearchResult();
 			// null means not found
 			if (searchResult != null) {

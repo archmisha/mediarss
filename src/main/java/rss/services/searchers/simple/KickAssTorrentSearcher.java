@@ -25,7 +25,7 @@ import java.util.*;
 public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
 	public static final String NAME = "kat.ph";
-	private static final String ENTRY_URL = "http://" + NAME;
+	private static final String ENTRY_URL = "http://" + NAME + "/";
 	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
 
 	@Override
@@ -50,7 +50,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
 		} else if (mediaRequest instanceof MovieRequest) {
 			// http://kat.ph/usearch/iron%20man%20category:movies/
-			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:movies " + mediaRequest.toQueryString(), "UTF-8");
+			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:movies", "UTF-8");
 		} else {
 			throw new IllegalArgumentException(mediaRequest.getClass() + " is not supported");
 		}
@@ -123,7 +123,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			torrent.setImdbId(parseImdbUrl(page, title));
 			return torrent;
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search by " + NAME + " torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return null;
 		}
 	}

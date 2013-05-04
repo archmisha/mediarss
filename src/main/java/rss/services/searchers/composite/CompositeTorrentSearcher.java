@@ -111,7 +111,7 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 		if (counter > 0) {
 			sb.append(")");
 		}
-		sb.append(" (torrent=").append(compositeSearcherData.getSuccessfulSearchResult().getTorrentTitles()).append(")");
+//		sb.append(" (torrent=").append(compositeSearcherData.getSuccessfulSearchResult().getTorrentTitles()).append(")");
 		logService.info(getClass(), sb.toString());
 	}
 

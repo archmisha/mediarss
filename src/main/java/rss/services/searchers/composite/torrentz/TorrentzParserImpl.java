@@ -7,6 +7,7 @@ import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.simple.KickAssTorrentSearcher;
+import rss.services.searchers.simple.PublichdSearcher;
 import rss.services.searchers.simple.ThePirateBayTorrentSearcher;
 
 import java.util.HashSet;
@@ -21,24 +22,28 @@ import java.util.regex.Pattern;
 @Service
 public class TorrentzParserImpl implements TorrentzParser {
 
-	public static final String HOST_NAME = "http://torrentz.eu/";
+	public static final String NAME = "torrentz.eu";
+	private static final String HOST_NAME = "http://" + NAME + "/";
 
 	// need to skip entries like /z/...
-	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
+//	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
+	// adjusting to proxy, url wont start with relative path like that: /<hash> but will have <proxy url>/http://torrentz.eu/<hash>
+	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\".*?([^/\"]+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
 
 	// removed filters: highres
-	public static final String FILTERS = "+-shows+-porn+-brrip+-episodes";
+	// size>2000m - filters dvdscr
+	public static final String MOVIES_FILTERS = "+-shows+-porn+-brrip+-episodes+-music+size>2000m";
 
 	public static final String TORRENTZ_ENTRY_URL = HOST_NAME;
-	public static final String TORRENTZ_LATEST_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + FILTERS + "+added%3A";
-	public static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+hd+video" + FILTERS + "+";
+	public static final String TORRENTZ_LATEST_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + MOVIES_FILTERS + "+added%3A";
+	public static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+hd+video" + MOVIES_FILTERS + "+";
 	public static final String TORRENTZ_EPISODE_SEARCH_URL = HOST_NAME + "verifiedP?f=";
 
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
 
 	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
-	private static final Pattern KICKASS_TORRENTS_ID = Pattern.compile("<a href=\"http://www.kickasstorrents.com/([^\"/]+)\"");
+	private static final Pattern KICKASS_TORRENTS_ID = Pattern.compile("http://www.kickasstorrents.com/([^\"/]+)");
 
 	@Autowired
 	protected LogService logService;
@@ -55,6 +60,10 @@ public class TorrentzParserImpl implements TorrentzParser {
 	@SuppressWarnings("unchecked")
 	protected Set<TorrentzResult> parse(String page) {
 		Set<TorrentzResult> movies = new HashSet<>();
+
+		// cut out the sponsored links section before the results
+		page = page.substring(page.indexOf("<div class=\"results\""));
+
 		Matcher matcher = ENTRY_CONTENT_PATTERN.matcher(page);
 		while (matcher.find()) {
 			String hash = matcher.group(1);
@@ -94,13 +103,13 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	public void enrichRequestWithSearcherIds(MediaRequest mediaRequest) {
 		String entryPage = pageDownloader.downloadPage(TORRENTZ_ENTRY_URL + mediaRequest.getHash());
-		mediaRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, entryPage);
-		mediaRequest.setSearcherId(KickAssTorrentSearcher.NAME, entryPage);
-//		mediaRequest.setHash(mediaRequest.getHash());
+		mediaRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, getPirateBayId(entryPage));
+		mediaRequest.setSearcherId(KickAssTorrentSearcher.NAME, getKickAssTorrentsId(entryPage));
+		mediaRequest.setSearcherId(PublichdSearcher.NAME, mediaRequest.getHash());
 	}
 
 
-	protected String getPirateBayId(String page) {
+	private String getPirateBayId(String page) {
 		Matcher matcher = PIRATE_BAY_ID.matcher(page);
 		if (matcher.find()) {
 			return matcher.group(1);
@@ -108,7 +117,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 		return null;
 	}
 
-	protected String getKickAssTorrentsId(String page) {
+	private String getKickAssTorrentsId(String page) {
 		Matcher matcher = KICKASS_TORRENTS_ID.matcher(page);
 		if (matcher.find()) {
 			return matcher.group(1);

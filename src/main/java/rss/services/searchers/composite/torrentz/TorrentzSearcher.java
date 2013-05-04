@@ -47,7 +47,7 @@ public abstract class TorrentzSearcher<T extends MediaRequest, S extends Media> 
 
 	@Override
 	public String getName() {
-		return TorrentzParserImpl.HOST_NAME;
+		return TorrentzParserImpl.NAME;
 	}
 
 	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;

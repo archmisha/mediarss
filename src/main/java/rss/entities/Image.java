@@ -27,6 +27,11 @@ public class Image extends BaseEntity  {
 	@Lob
 	private byte[] data;
 
+	// for hibernate
+	@SuppressWarnings("UnusedDeclaration")
+	private Image() {
+	}
+
 	public Image(String key, byte[] data) {
 		this.key = key;
 		this.data = data;

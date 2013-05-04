@@ -24,14 +24,11 @@ import java.util.*;
 @Service("thePirateBayTorrentSearcher")
 public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
-	public static final String NAME = "thepiratebay.se";
+	public static final String NAME = "thepiratebay.sx";
 	private static final String HOST_NAME_URL_PART = "http://" + NAME;
 	// 0/7/0 orders by seeders - this solves multiple pages problem, what is important will be on the first page
 	private static final String SEARCH_URL = HOST_NAME_URL_PART + "/search/%s/0/7/0";
 	private static final String ENTRY_URL = HOST_NAME_URL_PART + "/torrent/";
-
-	@Autowired
-	private PageDownloader pageDownloader;
 
 	@Autowired
 	protected LogService logService;

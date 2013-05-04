@@ -66,9 +66,9 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 			Document doc = Jsoup.parse(page);
 			for (Element element : doc.select(".torrentName")) {
 				// take second a tag
-				Element a = element.select(".org").get(0);
+				Element a = element.select("a.org").get(0);
 				String searcherTorrentsId = a.attr("href");
-
+				mediaRequest.setSearcherId(NAME, ENTRY_URL + searcherTorrentsId);
 				String entryPage = pageDownloader.downloadPage(ENTRY_URL + searcherTorrentsId);
 				Torrent torrent = parseTorrentPage(mediaRequest, entryPage);
 				results.add(torrent);
@@ -111,7 +111,7 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 			torrent.setImdbId(parseImdbUrl(page, title));
 			return torrent;
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed parsing page of search by kickass torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed parsing page of search by " + NAME + " torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return null;
 		}
 	}
