@@ -57,12 +57,12 @@ define([
 				this.movieTorrentColletionView = new MovieTorrentCollectionView({vent: this.vent, collection: this.movieTorrentCollection});
 
 				this.moviesSection = new SectionView({
-					title: 'Latest Movies (experimental)',
+					title: 'Latest Movies',
 					description: 'Select movies to download. Here you can find newly available movies. You can use IMDB preview'
 				});
 
 				this.futureMoviesSection = new SectionView({
-					title: 'Search Movies (experimental)',
+					title: 'Search Movies',
 					description: 'Search for movies by IMDB ID.<br/>' +
 						'If the movie is already available for download it will be automatically added to your feed<br/>' +
 						'Otherwise it will be scheduled for download in the <b>future</b> once they will be available.'
