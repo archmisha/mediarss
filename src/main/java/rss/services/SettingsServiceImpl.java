@@ -12,12 +12,17 @@ import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: Michael Dikman
@@ -30,7 +35,7 @@ public class SettingsServiceImpl implements SettingsService {
 	public static final String SETTINGS_FILENAME = "settings.properties";
 
 	@Autowired
-	private LogService log;
+	private LogService logService;
 
 	@Autowired
 	private SettingsDao settingsDao;
@@ -41,6 +46,7 @@ public class SettingsServiceImpl implements SettingsService {
 	private ExecutorService executorService;
 	private boolean shouldRun;
 	private WatchService watchService;
+	private ScheduledExecutorService executorService2;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -55,39 +61,73 @@ public class SettingsServiceImpl implements SettingsService {
 					watchFile(new File(System.getProperty("user.home")).getAbsolutePath(), SETTINGS_FILENAME);
 				} catch (Exception e) {
 					if (shouldRun) {
-						log.error(getClass(), String.format("Failed setting up file watcher for %s: %s", SETTINGS_FILENAME, e.getMessage()), e);
+						logService.error(getClass(), String.format("Failed setting up file watcher for %s: %s", SETTINGS_FILENAME, e.getMessage()), e);
 					}
 				}
 			}
 		});
+
+		executorService2 = Executors.newSingleThreadScheduledExecutor();
+		executorService2.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				printMemoryStats();
+			}
+		}, 0, 1, TimeUnit.MINUTES);
+	}
+
+	private void printMemoryStats() {
+		int mb = 1024 * 1024;
+		Runtime runtime = Runtime.getRuntime();
+
+		logService.info(getClass(), "##### Heap utilization statistics [MB] #####");
+		logService.info(getClass(), "Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+		logService.info(getClass(), "Free Memory:" + runtime.freeMemory() / mb);
+		logService.info(getClass(), "Total Memory:" + runtime.totalMemory() / mb);
+		logService.info(getClass(), "Max Memory:" + runtime.maxMemory() / mb);
+
+		logService.info(getClass(), "##### Heap utilization statistics [MB] ##### 2");
+		ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+		logService.info(getClass(), "Heap " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
+		logService.info(getClass(), "NonHeap " +  ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage());
+		List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans();
+		for (MemoryPoolMXBean bean: beans) {
+			logService.info(getClass(), bean.getName() + " " +  bean.getUsage());
+		}
+
+		for (GarbageCollectorMXBean bean: ManagementFactory.getGarbageCollectorMXBeans()) {
+			logService.info(getClass(), bean.getName() + " " + bean.getCollectionCount() + " " + bean.getCollectionTime());
+		}
 	}
 
 	@PreDestroy
 	private void preDestroy() {
-		log.info(getClass(), "Terminating settings service and watch job");
+		logService.info(getClass(), "Terminating settings service and watch job");
 		shouldRun = false;
 		executorService.shutdown();
 		try {
 			watchService.close();
 		} catch (IOException e) {
-			log.error(getClass(), e.getMessage(), e);
+			logService.error(getClass(), e.getMessage(), e);
 		}
+
+		executorService2.shutdown();
 	}
 
 	private void loadSettingsFile() {
-		log.info(getClass(), "Loading " + SETTINGS_FILENAME + " file");
+		logService.info(getClass(), "Loading " + SETTINGS_FILENAME + " file");
 		try {
 			File settingsFile = new File(System.getProperty("user.home") + File.separator + SETTINGS_FILENAME);
 			if (settingsFile.exists()) {
-				log.info(getClass(), "Loading " + SETTINGS_FILENAME + " file from " + settingsFile.getAbsolutePath());
+				logService.info(getClass(), "Loading " + SETTINGS_FILENAME + " file from " + settingsFile.getAbsolutePath());
 			} else {
-				log.info(getClass(), "Loading default " + SETTINGS_FILENAME + " file from classpath");
+				logService.info(getClass(), "Loading default " + SETTINGS_FILENAME + " file from classpath");
 				settingsFile = new ClassPathResource(SETTINGS_FILENAME, SettingsServiceImpl.class.getClassLoader()).getFile();
 			}
 			prop = new Properties();
 			prop.load(new FileReader(settingsFile));
 		} catch (Exception e) {
-			log.error(getClass(), "Failed loading " + SETTINGS_FILENAME + ": " + e.getMessage(), e);
+			logService.error(getClass(), "Failed loading " + SETTINGS_FILENAME + ": " + e.getMessage(), e);
 		}
 	}
 

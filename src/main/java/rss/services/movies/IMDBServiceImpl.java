@@ -154,28 +154,27 @@ public class IMDBServiceImpl implements IMDBService {
 				return transactionTemplate.execute(new TransactionCallback<InputStream>() {
 					@Override
 					public InputStream doInTransaction(TransactionStatus transactionStatus) {
+						// remove the imdb url prefix, if exists. and also the rest call prefix - depends on where the call came from we have different prefixes
+						String imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, "");
+						imdbImageUrl = StringUtils.replace(imdbImageUrl, IMDBPreviewCacheServiceImpl.REST_IMAGE_URL_PREFIX, "");
 						try {
 							InputStream imageInputStream;
-							String imdbImageUrl = null;
 							try {
-								Image image = imageDao.find(imageFileName);
+								Image image = imageDao.find(imdbImageUrl);
 								if (image == null) {
-									// replace back the imdb url prefix instead of the local rest call
-									imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.REST_IMAGE_URL_PREFIX, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX);
-									image = new Image(imageFileName, pageDownloader.downloadImage(imdbImageUrl));
+									image = new Image(imdbImageUrl, pageDownloader.downloadImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
 									imageDao.persist(image);
-									logService.info(getClass(), "Storing a new image into the DB: " + imageFileName);
+									logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
 								}
 
 								imageInputStream = new ByteArrayInputStream(image.getData());
 							} catch (Exception e) {
-								logService.error(getClass(), String.format("Failed fetching image %s: %s. Using default person-no-image",
-										(imdbImageUrl != null ? imdbImageUrl : imageFileName), e.getMessage()), e);
-								imageInputStream = new ClassPathResource("../../images/imdb/person-no-image.png", this.getClass().getClassLoader()).getInputStream();
+								logService.error(getClass(), String.format("Failed fetching image %s: %s. Using default person-no-image", imdbImageUrl, e.getMessage()), e);
+								imageInputStream = new ClassPathResource(IMDBPreviewCacheServiceImpl.IMDB_DEFAULT_PERSON_IMAGE, this.getClass().getClassLoader()).getInputStream();
 							}
 							return imageInputStream;
 						} catch (Exception e) {
-							throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
+							throw new MediaRSSException("Failed downloading IMDB image " + imdbImageUrl + ": " + e.getMessage(), e);
 						}
 					}
 				});

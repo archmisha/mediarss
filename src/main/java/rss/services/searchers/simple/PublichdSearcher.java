@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
@@ -57,6 +56,11 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 			return PUBLICHD_TORRENT_URL + mediaRequest.getHash();
 		}
 		return null;
+	}
+
+	@Override
+	public String parseId(MediaRequest mediaRequest, String page) {
+		return mediaRequest.getHash();
 	}
 
 	@Override

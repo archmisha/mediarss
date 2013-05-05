@@ -35,7 +35,7 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest, Movie>
 		for (TorrentzResult foundRequest : foundRequests) {
 			MovieRequest curRequest = new MovieRequest(foundRequest.getTitle(), foundRequest.getHash());
 			curRequest.setUploaders(foundRequest.getUploaders());
-			torrentzParser.enrichRequestWithSearcherIds(curRequest);
+			enrichRequestWithSearcherIds(curRequest);
 			CompositeSearcherData compositeSearcherData = new CompositeSearcherData();
 			super.searchHelper(curRequest, compositeSearcherData);
 			SearchResult searchResult = compositeSearcherData.getSuccessfulSearchResult();

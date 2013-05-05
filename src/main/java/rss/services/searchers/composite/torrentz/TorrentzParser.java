@@ -1,8 +1,5 @@
 package rss.services.searchers.composite.torrentz;
 
-import rss.services.requests.MediaRequest;
-import rss.services.requests.MovieRequest;
-
 import java.util.Set;
 
 /**
@@ -12,6 +9,4 @@ import java.util.Set;
 public interface TorrentzParser {
 
 	Set<TorrentzResult> downloadByUrl(String url);
-
-	void enrichRequestWithSearcherIds(MediaRequest originalRequest);
 }

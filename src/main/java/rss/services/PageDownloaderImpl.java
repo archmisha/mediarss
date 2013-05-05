@@ -183,25 +183,7 @@ public class PageDownloaderImpl implements PageDownloader {
 			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 30 secs
 			AutoRetryHttpClient retryClient = new AutoRetryHttpClient(httpClient, new DefaultServiceUnavailableRetryStrategy(3, 100));
 
-			HttpResponse httpResponse = null;
-//			int retries = 3;
-//			Exception ex = null;
-//			while (retries > 0) {
-//				try {
-			httpResponse = retryClient.execute(httpRequest);
-//					retries = -1; // stop retry
-//				} catch (TruncatedChunkException e) {
-			// need to retry
-//					log.info(getClass(), "Retrying to download page: " + url);
-//					retries--;
-//					ex = e;
-//				}
-//			}
-
-//			if (httpResponse == null) {
-//				in that case ex should not be null
-//				throw new RuntimeException(ex.getMessage(), ex);
-//			}
+			HttpResponse httpResponse = retryClient.execute(httpRequest);
 
 			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK &&
 				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {

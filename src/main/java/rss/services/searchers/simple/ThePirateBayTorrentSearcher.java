@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SimpleTorrentSearcher;
@@ -15,6 +14,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * User: Michael Dikman
@@ -29,6 +30,8 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	// 0/7/0 orders by seeders - this solves multiple pages problem, what is important will be on the first page
 	private static final String SEARCH_URL = HOST_NAME_URL_PART + "/search/%s/0/7/0";
 	private static final String ENTRY_URL = HOST_NAME_URL_PART + "/torrent/";
+
+	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
 
 	@Autowired
 	protected LogService logService;
@@ -47,6 +50,15 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	protected String getSearchByIdUrl(T mediaRequest) {
 		if (mediaRequest.getSearcherId(NAME) != null) {
 			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
+		}
+		return null;
+	}
+
+	@Override
+	public String parseId(MediaRequest mediaRequest, String page) {
+		Matcher matcher = PIRATE_BAY_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
 		}
 		return null;
 	}

@@ -28,6 +28,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	public static final String IMDB_CSS_URL_PREFIX = "http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/";
 	public static final String IMDB_IMAGE_URL_PREFIX = "http://ia.media-imdb.com/images/M/";
 	public static final String REST_IMAGE_URL_PREFIX = "../../../rest/movies/imdb/image/";
+	public static final String IMDB_DEFAULT_PERSON_IMAGE = "../../images/imdb/person-no-image.png";
 
 	@Autowired
 	private LogService logService;
@@ -108,11 +109,11 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	private String cleanCSSFile(String cssFileName, String css) {
 		DurationMeter durationMeter = new DurationMeter();
 
-		css = css.replaceAll("images/G/01/imdb/images/pro_meter_badge/starmeter_wrap_gradient-996803324._V_.png", "../../../../../../images/imdb/starmeter_wrap_gradient-996803324._V_.png");
-		css = css.replaceAll("images/G/01/imdb/images/pro_meter_badge/starmeter_icons-366893210._V_.png", "../../../../../../images/imdb/starmeter_icons-366893210._V_.png");
-		css = css.replaceAll("images/G/01/imdb/images/title/titlePageSprite-2288315300._V_.png", "../../../../../../images/imdb/titlePageSprite-2288315300._V_.png");
-		css = css.replaceAll("images/G/01/imdb/images/rating/rating-list/sprite-1445387679._V_.png", "../../../../../../../images/imdb/sprite-1445387679._V_.png");
-		css = css.replaceAll("images/G/01/imdb/images/tn15/starstiny-3317719365._V_.png", "../../../../../../images/imdb/starstiny-3317719365._V_.png");
+		css = StringUtils.replace(css, "images/G/01/imdb/images/pro_meter_badge/starmeter_wrap_gradient-996803324._V_.png", "../../../../../../images/imdb/starmeter_wrap_gradient-996803324._V_.png");
+		css = StringUtils.replace(css, "images/G/01/imdb/images/pro_meter_badge/starmeter_icons-366893210._V_.png", "../../../../../../images/imdb/starmeter_icons-366893210._V_.png");
+		css = StringUtils.replace(css, "images/G/01/imdb/images/title/titlePageSprite-2288315300._V_.png", "../../../../../../images/imdb/titlePageSprite-2288315300._V_.png");
+		css = StringUtils.replace(css, "images/G/01/imdb/images/rating/rating-list/sprite-1445387679._V_.png", "../../../../../../../images/imdb/sprite-1445387679._V_.png");
+		css = StringUtils.replace(css, "images/G/01/imdb/images/tn15/starstiny-3317719365._V_.png", "../../../../../../images/imdb/starstiny-3317719365._V_.png");
 
 		durationMeter.stop();
 		logService.debug(getClass(), "Cleaning IMDB css file '" + cssFileName + "' took " + durationMeter.getDuration() + " millis");
@@ -157,9 +158,9 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		photos.removeAttr("class");
 		for (Element photo : photos) {
 			// avoiding usage of regex of String.replace method
-			String src = StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, "../../../rest/movies/imdb/image/");
+			String src = StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, REST_IMAGE_URL_PREFIX);
 			if (StringUtils.isBlank(src)) {
-				src = "../../images/imdb/person-no-image.png";
+				src = IMDB_DEFAULT_PERSON_IMAGE;
 			}
 			photo.attr("src", src);
 		}

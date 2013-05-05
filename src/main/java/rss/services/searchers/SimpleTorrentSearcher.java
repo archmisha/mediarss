@@ -145,6 +145,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 
 	protected abstract Torrent parseTorrentPage(T mediaRequest, String page);
 
+	public abstract String parseId(MediaRequest mediaRequest, String page);
+
 	// might be in the headers of the torrent or in the content as plain text
 	private String getImdbUrl(Torrent torrent) {
 		String page;

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * User: Michael Dikman
@@ -39,6 +41,8 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	private static final String SEARCH_URL = "http://" + NAME + "/search/%s/0/";
 	private static final String ENTRY_URL = "http://" + NAME;
 
+	private static final Pattern BITSNOOP_TORRENTS_ID = Pattern.compile("http://1337x.org/([^\"/]+)");
+
 	@Autowired
 	private PageDownloader pageDownloader;
 
@@ -51,6 +55,15 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	@Override
+	public String parseId(MediaRequest mediaRequest, String page) {
+		Matcher matcher = BITSNOOP_TORRENTS_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
 	}
 
 	@Override

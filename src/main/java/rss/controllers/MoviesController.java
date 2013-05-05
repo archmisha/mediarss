@@ -20,6 +20,7 @@ import rss.services.movies.IMDBService;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,11 +70,11 @@ public class MoviesController extends BaseController {
 		imageFileName = url.substring(url.indexOf("/imdb/image/") + "/imdb/image/".length());
 //			response.setContentType("image/jpeg");
 
-		InputStream imageInputStream = imdbService.getImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imageFileName);
+		InputStream imageInputStream = imdbService.getImage(imageFileName);
 
-		try {
-			IOUtils.copy(imageInputStream, response.getOutputStream());
-			response.getOutputStream().flush();
+		try (OutputStream os = response.getOutputStream()){
+			IOUtils.copy(imageInputStream, os);
+			os.flush();
 		} catch (Exception e) {
 			throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
 		}

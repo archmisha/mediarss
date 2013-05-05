@@ -54,7 +54,7 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest, Episo
 		originalRequest.setUploaders(bestResult.getUploaders());
 
 		// parse single search result torrent entry
-		torrentzParser.enrichRequestWithSearcherIds(originalRequest);
+		enrichRequestWithSearcherIds(originalRequest);
 
 		CompositeSearcherData compositeSearcherData = new CompositeSearcherData();
 		super.searchHelper(originalRequest, compositeSearcherData);

@@ -13,7 +13,7 @@ import java.util.Set;
  */
 @SuppressWarnings("UnusedDeclaration")
 @Entity
-@Table(name = "user_movie")
+@Table(name = "user_movie", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "movie_id"}))
 @org.hibernate.annotations.Table(appliesTo = "user_movie",
 		indexes = {
 				@Index(name = "user_movie_userId_movieId_idx", columnNames = {"user_id", "movie_id"})

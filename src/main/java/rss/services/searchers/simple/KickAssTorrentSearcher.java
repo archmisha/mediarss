@@ -15,6 +15,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * User: Michael Dikman
@@ -27,6 +29,8 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	public static final String NAME = "kat.ph";
 	private static final String ENTRY_URL = "http://" + NAME + "/";
 	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
+
+	private static final Pattern KICK_ASS_TORRENTS_ID = Pattern.compile("http://www.kickasstorrents.com/([^\"/]+)");
 
 	@Override
 	public String getName() {
@@ -60,6 +64,15 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	protected String getSearchByIdUrl(T mediaRequest) {
 		if (mediaRequest.getSearcherId(NAME) != null) {
 			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
+		}
+		return null;
+	}
+
+	@Override
+	public String parseId(MediaRequest mediaRequest, String page) {
+		Matcher matcher = KICK_ASS_TORRENTS_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
 		}
 		return null;
 	}
