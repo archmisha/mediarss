@@ -9,6 +9,7 @@ import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.requests.MovieRequest;
 import rss.services.shows.ShowService;
+import rss.util.Utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -47,7 +48,11 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		try {
 			page = pageDownloader.downloadPage(url);
 		} catch (Exception e) {
-			logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
+			if (Utils.isRootCauseMessageContains(e, "404 Not Found")) {
+				logService.debug(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage());
+			} else {
+				logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
+			}
 			return SearchResult.createNotFound();
 		}
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
+import rss.services.searchers.simple.BitSnoopTorrentSearcher;
 import rss.services.searchers.simple.KickAssTorrentSearcher;
 import rss.services.searchers.simple.PublichdSearcher;
 import rss.services.searchers.simple.ThePirateBayTorrentSearcher;
@@ -32,7 +33,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	// removed filters: highres
 	// size>2000m - filters dvdscr
-	public static final String MOVIES_FILTERS = "+-shows+-porn+-brrip+-episodes+-music+size>2000m";
+	public static final String MOVIES_FILTERS = "+-shows+-porn+-brrip+-episodes+-music+size%3E2000m";
 
 	public static final String TORRENTZ_ENTRY_URL = HOST_NAME;
 	public static final String TORRENTZ_LATEST_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + MOVIES_FILTERS + "+added%3A";
@@ -44,6 +45,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
 	private static final Pattern KICKASS_TORRENTS_ID = Pattern.compile("http://www.kickasstorrents.com/([^\"/]+)");
+	private static final Pattern BITSNOOP_TORRENTS_ID = Pattern.compile("http://bitsnoop.com/([^\"/]+)");
 
 	@Autowired
 	protected LogService logService;
@@ -106,6 +108,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 		mediaRequest.setSearcherId(ThePirateBayTorrentSearcher.NAME, getPirateBayId(entryPage));
 		mediaRequest.setSearcherId(KickAssTorrentSearcher.NAME, getKickAssTorrentsId(entryPage));
 		mediaRequest.setSearcherId(PublichdSearcher.NAME, mediaRequest.getHash());
+		mediaRequest.setSearcherId(BitSnoopTorrentSearcher.NAME, getBitSnoopTorrentsId(entryPage));
 	}
 
 
@@ -119,6 +122,14 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	private String getKickAssTorrentsId(String page) {
 		Matcher matcher = KICKASS_TORRENTS_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
+
+	private String getBitSnoopTorrentsId(String page) {
+		Matcher matcher = BITSNOOP_TORRENTS_ID.matcher(page);
 		if (matcher.find()) {
 			return matcher.group(1);
 		}

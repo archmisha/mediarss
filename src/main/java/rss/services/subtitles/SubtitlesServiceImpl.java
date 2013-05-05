@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * User: dikmanm
@@ -45,16 +47,23 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 
 	@PostConstruct
 	private void postConstruct() {
-		try {
-			// announce all existing subtitles
-			List<Subtitles> subtitlesList = subtitlesDao.findAll();
-			log.info(getClass(), "Loading " + subtitlesList.size() + " subtitles into the tracker");
-			for (Subtitles subtitles : subtitlesList) {
-				announce(subtitles);
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		executorService.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// announce all existing subtitles
+					List<Subtitles> subtitlesList = subtitlesDao.findAll();
+					log.info(getClass(), "Loading " + subtitlesList.size() + " subtitles into the tracker");
+					for (Subtitles subtitles : subtitlesList) {
+						announce(subtitles);
+					}
+				} catch (Exception e) {
+					log.error(getClass(), "Failed starting torrent tracker: " + e.getMessage(), e);
+				}
 			}
-		} catch (Exception e) {
-			log.error(getClass(), "Failed starting torrent tracker: " + e.getMessage(), e);
-		}
+		});
+		executorService.shutdown();
 	}
 
 	private void announce(Subtitles subtitles) {

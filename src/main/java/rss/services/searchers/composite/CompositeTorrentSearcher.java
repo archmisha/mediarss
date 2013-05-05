@@ -81,7 +81,7 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 	}
 
 	@SuppressWarnings("unchecked")
-	private Collection<? extends SimpleTorrentSearcher<T, S>> getTorrentSearchers() {
+	protected Collection<? extends SimpleTorrentSearcher<T, S>> getTorrentSearchers() {
 		Collection<SimpleTorrentSearcher<T, S>> searchers = new ArrayList<>();
 		for (SimpleTorrentSearcher searcher : applicationContext.getBeansOfType(SimpleTorrentSearcher.class).values()) {
 			searchers.add(searcher);

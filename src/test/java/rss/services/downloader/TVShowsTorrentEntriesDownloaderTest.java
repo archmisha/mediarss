@@ -16,7 +16,6 @@ import rss.services.requests.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowsProvider;
-import rss.services.searchers.SmartEpisodeSearcher;
 import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
@@ -39,8 +38,6 @@ public class TVShowsTorrentEntriesDownloaderTest extends BaseTest {
 	private EpisodeDao episodeDao;
 	@Mock
 	private EmailService emailService;
-	@Mock
-	private SmartEpisodeSearcher smartEpisodeSearcher;
 	@Mock
 	private TransactionTemplate transactionTemplate;
 	@Mock
@@ -71,7 +68,6 @@ public class TVShowsTorrentEntriesDownloaderTest extends BaseTest {
 		Episode episode = new Episode(2, 1);
 
 		when(episodeDao.find(any(Collection.class))).thenReturn(Collections.singletonList(episode));
-		when(smartEpisodeSearcher.search(episodeRequest)).thenReturn(new SearchResult(SearchResult.SearchStatus.NOT_FOUND));
 //		when(showService.findShow(any(String.class))).thenReturn(Collections.singletonList(show));
 //		when(tvComService.getEpisodesCount(show, 2)).thenReturn(5);
 

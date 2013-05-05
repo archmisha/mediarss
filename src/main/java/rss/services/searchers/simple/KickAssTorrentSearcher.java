@@ -44,7 +44,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 			} else if (mediaRequest instanceof FullSeasonRequest) {
 				// its ok
 			} else {
-				throw new IllegalArgumentException(mediaRequest.getClass() + " is not supported");
+				return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
 			}
 			//"greys anatomy category:tv season:1 episode:1"
 			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
