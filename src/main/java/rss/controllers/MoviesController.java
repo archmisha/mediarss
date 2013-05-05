@@ -64,7 +64,7 @@ public class MoviesController extends BaseController {
 	@RequestMapping(value = "/imdb/image/{imageFileName}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void getImdbImage(@PathVariable String imageFileName, HttpServletRequest request, ServletResponse response) {
+	public void getImdbImage(@SuppressWarnings("ParameterCanBeLocal") @PathVariable String imageFileName, HttpServletRequest request, ServletResponse response) {
 		// imageFileName can sometimes arrive without the suffix (like .jpg) for some reason
 		StringBuffer url = request.getRequestURL();
 		imageFileName = url.substring(url.indexOf("/imdb/image/") + "/imdb/image/".length());
@@ -73,7 +73,8 @@ public class MoviesController extends BaseController {
 		InputStream imageInputStream = imdbService.getImage(imageFileName);
 
 		try (OutputStream os = response.getOutputStream()){
-			IOUtils.copy(imageInputStream, os);
+			int bytes = IOUtils.copy(imageInputStream, os);
+			response.setContentLength(bytes);
 			os.flush();
 		} catch (Exception e) {
 			throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
