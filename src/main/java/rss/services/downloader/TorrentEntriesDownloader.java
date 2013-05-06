@@ -46,14 +46,20 @@ public abstract class TorrentEntriesDownloader<S extends MediaRequest, T extends
 		// copying to avoid UnsupportedOperationException if immutable collections is given
 		final Set<S> mediaRequestsCopy = new HashSet<>(mediaRequests);
 
-		// enriching the set before the cache query - maybe expanding full season request into parts
-		// modifying and enriching the set inside the method
-		// first query the cache and those that are not found in cache divide between the threads
-		Collection<T> cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
-
 		final ConcurrentLinkedQueue<Pair<S, SearchResult>> results = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
 		final Class aClass = getClass();
+
+		// enriching the set before the cache query - maybe expanding full season request into parts
+		// modifying and enriching the set inside the method
+		// first query the cache and those that are not found in cache divide between the threads
+		Collection<T> cachedTorrentEntries = null;
+		try {
+			cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
+		} finally {
+			executorService.shutdown();
+		}
+
 		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
 			@Override
 			public void run(final S mediaRequest) {

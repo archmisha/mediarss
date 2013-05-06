@@ -148,7 +148,8 @@ public class IMDBServiceImpl implements IMDBService {
 	// creating a new transaction to store the image quickly and avoid unique index violation due to long transactions
 	// need new thread for the new transaction
 	public InputStream getImage(final String imageFileName) {
-		Future<InputStream> future = Executors.newSingleThreadExecutor().submit(new Callable<InputStream>() {
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		Future<InputStream> future = executorService.submit(new Callable<InputStream>() {
 			@Override
 			public InputStream call() throws Exception {
 				return transactionTemplate.execute(new TransactionCallback<InputStream>() {
@@ -180,6 +181,7 @@ public class IMDBServiceImpl implements IMDBService {
 				});
 			}
 		});
+		executorService.shutdown();
 		try {
 			return future.get();
 		} catch (InterruptedException | ExecutionException e) {

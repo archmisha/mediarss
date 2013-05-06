@@ -17,6 +17,7 @@ import rss.util.Utils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -61,7 +62,8 @@ public abstract class JobRunner extends QuartzJobBean {
 		JobStatus jobStatus = updateJobStarted(durationMeter.getStartTime());
 
 		final Class<?> aClass = getClass();
-		Executors.newSingleThreadExecutor().submit(new Runnable() {
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		executorService.submit(new Runnable() {
 			@Override
 			public void run() {
 				String statusMessage;
@@ -87,9 +89,9 @@ public abstract class JobRunner extends QuartzJobBean {
 
 				logService.info(aClass, String.format("Job " + JobRunner.this.name + " completed. Time took %d millis.", durationMeter.getDuration()));
 				running = false;
-
 			}
 		});
+		executorService.shutdown();
 
 		return jobStatus;
 	}

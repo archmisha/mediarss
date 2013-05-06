@@ -222,7 +222,8 @@ public class ShowServiceImpl implements ShowService {
 
 		if (torrentsDownloadAsync) {
 			final Class aClass = getClass();
-			Executors.newSingleThreadExecutor().submit(new Runnable() {
+			ExecutorService executorService = Executors.newSingleThreadExecutor();
+			executorService.submit(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -232,6 +233,7 @@ public class ShowServiceImpl implements ShowService {
 					}
 				}
 			});
+			executorService.shutdown();
 		}
 	}
 
