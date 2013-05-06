@@ -53,7 +53,7 @@ public abstract class TorrentEntriesDownloader<S extends MediaRequest, T extends
 		// enriching the set before the cache query - maybe expanding full season request into parts
 		// modifying and enriching the set inside the method
 		// first query the cache and those that are not found in cache divide between the threads
-		Collection<T> cachedTorrentEntries = null;
+		Collection<T> cachedTorrentEntries;
 		try {
 			cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
 		} catch (Exception e) {
