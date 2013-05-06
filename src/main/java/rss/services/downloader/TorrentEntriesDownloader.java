@@ -56,8 +56,9 @@ public abstract class TorrentEntriesDownloader<S extends MediaRequest, T extends
 		Collection<T> cachedTorrentEntries = null;
 		try {
 			cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
-		} finally {
+		} catch (Exception e) {
 			executorService.shutdown();
+			throw e;
 		}
 
 		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
