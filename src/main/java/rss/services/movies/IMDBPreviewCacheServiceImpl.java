@@ -135,7 +135,6 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		doc.select("#titleAwardsRanks").remove();
 		doc.select("#footer").remove();
 		doc.select("#root").removeAttr("id");
-		// remove videos and photos section
 		doc.select("#titleMediaStrip").remove();
 		doc.select("iframe").remove();
 		doc.select("link[type!=text/css").remove();
@@ -147,8 +146,14 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		doc.select("br.clear").remove();
 		doc.select("#titleFAQ").remove();
 		doc.select("#content-1").removeAttr("id");
-		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
+		doc.select("#bottom_ad_wrapper").remove();
+		doc.select("#top_ad_wrapper").remove();
 		doc.select("script").remove();
+		doc.select("iframe ").remove();
+		doc.select("noscript").remove();
+
+		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
+
 
 		// replace people images
 		// <td class="primary_photo"> <a href="/name/nm0479471/?ref_=tt_cl_i2"><img width="32" height="44"
