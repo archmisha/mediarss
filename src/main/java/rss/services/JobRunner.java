@@ -14,6 +14,8 @@ import rss.services.log.LogService;
 import rss.util.DurationMeter;
 import rss.util.Utils;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -41,15 +43,22 @@ public abstract class JobRunner extends QuartzJobBean {
 	private String name;
 	private boolean running;
 
+	private ExecutorService executorService;
+
 	public JobRunner(String name) {
 		this.name = name;
 		running = false;
 	}
 
-//	@PostConstruct
-//	private void postConstruct() {
-//		createJobStatus();
-//	}
+	@PostConstruct
+	private void postConstruct() {
+		executorService = Executors.newSingleThreadExecutor();
+	}
+
+	@PreDestroy
+	private void preDestroy() {
+		executorService.shutdown();
+	}
 
 	public JobStatus start() {
 		if (running) {
@@ -62,7 +71,6 @@ public abstract class JobRunner extends QuartzJobBean {
 		JobStatus jobStatus = updateJobStarted(durationMeter.getStartTime());
 
 		final Class<?> aClass = getClass();
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
 		executorService.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -91,7 +99,6 @@ public abstract class JobRunner extends QuartzJobBean {
 				running = false;
 			}
 		});
-		executorService.shutdown();
 
 		return jobStatus;
 	}
