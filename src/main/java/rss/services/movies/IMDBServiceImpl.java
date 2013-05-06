@@ -126,6 +126,7 @@ public class IMDBServiceImpl implements IMDBService {
 
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	// no need a transaction here, each getImage has its own transaction
 	public void downloadImages(String page, String imdbUrl) {
 		Matcher matcher = PEOPLE_IMAGES_PATTERN.matcher(page);
 		while (matcher.find()) {
@@ -144,17 +145,18 @@ public class IMDBServiceImpl implements IMDBService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	@Transactional(propagation = Propagation.REQUIRED)
+//	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	// creating a new transaction to store the image quickly and avoid unique index violation due to long transactions
 	// need new thread for the new transaction
 	public InputStream getImage(final String imageFileName) {
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		Future<InputStream> future = executorService.submit(new Callable<InputStream>() {
-			@Override
-			public InputStream call() throws Exception {
-				return transactionTemplate.execute(new TransactionCallback<InputStream>() {
-					@Override
-					public InputStream doInTransaction(TransactionStatus transactionStatus) {
+//		ExecutorService executorService = Executors.newSingleThreadExecutor();
+//		Future<InputStream> future = executorService.submit(new Callable<InputStream>() {
+//			@Override
+//			public InputStream call() throws Exception {
+//				return transactionTemplate.execute(new TransactionCallback<InputStream>() {
+//					@Override
+//					public InputStream doInTransaction(TransactionStatus transactionStatus) {
 						// remove the imdb url prefix, if exists. and also the rest call prefix - depends on where the call came from we have different prefixes
 						String imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, "");
 						imdbImageUrl = StringUtils.replace(imdbImageUrl, IMDBPreviewCacheServiceImpl.REST_IMAGE_URL_PREFIX, "");
@@ -177,16 +179,16 @@ public class IMDBServiceImpl implements IMDBService {
 						} catch (Exception e) {
 							throw new MediaRSSException("Failed downloading IMDB image " + imdbImageUrl + ": " + e.getMessage(), e);
 						}
-					}
-				});
-			}
-		});
-		executorService.shutdown();
-		try {
-			return future.get();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new MediaRSSException(e.getMessage(), e);
-		}
+//					}
+//				});
+//			}
+//		});
+//		executorService.shutdown();
+//		try {
+//			return future.get();
+//		} catch (InterruptedException | ExecutionException e) {
+//			throw new MediaRSSException(e.getMessage(), e);
+//		}
 	}
 
 	private int parseMovieYear(String name) {
