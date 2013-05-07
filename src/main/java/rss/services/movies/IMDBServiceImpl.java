@@ -45,9 +45,6 @@ public class IMDBServiceImpl implements IMDBService {
 	private LogService logService;
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
-
-	@Autowired
 	private ImageDao imageDao;
 
 	@Override
