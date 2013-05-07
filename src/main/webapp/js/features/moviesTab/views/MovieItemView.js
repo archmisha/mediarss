@@ -65,7 +65,7 @@ define([
 					'transitionOut': 'none',
 					'type': 'iframe',
 					'beforeLoad': function() {
-						that.onMovieClick(null);
+						that.vent.trigger('movie-selected', this.model);
 						return true;
 					}
 				});
@@ -73,9 +73,7 @@ define([
 
 			onMovieClick: function(event) {
 				// if remove icon was clicked, then ignore selection
-				if (event != null &&
-					($(event.target).hasClass('future-movie-item-remove-image') ||
-						$(event.target).hasClass('movie-show-preview-image'))) {
+				if (event != null && $(event.target).hasClass('future-movie-item-remove-image')) {
 					return;
 				}
 
