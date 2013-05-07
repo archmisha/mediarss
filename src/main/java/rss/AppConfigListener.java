@@ -9,18 +9,13 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.dao.MovieDao;
-import rss.entities.Movie;
 import rss.services.OOTBContentLoader;
 import rss.services.SettingsService;
-import rss.services.movies.IMDBService;
+import rss.services.log.LogService;
 import rss.util.QuartzJob;
 
 import javax.servlet.ServletContext;
@@ -30,13 +25,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: Michael Dikman
@@ -57,13 +59,9 @@ public class AppConfigListener implements ServletContextListener {
 	private OOTBContentLoader ootbContentLoader;
 
 	@Autowired
-	private MovieDao movieDao;
+	private LogService logService;
 
-	@Autowired
-	private IMDBService imdbService;
-
-	@Autowired
-	private TransactionTemplate transactionTemplate;
+	private ScheduledExecutorService logMemoryExecutorService;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -112,6 +110,42 @@ public class AppConfigListener implements ServletContextListener {
 		settingsService.setDeploymentDate(deployedDate);
 
 		settingsService.setStartupDate(new Date());
+
+		if (settingsService.isLogMemory()) {
+			logMemoryExecutorService = Executors.newSingleThreadScheduledExecutor();
+			logMemoryExecutorService.scheduleAtFixedRate(new Runnable() {
+				@Override
+				public void run() {
+					printMemoryStats();
+				}
+			}, 0, 1, TimeUnit.MINUTES);
+		}
+	}
+
+	private void printMemoryStats() {
+		int mb = 1024 * 1024;
+		Runtime runtime = Runtime.getRuntime();
+
+		logService.info(getClass(), "##### Heap utilization statistics [MB] #####");
+		logService.info(getClass(), "Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+		logService.info(getClass(), "Free Memory:" + runtime.freeMemory() / mb);
+		logService.info(getClass(), "Total Memory:" + runtime.totalMemory() / mb);
+		logService.info(getClass(), "Max Memory:" + runtime.maxMemory() / mb);
+
+		logService.info(getClass(), "##### Heap utilization statistics [MB] ##### 2");
+		ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+		logService.info(getClass(), "Heap " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
+		logService.info(getClass(), "NonHeap " +  ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage());
+		logService.info(getClass(), "Threads " +  ManagementFactory.getThreadMXBean().getThreadCount());
+		logService.info(getClass(), "Peak Threads " +  ManagementFactory.getThreadMXBean().getPeakThreadCount());
+		List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans();
+		for (MemoryPoolMXBean bean: beans) {
+			logService.info(getClass(), bean.getName() + " " +  bean.getUsage());
+		}
+
+		for (GarbageCollectorMXBean bean: ManagementFactory.getGarbageCollectorMXBeans()) {
+			logService.info(getClass(), bean.getName() + " " + bean.getCollectionCount() + " " + bean.getCollectionTime());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -173,6 +207,8 @@ public class AppConfigListener implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
+		logMemoryExecutorService.shutdown();
+
 		Log log = LogFactory.getLog(AppConfigListener.class);
 
 		try {

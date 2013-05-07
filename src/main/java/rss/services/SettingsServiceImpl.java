@@ -46,7 +46,6 @@ public class SettingsServiceImpl implements SettingsService {
 	private ExecutorService executorService;
 	private boolean shouldRun;
 	private WatchService watchService;
-	private ScheduledExecutorService executorService2;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -66,38 +65,6 @@ public class SettingsServiceImpl implements SettingsService {
 				}
 			}
 		});
-
-		executorService2 = Executors.newSingleThreadScheduledExecutor();
-		executorService2.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				printMemoryStats();
-			}
-		}, 0, 1, TimeUnit.MINUTES);
-	}
-
-	private void printMemoryStats() {
-		int mb = 1024 * 1024;
-		Runtime runtime = Runtime.getRuntime();
-
-		logService.info(getClass(), "##### Heap utilization statistics [MB] #####");
-		logService.info(getClass(), "Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb);
-		logService.info(getClass(), "Free Memory:" + runtime.freeMemory() / mb);
-		logService.info(getClass(), "Total Memory:" + runtime.totalMemory() / mb);
-		logService.info(getClass(), "Max Memory:" + runtime.maxMemory() / mb);
-
-		logService.info(getClass(), "##### Heap utilization statistics [MB] ##### 2");
-		ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-		logService.info(getClass(), "Heap " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
-		logService.info(getClass(), "NonHeap " +  ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage());
-		List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans();
-		for (MemoryPoolMXBean bean: beans) {
-			logService.info(getClass(), bean.getName() + " " +  bean.getUsage());
-		}
-
-		for (GarbageCollectorMXBean bean: ManagementFactory.getGarbageCollectorMXBeans()) {
-			logService.info(getClass(), bean.getName() + " " + bean.getCollectionCount() + " " + bean.getCollectionTime());
-		}
 	}
 
 	@PreDestroy
@@ -110,8 +77,6 @@ public class SettingsServiceImpl implements SettingsService {
 		} catch (IOException e) {
 			logService.error(getClass(), e.getMessage(), e);
 		}
-
-		executorService2.shutdown();
 	}
 
 	private void loadSettingsFile() {
@@ -214,6 +179,11 @@ public class SettingsServiceImpl implements SettingsService {
 	@Override
 	public String getWebRootContext() {
 		return prop.getProperty("web.root.context");
+	}
+
+	@Override
+	public boolean isLogMemory() {
+		return "true".equals(prop.getProperty("log.memory"));
 	}
 
 	@Override

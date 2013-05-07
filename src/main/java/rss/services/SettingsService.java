@@ -41,6 +41,8 @@ public interface SettingsService {
 
 	String getWebRootContext();
 
+	boolean isLogMemory();
+
 	void setStartupDate(Date date);
 
 	Date getStartupDate();
