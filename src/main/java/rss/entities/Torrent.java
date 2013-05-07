@@ -34,7 +34,7 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
 	@Index(name = "date_uploaded_idx")
     private Date dateUploaded;
 
-    @Column(name = "quality")
+    @Column(name = "quality", nullable = false)
     private MediaQuality quality;
 
 	@Column(name = "hash")
@@ -60,6 +60,8 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
     }
 
     public Torrent(String title, String url, Date dateUploaded, int seeders, String sourcePageUrl) {
+		// default quality is normal - must not be null
+		this.quality = MediaQuality.NORMAL;
         this.title = title;
         this.url = url;
         this.dateUploaded = dateUploaded;

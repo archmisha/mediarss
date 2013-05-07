@@ -42,7 +42,7 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 			// set the quality in the torrent
 			for (Torrent torrent : compositeSearcherData.getSuccessfulSearchResult().getTorrents()) {
 				for (MediaQuality mediaQuality : MediaQuality.values()) {
-					if ( torrent.getTitle().contains(mediaQuality.toString())) {
+					if ( torrent.getTitle().toLowerCase().contains(mediaQuality.toString())) {
 						torrent.setQuality(mediaQuality);
 						break;
 					}
