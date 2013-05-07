@@ -53,6 +53,9 @@ public abstract class JobRunner extends QuartzJobBean {
 	@PostConstruct
 	private void postConstruct() {
 		executorService = Executors.newSingleThreadExecutor();
+
+		// create the job status if this is the first time
+		createJobStatus();
 	}
 
 	@PreDestroy
@@ -143,19 +146,19 @@ public abstract class JobRunner extends QuartzJobBean {
 		});
 	}
 
-//	private void createJobStatus() {
-//		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-//			@Override
-//			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-//				JobStatus jobStatus = jobStatusDao.find(name);
-//				if (jobStatus == null) {
-//					jobStatus = new JobStatus();
-//					jobStatus.setName(name);
-//					jobStatusDao.persist(jobStatus);
-//				}
-//			}
-//		});
-//	}
+	private void createJobStatus() {
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+				JobStatus jobStatus = jobStatusDao.find(name);
+				if (jobStatus == null) {
+					jobStatus = new JobStatus();
+					jobStatus.setName(name);
+					jobStatusDao.persist(jobStatus);
+				}
+			}
+		});
+	}
 
 	protected abstract String run();
 
