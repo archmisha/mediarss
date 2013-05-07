@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import rss.entities.Media;
+import rss.entities.MediaQuality;
+import rss.entities.Torrent;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
@@ -36,6 +38,17 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 
 		if (compositeSearcherData.getSuccessfulSearchResult() != null) {
 			logTorrentFound(mediaRequest, compositeSearcherData);
+
+			// set the quality in the torrent
+			for (Torrent torrent : compositeSearcherData.getSuccessfulSearchResult().getTorrents()) {
+				for (MediaQuality mediaQuality : MediaQuality.values()) {
+					if ( torrent.getTitle().contains(mediaQuality.toString())) {
+						torrent.setQuality(mediaQuality);
+						break;
+					}
+				}
+			}
+
 			return compositeSearcherData.getSuccessfulSearchResult();
 		}
 

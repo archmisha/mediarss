@@ -41,10 +41,6 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 	@Autowired
 	private TorrentDao torrentDao;
 
-//	@Autowired
-//	@Qualifier("smartEpisodeSearcher")
-//	private TorrentSearcher<ShowRequest, Episode> smartEpisodeSearcher;
-
 	@Autowired
 	@Qualifier("compositeEpisodeSearcher")
 	private TorrentSearcher<ShowRequest, Episode> compositeEpisodeSearcher;
