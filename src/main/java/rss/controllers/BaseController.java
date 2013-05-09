@@ -165,22 +165,7 @@ public class BaseController {
 		return userTorrent;
 	}
 
-	protected UserResponse createUserResponse(User user, String tab) {
-		UserResponse userResponse = userService.getUserResponse(user);
-
-		if (tab.equals(MOVIES_TAB)) {
-			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
-					.withAvailableMovies(movieService.getAvailableMovies(user))
-					.withUserMovies(movieService.getUserMovies(user));
-		} else if (tab.equals(TVSHOWS_TAB)) {
-			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
-					.withSchedule(showService.getSchedule(user.getShows()));
-		}
-
-		return userResponse;
-	}
-
-	private Date getMoviesLastUpdated() {
+	protected Date getMoviesLastUpdated() {
 		JobStatus jobStatus = jobStatusDao.find(MoviesScrabblerImpl.JOB_NAME);
 		if (jobStatus == null) {
 			return null;
@@ -188,7 +173,7 @@ public class BaseController {
 		return jobStatus.getStart();
 	}
 
-	private List<ShowVO> sort(List<ShowVO> shows) {
+	protected List<ShowVO> sort(List<ShowVO> shows) {
 		Collections.sort(shows, new Comparator<ShowVO>() {
 			@Override
 			public int compare(ShowVO o1, ShowVO o2) {

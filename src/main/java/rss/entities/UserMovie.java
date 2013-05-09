@@ -28,6 +28,15 @@ import java.util.Set;
 		@NamedQuery(name = "UserMovie.findFutureUserMovies",
 				query = "select um from UserMovie as um join um.movie as m " +
 						"where um.user.id = :userId and m.torrentIds.size = 0"),
+		@NamedQuery(name = "UserMovie.findScheduledUserMovies",
+				query = "select um from UserMovie as um join um.movie as m " +
+						"where um.user.id = :userId and m.torrentIds.size > 0 and um.updated > :downloadDate"),
+		@NamedQuery(name = "UserMovie.findFutureUserMoviesIds",
+				query = "select m.id from UserMovie as um join um.movie as m " +
+						"where um.user.id = :userId and m.torrentIds.size = 0"),
+		@NamedQuery(name = "UserMovie.findScheduledUserMoviesIds",
+				query = "select m.id from UserMovie as um join um.movie as m " +
+						"where um.user.id = :userId and m.torrentIds.size > 0 and um.updated > :downloadDate"),
 		@NamedQuery(name = "UserMovie.findUsersForFutureMovie",
 				query = "select um.user from UserMovie as um join um.movie as m " +
 						"where m.id = :movieId and m.torrentIds.size = 0")

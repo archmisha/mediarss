@@ -8,6 +8,8 @@ import rss.entities.Movie;
  */
 public interface IMDBPreviewCacheService {
 
+	String cleanImdbPage(String name, String page);
+
 	String getImdbPreviewPage(Movie movie);
 
 	String getImdbCSS(String cssFileName);

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
+import rss.controllers.vo.UserResponse;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.dao.UserDao;
 import rss.entities.User;
@@ -60,6 +61,21 @@ public class UserController extends BaseController {
 		logService.info(getClass(), "getPreLoginData(" + tab + ") (" + duration.getDuration() + " millis)");
 
 		return result;
+	}
+
+	private UserResponse createUserResponse(User user, String tab) {
+		UserResponse userResponse = userService.getUserResponse(user);
+
+		if (tab.equals(MOVIES_TAB)) {
+			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
+					.withAvailableMovies(movieService.getAvailableMovies(user))
+					.withUserMoviesCount(movieService.getUserMoviesCount(user));
+		} else if (tab.equals(TVSHOWS_TAB)) {
+			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
+					.withSchedule(showService.getSchedule(user.getShows()));
+		}
+
+		return userResponse;
 	}
 
 	private Map<String, Object> createInitialData(String tab) {

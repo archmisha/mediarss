@@ -14,7 +14,6 @@ import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.movies.IMDBPreviewCacheService;
-import rss.services.movies.IMDBPreviewCacheServiceImpl;
 import rss.services.movies.IMDBService;
 
 import javax.servlet.ServletResponse;
@@ -72,7 +71,7 @@ public class MoviesController extends BaseController {
 
 		InputStream imageInputStream = imdbService.getImage(imageFileName);
 
-		try (OutputStream os = response.getOutputStream()){
+		try (OutputStream os = response.getOutputStream()) {
 			int bytes = IOUtils.copy(imageInputStream, os);
 			response.setContentLength(bytes);
 			os.flush();
@@ -84,7 +83,9 @@ public class MoviesController extends BaseController {
 	@RequestMapping(value = "/download", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> movieDownload(@RequestParam("torrentId") long torrentId, @RequestParam("movieId") long movieId) {
+	public Map<String, Object> movieDownload(@RequestParam("torrentId") long torrentId,
+											 @RequestParam("movieId") long movieId,
+											 @RequestParam("isUserMovies") boolean isUserMovies) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Torrent torrent = torrentDao.find(torrentId);
 		Pair<UserMovie, Boolean> futureMovieResult = movieService.addMovieDownload(user, movieId);
@@ -98,8 +99,12 @@ public class MoviesController extends BaseController {
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("user", createUserResponse(user, MOVIES_TAB));
-		result.put("movieId", movieId);
+		if (isUserMovies) {
+			result.put("movies", movieService.getUserMovies(user));
+		} else {
+			result.put("movies", movieService.getAvailableMovies(user));
+			result.put("userMoviesCount", movieService.getUserMoviesCount(user));
+		}
 		return result;
 	}
 
@@ -128,28 +133,29 @@ public class MoviesController extends BaseController {
 			result.put("message", "Movie '" + movie.getName() + "' was already scheduled for download");
 		} else {
 			if (!movie.getTorrentIds().isEmpty()) {
-				result.put("message", "Movie '" + movie.getName() + "' was scheduled for immediate download as it is already available");
+				result.put("message", "Movie '" + movie.getName() + "' was added to your movies and already available for download");
 
+				// DO not automatically download
 				// take where max seeders
-				int seeders = -1;
-				Torrent theTorrent = null;
-				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
-					if (seeders == -1 || seeders < torrent.getSeeders()) {
-						seeders = torrent.getSeeders();
-						theTorrent = torrent;
-					}
-				}
-				UserMovieTorrent userMovieTorrent = new UserMovieTorrent();
-				addUserTorrent(user, theTorrent, userMovieTorrent);
-				userMovieTorrent.setUserMovie(userMovie);
-				userMovie.getUserMovieTorrents().add(userMovieTorrent);
+//				int seeders = -1;
+//				Torrent theTorrent = null;
+//				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
+//					if (seeders == -1 || seeders < torrent.getSeeders()) {
+//						seeders = torrent.getSeeders();
+//						theTorrent = torrent;
+//					}
+//				}
+//				UserMovieTorrent userMovieTorrent = new UserMovieTorrent();
+//				addUserTorrent(user, theTorrent, userMovieTorrent);
+//				userMovieTorrent.setUserMovie(userMovie);
+//				userMovie.getUserMovieTorrents().add(userMovieTorrent);
 			} else {
 				result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
 			}
 		}
 
 		// must be after movieUserTorrent creation
-		result.put("user", createUserResponse(user, MOVIES_TAB));
+		result.put("movies", movieService.getUserMovies(user));
 		result.put("movieId", movie.getId());
 		return result;
 	}
@@ -170,6 +176,26 @@ public class MoviesController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("message", "Movie '" + userMovie.getMovie().getName() + "' was removed from schedule for download");
+		return result;
+	}
+
+	@RequestMapping(value = "/userMovies", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> getUserMovies() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		Map<String, Object> result = new HashMap<>();
+		result.put("movies", movieService.getUserMovies(user));
+		return result;
+	}
+
+	@RequestMapping(value = "/availableMovies", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> getAvailableMovies() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		Map<String, Object> result = new HashMap<>();
+		result.put("movies", movieService.getAvailableMovies(user));
 		return result;
 	}
 }

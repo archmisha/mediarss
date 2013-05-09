@@ -120,7 +120,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		return css;
 	}
 
-	private String cleanImdbPage(String name, String page) {
+	public String cleanImdbPage(String name, String page) {
 		DurationMeter durationMeter = new DurationMeter();
 		Document doc = Jsoup.parse(page);
 		doc.select("#maindetails_sidebar_bottom").remove();

@@ -22,9 +22,10 @@ import javax.persistence.*;
 						"where ut.user.id = :userId and (ut.torrent.dateUploaded > :dateUploaded or downloadDate is null)"),
 		@NamedQuery(name = "UserMovieTorrent.findScheduledUserMovies",
 				query = "select ut from UserMovieTorrent as ut " +
+						"where ut.user.id = :userId and (downloadDate is null or downloadDate > :downloadDate)"),
+		@NamedQuery(name = "UserMovieTorrent.findScheduledUserMoviesIds",
+				query = "select distinct ut.userMovie.movie.id from UserMovieTorrent as ut " +
 						"where ut.user.id = :userId and (downloadDate is null or downloadDate > :downloadDate)")
-//		@NamedQuery(name = "UserMovieTorrent.findUserTorrentByTorrentId",
-//				query = "select ut from UserMovieTorrent as ut where ut.user.id = :userId and ut.torrent.id = :torrentId")
 })
 public class UserMovieTorrent extends UserTorrent {
 	private static final long serialVersionUID = -6736397044745416876L;

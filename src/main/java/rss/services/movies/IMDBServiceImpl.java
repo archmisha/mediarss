@@ -47,6 +47,9 @@ public class IMDBServiceImpl implements IMDBService {
 	@Autowired
 	private ImageDao imageDao;
 
+	@Autowired
+	private IMDBPreviewCacheService imdbPreviewCacheService;
+
 	@Override
 	public IMDBParseResult downloadMovieFromIMDBAndImagesAsync(String imdbUrl) {
 		return downloadMovieFromIMDB(imdbUrl, true);
@@ -101,6 +104,8 @@ public class IMDBServiceImpl implements IMDBService {
 			}
 		}
 
+		// clean the imdb page before parsing for images, in order to avoid images like ad.doubleclick and so on
+		imdbPreviewCacheService.cleanImdbPage(name, partialPage);
 		downloadImages(partialPage, imdbUrl, imagesAsync);
 
 		return IMDBParseResult.createFound(imdbUrl, name, parseMovieYear(name), isComingSoon, viewers);

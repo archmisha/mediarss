@@ -67,16 +67,16 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		now.setTime(new Date());
 		now.add(Calendar.HOUR_OF_DAY, -4);
 
-		Torrent readyTorrent = null;
+		List<Torrent> readyTorrents = new ArrayList<>();
 		for (Torrent torrent : searchResult.getTorrents()) {
 			if (!torrent.getDateUploaded().after(now.getTime())) {
-				readyTorrent = torrent;
+				readyTorrents.add(torrent);
 			}
 		}
 
-		if (readyTorrent != null) {
+		if (!readyTorrents.isEmpty()) {
 			searchResult.getTorrents().clear();
-			searchResult.addTorrent(readyTorrent);
+			searchResult.getTorrents().addAll(readyTorrents);
 			searchResult.setSearchStatus(SearchResult.SearchStatus.FOUND);
 			return searchResult;
 		}

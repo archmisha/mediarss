@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
-import rss.controllers.EntityConverter;
 import rss.controllers.vo.DownloadStatus;
 import rss.controllers.vo.UserMovieStatus;
 import rss.controllers.vo.UserMovieVO;
@@ -40,6 +39,7 @@ import java.util.concurrent.*;
 public class MovieServiceImpl implements MovieService {
 
 	private static final String IMDB_URL = "http://www.imdb.com/title/";
+	public static final int USER_MOVIES_DISPLAY_DAYS_HISTORY = 14;
 
 	@Autowired
 	private SessionService sessionService;
@@ -69,6 +69,15 @@ public class MovieServiceImpl implements MovieService {
 	private TorrentzParser torrentzParser;
 
 	@Transactional(propagation = Propagation.REQUIRED)
+	public long getUserMoviesCount(User user) {
+		Set<Long> movieIds = new HashSet<>();
+		movieIds.addAll(movieDao.findFutureUserMoviesIds(user));
+		movieIds.addAll(userTorrentDao.findScheduledUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY));
+		movieIds.addAll(movieDao.findScheduledUserMoviesIds(user, USER_MOVIES_DISPLAY_DAYS_HISTORY));
+		return movieIds.size();
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 		Set<Movie> movies = new HashSet<>();
@@ -83,8 +92,18 @@ public class MovieServiceImpl implements MovieService {
 			movies.add(userMovie.getMovie());
 		}
 
-		// then add movies that has torrents and the user selected a torrent to download
-		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user, 14)) {
+		// add user specific movies
+		for (UserMovie userMovie : movieDao.findScheduledUserMovies(user, USER_MOVIES_DISPLAY_DAYS_HISTORY)) {
+			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(userMovie.getMovie());
+			userMovieVO.withScheduledOn(userMovie.getUpdated())
+					.withAdded(userMovie.getUpdated());
+			userMovieVO.setViewed(true);
+			userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
+			movies.add(userMovie.getMovie());
+		}
+
+		// then add movies that are not downloaded yet
+		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user, USER_MOVIES_DISPLAY_DAYS_HISTORY)) {
 			Torrent torrent = userTorrent.getTorrent();
 			Movie movie = movieDao.find(torrent);
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
@@ -323,11 +342,11 @@ public class MovieServiceImpl implements MovieService {
 				executorService.submit(futureTask);
 				executorService.shutdown();
 				movie = futureTask.get();
+			}
 
-				// uses a separate transaction
-//				torrentzService.downloadMovie(movie);
+			if (movie.getTorrentIds().isEmpty()) {
 				MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
-				movieRequest.setImdbId(imdbId);
+				movieRequest.setImdbId(imdbUrl);
 				moviesTorrentEntriesDownloader.download(Collections.singleton(movieRequest));
 
 				// re-fetch the movie in this transaction after it got torrents

@@ -31,4 +31,6 @@ public interface UserTorrentDao extends Dao<UserTorrent> {
 	Collection<UserTorrent> findUserEpisodes(Collection<Episode> episodes, User user);
 
 	Collection<UserTorrent> findUserMovies(User user, Collection<Movie> movies);
+
+	List<Long> findScheduledUserMoviesCount(User user, int backlogDays);
 }

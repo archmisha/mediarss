@@ -1,6 +1,9 @@
 package rss.dao;
 
-import rss.entities.*;
+import rss.entities.Movie;
+import rss.entities.Torrent;
+import rss.entities.User;
+import rss.entities.UserMovie;
 
 import java.util.Collection;
 import java.util.Date;
@@ -13,11 +16,11 @@ import java.util.List;
  */
 public interface MovieDao extends Dao<Movie> {
 
-    Collection<Movie> findUploadedSince(Date uploadedDate);
+	Collection<Movie> findUploadedSince(Date uploadedDate);
 
 //    Movie findByName(String name);
 
-    Movie find(Torrent torrent);
+	Movie find(Torrent torrent);
 
 	void persist(UserMovie userMovie);
 
@@ -29,7 +32,13 @@ public interface MovieDao extends Dao<Movie> {
 
 	List<UserMovie> findFutureUserMovies(User user);
 
+	List<UserMovie> findScheduledUserMovies(User user, int backlogDays);
+
 	Collection<User> findUsersForFutureMovie(Movie movie);
 
 	Collection<UserMovie> findUserMovies(long movieId);
+
+	List<Long> findFutureUserMoviesIds(User user);
+
+	List<Long> findScheduledUserMoviesIds(User user, int backlogDays);
 }

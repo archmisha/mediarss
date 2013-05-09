@@ -23,7 +23,7 @@ define([
 			},
 
 			onRender: function() {
-				this.$el.find('.movies-list-empty-label-container').html(emptyMessage);
+				this.$el.find('.movies-torrent-list-empty-label-container').html(emptyMessage);
 			}
 		});
 	});

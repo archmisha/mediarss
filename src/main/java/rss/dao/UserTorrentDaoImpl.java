@@ -35,27 +35,19 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 
 	@Override
 	public List<UserTorrent> findScheduledUserMovies(User user, int backlogDays) {
-		Map<String, Object> params = new HashMap<>(1);
+		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
 		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
 		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findScheduledUserMovies", params);
 	}
 
-	/*@Override
-	public UserTorrent findEpisodeUserTorrentByTorrentId(long torrentId, User user) {
+	@Override
+	public List<Long> findScheduledUserMoviesCount(User user, int backlogDays) {
 		Map<String, Object> params = new HashMap<>(2);
-		params.put("torrentId", torrentId);
 		params.put("userId", user.getId());
-		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserTorrentByTorrentId", params));
-	}*/
-
-	/*@Override
-	public UserTorrent findMovieUserTorrentByTorrentId(long torrentId, User user) {
-		Map<String, Object> params = new HashMap<>(2);
-		params.put("torrentId", torrentId);
-		params.put("userId", user.getId());
-		return uniqueResult(super.<UserTorrent>findByNamedQueryAndNamedParams("UserMovieTorrent.findUserTorrentByTorrentId", params));
-	}*/
+		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
+		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findScheduledUserMoviesIds", params);
+	}
 
 	@Override
 	public List<UserTorrent> findUserEpisodeTorrentByTorrentId(long torrentId) {

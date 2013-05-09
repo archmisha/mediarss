@@ -5,6 +5,7 @@ import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserMovie;
+import rss.util.DateUtils;
 
 import java.util.*;
 
@@ -67,6 +68,29 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("userId", user.getId());
 		return super.findByNamedQueryAndNamedParams("UserMovie.findFutureUserMovies", params);
+	}
+
+	@Override
+	public List<UserMovie> findScheduledUserMovies(User user, int backlogDays) {
+		Map<String, Object> params = new HashMap<>(2);
+		params.put("userId", user.getId());
+		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
+		return super.findByNamedQueryAndNamedParams("UserMovie.findScheduledUserMovies", params);
+	}
+
+	@Override
+	public List<Long> findFutureUserMoviesIds(User user) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("userId", user.getId());
+		return super.findByNamedQueryAndNamedParams("UserMovie.findFutureUserMoviesIds", params);
+	}
+
+	@Override
+	public List<Long> findScheduledUserMoviesIds(User user, int backlogDays) {
+		Map<String, Object> params = new HashMap<>(2);
+		params.put("userId", user.getId());
+		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
+		return super.findByNamedQueryAndNamedParams("UserMovie.findScheduledUserMoviesIds", params);
 	}
 
 	@Override

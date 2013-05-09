@@ -27,7 +27,13 @@ public class MatcherVisitor {
 	public List<ShowService.MatchCandidate> filterMatching(MovieRequest movieRequest, List<ShowService.MatchCandidate> matchCandidates) {
 		List<ShowService.MatchCandidate> results = new ArrayList<>();
 		for (ShowService.MatchCandidate searchResult : matchCandidates) {
-			if (searchResult.getText().toLowerCase().contains(movieRequest.getTitle().toLowerCase())) {
+			String cur = searchResult.getText().toLowerCase();
+			// filter out low quality
+			if (cur.contains("brrip")) {
+				continue;
+			}
+
+			if (cur.contains(movieRequest.getTitle().toLowerCase())) {
 				results.add(searchResult);
 			}
 		}
