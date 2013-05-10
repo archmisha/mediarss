@@ -144,7 +144,7 @@ public class EmailServiceImpl implements EmailService {
 		notifyToAdmins(
 				ERRORS_TITLE_SUFFIX,
 				msg,
-				"Failed sending email of a n error"
+				"Failed sending email of an error"
 		);
 	}
 
@@ -171,7 +171,7 @@ public class EmailServiceImpl implements EmailService {
 	}
 
 	private void sendEmail(String recipient, String title, String message) throws MessagingException {
-		GoogleMail.Send("lan4ear", "84ad17ad!", recipient, title, message);
+		GoogleMail.Send("Media-RSS", "lan4ear", "84ad17ad!", recipient, title, message);
 	}
 
 	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException {
@@ -180,6 +180,6 @@ public class EmailServiceImpl implements EmailService {
 			return;
 		}
 
-		GoogleMail.Send("lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
+		GoogleMail.Send("Media-RSS", "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
 	}
 }
