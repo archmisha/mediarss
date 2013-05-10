@@ -21,6 +21,7 @@ define([
 
 			setSchedule: function(schedule) {
 				this.model.clear().set({schedule: schedule});
+				this.render();
 			},
 
 			_updateShowsSchedule: function(schedule) {
