@@ -65,7 +65,7 @@ define([
 					'transitionOut': 'none',
 					'type': 'iframe',
 					'beforeLoad': function() {
-						that.vent.trigger('movie-selected', this.model);
+						that.vent.trigger('movie-selected', that.model);
 						return true;
 					}
 				});
