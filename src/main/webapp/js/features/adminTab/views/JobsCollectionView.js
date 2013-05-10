@@ -2,13 +2,15 @@
 define([
 	'marionette',
 	'handlebars',
-	'features/adminTab/views/JobItemView'
+	'features/adminTab/views/JobItemView',
+	'features/adminTab/views/JobsCollectionLoadingView'
 ],
-	function(Marionette, Handlebars, JobItemView) {
+	function(Marionette, Handlebars, JobItemView, JobsCollectionLoadingView) {
 		"use strict";
 
 		return Marionette.CollectionView.extend({
 			itemView: JobItemView,
-			className: 'jobs-list'
+			className: 'jobs-list',
+			emptyView: JobsCollectionLoadingView
 		});
 	});

@@ -14,13 +14,14 @@ import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.entities.*;
 import rss.services.SessionService;
-import rss.services.subtitles.SubtitlesService;
 import rss.services.requests.FullSeasonRequest;
 import rss.services.requests.FullShowRequest;
 import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.shows.AutoCompleteItem;
 import rss.services.shows.ShowSearchService;
+import rss.services.subtitles.SubtitlesService;
+import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -164,5 +165,21 @@ public class ShowsController extends BaseController {
 		} catch (ShowNotFoundException e) {
 			return EpisodeSearchResult.createNoResults(title);
 		}
+	}
+
+	@RequestMapping(value = "/initial-data", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> initialData() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		DurationMeter duration = new DurationMeter();
+		Map<String, Object> result = new HashMap<>();
+		result.put("trackedShows", sort(entityConverter.toThinShows(user.getShows())));
+		result.put("schedule", showService.getSchedule(user.getShows()));
+		duration.stop();
+		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
+
+		return result;
 	}
 }

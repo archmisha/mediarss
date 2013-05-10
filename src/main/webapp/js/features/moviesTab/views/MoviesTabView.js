@@ -11,9 +11,10 @@ define([
 	'HttpUtils',
 	'components/section/views/SectionView',
 	'MessageBox',
-	'fancybox'
+	'fancybox',
+	'moment'
 ],
-	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox) {
+	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment) {
 		"use strict";
 
 		var selectedMovie = null;
@@ -47,10 +48,8 @@ define([
 			constructor: function(options) {
 				this.vent = new Marionette.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.loggedInUserData = options.loggedInUserData;
-				this.initialData = options.initialData;
 
-				this.moviesCollection = new MoviesCollection(this.loggedInUserData.availableMovies);
+				this.moviesCollection = new MoviesCollection(/*this.tabData.availableMovies*/);
 				this.moviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.moviesCollection});
 
 				this.movieTorrentCollection = new UserTorrentCollection();
@@ -58,7 +57,8 @@ define([
 
 				this.moviesSection = new SectionView({
 					title: 'Latest Movies',
-					description: 'Select movies to download. Here you can find newly available movies. You can use IMDB preview'
+					description: 'Updated on: <span class=\'movies-updated-on\'></span>' + +
+						'.<br/>Select movies to download. Here you can find newly available movies. You can use IMDB preview'
 				});
 
 				this.futureMoviesSection = new SectionView({
@@ -82,8 +82,17 @@ define([
 				this.moviesSectionRegion.show(this.moviesSection);
 				this.futureMoviesSectionRegion.show(this.futureMoviesSection);
 
-				this.ui.moviesCounter.html(this.loggedInUserData.availableMovies.length);
-				this.ui.futureMoviesCounter.html(this.loggedInUserData.userMoviesCount);
+				var that = this;
+				HttpUtils.get("rest/movies/initial-data", function(res) {
+					that._updateAvailableMovies(res.availableMovies);
+					that.ui.futureMoviesCounter.html(res.userMoviesCount);
+
+					// must be before reset
+					that.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
+					that.movieTorrentCollection.reset();
+
+					$('.movies-updated-on').html(Moment(new Date(res.moviesLastUpdated)).format('DD/MM/YYYY HH:mm '));
+				}, false); // no need loading here
 			},
 
 			onMovieTorrentDownload: function(userTorrent) {
@@ -235,11 +244,15 @@ define([
 				if (!this._isUserMoviesSelected()) {
 					return;
 				}
+				this._showAvailableMovies();
+			},
 
+			_showAvailableMovies: function() {
 				this._switchToAvailableMovies(null);
 				var that = this;
 				HttpUtils.get('rest/movies/availableMovies', function(res) {
 					that._updateAvailableMovies(res.movies);
+
 					// must be before reset
 					that.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
 					that.movieTorrentCollection.reset();

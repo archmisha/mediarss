@@ -4,7 +4,7 @@
         <div class='rss-feed-title'>TV Shows RSS Feed link</div>
         <div class='rss-feed-link'>
             (
-            <a id='tvshows-feed-copy-link' class='rss-feed-copy-link' data-clipboard-text="{{tvshowsRssFeed}}">
+            <a id='tvshows-feed-copy-link' class='rss-feed-copy-link' data-clipboard-text="">
                 <img src="images/copy.gif" class='rss-feed-copy-icon'/>copy link
             </a>
             )
@@ -15,7 +15,7 @@
         <div class='rss-feed-title'>Movies RSS Feed link</div>
         <div class='rss-feed-link'>
             (
-            <a data-clipboard-text="{{moviesRssFeed}}" id='movies-feed-copy-link' class='rss-feed-copy-link'>
+            <a data-clipboard-text="" id='movies-feed-copy-link' class='rss-feed-copy-link'>
                 <img src="images/copy.gif" class='rss-feed-copy-icon'/>copy link
             </a>
             )

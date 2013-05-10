@@ -36,8 +36,6 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.loggedInUserData = options.loggedInUserData;
-				this.initialData = options.initialData;
 
 				this.rssFeedsSection = new SectionView({
 					title: 'Your personalized RSS feeds',
@@ -51,22 +49,33 @@ define([
 
 			onRender: function() {
 				var that = this;
-				var subtitleValues = [SUBTITLES_NONE];
-				subtitleValues = subtitleValues.concat(this.initialData.subtitles);
-				subtitleValues.forEach(function(subtitle) {
-					that.ui.subtitlesCombobox.append(
-						$('<option></option>').val(subtitle).html(subtitle)
-					);
-				});
+				HttpUtils.get('rest/user/initial-data', function(res) {
+					that.tabData = res;
+					var subtitleValues = [SUBTITLES_NONE];
+					subtitleValues = subtitleValues.concat(that.tabData.subtitles);
+					subtitleValues.forEach(function(subtitle) {
+						that.ui.subtitlesCombobox.append(
+							$('<option></option>').val(subtitle).html(subtitle)
+						);
+					});
 
-				this.rssFeedsSectionRegion.show(this.rssFeedsSection);
-				this.subtitlesSectionRegion.show(this.subtitlesSection);
+					that.rssFeedsSectionRegion.show(that.rssFeedsSection);
+					that.subtitlesSectionRegion.show(that.subtitlesSection);
 
-				// register copy to clipboard
-				this.setCopyToClipboard();
+					// register copy to clipboard
+					that.setCopyToClipboard();
+
+					Utils.waitForDisplayAndCreate('.subtitles-settings-combobox', that.createChosen);
+					if (that.tabData.userSubtitles) {
+						that.ui.subtitlesCombobox.val(that.tabData.userSubtitles);
+					}
+				}, false);
 			},
 
 			setCopyToClipboard: function() {
+				this.$el.find('#tvshows-feed-copy-link').attr('data-clipboard-text', this.tabData.tvShowsRssFeed);
+				this.$el.find('#movies-feed-copy-link').attr('data-clipboard-text', this.tabData.moviesRssFeed);
+
 				if ($.browser.flash == true) {
 //					console.log('YES FLASH');
 					var clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]], {
@@ -90,18 +99,11 @@ define([
 //					console.log('no FLASH');
 					this.$el.find('#tvshows-feed-copy-link')
 						.attr('target', '_blank')
-						.attr('href', this.loggedInUserData.tvShowsRssFeed);
+						.attr('href', this.tabData.tvShowsRssFeed);
 					this.$el.find('#movies-feed-copy-link')
 						.attr('target', '_blank')
-						.attr('href', this.loggedInUserData.moviesRssFeed);
+						.attr('href', this.tabData.moviesRssFeed);
 				}
-			},
-
-			templateHelpers: function() {
-				return {
-					'tvshowsRssFeed': this.loggedInUserData.tvShowsRssFeed,
-					'moviesRssFeed': this.loggedInUserData.moviesRssFeed
-				};
 			},
 
 			onSubtitlesComboboxChange: function() {
@@ -115,13 +117,9 @@ define([
 				});
 			},
 
-			onShow: function() {
-				Utils.waitForDisplayAndCreate('.subtitles-settings-combobox', this.createChosen);
+			/*onShow: function() {
 
-				if (this.loggedInUserData.user.subtitles) {
-					this.ui.subtitlesCombobox.val(this.loggedInUserData.user.subtitles);
-				}
-			},
+			 },*/
 
 			createChosen: function(selector) {
 				$(selector).chosen();

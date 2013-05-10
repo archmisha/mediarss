@@ -37,7 +37,7 @@ define([
 			},
 
 			onRender: function() {
-				this.headerRegion.show(new HeaderView({descriptionViewDef: RegisterHeaderDescriptionView}));
+				this.headerRegion.show(new HeaderView({descriptionView: new RegisterHeaderDescriptionView()}));
 
 				var that = this;
 				setTimeout(function() {

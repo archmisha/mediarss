@@ -34,6 +34,7 @@ define([
 		tabToTitle[RoutingPaths.ADMIN] = BASE_TITLE + ' - Admin';
 
 		var isLoggedIn = false;
+		var homeView = null;
 
 		return Marionette.Controller.extend({
 
@@ -77,62 +78,55 @@ define([
 			},
 
 			_preLoginWrapper: function() {
+				if (isLoggedIn) {
+					this._showHome(null);
+					return;
+				}
+
 				var that = this;
 				var tab = tabToSelect.substring(tabToSelect.lastIndexOf("/") + 1);
 				HttpUtils.get("rest/user/pre-login/" + tab, function(res) {
-//						$.get("rest/user/pre-login/" + tab).success(function(res) {
-					if (res.success === false) {
-						if (res.message == 'User is not logged in') {
-							MessageBox.sessionTimeout();
-						} else {
-							MessageBox.error(res.message);
-						}
+					if (res.isLoggedIn) {
+						that._showHome(res);
 					} else {
-						if (res.user && res.user != null) {
-							that._showHome(res.initialData, res.user);
-						} else {
-							that._showLogin(res.initialData, tab);
-						}
+						that._showLogin(tab);
 					}
 				}, false);
 			},
 
-			_showHome: function(initialData, loggedInUserData) {
+			_showHome: function(tabData) {
 				isLoggedIn = true;
 
 				if (tabToSelect == null) {
 					tabToSelect = RoutingPaths.HOME;
 				}
-				if (tabToSelect == RoutingPaths.ADMIN && !loggedInUserData.user.admin) {
-					tabToSelect = RoutingPaths.HOME;
-				}
 
 				Backbone.history.navigate(StringUtils.formatRoute(tabToSelect), {trigger: false});
 				document.title = tabToTitle[tabToSelect];
-				mainRegion.show(new HomeView({
-					selectedTab: tabToSelect,
-					contentViewDef: tabToView[tabToSelect],
-					loggedInUserData: loggedInUserData,
-					initialData: initialData
-				}));
+				if (homeView != null) {
+					homeView.changeTab(tabToSelect, tabToView[tabToSelect]);
+				} else {
+					homeView = new HomeView({
+						selectedTab: tabToSelect,
+						contentViewDef: tabToView[tabToSelect],
+						tabData: tabData
+					});
+					mainRegion.show(homeView);
+				}
 				tabToSelect = null;
 			},
 
-			_showLogin: function(initialData, tab) {
+			_showLogin: function(tab) {
 				var that = this;
 				var login = new LoginView();
 				login.on('login', function(options) {
 					HttpUtils.post("rest/user/login", {
 						username: options.username,
 						password: options.password,
-						includeInitialData: initialData == undefined,
 						tab: tab
 					}, function(res) {
 						if (res.success === undefined) {
-							if (initialData == undefined) {
-								initialData = res.initialData;
-							}
-							that._showHome(initialData, res.user /*loggedInUserData*/);
+							that._showHome(res);
 						} else {
 							login.showStatusMessage(res.message);
 						}

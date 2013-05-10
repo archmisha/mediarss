@@ -23,32 +23,34 @@ define([
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.selectedTab = options.selectedTab;
-				this.loggedInUserData = options.loggedInUserData;
-				this.initialData = options.initialData;
 				this.contentViewDef = options.contentViewDef;
+				this.tabData = options.tabData;
 
 				this.mastheadView = new MastheadView({
-					user: this.loggedInUserData.user,
-					initialData: this.initialData
+					tabData: this.tabData
+				});
+
+				this.homeHeaderTabs = new HomeHeaderTabs({
+					selectedTab: this.selectedTab,
+					isAdmin: this.tabData.isAdmin
 				});
 
 				this.headerView = new HeaderView({
-					descriptionViewDef: HomeHeaderTabs,
-					descriptionViewOptions: {
-						selectedTab: this.selectedTab,
-						isAdmin: this.loggedInUserData.user.admin
-					}
+					descriptionView: this.homeHeaderTabs
 				});
-				this.contentView = new this.contentViewDef({
-					loggedInUserData: this.loggedInUserData,
-					initialData: this.initialData
-				});
+				this.contentView = new this.contentViewDef();
 			},
 
 			onRender: function() {
 				this.mastheadRegion.show(this.mastheadView);
 				this.headerRegion.show(this.headerView);
 				this.contentRegion.show(this.contentView);
+			},
+
+			changeTab: function(tabToSelect, contentViewDef) {
+				this.contentView = new contentViewDef();
+				this.contentRegion.show(this.contentView);
+				this.homeHeaderTabs.selectTab(tabToSelect);
 			}
 		});
 	});

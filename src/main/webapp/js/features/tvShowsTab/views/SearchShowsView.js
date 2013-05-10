@@ -54,16 +54,18 @@ define([
 			},
 
 			constructor: function(options) {
-				this.loggedInUserData = options.loggedInUserData;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 			},
 
 			onRender: function() {
-				if (this.loggedInUserData.user.admin) {
-					this.ui.adminForceDownload.show();
-				}
 				this.ui.seasonInput.prop('disabled', true);
 				this.ui.episodeInput.prop('disabled', true);
+			},
+
+			setAdmin: function(isAdmin) {
+				if (isAdmin) {
+					this.ui.adminForceDownload.show();
+				}
 			},
 
 			onKeyPress: function(event) {

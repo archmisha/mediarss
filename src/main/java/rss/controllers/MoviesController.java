@@ -15,6 +15,7 @@ import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.movies.IMDBPreviewCacheService;
 import rss.services.movies.IMDBService;
+import rss.util.DurationMeter;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -196,6 +197,24 @@ public class MoviesController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Map<String, Object> result = new HashMap<>();
 		result.put("movies", movieService.getAvailableMovies(user));
+		return result;
+	}
+
+	@RequestMapping(value = "/initial-data", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> initialData() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		DurationMeter duration = new DurationMeter();
+		Map<String, Object> result = new HashMap<>();
+		result.put("availableMovies", movieService.getAvailableMovies(user));
+		result.put("userMoviesCount", movieService.getUserMoviesCount(user));
+		result.put("moviesLastUpdated", getMoviesLastUpdated());
+		result.put("isAdmin", isAdmin(user));
+		duration.stop();
+		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
+
 		return result;
 	}
 }

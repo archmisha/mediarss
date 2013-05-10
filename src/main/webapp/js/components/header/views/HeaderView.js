@@ -17,12 +17,11 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.descriptionViewDef = options.descriptionViewDef;
-				this.descriptionViewOptions = options.descriptionViewOptions;
+				this.descriptionView = options.descriptionView;
 			},
 
 			onRender: function() {
-				this.descriptionRegion.show(new this.descriptionViewDef(this.descriptionViewOptions));
+				this.descriptionRegion.show(this.descriptionView);
 			}
 		});
 	});

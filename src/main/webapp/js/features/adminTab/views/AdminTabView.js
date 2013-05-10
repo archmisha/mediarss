@@ -14,8 +14,7 @@ define([
 	'select2',
 	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, JobsCollectionView, JobsCollection, SectionView, NotificationsView,
-		UsersCollection, AccessStatsCompositeView, HttpUtils, MessageBox, select2, Utils) {
+	function(Marionette, Handlebars, template, JobsCollectionView, JobsCollection, SectionView, NotificationsView, UsersCollection, AccessStatsCompositeView, HttpUtils, MessageBox, select2, Utils) {
 		"use strict";
 
 		var SHOWS_COMBO_BOX_SELECTOR = '.admin-all-shows-combo';
@@ -47,8 +46,6 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.loggedInUserData = options.loggedInUserData;
-				this.initialData = options.initialData;
 
 				this.jobs = new JobsCollection();
 				this.jobsView = new JobsCollectionView({collection: this.jobs});

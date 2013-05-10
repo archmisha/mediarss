@@ -38,7 +38,7 @@ define([
 			constructor: function(options) {
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.trackedShowsCollection = new ShowsCollection(options.trackedShows);
+				this.trackedShowsCollection = new ShowsCollection();
 
 				this.trackedShowsView = new TrackedShowsCollectionView({
 					collection: this.trackedShowsCollection,
@@ -50,6 +50,10 @@ define([
 
 			onRender: function() {
 				this.trackedShowsListRegion.show(this.trackedShowsView);
+			},
+
+			setTrackedShows: function(trackedShows) {
+				this.trackedShowsCollection.reset(trackedShows);
 				if (this.trackedShowsCollection.length > 0) {
 					this.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
 				}

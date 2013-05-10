@@ -31,6 +31,13 @@ define([
 				if (this.isAdmin) {
 					this.ui.adminTab.show();
 				}
+			},
+
+			selectTab: function(tabToSelect) {
+				this.$el.find('a').removeClass('home-selected-tab');
+
+				var selector = "a[href$='" + tabToSelect + "']";
+				this.$el.find(selector).addClass('home-selected-tab');
 			}
 		});
 	});

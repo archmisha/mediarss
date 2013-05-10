@@ -11,7 +11,6 @@ import rss.MediaRSSException;
 import rss.NoPermissionsException;
 import rss.UserNotLoggedInException;
 import rss.controllers.vo.ShowVO;
-import rss.controllers.vo.UserResponse;
 import rss.dao.JobStatusDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.JobStatus;
@@ -39,6 +38,7 @@ import java.util.*;
 @SuppressWarnings("UnusedDeclaration")
 public class BaseController {
 
+	public static final String HOME_TAB = "home";
 	public static final String TVSHOWS_TAB = "tvshows";
 	public static final String MOVIES_TAB = "movies";
 	public static final String ADMIN_TAB = "admin";
@@ -119,11 +119,15 @@ public class BaseController {
 	}
 
 	protected void verifyAdminPermissions(User user) {
-		if (!settingsService.getAdministratorEmails().contains(user.getEmail())) {
+		if (!isAdmin(user)) {
 			String msg = "Detected impersonation of admin user. User: " + user.getEmail();
 			logService.error(getClass(), msg);
 			throw new NoPermissionsException(msg);
 		}
+	}
+
+	protected boolean isAdmin(User user) {
+		return settingsService.getAdministratorEmails().contains(user.getEmail());
 	}
 
 	// note: getters, setters and empty ctor are needed for spring to json serialization

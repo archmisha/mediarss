@@ -3,9 +3,10 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/adminTab/templates/access-stats-list.tpl',
-	'features/adminTab/views/AccessStatsItemView'
+	'features/adminTab/views/AccessStatsItemView',
+	'features/adminTab/views/AccessStatsCollectionLoadingView'
 ],
-	function(Marionette, Handlebars, template, AccessStatsItemView) {
+	function(Marionette, Handlebars, template, AccessStatsItemView, AccessStatsCollectionLoadingView) {
 		"use strict";
 
 		return Marionette.CompositeView.extend({
@@ -13,6 +14,7 @@ define([
 			className: 'access-stats-list-container',
 			itemView: AccessStatsItemView,
 			itemViewContainer: '.access-stats-list',
+			emptyView: AccessStatsCollectionLoadingView,
 
 			ui: {
 				totalUsersCounter: '.total-users-counter'

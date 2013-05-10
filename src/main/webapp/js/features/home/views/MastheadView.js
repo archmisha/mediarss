@@ -26,8 +26,7 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.user = options.user;
-				this.initialData = options.initialData;
+				this.tabData = options.tabData;
 			},
 
 			onShow: function() {
@@ -61,8 +60,8 @@ define([
 
 			templateHelpers: function() {
 				return {
-					'username': this.user.firstName,
-					'updated-on': this.initialData.deploymentDate
+					'username': this.tabData.firstName,
+					'updated-on': this.tabData.deploymentDate
 				};
 			},
 

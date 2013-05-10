@@ -11,10 +11,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import rss.EmailAlreadyRegisteredException;
 import rss.controllers.EntityConverter;
 import rss.controllers.vo.ShowVO;
-import rss.controllers.vo.UserResponse;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.movies.MovieService;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -104,21 +102,11 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
-	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public UserResponse getUserResponse(User user) {
-		String tvShowsRssFeed = urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.TV_SHOWS_RSS_FEED_TYPE, user.getFeedHash());
-		String moviesRssFeed = urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.MOVIES_RSS_FEED_TYPE, user.getFeedHash());
-		return new UserResponse(entityConverter.toThinUser(user), tvShowsRssFeed, moviesRssFeed);
+	public String getMoviesRssFeed(User user) {
+		return urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.MOVIES_RSS_FEED_TYPE, user.getFeedHash());
 	}
 
-	private List<ShowVO> sort(List<ShowVO> shows) {
-		Collections.sort(shows, new Comparator<ShowVO>() {
-			@Override
-			public int compare(ShowVO o1, ShowVO o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}
-		});
-		return shows;
+	public String getTvShowsRssFeed(User user) {
+		return urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.TV_SHOWS_RSS_FEED_TYPE, user.getFeedHash());
 	}
 }

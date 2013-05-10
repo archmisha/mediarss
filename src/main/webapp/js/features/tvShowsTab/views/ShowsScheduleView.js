@@ -15,11 +15,12 @@ define([
 				this.schedule = options.schedule;
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.model = new ShowsSchedule({schedule: this.schedule});
+				this.model = new ShowsSchedule();
 				this.vent.on('shows-schedule-update', this._updateShowsSchedule, this);
 			},
 
-			onRender: function() {
+			setSchedule: function(schedule) {
+				this.model.clear().set({schedule: schedule});
 			},
 
 			_updateShowsSchedule: function(schedule) {

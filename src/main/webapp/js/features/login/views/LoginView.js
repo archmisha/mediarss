@@ -57,7 +57,7 @@ define([
 					this.ui.form.attr('action', '#');
 				}
 
-				this.headerRegion.show(new HeaderView({descriptionViewDef: LoginHeaderDescriptionView}));
+				this.headerRegion.show(new HeaderView({descriptionView: new LoginHeaderDescriptionView()}));
 
 				var that = this;
 				setTimeout(function() {

@@ -8,10 +8,10 @@ define([
 	'components/section/views/SectionView',
 	'features/tvShowsTab/views/SearchShowsView',
 	'MessageBox',
-	'features/tvShowsTab/views/ShowsScheduleView'
+	'features/tvShowsTab/views/ShowsScheduleView',
+	'HttpUtils'
 ],
-	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView,
-		SearchShowsView, MessageBox, ShowsScheduleView) {
+	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, SearchShowsView, MessageBox, ShowsScheduleView, HttpUtils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -34,20 +34,14 @@ define([
 			constructor: function(options) {
 				this.vent = new Marionette.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.loggedInUserData = options.loggedInUserData;
-				this.initialData = options.initialData;
 
 				this.searchShowsSection = new SectionView({
 					title: 'Search TV Shows',
 					description: 'Search for older episodes'
 				});
-				this.searchShowsView = new SearchShowsView({loggedInUserData: this.loggedInUserData});
+				this.searchShowsView = new SearchShowsView();
 
-				this.trackedShowsView = new TrackedShowsComponentView({
-					shows: this.initialData.shows,
-					trackedShows: this.loggedInUserData.shows,
-					vent: this.vent
-				});
+				this.trackedShowsView = new TrackedShowsComponentView({vent: this.vent});
 				this.trackedShowsSection = new SectionView({
 					title: 'Tracked TV Shows',
 					description: 'Ended shows are not shown as there is no point tracking them',
@@ -58,10 +52,7 @@ define([
 					title: 'Schedule',
 					description: 'View past and future episode air dates<br/>of your tracked shows'
 				});
-				this.showsScheduleView = new ShowsScheduleView({
-					schedule: this.loggedInUserData.schedule,
-					vent: this.vent
-				});
+				this.showsScheduleView = new ShowsScheduleView({vent: this.vent});
 			},
 
 			onRender: function() {
@@ -71,6 +62,13 @@ define([
 				this.trackedShowsRegion.show(this.trackedShowsView);
 				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
 				this.showsScheduleRegion.show(this.showsScheduleView);
+
+				var that = this;
+				HttpUtils.get("rest/movies/initial-data", function(res) {
+					that.trackedShowsView.setTrackedShows(res.trackedShows);
+					that.showsScheduleView.setSchedule(res.schedule);
+					that.searchShowsView.setAdmin(res.isAdmin);
+				}, false); // no need loading here
 			}
 		});
 	});

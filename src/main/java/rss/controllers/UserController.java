@@ -7,8 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
-import rss.controllers.vo.UserResponse;
-import rss.services.subtitles.SubtitleLanguage;
 import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.EmailService;
@@ -16,6 +14,7 @@ import rss.services.SessionService;
 import rss.services.SettingsService;
 import rss.services.UserServiceImpl;
 import rss.services.log.LogService;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,41 +47,15 @@ public class UserController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getPreLoginData(@PathVariable String tab) {
-		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
-		result.put("initialData", createInitialData(tab));
-
+		result.put("isLoggedIn", false);
 		if (sessionService.isUserLogged()) {
 			User user = userDao.find(sessionService.getLoggedInUserId());
-			result.put("user", createUserResponse(user, tab));
+			result = createTabData(user);
+			result.put("isLoggedIn", true);
 		}
-
-		duration.stop();
-		logService.info(getClass(), "getPreLoginData(" + tab + ") (" + duration.getDuration() + " millis)");
 
 		return result;
-	}
-
-	private UserResponse createUserResponse(User user, String tab) {
-		UserResponse userResponse = userService.getUserResponse(user);
-
-		if (tab.equals(MOVIES_TAB)) {
-			userResponse.withMoviesLastUpdated(getMoviesLastUpdated())
-					.withAvailableMovies(movieService.getAvailableMovies(user))
-					.withUserMoviesCount(movieService.getUserMoviesCount(user));
-		} else if (tab.equals(TVSHOWS_TAB)) {
-			userResponse.withShows(sort(entityConverter.toThinShows(user.getShows())))
-					.withSchedule(showService.getSchedule(user.getShows()));
-		}
-
-		return userResponse;
-	}
-
-	private Map<String, Object> createInitialData(String tab) {
-		Map<String, Object> initialData = new HashMap<>();
-		initialData.put("deploymentDate", settingsService.getDeploymentDate());
-		initialData.put("subtitles", SubtitleLanguage.getValues());
-		return initialData;
 	}
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -90,8 +63,7 @@ public class UserController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> login(@RequestParam("username") String email,
 									 @RequestParam("password") String password,
-									 @RequestParam("tab") String tab,
-									 @RequestParam("includeInitialData") boolean includeInitialData) {
+									 @RequestParam("tab") String tab) {
 		email = email.trim();
 		password = password.trim();
 
@@ -108,12 +80,7 @@ public class UserController extends BaseController {
 		// important to be after setting the lastLoginDate. session service saves the previous
 		user.setLastLogin(new Date());
 
-		Map<String, Object> result = new HashMap<>();
-		result.put("user", createUserResponse(user, tab));
-		if (includeInitialData) {
-			result.put("initialData", createInitialData(tab));
-		}
-		return result;
+		return createTabData(user);
 	}
 
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -179,6 +146,32 @@ public class UserController extends BaseController {
 			result.put("message", UserServiceImpl.ACCOUNT_VALIDATION_LINK_SENT_MESSAGE);
 		}
 		result.put("success", true);
+		return result;
+	}
+
+	@RequestMapping(value = "/initial-data", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> initialData() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		DurationMeter duration = new DurationMeter();
+		Map<String, Object> result = new HashMap<>();
+		result.put("subtitles", SubtitleLanguage.getValues());
+		result.put("userSubtitles", user.getSubtitles());
+		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
+		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
+		duration.stop();
+		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
+
+		return result;
+	}
+
+	private Map<String, Object> createTabData(User user) {
+		Map<String, Object> result = new HashMap<>();
+		result.put("isAdmin", isAdmin(user));
+		result.put("deploymentDate", settingsService.getDeploymentDate());
+		result.put("firstName", user.getFirstName());
 		return result;
 	}
 }
