@@ -17,6 +17,7 @@ import rss.util.DurationMeter;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -126,6 +127,6 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 	@Override
 	public Collection<Map.Entry<CachedShow, CachedShowSubset[]>> getShowsSubsets() {
-		return showNameSubsets.entrySet();
+		return new CopyOnWriteArrayList<>(showNameSubsets.entrySet());
 	}
 }
