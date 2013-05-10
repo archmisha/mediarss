@@ -112,14 +112,34 @@ public class AppConfigListener implements ServletContextListener {
 		settingsService.setStartupDate(new Date());
 
 		if (settingsService.isLogMemory()) {
-			logMemoryExecutorService = Executors.newSingleThreadScheduledExecutor();
-			logMemoryExecutorService.scheduleAtFixedRate(new Runnable() {
-				@Override
-				public void run() {
-					printMemoryStats();
-				}
-			}, 0, 1, TimeUnit.MINUTES);
+			startMemoryPrinter();
 		}
+
+		settingsService.addUpdateListener(new SettingsService.SettingsUpdateListener() {
+			@Override
+			public void onSettingsUpdated() {
+				if (settingsService.isLogMemory() && logMemoryExecutorService == null) {
+					startMemoryPrinter();
+				} else if (!settingsService.isLogMemory() && logMemoryExecutorService != null) {
+					stopMemoryPrinter();
+				}
+			}
+		});
+	}
+
+	private void stopMemoryPrinter() {
+		logMemoryExecutorService.shutdown();
+		logMemoryExecutorService = null;
+	}
+
+	private void startMemoryPrinter() {
+		logMemoryExecutorService = Executors.newSingleThreadScheduledExecutor();
+		logMemoryExecutorService.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				printMemoryStats();
+			}
+		}, 0, 1, TimeUnit.MINUTES);
 	}
 
 	private void printMemoryStats() {
@@ -135,15 +155,15 @@ public class AppConfigListener implements ServletContextListener {
 		logService.info(getClass(), "##### Heap utilization statistics [MB] ##### 2");
 		ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
 		logService.info(getClass(), "Heap " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
-		logService.info(getClass(), "NonHeap " +  ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage());
-		logService.info(getClass(), "Threads " +  ManagementFactory.getThreadMXBean().getThreadCount());
-		logService.info(getClass(), "Peak Threads " +  ManagementFactory.getThreadMXBean().getPeakThreadCount());
+		logService.info(getClass(), "NonHeap " + ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage());
+		logService.info(getClass(), "Threads " + ManagementFactory.getThreadMXBean().getThreadCount());
+		logService.info(getClass(), "Peak Threads " + ManagementFactory.getThreadMXBean().getPeakThreadCount());
 		List<MemoryPoolMXBean> beans = ManagementFactory.getMemoryPoolMXBeans();
-		for (MemoryPoolMXBean bean: beans) {
-			logService.info(getClass(), bean.getName() + " " +  bean.getUsage());
+		for (MemoryPoolMXBean bean : beans) {
+			logService.info(getClass(), bean.getName() + " " + bean.getUsage());
 		}
 
-		for (GarbageCollectorMXBean bean: ManagementFactory.getGarbageCollectorMXBeans()) {
+		for (GarbageCollectorMXBean bean : ManagementFactory.getGarbageCollectorMXBeans()) {
 			logService.info(getClass(), bean.getName() + " " + bean.getCollectionCount() + " " + bean.getCollectionTime());
 		}
 	}
@@ -207,7 +227,9 @@ public class AppConfigListener implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {
-		logMemoryExecutorService.shutdown();
+		if (logMemoryExecutorService != null) {
+			stopMemoryPrinter();
+		}
 
 		Log log = LogFactory.getLog(AppConfigListener.class);
 

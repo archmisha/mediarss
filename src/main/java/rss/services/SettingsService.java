@@ -1,6 +1,5 @@
 package rss.services;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -11,9 +10,9 @@ import java.util.List;
  */
 public interface SettingsService {
 
-    void setDeploymentDate(Date deploymentDate);
+	void setDeploymentDate(Date deploymentDate);
 
-    Date getDeploymentDate();
+	Date getDeploymentDate();
 
 	int getWebPort();
 
@@ -46,4 +45,12 @@ public interface SettingsService {
 	void setStartupDate(Date date);
 
 	Date getStartupDate();
+
+	void addUpdateListener(SettingsUpdateListener listener);
+
+	void removeUpdateListener(SettingsUpdateListener listener);
+
+	public interface SettingsUpdateListener {
+		void onSettingsUpdated();
+	}
 }

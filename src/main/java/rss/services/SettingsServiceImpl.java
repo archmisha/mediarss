@@ -47,6 +47,8 @@ public class SettingsServiceImpl implements SettingsService {
 	private boolean shouldRun;
 	private WatchService watchService;
 
+	private Collection<SettingsUpdateListener> updateListeners = new ArrayList<>();
+
 	@PostConstruct
 	private void postConstruct() {
 		shouldRun = true;
@@ -253,5 +255,15 @@ public class SettingsServiceImpl implements SettingsService {
 	@Override
 	public void setPersistentSetting(String key, String value) {
 		settingsDao.setSettings(key, value);
+	}
+
+	@Override
+	public void addUpdateListener(SettingsUpdateListener listener) {
+		this.updateListeners.add(listener);
+	}
+
+	@Override
+	public void removeUpdateListener(SettingsUpdateListener listener) {
+		this.updateListeners.remove(listener);
 	}
 }
