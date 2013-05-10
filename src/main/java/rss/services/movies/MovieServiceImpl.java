@@ -28,6 +28,8 @@ import rss.services.searchers.composite.torrentz.TorrentzResult;
 import rss.util.DateUtils;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -315,7 +317,8 @@ public class MovieServiceImpl implements MovieService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Pair<UserMovie, Boolean> addFutureMovieDownload(User user, String imdbId) {
 		try {
-			final String imdbUrl = IMDB_URL + imdbId;
+			// just if someone entered some junk in the imdbid, better get 404 than malformed url
+			final String imdbUrl = IMDB_URL + URLEncoder.encode(imdbId, "UTF-8");
 			Movie movie = movieDao.findByImdbUrl(imdbUrl);
 			if (movie == null) {
 				final IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDBAndImagesAsync(imdbUrl);
@@ -360,7 +363,7 @@ public class MovieServiceImpl implements MovieService {
 			}
 
 			return addMovieDownload(user, movie);
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}
 	}
