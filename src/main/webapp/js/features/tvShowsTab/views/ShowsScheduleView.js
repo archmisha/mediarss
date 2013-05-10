@@ -11,6 +11,10 @@ define([
 			template: Handlebars.compile(template),
 			className: 'shows-schedule-list',
 
+			ui: {
+				loadingComponent: '.shows-schedule-loading'
+			},
+
 			constructor: function(options) {
 				this.schedule = options.schedule;
 				this.vent = options.vent;
@@ -20,6 +24,7 @@ define([
 			},
 
 			setSchedule: function(schedule) {
+				this.ui.loadingComponent.hide();
 				this.model.clear().set({schedule: schedule});
 				this.render();
 			},
