@@ -96,6 +96,15 @@ public class SettingsServiceImpl implements SettingsService {
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed loading " + SETTINGS_FILENAME + ": " + e.getMessage(), e);
 		}
+
+		// call all registered listeners
+		for (SettingsUpdateListener updateListener : updateListeners) {
+			try {
+				updateListener.onSettingsUpdated();
+			} catch (Exception e) {
+				logService.error(getClass(), "Failed updating settings listener: " + e.getMessage(), e);
+			}
+		}
 	}
 
 	private void watchFile(String watchFolderPath, String watchedFileName) throws IOException, InterruptedException {

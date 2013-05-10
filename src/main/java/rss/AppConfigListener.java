@@ -128,11 +128,15 @@ public class AppConfigListener implements ServletContextListener {
 	}
 
 	private void stopMemoryPrinter() {
+		Log log = LogFactory.getLog(AppConfigListener.class);
+		log.info("Stopping memory printer task");
 		logMemoryExecutorService.shutdown();
 		logMemoryExecutorService = null;
 	}
 
 	private void startMemoryPrinter() {
+		Log log = LogFactory.getLog(AppConfigListener.class);
+		log.info("Starting memory printer task");
 		logMemoryExecutorService = Executors.newSingleThreadScheduledExecutor();
 		logMemoryExecutorService.scheduleAtFixedRate(new Runnable() {
 			@Override
