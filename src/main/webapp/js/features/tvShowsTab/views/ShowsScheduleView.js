@@ -24,9 +24,10 @@ define([
 			},
 
 			setSchedule: function(schedule) {
-				this.ui.loadingComponent.hide();
 				this.model.clear().set({schedule: schedule});
 				this.render();
+				// must call after the render call
+				this.ui.loadingComponent.hide();
 			},
 
 			_updateShowsSchedule: function(schedule) {
