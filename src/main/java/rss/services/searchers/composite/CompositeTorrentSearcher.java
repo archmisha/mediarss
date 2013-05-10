@@ -73,6 +73,7 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 //							logTorrentFound(mediaRequest, compositeSearcherData);
 							return;
 						}
+						break;
 					case AWAITING_AGING:
 						compositeSearcherData.setSuccessfulSearchResult(searchResult);
 						return;
