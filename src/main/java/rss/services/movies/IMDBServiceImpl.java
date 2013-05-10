@@ -5,11 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
 import rss.dao.ImageDao;
 import rss.entities.Image;
@@ -18,7 +15,8 @@ import rss.services.log.LogService;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -148,49 +146,36 @@ public class IMDBServiceImpl implements IMDBService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-//	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	// creating a new transaction to store the image quickly and avoid unique index violation due to long transactions
 	// need new thread for the new transaction
 	public InputStream getImage(final String imageFileName) {
-//		ExecutorService executorService = Executors.newSingleThreadExecutor();
-//		Future<InputStream> future = executorService.submit(new Callable<InputStream>() {
-//			@Override
-//			public InputStream call() throws Exception {
-//				return transactionTemplate.execute(new TransactionCallback<InputStream>() {
-//					@Override
-//					public InputStream doInTransaction(TransactionStatus transactionStatus) {
-						// remove the imdb url prefix, if exists. and also the rest call prefix - depends on where the call came from we have different prefixes
-						String imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, "");
-						imdbImageUrl = StringUtils.replace(imdbImageUrl, IMDBPreviewCacheServiceImpl.REST_IMAGE_URL_PREFIX, "");
-						try {
-							InputStream imageInputStream;
-							try {
-								Image image = imageDao.find(imdbImageUrl);
-								if (image == null) {
-									image = new Image(imdbImageUrl, pageDownloader.downloadImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
-									imageDao.persist(image);
-									logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
-								}
+		// remove the imdb url prefix, if exists. and also the rest call prefix - depends on where the call came from we have different prefixes
+		String imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, "");
+		imdbImageUrl = StringUtils.replace(imdbImageUrl, IMDBPreviewCacheServiceImpl.REST_IMAGE_URL_PREFIX, "");
+		try {
+			InputStream imageInputStream;
+			try {
+				// first check if it is a no-person-image
+				if (imdbImageUrl.equals(IMDBPreviewCacheServiceImpl.IMDB_DEFAULT_PERSON_IMAGE)) {
+					imageInputStream = new ClassPathResource(IMDBPreviewCacheServiceImpl.IMDB_DEFAULT_PERSON_IMAGE, this.getClass().getClassLoader()).getInputStream();
+				} else {
+					Image image = imageDao.find(imdbImageUrl);
+					if (image == null) {
+						image = new Image(imdbImageUrl, pageDownloader.downloadImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
+						imageDao.persist(image);
+						logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
+					}
 
-								imageInputStream = new ByteArrayInputStream(image.getData());
-							} catch (Exception e) {
-								logService.error(getClass(), String.format("Failed fetching image %s: %s. Using default person-no-image", imdbImageUrl, e.getMessage()), e);
-								imageInputStream = new ClassPathResource(IMDBPreviewCacheServiceImpl.IMDB_DEFAULT_PERSON_IMAGE, this.getClass().getClassLoader()).getInputStream();
-							}
-							return imageInputStream;
-						} catch (Exception e) {
-							throw new MediaRSSException("Failed downloading IMDB image " + imdbImageUrl + ": " + e.getMessage(), e);
-						}
-//					}
-//				});
-//			}
-//		});
-//		executorService.shutdown();
-//		try {
-//			return future.get();
-//		} catch (InterruptedException | ExecutionException e) {
-//			throw new MediaRSSException(e.getMessage(), e);
-//		}
+					imageInputStream = new ByteArrayInputStream(image.getData());
+				}
+			} catch (Exception e) {
+				logService.error(getClass(), String.format("Failed fetching image %s: %s. Using default person-no-image", imdbImageUrl, e.getMessage()), e);
+				imageInputStream = new ClassPathResource(IMDBPreviewCacheServiceImpl.IMDB_DEFAULT_PERSON_IMAGE, this.getClass().getClassLoader()).getInputStream();
+			}
+			return imageInputStream;
+		} catch (Exception e) {
+			throw new MediaRSSException("Failed downloading IMDB image " + imdbImageUrl + ": " + e.getMessage(), e);
+		}
 	}
 
 	private int parseMovieYear(String name) {
