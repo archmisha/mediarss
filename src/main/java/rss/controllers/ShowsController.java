@@ -177,6 +177,7 @@ public class ShowsController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("trackedShows", sort(entityConverter.toThinShows(user.getShows())));
 		result.put("schedule", showService.getSchedule(user.getShows()));
+		result.put("isAdmin", isAdmin(user));
 		duration.stop();
 		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
 
