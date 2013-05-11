@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 public class EmailServiceImpl implements EmailService {
 
-	private static final String APP_NAME = "Personalized Media RSS";
+	private static final String APP_NAME = "Personalized Media-RSS";
 	private static final String EMAIL_SIGNATURE = "\n\n" + APP_NAME + " Team";
 	private static final String JOBS_TITLE_SUFFIX = " - Jobs";
 	private static final String USERS_TITLE_SUFFIX = " - Users";
