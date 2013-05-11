@@ -38,6 +38,11 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	}
 
 	@Override
+	protected String getEntryUrl() {
+		return ENTRY_URL;
+	}
+
+	@Override
 	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
 		// todo: need some kind of visitor here
 		if (mediaRequest instanceof EpisodeRequest) {
@@ -58,14 +63,6 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 		} else {
 			throw new IllegalArgumentException(mediaRequest.getClass() + " is not supported");
 		}
-	}
-
-	@Override
-	protected String getSearchByIdUrl(T mediaRequest) {
-		if (mediaRequest.getSearcherId(NAME) != null) {
-			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
-		}
-		return null;
 	}
 
 	@Override

@@ -58,6 +58,11 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	}
 
 	@Override
+	protected String getEntryUrl() {
+		return ENTRY_URL;
+	}
+
+	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
 		Matcher matcher = BITSNOOP_TORRENTS_ID.matcher(page);
 		if (matcher.find()) {

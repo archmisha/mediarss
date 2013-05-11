@@ -3,6 +3,7 @@ package rss.services.searchers.composite;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import rss.PageDownloadException;
 import rss.entities.Media;
 import rss.entities.MediaQuality;
 import rss.entities.Torrent;
@@ -11,7 +12,6 @@ import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.services.searchers.TorrentSearcher;
-import rss.util.Utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,7 +42,7 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 			// set the quality in the torrent
 			for (Torrent torrent : compositeSearcherData.getSuccessfulSearchResult().getTorrents()) {
 				for (MediaQuality mediaQuality : MediaQuality.values()) {
-					if ( torrent.getTitle().toLowerCase().contains(mediaQuality.toString())) {
+					if (torrent.getTitle().toLowerCase().contains(mediaQuality.toString())) {
 						torrent.setQuality(mediaQuality);
 						break;
 					}
@@ -78,14 +78,12 @@ public abstract class CompositeTorrentSearcher<T extends MediaRequest, S extends
 						compositeSearcherData.setSuccessfulSearchResult(searchResult);
 						return;
 				}
+			} catch (PageDownloadException e) {
+				compositeSearcherData.getFailedSearchers().add(torrentSearcher.getName());
+				logService.error(getClass(), e.getMessage());
 			} catch (Exception e) {
 				compositeSearcherData.getFailedSearchers().add(torrentSearcher.getName());
-				// no need to print the exception stack trace - if its 'Read timed out' error or 'Connect to 1337x.org:80 timed out' error
-				if (Utils.isRootCauseMessageContains(e, "timed out")) {
-					logService.error(getClass(), e.getMessage());
-				} else {
-					logService.error(getClass(), e.getMessage(), e);
-				}
+				logService.error(getClass(), e.getMessage(), e);
 			}
 		}
 	}

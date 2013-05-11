@@ -139,7 +139,15 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 
 	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
 
-	protected abstract String getSearchByIdUrl(T mediaRequest);
+	protected String getSearchByIdUrl(T mediaRequest) {
+		String searcherId = mediaRequest.getSearcherId(getName());
+		if (searcherId != null) {
+			return getEntryUrl() + searcherId;
+		}
+		return null;
+	}
+
+	protected abstract String getEntryUrl();
 
 	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);
 

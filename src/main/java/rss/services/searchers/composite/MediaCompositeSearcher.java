@@ -1,9 +1,9 @@
 package rss.services.searchers.composite;
 
+import rss.PageDownloadException;
 import rss.entities.Media;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
-import rss.util.Utils;
 
 /**
  * User: dikmanm
@@ -35,14 +35,12 @@ public abstract class MediaCompositeSearcher<T extends MediaRequest, S extends M
 					compositeSearcherData.setSuccessfulSearchResult(searchResult);
 					return;
 			}
+		} catch (PageDownloadException e) {
+			compositeSearcherData.getFailedSearchers().add(torrentzSearcher.getName());
+			logService.error(getClass(), e.getMessage());
 		} catch (Exception e) {
 			compositeSearcherData.getFailedSearchers().add(torrentzSearcher.getName());
-			// no need to print the exception stack trace - if its 'Read timed out' error or 'Connect to 1337x.org:80 timed out' error
-			if (Utils.isRootCauseMessageContains(e, "timed out")) {
-				logService.error(getClass(), e.getMessage());
-			} else {
-				logService.error(getClass(), e.getMessage(), e);
-			}
+			logService.error(getClass(), e.getMessage(), e);
 		}
 
 		if (compositeSearcherData.getSuccessfulSearchResult() != null) {

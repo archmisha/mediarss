@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.PageDownloadException;
 import rss.EpisodesComparator;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
 import rss.controllers.vo.ShowsScheduleVO;
@@ -34,7 +35,6 @@ import rss.services.requests.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.StringUtils2;
-import rss.util.Utils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -187,12 +187,10 @@ public class ShowServiceImpl implements ShowService {
 								}
 							}
 						});
+					} catch (PageDownloadException e) {
+						logService.warn(aClass, String.format("Failed downloading info for show '%s' (Connection timed out)", downloadedShow.getName()));
 					} catch (Exception e) {
-						if (Utils.isRootCauseMessageContains(e, "timed out")) {
-							logService.warn(aClass, String.format("Failed downloading info for show '%s' (Connection timed out)", downloadedShow.getName()));
-						} else {
-							logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
-						}
+						logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
 					}
 				}
 			});

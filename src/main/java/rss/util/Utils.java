@@ -21,4 +21,13 @@ public class Utils {
 		Throwable rootCause = getRootCause(e);
 		return rootCause.getMessage() != null && rootCause.getMessage().contains(msg);
 	}
+
+	public static boolean isCauseMessageContains(Exception e, String msg) {
+		for (Throwable throwable : ExceptionUtils.getThrowableList(e)) {
+			if (throwable.getMessage() != null && throwable.getMessage().contains(msg)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

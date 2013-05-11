@@ -42,16 +42,13 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	}
 
 	@Override
-	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
+	protected String getEntryUrl() {
+		return ENTRY_URL;
 	}
 
 	@Override
-	protected String getSearchByIdUrl(T mediaRequest) {
-		if (mediaRequest.getSearcherId(NAME) != null) {
-			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
-		}
-		return null;
+	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
+		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
 	}
 
 	@Override

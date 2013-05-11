@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public class PublichdSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
 
 	public static final String NAME = "publichd.se";
-	public static final String PUBLICHD_TORRENT_URL = "http://" + NAME + "/index.php?page=torrent-details&id=";
+	public static final String ENTRY_URL = "http://" + NAME + "/index.php?page=torrent-details&id=";
 	public static final Pattern PATTERN = Pattern.compile("<tag:torrents\\[\\].download /><a href=\".*?\">(.*?)<a href=(.*?)>.*AddDate</b></td>.*?>(.*?)</td>.*?seeds: (\\d+)", Pattern.DOTALL);
 
 	@Autowired
@@ -36,6 +36,11 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	@Override
+	protected String getEntryUrl() {
+		return ENTRY_URL;
 	}
 
 	@Override
@@ -52,8 +57,9 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 
 	@Override
 	protected String getSearchByIdUrl(T mediaRequest) {
+		// no need to encode the hash
 		if (mediaRequest.getHash() != null) {
-			return PUBLICHD_TORRENT_URL + mediaRequest.getHash();
+			return ENTRY_URL + mediaRequest.getHash();
 		}
 		return null;
 	}

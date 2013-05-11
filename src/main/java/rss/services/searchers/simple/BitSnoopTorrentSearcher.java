@@ -11,6 +11,8 @@ import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,6 +36,11 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> ex
 	}
 
 	@Override
+	protected String getEntryUrl() {
+		return ENTRY_URL;
+	}
+
+	@Override
 	protected String getSearchUrl(T mediaRequest) {
 		// todo: currently not handling search
 		throw new UnsupportedOperationException();
@@ -48,14 +55,6 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> ex
 	@Override
 	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
 		return Collections.emptyList();
-	}
-
-	@Override
-	protected String getSearchByIdUrl(T mediaRequest) {
-		if (mediaRequest.getSearcherId(NAME) != null) {
-			return ENTRY_URL + mediaRequest.getSearcherId(NAME);
-		}
-		return null;
 	}
 
 	@Override

@@ -16,8 +16,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.ConnectionTimeoutException;
 import rss.MediaRSSException;
+import rss.PageDownloadException;
 import rss.services.log.LogService;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.util.Utils;
@@ -110,24 +110,11 @@ public class PageDownloaderImpl implements PageDownloader {
 	}
 
 	private <T> T downloadPage(String url, Map<String, String> headers, ResponseStreamExtractor<T> streamExtractor) {
-		long from = System.currentTimeMillis();
-
-		String errorMessagePrefix = "Failed searching for: " + url + " with error:";
-		try {
-			HttpGet httpGet = new HttpGet(url);
-
-			for (Map.Entry<String, String> entry : headers.entrySet()) {
-				httpGet.addHeader(entry.getKey(), entry.getValue());
-			}
-
-			return sendRequest(httpGet, streamExtractor);
-		} catch (Exception e) {
-			throw new MediaRSSException(errorMessagePrefix + " " + e.getMessage(), e);
-//			log.error(getClass(), errorMessagePrefix + " " + e.getMessage(), e);
-//			return null;
-		} finally {
-			log.debug(getClass(), String.format("Download page %s took %d millis", url, System.currentTimeMillis() - from));
+		HttpGet httpGet = new HttpGet(url);
+		for (Map.Entry<String, String> entry : headers.entrySet()) {
+			httpGet.addHeader(entry.getKey(), entry.getValue());
 		}
+		return sendRequest(httpGet, streamExtractor);
 	}
 
 	public List<Cookie> sendPostRequest(String url, Map<String, String> params) {
@@ -160,6 +147,7 @@ public class PageDownloaderImpl implements PageDownloader {
 	}
 
 	private <T> T sendRequest(HttpRequestBase httpRequest, ResponseStreamExtractor<T> streamExtractor) {
+		long from = System.currentTimeMillis();
 		AbstractHttpClient httpClient = null;
 		String url = httpRequest.getURI().toString();
 		try {
@@ -192,10 +180,13 @@ public class PageDownloaderImpl implements PageDownloader {
 
 			return streamExtractor.extractResponseStream(httpClient, httpResponse);
 		} catch (Exception e) {
-			if (Utils.isRootCauseMessageContains(e, "Connection timed out")) {
-				throw new ConnectionTimeoutException("Url: " + url + ". Connection timed out", e);
+			if (Utils.isRootCauseMessageContains(e, "timed out")) {
+				throw new PageDownloadException("Connection timed out for url: " + url);
+			} else if (Utils.isCauseMessageContains(e, "Invalid redirect URI")) {
+				throw new PageDownloadException("Invalid redirect URI: " + url);
 			}
-			throw new RuntimeException(e.getMessage(), e);
+			String errorMessagePrefix = "Failed searching for: " + url + " with error:";
+			throw new MediaRSSException(errorMessagePrefix + " " + e.getMessage(), e);
 		} finally {
 			// When HttpClient instance is no longer needed,
 			// shut down the connection manager to ensure
@@ -203,6 +194,7 @@ public class PageDownloaderImpl implements PageDownloader {
 			if (httpClient != null) {
 				httpClient.getConnectionManager().shutdown();
 			}
+			log.debug(getClass(), String.format("Download page %s took %d millis", url, System.currentTimeMillis() - from));
 		}
 	}
 
