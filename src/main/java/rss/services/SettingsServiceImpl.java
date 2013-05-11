@@ -12,17 +12,12 @@ import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: Michael Dikman
@@ -33,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class SettingsServiceImpl implements SettingsService {
 
 	public static final String SETTINGS_FILENAME = "settings.properties";
+	public static final String ADMIN_DEFAULT_EMAIL = "archmisha@gmail.com";
 
 	@Autowired
 	private LogService logService;
@@ -107,6 +103,7 @@ public class SettingsServiceImpl implements SettingsService {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void watchFile(String watchFolderPath, String watchedFileName) throws IOException, InterruptedException {
 		//create the watchService
 		watchService = FileSystems.getDefault().newWatchService();
@@ -115,34 +112,44 @@ public class SettingsServiceImpl implements SettingsService {
 		final Path path = Paths.get(watchFolderPath);
 		path.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 
+		long lastFileChange = System.currentTimeMillis();
+
 		//start an infinite loop
 		while (shouldRun) {
 
-			//remove the next watch key
+			// remove the next watch key
 			final WatchKey key = watchService.take();
 
-			//get list of events for the watch key
+			// get list of events for the watch key
 			for (WatchEvent<?> watchEvent : key.pollEvents()) {
-
-				//get the filename for the event
-				final WatchEvent<Path> ev = (WatchEvent<Path>) watchEvent;
-				final Path filename = ev.context();
 
 				//get the kind of event (create, modify, delete)
 				final WatchEvent.Kind<?> kind = watchEvent.kind();
 
-				//print it out
+				// This key is registered only for ENTRY_CREATE events, but an OVERFLOW event can
+				// occur regardless if events are lost or discarded.
+				if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
+					continue;
+				}
+
+				// get the filename for the event
+				final WatchEvent<Path> ev = (WatchEvent<Path>) watchEvent;
+				final Path filename = ev.context();
+
+				// print it out
 //				System.out.println(kind + ": " + filename);
-				if (filename.endsWith(watchedFileName)) {
+				// prevent firing events when occur in less than 5 millis apart from each other - due to some bug of events fired twice
+				long now = System.currentTimeMillis();
+				if (filename.endsWith(watchedFileName) && (now - lastFileChange) > 5) {
+					lastFileChange = now;
 					loadSettingsFile();
 				}
 			}
 
-			//reset the key
+			// reset the key
 			boolean valid = key.reset();
 
-			//exit loop if the key is not valid
-			//e.g. if the directory was deleted
+			// exit loop if the key is not valid e.g. if the directory was deleted
 			if (!valid) {
 				break;
 			}
@@ -223,10 +230,10 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
-	public List<String> getAdministratorEmails() {
-		List<String> result = new ArrayList<>();
+	public Set<String> getAdministratorEmails() {
+		Set<String> result = new HashSet<>();
 		result.addAll(Arrays.asList(prop.getProperty("admins").split(",")));
-		result.add("archmisha@gmail.com");
+		result.add(ADMIN_DEFAULT_EMAIL);
 		return result;
 	}
 

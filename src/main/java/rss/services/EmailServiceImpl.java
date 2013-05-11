@@ -31,6 +31,8 @@ public class EmailServiceImpl implements EmailService {
 	private static final String USERS_TITLE_SUFFIX = " - Users";
 	private static final String ERRORS_TITLE_SUFFIX = " - Errors";
 
+	private static final String MEDIA_RSS_GROUP_EMAIL = "media-rss@googlegroups.com";
+
 	@Autowired
 	private UrlService urlService;
 
@@ -157,7 +159,7 @@ public class EmailServiceImpl implements EmailService {
 		}
 
 		try {
-			sendEmail(settingsService.getAdministratorEmails(), APP_NAME + titleSuffix,
+			sendEmail(MEDIA_RSS_GROUP_EMAIL, APP_NAME + titleSuffix,
 					msg +
 					EMAIL_SIGNATURE);
 		} catch (MessagingException | UnsupportedEncodingException e) {
@@ -178,6 +180,6 @@ public class EmailServiceImpl implements EmailService {
 
 	// "gabayshiran", "ahri24986"
 	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException, UnsupportedEncodingException {
-		GoogleMail.Send(new InternetAddress("media-rss@googlegroups.com", "Media-RSS Team"), "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
+		GoogleMail.Send(new InternetAddress(MEDIA_RSS_GROUP_EMAIL, "Media-RSS Team"), "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
 	}
 }

@@ -2,6 +2,7 @@ package rss.services;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -26,7 +27,7 @@ public interface SettingsService {
 
 	String getTorrentWatchPath();
 
-	List<String> getAdministratorEmails();
+	Set<String> getAdministratorEmails();
 
 	String getAlternativeResourcesPath();
 
