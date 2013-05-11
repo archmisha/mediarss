@@ -32,7 +32,8 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	public static final String TORRENTZ_ENTRY_URL = HOST_NAME;
 	public static final String TORRENTZ_LATEST_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + MOVIES_FILTERS + "+added%3A";
-	public static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+hd+video" + MOVIES_FILTERS + "+";
+	// +hd was ruining the "2 fast 2 furious" movie search - maybe in older movies there is no such filter yet
+	public static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+video" + MOVIES_FILTERS + "+";
 	public static final String TORRENTZ_EPISODE_SEARCH_URL = HOST_NAME + "verifiedP?f=";
 
 	// no need in that already doing it in the search url
