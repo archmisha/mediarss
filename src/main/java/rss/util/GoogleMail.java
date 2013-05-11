@@ -2,12 +2,14 @@ package rss.util;
 
 import com.sun.mail.smtp.SMTPTransport;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.UnsupportedEncodingException;
 import java.security.Security;
 import java.util.Date;
 import java.util.Properties;
@@ -30,9 +32,9 @@ public class GoogleMail {
 	 * @throws AddressException   if the email address parse failed
 	 * @throws MessagingException if the connection is dead or not in the connected state or if the message is not a MimeMessage
 	 */
-	public static void Send(final String fromDisplayName, final String username, final String password,
-							String recipientEmail, String title, String message) throws MessagingException {
-		GoogleMail.Send(fromDisplayName, username, password, recipientEmail, "", title, message);
+	public static void Send(final InternetAddress from, final String username, final String password,
+							String recipientEmail, String title, String message) throws MessagingException, UnsupportedEncodingException {
+		GoogleMail.Send(from, username, password, recipientEmail, "", title, message);
 	}
 
 	/**
@@ -47,8 +49,8 @@ public class GoogleMail {
 	 * @throws AddressException   if the email address parse failed
 	 * @throws MessagingException if the connection is dead or not in the connected state or if the message is not a MimeMessage
 	 */
-	public static void Send(final String fromDisplayName, final String username, final String password,
-							String recipientEmail, String ccEmail, String title, String message) throws MessagingException {
+	public static void Send(final InternetAddress from, final String username, final String password,
+							String recipientEmail, String ccEmail, String title, String message) throws MessagingException, UnsupportedEncodingException {
 		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 		final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
 
@@ -77,7 +79,8 @@ public class GoogleMail {
 		final MimeMessage msg = new MimeMessage(session);
 
 		// -- Set the FROM and TO fields --
-		msg.setFrom(new InternetAddress(fromDisplayName));
+		msg.setFrom(from);
+		msg.setReplyTo(new Address[]{from});
 		if (recipientEmail != null) {
 			msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail, false));
 		}

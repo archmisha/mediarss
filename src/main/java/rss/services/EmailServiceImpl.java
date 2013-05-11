@@ -10,6 +10,8 @@ import rss.services.requests.ShowRequest;
 import rss.util.GoogleMail;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +26,7 @@ import java.util.List;
 public class EmailServiceImpl implements EmailService {
 
 	private static final String APP_NAME = "Personalized Media RSS";
-	private static final String EMAIL_SIGNATURE = "\n\nMichael Dikman\n" + APP_NAME + " Team";
+	private static final String EMAIL_SIGNATURE = "\n\n" + APP_NAME + " Team";
 	private static final String JOBS_TITLE_SUFFIX = " - Jobs";
 	private static final String USERS_TITLE_SUFFIX = " - Users";
 	private static final String ERRORS_TITLE_SUFFIX = " - Errors";
@@ -55,7 +57,7 @@ public class EmailServiceImpl implements EmailService {
 					"If you never registered to " + APP_NAME + " please ignore this email. We are sorry for the inconvenience\r\n\r\n" +
 					"For support or questions you can reply to this email." +
 					EMAIL_SIGNATURE);
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			logError("Failed sending email with account validation link to user", e);
 		}
 	}
@@ -102,7 +104,7 @@ public class EmailServiceImpl implements EmailService {
 					"If you never requested password recovery please ignore this email. We are sorry for the inconvenience\r\n\r\n" +
 					"For support or questions you can reply to this email." +
 					EMAIL_SIGNATURE);
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			logError("Failed sending email to user", e);
 		}
 	}
@@ -116,7 +118,7 @@ public class EmailServiceImpl implements EmailService {
 			}
 
 			sendEmail(emails, APP_NAME + " - Announcement", text + EMAIL_SIGNATURE);
-		} catch (MessagingException e) {
+		} catch (Exception e) {
 			logError("Failed sending email to user", e);
 		}
 	}
@@ -158,28 +160,24 @@ public class EmailServiceImpl implements EmailService {
 			sendEmail(settingsService.getAdministratorEmails(), APP_NAME + titleSuffix,
 					msg +
 					EMAIL_SIGNATURE);
-		} catch (MessagingException e) {
+		} catch (MessagingException | UnsupportedEncodingException e) {
 			logError(errorMsg, e);
 		}
 	}
 
-	private void logError(String message, MessagingException e) {
+	private void logError(String message, Exception e) {
 		if (e.getMessage() != null) {
 			message += " Error: " + e.getMessage();
 		}
 		throw new RuntimeException(message, e);
 	}
 
-	private void sendEmail(String recipient, String title, String message) throws MessagingException {
-		GoogleMail.Send("Media-RSS", "lan4ear", "84ad17ad!", recipient, title, message);
+	private void sendEmail(String recipient, String title, String message) throws MessagingException, UnsupportedEncodingException {
+		sendEmail(Collections.singletonList(recipient), title, message);
 	}
 
-	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException {
-		if (recipients.size() == 1) {
-			sendEmail(recipients.get(0), title, message);
-			return;
-		}
-
-		GoogleMail.Send("Media-RSS", "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
+	// "gabayshiran", "ahri24986"
+	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException, UnsupportedEncodingException {
+		GoogleMail.Send(new InternetAddress("media-rss@googlegroups.com", "Media-RSS Team"), "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
 	}
 }
