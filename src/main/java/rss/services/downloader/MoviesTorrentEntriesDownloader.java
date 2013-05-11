@@ -87,9 +87,9 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 				// download imdb page (for the first time) - using the getMovieHelper()
 				if (movieRequest.getImdbId() != null) {
 					// compare IMDB ID and skip if no match
-					if (!movieRequest.getImdbId().equals(searchResult.getImdbId())) {
+					if (!movieRequest.getImdbId().equals(imdbId)) {
 						logService.info(this.getClass(), String.format("Skipping movie '%s' because IMDB ID '%s' doesn't match the requested one '%s'",
-								movieRequest.getTitle(), searchResult.getImdbId(), movieRequest.getImdbId()));
+								movieRequest.getTitle(), imdbId, movieRequest.getImdbId()));
 						continue;
 					}
 				}
