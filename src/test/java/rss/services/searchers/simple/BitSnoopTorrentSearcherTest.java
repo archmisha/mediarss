@@ -8,20 +8,18 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import rss.BaseTest;
 import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.requests.FullSeasonRequest;
 import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
-import rss.services.searchers.composite.CompositeTorrentSearcher;
-import rss.services.searchers.composite.EpisodeCompositeSearcher;
 import rss.services.searchers.composite.torrentz.EpisodeTorrentzSearcher;
 import rss.services.searchers.composite.torrentz.TorrentzParser;
 import rss.services.shows.ShowService;
@@ -51,16 +49,7 @@ public class BitSnoopTorrentSearcherTest extends BaseTest {
 	protected TorrentzParser torrentzParser;
 
 	@InjectMocks
-	private BitSnoopTorrentSearcher<ShowRequest, Episode> bitSnoopTorrentSearcher = new BitSnoopTorrentSearcher<ShowRequest, Episode>();
-
-	@InjectMocks
-	@Qualifier("torrentzEpisodeSearcher")
-	private CompositeTorrentSearcher<ShowRequest, Episode> torrentzEpisodeSearcher = new EpisodeTorrentzSearcher() {
-		@Override
-		protected Collection<? extends SimpleTorrentSearcher<ShowRequest, Episode>> getTorrentSearchers() {
-			return Collections.singletonList(bitSnoopTorrentSearcher);
-		}
-	};
+	private BitSnoopTorrentSearcher<ShowRequest, Episode> bitSnoopTorrentSearcher = new BitSnoopTorrentSearcher<>();
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -76,10 +65,10 @@ public class BitSnoopTorrentSearcherTest extends BaseTest {
 			}
 		}).when(showService).filterMatching(any(SingleEpisodeRequest.class), any(List.class));
 
-		SearchResult searchResult = torrentzEpisodeSearcher.search(episodeRequest);
+		SearchResult searchResult = bitSnoopTorrentSearcher.search(episodeRequest);
 
 		assertEquals(SearchResult.SearchStatus.FOUND, searchResult.getSearchStatus());
-		assertEquals(1, searchResult.getTorrents().size());
-		assertEquals("Survivor - Season 5 - Thailand", searchResult.getTorrents().get(0).getTitle());
+		assertEquals(1, searchResult.getDownloadables().size());
+		assertEquals("Survivor - Season 5 - Thailand", searchResult.<Torrent>getDownloadables().get(0).getTitle());
 	}
 }

@@ -43,6 +43,8 @@ public interface SettingsService {
 
 	boolean isLogMemory();
 
+	boolean areSubtitlesEnabled();
+
 	void setStartupDate(Date date);
 
 	Date getStartupDate();

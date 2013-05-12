@@ -100,3 +100,7 @@ downloader for subtitles
 query name should be by the torrent name
 search doesnt work on subcenter:
   seach for show name if match then can append the season / episode to the url
+
+
+loading shwos cache rewrite
+  ugly thing in the searcher with the inheritance and the imdbid there and on torrent found uplicated

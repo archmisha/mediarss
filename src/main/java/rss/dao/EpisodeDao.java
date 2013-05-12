@@ -21,8 +21,6 @@ public interface EpisodeDao extends Dao<Episode> {
 
 	List<Episode> find(EpisodeRequest episodeRequest);
 
-	List<SubtitleLanguage> getSubtitlesLanguages(Episode episode);
-
 	Episode find(Torrent torrent);
 
 	Collection<Episode> getEpisodesForSchedule(List<Long> showIds);

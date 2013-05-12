@@ -1,9 +1,6 @@
 package rss.services.requests;
 
-import rss.services.searchers.MatcherVisitor;
-import rss.services.shows.ShowService;
-
-import java.util.List;
+import rss.services.searchers.MediaRequestVisitor;
 
 /**
  * User: Michael Dikman
@@ -12,14 +9,12 @@ import java.util.List;
  */
 public class MovieRequest extends MediaRequest {
 
-	private static final long serialVersionUID = 1484459093147625288L;
-
 	public MovieRequest(String title, String hash) {
 		super(title, hash, Integer.MAX_VALUE);
 	}
 
 	@Override
-	public List<ShowService.MatchCandidate> visit(MatcherVisitor visitor, List<ShowService.MatchCandidate> matchCandidates) {
-		return visitor.filterMatching(this, matchCandidates);
+	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
+		return visitor.visit(this, config);
 	}
 }

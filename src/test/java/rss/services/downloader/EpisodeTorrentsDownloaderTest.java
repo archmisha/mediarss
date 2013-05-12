@@ -13,7 +13,6 @@ import rss.dao.TorrentDao;
 import rss.services.*;
 import rss.services.requests.ShowRequest;
 import rss.services.requests.SingleEpisodeRequest;
-import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowsProvider;
 import rss.entities.Episode;
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TVShowsTorrentEntriesDownloaderTest extends BaseTest {
+public class EpisodeTorrentsDownloaderTest extends BaseTest {
 
 	@Mock
 	private TorrentDao torrentDao;
@@ -50,7 +49,7 @@ public class TVShowsTorrentEntriesDownloaderTest extends BaseTest {
 	private ShowsProvider tvComService;
 
 	@InjectMocks
-	private TVShowsTorrentEntriesDownloader downloader = new TVShowsTorrentEntriesDownloader();
+	private EpisodeTorrentsDownloader downloader = new EpisodeTorrentsDownloader();
 
 	@Before
 	@Override

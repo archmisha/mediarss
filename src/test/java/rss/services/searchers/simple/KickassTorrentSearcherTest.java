@@ -1,6 +1,5 @@
 package rss.services.searchers.simple;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -12,17 +11,15 @@ import org.mockito.stubbing.Answer;
 import rss.BaseTest;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -51,15 +48,14 @@ public class KickAssTorrentSearcherTest extends BaseTest {
 		Mockito.doAnswer(new Answer<List<ShowService.MatchCandidate>>() {
 			@Override
 			public List<ShowService.MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
-				List<ShowService.MatchCandidate> matchCandidates = (List<ShowService.MatchCandidate>) invocationOnMock.getArguments()[1];
-				return matchCandidates;
+				return (List<ShowService.MatchCandidate>) invocationOnMock.getArguments()[1];
 			}
 		}).when(showService).filterMatching(any(SingleEpisodeRequest.class), any(List.class));
 
 		SearchResult searchResult = kickAssTorrentSearcher.search(episodeRequest);
 
 		assertEquals(SearchResult.SearchStatus.FOUND, searchResult.getSearchStatus());
-		assertEquals(1, searchResult.getTorrents().size());
-		assertEquals("Greys Anatomy S01E01 avi", searchResult.getTorrents().get(0).getTitle());
+		assertEquals(1, searchResult.getDownloadables().size());
+		assertEquals("Greys Anatomy S01E01 avi", searchResult.<Torrent>getDownloadables().get(0).getTitle());
 	}
 }

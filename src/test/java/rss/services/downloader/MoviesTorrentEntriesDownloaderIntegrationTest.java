@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 public class MoviesTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 
 	@Autowired
-	private MoviesTorrentEntriesDownloader downloader = new MoviesTorrentEntriesDownloader();
+	private MovieTorrentsDownloader downloader = new MovieTorrentsDownloader();
 
 	@Autowired
 	private MovieDao movieDao;

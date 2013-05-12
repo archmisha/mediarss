@@ -12,7 +12,7 @@ import java.util.*;
  * User: dikmanm
  * Date: 28/04/13 23:37
  */
-public class MatcherVisitor {
+public class MatcherVisitor implements MediaRequestVisitor<List<ShowService.MatchCandidate>, List<ShowService.MatchCandidate>> {
 
 	private ShowService showService;
 
@@ -20,11 +20,13 @@ public class MatcherVisitor {
 		this.showService = showService;
 	}
 
-	public List<ShowService.MatchCandidate> filterMatching(EpisodeRequest episodeRequest, List<ShowService.MatchCandidate> matchCandidates) {
+	@Override
+	public List<ShowService.MatchCandidate> visit(EpisodeRequest episodeRequest, List<ShowService.MatchCandidate> matchCandidates) {
 		return filterByQuality(showService.filterMatching(episodeRequest, matchCandidates), MediaQuality.HD720P, MediaQuality.HD1080P, MediaQuality.NORMAL);
 	}
 
-	public List<ShowService.MatchCandidate> filterMatching(MovieRequest movieRequest, List<ShowService.MatchCandidate> matchCandidates) {
+	@Override
+	public List<ShowService.MatchCandidate> visit(MovieRequest movieRequest, List<ShowService.MatchCandidate> matchCandidates) {
 		List<ShowService.MatchCandidate> results = new ArrayList<>();
 		for (ShowService.MatchCandidate searchResult : matchCandidates) {
 			String cur = searchResult.getText().toLowerCase();

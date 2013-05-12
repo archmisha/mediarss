@@ -99,6 +99,7 @@ public class MoviesController extends BaseController {
 //			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
 		}
 
+		logService.info(getClass(), "User " + user + " downloads " + userMovie.getMovie());
 		Map<String, Object> result = new HashMap<>();
 		if (isUserMovies) {
 			result.put("movies", movieService.getUserMovies(user));
@@ -135,25 +136,12 @@ public class MoviesController extends BaseController {
 		} else {
 			if (!movie.getTorrentIds().isEmpty()) {
 				result.put("message", "Movie '" + movie.getName() + "' was added to your movies and already available for download");
-
-				// DO not automatically download
-				// take where max seeders
-//				int seeders = -1;
-//				Torrent theTorrent = null;
-//				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
-//					if (seeders == -1 || seeders < torrent.getSeeders()) {
-//						seeders = torrent.getSeeders();
-//						theTorrent = torrent;
-//					}
-//				}
-//				UserMovieTorrent userMovieTorrent = new UserMovieTorrent();
-//				addUserTorrent(user, theTorrent, userMovieTorrent);
-//				userMovieTorrent.setUserMovie(userMovie);
-//				userMovie.getUserMovieTorrents().add(userMovieTorrent);
 			} else {
 				result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
 			}
 		}
+
+		logService.info(getClass(), "User " + user + " downloads " + movie);
 
 		// must be after movieUserTorrent creation
 		result.put("movies", movieService.getUserMovies(user));

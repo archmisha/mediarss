@@ -3,8 +3,11 @@ package rss.services.subtitles;
 import rss.entities.Subtitles;
 import rss.entities.Episode;
 import rss.entities.Torrent;
+import rss.services.requests.SubtitlesEpisodeRequest;
+import rss.services.requests.SubtitlesRequest;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -12,15 +15,9 @@ import java.util.Collection;
  */
 public interface SubtitlesService {
 
-	void downloadTorrentSubtitles(Torrent torrent, SubtitleLanguage language);
 
-	void downloadTorrentSubtitles(Torrent torrent, Collection<SubtitleLanguage> languages);
 
-	void downloadEpisodeSubtitles(Torrent torrent, Episode episode, SubtitleLanguage language);
+	void downloadMissingSubtitles();
 
-	void downloadEpisodeSubtitles(Torrent torrent, Episode episode, Collection<SubtitleLanguage> languages);
-
-	com.turn.ttorrent.common.Torrent toTorrent(Subtitles subtitle);
-
-	String getTrackerAnnounceUrl();
+	void downloadSubtitlesAsync(List<SubtitlesRequest> subtitlesRequests);
 }

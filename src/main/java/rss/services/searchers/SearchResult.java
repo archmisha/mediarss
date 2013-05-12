@@ -19,7 +19,7 @@ public class SearchResult {
 	}
 
 	private SearchStatus searchStatus;
-	private List<Torrent> torrents;
+	private List<Downloadable> downloadables;
 	private String source;
 
 	public SearchResult(String source) {
@@ -28,7 +28,7 @@ public class SearchResult {
 	}
 
 	public SearchResult(SearchStatus searchStatus) {
-		torrents = new ArrayList<>();
+		downloadables = new ArrayList<>();
 		this.searchStatus = searchStatus;
 	}
 
@@ -37,10 +37,10 @@ public class SearchResult {
 	}
 
 	// for tests
-	public SearchResult(Torrent torrent, String source, SearchStatus searchStatus) {
+	public SearchResult(Downloadable downloadable, String source, SearchStatus searchStatus) {
 		this(source);
 		this.setSearchStatus(searchStatus);
-		this.addTorrent(torrent);
+		this.addDownloadable(downloadable);
 	}
 
 	public SearchStatus getSearchStatus() {
@@ -51,12 +51,13 @@ public class SearchResult {
 		this.searchStatus = searchStatus;
 	}
 
-	public List<Torrent> getTorrents() {
-		return torrents;
+	@SuppressWarnings("unchecked")
+	public <T extends Downloadable> List<T> getDownloadables() {
+		return (List<T>)downloadables;
 	}
 
-	public void addTorrent(Torrent torrent) {
-		this.torrents.add(torrent);
+	public void addDownloadable(Downloadable downloadable) {
+		this.downloadables.add(downloadable);
 	}
 
 	public void setSource(String source) {
@@ -67,20 +68,10 @@ public class SearchResult {
 		return source;
 	}
 
-	public String getImdbId() {
-		for (Torrent torrent : torrents) {
-			if (!StringUtils.isBlank(torrent.getImdbId())) {
-				return torrent.getImdbId();
-			}
-		}
-
-		return null;
-	}
-
 	public String getTorrentTitles() {
 		StringBuilder sb = new StringBuilder();
-		for (Torrent torrent : torrents) {
-			sb.append(torrent.getTitle());
+		for (Downloadable downloadable : downloadables) {
+			sb.append(downloadable.getName());
 			sb.append(", ");
 		}
 		sb.deleteCharAt(sb.length() - 1);

@@ -1,7 +1,6 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.services.subtitles.SubtitleLanguage;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Torrent;
@@ -43,7 +42,7 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), der.getSeason(), der.getEpisode1());
 				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), der.getSeason(), der.getEpisode2());
 			} else if (episodeRequest instanceof FullSeasonRequest) {
-				FullSeasonRequest fsr = (FullSeasonRequest)episodeRequest;
+				FullSeasonRequest fsr = (FullSeasonRequest) episodeRequest;
 				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), fsr.getSeason(), -1);
 			} else {
 				throw new IllegalArgumentException("Cannot search for requests of type: " + episodeRequest.getClass());
@@ -62,13 +61,6 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		params.add(season);
 		params.add(episode);
 		return counter;
-	}
-
-	@Override
-	public List<SubtitleLanguage> getSubtitlesLanguages(Episode episode) {
-		Map<String, Object> params = new HashMap<>(1);
-		params.put("episodeId", episode.getId());
-		return super.findByNamedQueryAndNamedParams("Episode.getSubtitlesLanguages", params);
 	}
 
 	@Override

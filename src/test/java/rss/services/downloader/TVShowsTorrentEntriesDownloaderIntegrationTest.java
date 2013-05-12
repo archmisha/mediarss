@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 public class TVShowsTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 
 	@Autowired
-	private TVShowsTorrentEntriesDownloader downloader = new TVShowsTorrentEntriesDownloader();
+	private EpisodeTorrentsDownloader downloader = new EpisodeTorrentsDownloader();
 
 	@Autowired
 	private EpisodeDao episodeDao;

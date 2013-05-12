@@ -2,6 +2,7 @@ package rss.entities;
 
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,6 +25,9 @@ public abstract class Media extends BaseEntity {
 	@ElementCollection(fetch = FetchType.EAGER)
 	private Set<Long> torrentIds;
 
+	@Column(name = "subtitles_scan_date")
+	private Date subtitlesScanDate;
+
 	public Media() {
 		torrentIds = new HashSet<>();
 	}
@@ -34,7 +38,11 @@ public abstract class Media extends BaseEntity {
 		return torrentIds;
 	}
 
-	public void setTorrentIds(Set<Long> torrentsIds) {
-		this.torrentIds = torrentsIds;
+	public Date getSubtitlesScanDate() {
+		return subtitlesScanDate;
+	}
+
+	public void setSubtitlesScanDate(Date subtitlesScanDate) {
+		this.subtitlesScanDate = subtitlesScanDate;
 	}
 }

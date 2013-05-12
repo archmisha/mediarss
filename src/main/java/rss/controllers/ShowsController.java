@@ -128,8 +128,8 @@ public class ShowsController extends BaseController {
 		Torrent torrent = torrentDao.find(torrentId);
 		addUserTorrent(user, torrent, new UserEpisodeTorrent());
 		if (user.getSubtitles() != null) {
-			Episode episode = episodeDao.find(torrent);
-			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
+//			Episode episode = episodeDao.find(torrent);
+//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
 		}
 	}
 

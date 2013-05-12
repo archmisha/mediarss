@@ -1,6 +1,7 @@
 package rss.entities;
 
 import org.hibernate.annotations.Index;
+import rss.services.searchers.Downloadable;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -20,7 +21,7 @@ import java.util.Date;
 		@NamedQuery(name = "Torrent.findByUrl",
 				query = "select b from Torrent as b where b.url = :url")
 })
-public class Torrent extends BaseEntity implements Comparable<Torrent> {
+public class Torrent extends BaseEntity implements Downloadable, Comparable<Torrent> {
 
     private static final long serialVersionUID = -8358871423354442763L;
 
@@ -88,7 +89,12 @@ public class Torrent extends BaseEntity implements Comparable<Torrent> {
         return title;
     }
 
-    public String getUrl() {
+	@Override
+	public String getName() {
+		return title;
+	}
+
+	public String getUrl() {
         return url;
     }
 

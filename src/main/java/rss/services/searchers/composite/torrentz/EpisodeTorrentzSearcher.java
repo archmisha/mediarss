@@ -4,11 +4,9 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.entities.Episode;
-import rss.services.requests.MovieRequest;
+import rss.MediaRSSException;
 import rss.services.requests.ShowRequest;
 import rss.services.searchers.MatcherVisitor;
-import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 
 import java.io.UnsupportedEncodingException;
@@ -21,26 +19,29 @@ import java.util.Set;
  * User: dikmanm
  * Date: 13/04/13 11:35
  */
-@Service("torrentzEpisodeSearcher")
-public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest, Episode> {
+@Service
+public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 
 	@Autowired
 	private ShowService showService;
 
 	@Override
-	protected String getSearchUrl(ShowRequest mediaRequest) throws UnsupportedEncodingException {
-		return TorrentzParserImpl.TORRENTZ_EPISODE_SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8");
+	protected String getSearchUrl(ShowRequest mediaRequest) {
+		try {
+			return TorrentzParserImpl.TORRENTZ_EPISODE_SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MediaRSSException("Failed encoding "+ mediaRequest.toQueryString() + ": " + e.getMessage(), e);
+		}
 	}
 
 	@Override
-	protected boolean shouldFailOnNoIMDBUrl() {
-		return false;
-	}
+	protected void prepareSearchRequest(ShowRequest mediaRequest) {
+		String url = getSearchUrl(mediaRequest);
+		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
-	protected SearchResult processTorrentzResults(ShowRequest originalRequest, Set<TorrentzResult> foundRequests) {
-		List<ShowService.MatchCandidate> filteredResults = filterMatching(originalRequest, foundRequests);
+		List<ShowService.MatchCandidate> filteredResults = filterMatching(mediaRequest, torrentzResults);
 		if (filteredResults.isEmpty()) {
-			return SearchResult.createNotFound();
+			return;
 		}
 
 		TorrentzResult bestResult = new Ordering<ShowService.MatchCandidate>() {
@@ -50,20 +51,11 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest, Episo
 			}
 		}.max(filteredResults).getObject();
 
-		originalRequest.setHash(bestResult.getHash());
-		originalRequest.setUploaders(bestResult.getUploaders());
+		mediaRequest.setHash(bestResult.getHash());
+		mediaRequest.setUploaders(bestResult.getUploaders());
 
 		// parse single search result torrent entry
-		enrichRequestWithSearcherIds(originalRequest);
-
-		CompositeSearcherData compositeSearcherData = new CompositeSearcherData();
-		super.searchHelper(originalRequest, compositeSearcherData);
-		SearchResult searchResult = compositeSearcherData.getSuccessfulSearchResult();
-		// null means not found
-		if (searchResult != null) {
-			return searchResult;
-		}
-		return SearchResult.createNotFound();
+		enrichRequestWithSearcherIds(mediaRequest);
 	}
 
 	protected List<ShowService.MatchCandidate> filterMatching(ShowRequest mediaRequest, Set<TorrentzResult> mediaRequests) {

@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.entities.Media;
-import rss.entities.Torrent;
-import rss.services.searchers.SearchResult;
 import rss.services.log.LogService;
-import rss.services.requests.MediaRequest;
+import rss.services.requests.SearchRequest;
+import rss.services.searchers.Downloadable;
+import rss.services.searchers.SearchResult;
 import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
  * Date: 02/12/12
  * Time: 23:49
  */
-public abstract class TorrentEntriesDownloader<S extends MediaRequest, T extends Media> {
+public abstract class BaseDownloader<S extends SearchRequest, T extends Media> {
 
 	public static final int MAX_CONCURRENT_REQUESTS = 15;
 
@@ -76,10 +76,10 @@ public abstract class TorrentEntriesDownloader<S extends MediaRequest, T extends
 							break;
 						case AWAITING_AGING:
 							// should be only one of those here
-							final Torrent searchResultTorrent = searchResult.getTorrents().get(0);
+							final Downloadable searchResultTorrent = searchResult.getDownloadables().get(0);
 							final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 							logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
-									searchResultTorrent.getTitle(),
+									searchResultTorrent.getName(),
 									DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
 									System.currentTimeMillis() - from));
 							// do nothing - its not missing cuz no need to  email and not found

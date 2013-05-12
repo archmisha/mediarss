@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.EpisodesComparator;
 import rss.MediaRSSException;
@@ -18,9 +17,10 @@ import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.requests.*;
 import rss.services.searchers.SearchResult;
-import rss.services.searchers.TorrentSearcher;
+import rss.services.searchers.composite.EpisodeSearcher;
 import rss.services.shows.EpisodesMapper;
 import rss.services.shows.ShowService;
+import rss.services.subtitles.SubtitlesService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 
@@ -32,8 +32,8 @@ import java.util.*;
  * Date: 02/12/12
  * Time: 23:49
  */
-@Service("tVShowsTorrentEntriesDownloader")
-public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<ShowRequest, Episode> {
+@Service
+public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episode> {
 
 	@Autowired
 	private EpisodeDao episodeDao;
@@ -42,8 +42,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 	private TorrentDao torrentDao;
 
 	@Autowired
-	@Qualifier("compositeEpisodeSearcher")
-	private TorrentSearcher<ShowRequest, Episode> compositeEpisodeSearcher;
+	private EpisodeSearcher episodeSearcher;
 
 	@Autowired
 	private ShowService showService;
@@ -51,9 +50,12 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 	@Autowired
 	private ShowDao showDao;
 
+	@Autowired
+	private SubtitlesService subtitlesService;
+
 	@Override
 	protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
-		return compositeEpisodeSearcher.search(episodeRequest);
+		return episodeSearcher.search(episodeRequest);
 	}
 
 	@Override
@@ -76,7 +78,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 			ShowRequest showRequest = pair.getKey();
 
 			// todo: assuming there is only one here. fix that
-			Torrent torrent = searchResult.getTorrents().get(0);
+			Torrent torrent = searchResult.<Torrent>getDownloadables().get(0);
 
 			List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) showRequest);
 
@@ -87,15 +89,7 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 				torrentDao.persist(torrent);
 				persistedTorrent = torrent;
 
-				// handle subtitles - cant try-catch here, cuz it tried to insert the new entities first and if failed we
-				// don't know and un-persisted episode with torrent null is returned! if want try catch need in separate transaction or something
-				// download subtitles only if enabled for this show for any user
-//			for (Episode persistedEpisode : persistedEpisodes) {
-//				List<SubtitleLanguage> subtitlesLanguages = episodeDao.getSubtitlesLanguages(persistedEpisode);
-//				if (!subtitlesLanguages.isEmpty()) {
-//					subtitlesService.downloadEpisodeSubtitles(torrent, persistedEpisode, subtitlesLanguages);
-//				}
-//			}
+				handleSubtitles(showRequest, torrent, persistedEpisodes);
 			}
 
 			for (Episode persistedEpisode : persistedEpisodes) {
@@ -106,6 +100,25 @@ public class TVShowsTorrentEntriesDownloader extends TorrentEntriesDownloader<Sh
 			res.addAll(persistedEpisodes);
 		}
 		return res;
+	}
+
+	private void handleSubtitles(ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
+		List<SubtitlesRequest> episodeRequests = new ArrayList<>();
+		if (showRequest instanceof SingleEpisodeRequest) {
+			episodeRequests.add(new SubtitlesEpisodeRequest(torrent, persistedEpisodes.get(0), showRequest));
+		} else if (showRequest instanceof DoubleEpisodeRequest) {
+			episodeRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, persistedEpisodes, showRequest));
+		} else if (showRequest instanceof FullSeasonRequest) {
+			// create request for each episode in the season and link to this single torrent
+			Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(showRequest.getShow());
+			for (Episode episode : showEpisodesMap.get(((FullSeasonRequest) showRequest).getSeason()).getKey()) {
+				episodeRequests.add(new SubtitlesEpisodeRequest(torrent, episode, showRequest));
+			}
+		}
+
+		if (!episodeRequests.isEmpty()) {
+			subtitlesService.downloadSubtitlesAsync(episodeRequests);
+		}
 	}
 
 	@Override

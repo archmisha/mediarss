@@ -1,7 +1,8 @@
 package rss.services.searchers.composite.torrentz;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import rss.entities.Movie;
+import rss.MediaRSSException;
 import rss.entities.Torrent;
 import rss.services.requests.MovieRequest;
 import rss.services.searchers.SearchResult;
@@ -14,25 +15,27 @@ import java.util.*;
  * User: dikmanm
  * Date: 30/04/13 22:35
  */
-@Service("movieTorrentzSearcher")
-public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest, Movie> {
+@Service
+public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 
 	@Override
-	protected String getSearchUrl(MovieRequest mediaRequest) throws UnsupportedEncodingException {
-		return TorrentzParserImpl.TORRENTZ_MOVIE_SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8");
+	protected String getSearchUrl(MovieRequest mediaRequest) {
+		try {
+			return TorrentzParserImpl.TORRENTZ_MOVIE_SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MediaRSSException("Failed encoding " + mediaRequest.toQueryString() + ": " + e.getMessage(), e);
+		}
 	}
 
 	@Override
-	protected boolean shouldFailOnNoIMDBUrl() {
-		return true;
-	}
+	public SearchResult search(MovieRequest mediaRequest) {
+		String url = getSearchUrl(mediaRequest);
+		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
-	@Override
-	protected SearchResult processTorrentzResults(MovieRequest originalRequest, Set<TorrentzResult> foundRequests) {
 		// group requests by name and for each name leave only the one with the best seeders
 		// this way we eliminate torrents with same name and lower seeders number
 		Map<String, TorrentzResult> map = new HashMap<>();
-		for (TorrentzResult foundRequest : foundRequests) {
+		for (TorrentzResult foundRequest : torrentzResults) {
 			String title = foundRequest.getTitle();
 			if (map.containsKey(title)) {
 				if (map.get(title).getUploaders() < foundRequest.getUploaders()) {
@@ -51,14 +54,14 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest, Movie>
 			enrichRequestWithSearcherIds(curRequest);
 
 			CompositeSearcherData compositeSearcherData = new CompositeSearcherData();
-			super.searchHelper(curRequest, compositeSearcherData);
+			super.search(curRequest);
 			SearchResult searchResult = compositeSearcherData.getSuccessfulSearchResult();
 
 			// null means not found
 			if (searchResult != null) {
 				// override torrent titles, because it might differ from the torrentz side, which combines all
 				// other sites. And the we get double torrent names
-				for (Torrent torrent : searchResult.getTorrents()) {
+				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
 					torrent.setTitle(foundRequest.getTitle());
 				}
 
@@ -80,11 +83,29 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest, Movie>
 
 		// merge results into one
 		SearchResult searchResult = results.remove(0);
-		searchResult.setSource(this.getName());
+		searchResult.setSource(TorrentzParserImpl.NAME);
 		for (SearchResult result : results) {
-			searchResult.getTorrents().addAll(result.getTorrents());
+			searchResult.getDownloadables().addAll(result.getDownloadables());
 		}
 
 		return searchResult;
+	}
+
+	@Override
+	protected void onTorrentFound(CompositeSearcherData compositeSearcherData, SearchResult searchResult,
+								  String searcherName) {
+		// case of no IMDB url
+		if (getImdbId(searchResult) == null) {
+			compositeSearcherData.getNoIMDBUrlSearchers().add(searcherName);
+		}
+	}
+
+	private String getImdbId(SearchResult searchResult) {
+		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
+			if (!StringUtils.isBlank(torrent.getImdbId())) {
+				return torrent.getImdbId();
+			}
+		}
+		return null;
 	}
 }

@@ -205,6 +205,11 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
+	public boolean areSubtitlesEnabled() {
+		return "true".equals(prop.getProperty("subtitles"));
+	}
+
+	@Override
 	public int getWebPort() {
 		return Integer.parseInt(prop.getProperty("web.port"));
 	}

@@ -1,11 +1,8 @@
 package rss.services.requests;
 
-import rss.services.searchers.MatcherVisitor;
-import rss.services.shows.ShowService;
+import rss.services.searchers.MediaRequestVisitor;
 
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,9 +10,7 @@ import java.util.Map;
  * Date: 22/12/12
  * Time: 14:30
  */
-public abstract class MediaRequest implements Serializable {
-
-	private static final long serialVersionUID = 5299194875537926970L;
+public abstract class MediaRequest implements SearchRequest {
 
 	private String imdbId;
 	private String hash;
@@ -113,5 +108,5 @@ public abstract class MediaRequest implements Serializable {
 		return title != null ? title.hashCode() : 0;
 	}
 
-	public abstract List<ShowService.MatchCandidate> visit(MatcherVisitor visitor, List<ShowService.MatchCandidate> matchCandidates);
+	public abstract <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config);
 }

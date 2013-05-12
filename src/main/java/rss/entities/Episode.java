@@ -19,9 +19,6 @@ import java.util.Date;
 		@Index(name = "ep_airdate_showId_idx", columnNames = {"air_date", "show_id"})
 })
 @NamedQueries({
-		@NamedQuery(name = "Episode.getSubtitlesLanguages",
-				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e " +
-						"where u.subtitles is not null and e.id = :episodeId"),
 		@NamedQuery(name = "Episode.findByTorrent",
 				query = "select e from Episode as e join e.torrentIds as tid " +
 						"where :torrentId = tid")

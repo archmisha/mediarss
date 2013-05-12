@@ -1,37 +1,35 @@
 package rss.services.searchers.composite;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import rss.entities.Episode;
-import rss.entities.Movie;
-import rss.services.requests.MediaRequest;
-import rss.entities.Media;
+import rss.entities.Torrent;
 import rss.services.requests.MovieRequest;
-import rss.services.requests.ShowRequest;
-
-import java.util.Arrays;
-import java.util.Collection;
+import rss.services.searchers.SearchResult;
 
 /**
  * User: Michael Dikman
  * Date: 04/12/12
  * Time: 19:15
  */
-@Service("compositeMoviesSearcher")
-public class MoviesCompositeSearcher extends MediaCompositeSearcher<MovieRequest, Movie> {
-
-	@Autowired
-	@Qualifier("movieTorrentzSearcher")
-	private CompositeTorrentSearcher<MovieRequest, Movie> movieTorrentzSearcher;
+@Service("moviesCompositeSearcher")
+public class MoviesCompositeSearcher extends DefaultCompositeSearcher<MovieRequest> {
 
 	@Override
-	protected CompositeTorrentSearcher<MovieRequest, Movie> getTorrentzSearcher() {
-		return movieTorrentzSearcher;
+	protected void onTorrentFound(CompositeSearcherData compositeSearcherData,
+								  SearchResult searchResult,
+								  String searcherName) {
+		// case of no IMDB url
+		if (getImdbId(searchResult) == null) {
+			compositeSearcherData.getNoIMDBUrlSearchers().add(searcherName);
+		}
 	}
 
-	@Override
-    protected boolean shouldFailOnNoIMDBUrl() {
-        return true;
-    }
+	private String getImdbId(SearchResult searchResult) {
+		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
+			if (!StringUtils.isBlank(torrent.getImdbId())) {
+				return torrent.getImdbId();
+			}
+		}
+		return null;
+	}
 }

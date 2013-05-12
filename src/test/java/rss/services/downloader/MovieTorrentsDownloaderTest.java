@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
+public class MovieTorrentsDownloaderTest extends BaseTest {
 
 	@Mock
 	private TorrentDao torrentDao;
@@ -50,7 +50,7 @@ public class MoviesTorrentEntriesDownloaderTest extends BaseTest {
 	private PageDownloader pageDownloader;
 
 	@InjectMocks
-	private MoviesTorrentEntriesDownloader downloader = new MoviesTorrentEntriesDownloader();
+	private MovieTorrentsDownloader downloader = new MovieTorrentsDownloader();
 
 	@InjectMocks
 	private PageDownloader realPageDownloader = new PageDownloaderImpl();

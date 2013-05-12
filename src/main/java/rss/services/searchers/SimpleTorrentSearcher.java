@@ -1,6 +1,7 @@
 package rss.services.searchers;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.entities.Media;
 import rss.entities.Torrent;
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
  * Date: 24/11/12
  * Time: 19:31
  */
-public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Media> implements TorrentSearcher<T, S> {
+public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Media> implements Searcher<T, S> {
 
 	private static final Pattern IMDB_URL_PATTERN = Pattern.compile("(www.imdb.com/title/\\w+)");
 
@@ -68,15 +69,15 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		now.add(Calendar.HOUR_OF_DAY, -4);
 
 		List<Torrent> readyTorrents = new ArrayList<>();
-		for (Torrent torrent : searchResult.getTorrents()) {
+		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
 			if (!torrent.getDateUploaded().after(now.getTime())) {
 				readyTorrents.add(torrent);
 			}
 		}
 
 		if (!readyTorrents.isEmpty()) {
-			searchResult.getTorrents().clear();
-			searchResult.getTorrents().addAll(readyTorrents);
+			searchResult.getDownloadables().clear();
+			searchResult.getDownloadables().addAll(readyTorrents);
 			searchResult.setSearchStatus(SearchResult.SearchStatus.FOUND);
 			return searchResult;
 		}
@@ -99,7 +100,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		}
 
 		SearchResult searchResult = new SearchResult(getName());
-		searchResult.addTorrent(torrent);
+		searchResult.addDownloadable(torrent);
 		return searchResult;
 	}
 
@@ -122,17 +123,10 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 
 		SearchResult searchResult = new SearchResult(getName());
 		for (ShowService.MatchCandidate matchCandidate : subFilteredResults) {
-			searchResult.addTorrent(matchCandidate.<Torrent>getObject());
+			searchResult.addDownloadable(matchCandidate.<Torrent>getObject());
 		}
 
-		// now for the final results - should download the actual page to get the imdb info if exists
-		if (mediaRequest instanceof MovieRequest) {
-			for (Torrent torrent : searchResult.getTorrents()) {
-				if (StringUtils.isBlank(searchResult.getImdbId())) {
-					torrent.setImdbId(getImdbUrl(torrent));
-				}
-			}
-		}
+		mediaRequest.visit(new PostParseSearchResultsVisitor(), new ImmutablePair<SimpleTorrentSearcher, SearchResult>(this, searchResult));
 
 		return searchResult;
 	}
@@ -156,7 +150,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 	public abstract String parseId(MediaRequest mediaRequest, String page);
 
 	// might be in the headers of the torrent or in the content as plain text
-	private String getImdbUrl(Torrent torrent) {
+	/*package*/ String getImdbUrl(Torrent torrent) {
 		String page;
 		try {
 			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());

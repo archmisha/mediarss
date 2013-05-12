@@ -6,11 +6,7 @@ import rss.services.PageDownloader;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
-import rss.services.searchers.composite.CompositeTorrentSearcher;
-import rss.services.searchers.simple.BitSnoopTorrentSearcher;
-import rss.services.searchers.simple.KickAssTorrentSearcher;
-import rss.services.searchers.simple.PublichdSearcher;
-import rss.services.searchers.simple.ThePirateBayTorrentSearcher;
+import rss.services.searchers.composite.AbstractCompositeSearcher;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Set;
@@ -25,7 +21,7 @@ import java.util.Set;
  * <dd><span class="v" style="color: #A2EB80" title="8">1</span><span class="a"><span title="Sun, 02 Dec 2012 00:06:45">19 hours</span></span>
  * <span class="s">17 GB</span> <span class="u">8</span><span class="d">128</span></dd></dl>
  */
-public abstract class TorrentzSearcher<T extends MediaRequest, S extends Media> extends CompositeTorrentSearcher<T, S> {
+public abstract class TorrentzSearcher<T extends MediaRequest> extends AbstractCompositeSearcher<T> {
 
 	@Autowired
 	protected TorrentzParser torrentzParser;
@@ -34,38 +30,16 @@ public abstract class TorrentzSearcher<T extends MediaRequest, S extends Media> 
 	protected PageDownloader pageDownloader;
 
 	@Override
-	protected SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T, S> torrentSearcher) {
+	protected SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T, Media> torrentSearcher) {
 		return torrentSearcher.searchById(mediaRequest);
 	}
 
-	@Override
-	public SearchResult search(T mediaRequest) {
-		String url = null;
-		try {
-			url = getSearchUrl(mediaRequest);
-		} catch (UnsupportedEncodingException e) {
-			logService.error(getClass(), "Failed encoding: " + url + " error: " + e.getMessage(), e);
-//			return SearchResult.createNotFound();
-		}
-
-		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
-
-		return processTorrentzResults(mediaRequest, torrentzResults);
-	}
-
-	@Override
-	public String getName() {
-		return TorrentzParserImpl.NAME;
-	}
-
-	protected void enrichRequestWithSearcherIds(MediaRequest mediaRequest) {
+	protected void enrichRequestWithSearcherIds(T mediaRequest) {
 		String entryPage = pageDownloader.downloadPage(TorrentzParserImpl.TORRENTZ_ENTRY_URL + mediaRequest.getHash());
-		for (SimpleTorrentSearcher<T, S> simpleTorrentSearcher : getTorrentSearchers()) {
+		for (SimpleTorrentSearcher<T, Media> simpleTorrentSearcher : getTorrentSearchers()) {
 			mediaRequest.setSearcherId(simpleTorrentSearcher.getName(), simpleTorrentSearcher.parseId(mediaRequest, entryPage));
 		}
 	}
 
-	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
-
-	protected abstract SearchResult processTorrentzResults(T originalRequest, Set<TorrentzResult> foundRequests);
+	protected abstract String getSearchUrl(T mediaRequest);
 }

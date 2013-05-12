@@ -3,6 +3,7 @@ package rss.services.requests;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.searchers.MatcherVisitor;
+import rss.services.searchers.MediaRequestVisitor;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowServiceImpl;
 
@@ -14,8 +15,6 @@ import java.util.List;
  * Time: 15:42
  */
 public abstract class EpisodeRequest extends ShowRequest {
-
-	private static final long serialVersionUID = -3775136728830359029L;
 
 	private int season;
 
@@ -58,7 +57,7 @@ public abstract class EpisodeRequest extends ShowRequest {
 	}
 
 	@Override
-	public List<ShowService.MatchCandidate> visit(MatcherVisitor visitor,  List<ShowService.MatchCandidate> matchCandidates) {
-		return visitor.filterMatching(this, matchCandidates);
+	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
+		return visitor.visit(this, config);
 	}
 }

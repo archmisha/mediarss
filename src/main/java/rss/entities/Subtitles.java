@@ -1,9 +1,11 @@
 package rss.entities;
 
 import org.hibernate.annotations.Index;
+import rss.services.searchers.Downloadable;
 import rss.services.subtitles.SubtitleLanguage;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * User: dikmanm
@@ -20,9 +22,12 @@ import javax.persistence.*;
 						"where s.torrent.id = :torrentId and s.language = :language"),
 		@NamedQuery(name = "Subtitles.findByTorrent",
 				query = "select s from Subtitles as s " +
-						"where s.torrent.id = :torrentId")
+						"where s.torrent.id = :torrentId"),
+		@NamedQuery(name = "Subtitles.getSubtitlesLanguages",
+				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e join e.torrentIds as tid " +
+						"where u.subtitles is not null and :torrentId = tid")
 })
-public class Subtitles extends BaseEntity {
+public class Subtitles extends Media implements Downloadable {
 	private static final long serialVersionUID = 5929747050786576285L;
 
 	@Column(name = "language")
@@ -45,6 +50,10 @@ public class Subtitles extends BaseEntity {
 	@Column(name = "file_name")
 	private String fileName;
 
+	@Column(name = "date_uploaded")
+	@Index(name = "date_uploaded_idx")
+	private Date dateUploaded;
+
 	public SubtitleLanguage getLanguage() {
 		return language;
 	}
@@ -59,6 +68,10 @@ public class Subtitles extends BaseEntity {
 
 	public void setTorrent(Torrent torrent) {
 		this.torrent = torrent;
+	}
+
+	public Date getDateUploaded() {
+		return dateUploaded;
 	}
 
 	public String getReleaseName() {
@@ -85,11 +98,8 @@ public class Subtitles extends BaseEntity {
 		this.externalId = externalId;
 	}
 
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-	}
-
-	public String getFileName() {
+	@Override
+	public String getName() {
 		return fileName;
 	}
 }

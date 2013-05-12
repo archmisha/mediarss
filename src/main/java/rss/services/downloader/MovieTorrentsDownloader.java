@@ -3,7 +3,6 @@ package rss.services.downloader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
@@ -12,8 +11,8 @@ import rss.entities.*;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
 import rss.services.requests.MovieRequest;
+import rss.services.searchers.MovieSearcher;
 import rss.services.searchers.SearchResult;
-import rss.services.searchers.TorrentSearcher;
 import rss.util.CollectionUtils;
 
 import java.util.*;
@@ -23,15 +22,14 @@ import java.util.*;
  * Date: 03/12/12
  * Time: 09:10
  */
-@Service("moviesTorrentEntriesDownloader")
-public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<MovieRequest, Movie> {
+@Service
+public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie> {
 
 	@Autowired
 	private MovieDao movieDao;
 
 	@Autowired
-	@Qualifier("compositeMoviesSearcher")
-	private TorrentSearcher<MovieRequest, Movie> compositeMoviesSearcher;
+	private MovieSearcher movieSearcher;
 
 	@Autowired
 	private TorrentDao torrentDao;
@@ -44,13 +42,13 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 	@Override
 	protected SearchResult downloadTorrent(MovieRequest movieRequest) {
-		return compositeMoviesSearcher.search(movieRequest);
+		return movieSearcher.search(movieRequest);
 	}
 
 	@Override
 	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult searchResult) {
 		// if there is no IMDB ID - skip this movie
-		if (searchResult.getImdbId() == null) {
+		if (getImdbId(searchResult) == null) {
 			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", movieRequest.getTitle()));
 			return false;
 		}
@@ -64,7 +62,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		Map<String, List<Pair<MovieRequest, SearchResult>>> imdbIdMap = new HashMap<>();
 		for (Pair<MovieRequest, SearchResult> pair : results) {
 			SearchResult searchResult = pair.getValue();
-			CollectionUtils.safeListPut(imdbIdMap, searchResult.getImdbId(), pair);
+			CollectionUtils.safeListPut(imdbIdMap, getImdbId(searchResult), pair);
 		}
 
 		List<Movie> res = new ArrayList<>();
@@ -94,7 +92,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 					}
 				}
 
-				for (Torrent torrent : searchResult.getTorrents()) {
+				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
 					Torrent persistedTorrent = persistTorrent(torrent, movieRequest.getHash());
 
 					if (persistedMovie.getTorrentIds().isEmpty()) {
@@ -166,7 +164,7 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 
 	@Override
 	protected void processMissingRequests(Collection<MovieRequest> missing) {
-		//To change body of implemented methods use File | Settings | File Templates.
+
 	}
 
 	@Override
@@ -189,5 +187,14 @@ public class MoviesTorrentEntriesDownloader extends TorrentEntriesDownloader<Mov
 		}
 
 		return result;
+	}
+
+	private String getImdbId(SearchResult searchResult) {
+		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
+			if (!StringUtils.isBlank(torrent.getImdbId())) {
+				return torrent.getImdbId();
+			}
+		}
+		return null;
 	}
 }

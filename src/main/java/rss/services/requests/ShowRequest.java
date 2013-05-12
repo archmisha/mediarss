@@ -3,6 +3,7 @@ package rss.services.requests;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.searchers.MatcherVisitor;
+import rss.services.searchers.MediaRequestVisitor;
 import rss.services.shows.ShowService;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public abstract class ShowRequest extends MediaRequest {
 
 
 	@Override
-	public List<ShowService.MatchCandidate> visit(MatcherVisitor visitor,  List<ShowService.MatchCandidate> matchCandidates) {
+	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
 		throw new UnsupportedOperationException();
 	}
 }

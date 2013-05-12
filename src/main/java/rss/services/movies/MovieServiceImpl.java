@@ -19,7 +19,7 @@ import rss.dao.UserTorrentDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.downloader.DownloadResult;
-import rss.services.downloader.MoviesTorrentEntriesDownloader;
+import rss.services.downloader.MovieTorrentsDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.MovieRequest;
 import rss.services.searchers.composite.torrentz.TorrentzParser;
@@ -62,7 +62,7 @@ public class MovieServiceImpl implements MovieService {
 	private LogService logService;
 
 	@Autowired
-	private MoviesTorrentEntriesDownloader moviesTorrentEntriesDownloader;
+	private MovieTorrentsDownloader moviesTorrentEntriesDownloader;
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;

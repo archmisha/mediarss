@@ -50,6 +50,9 @@ public class Show extends BaseEntity {
 	@Column(name = "tvrage_id", unique = true)
 	private int tvRageId;
 
+	@Column(name = "subcenter_url", unique = true)
+	private String subcenterUrl;
+
 	public Show() {
 		episodes = new HashSet<>();
 	}
@@ -106,6 +109,14 @@ public class Show extends BaseEntity {
 
 	public void setScheduleDownloadDate(Date scheduleDownloadDate) {
 		this.scheduleDownloadDate = scheduleDownloadDate;
+	}
+
+	public String getSubcenterUrl() {
+		return subcenterUrl;
+	}
+
+	public void setSubcenterUrl(String subCenterUrl) {
+		this.subcenterUrl = subCenterUrl;
 	}
 
 	@Override

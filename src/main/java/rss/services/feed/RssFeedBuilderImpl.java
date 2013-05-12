@@ -8,6 +8,7 @@ import rss.entities.Subtitles;
 import rss.entities.Torrent;
 import rss.services.SettingsService;
 import rss.services.subtitles.SubtitlesService;
+import rss.services.subtitles.SubtitlesTrackerService;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -28,10 +29,7 @@ public class RssFeedBuilderImpl implements RssFeedBuilder {
 	public static final Pattern MAGNET_LINK_PATTERN = Pattern.compile("(magnet:\\?xt=urn:btih:[^&]+)(&dn=([^&]+))?");
 
 	@Autowired
-	private SettingsService settingsService;
-
-	@Autowired
-	private SubtitlesService subtitlesService;
+	private SubtitlesTrackerService subtitlesTrackerService;
 
 	@Override
 	public String build(String feedTitle, String feedDescription, Collection<? extends Torrent> torrentEntries, Collection<Subtitles> subtitles) {
@@ -70,21 +68,21 @@ public class RssFeedBuilderImpl implements RssFeedBuilder {
 
 		for (Subtitles subtitle : subtitles) {
 			try {
-				com.turn.ttorrent.common.Torrent torrent = subtitlesService.toTorrent(subtitle);
-				String magnetLink = "magnet:?xt=urn:btih:" + torrent.getHexInfoHash() + "&dn=" + URLEncoder.encode(subtitle.getFileName(), "UTF-8") +
+				com.turn.ttorrent.common.Torrent torrent = subtitlesTrackerService.toTorrent(subtitle);
+				String magnetLink = "magnet:?xt=urn:btih:" + torrent.getHexInfoHash() + "&dn=" + URLEncoder.encode(subtitle.getName(), "UTF-8") +
 									"&tr=" +
-									URLEncoder.encode(subtitlesService.getTrackerAnnounceUrl(), "UTF-8");
+									URLEncoder.encode(subtitlesTrackerService.getTrackerAnnounceUrl(), "UTF-8");
 //									URLEncoder.encode(torrent.getAnnounceList().get(0).get(0).toASCIIString(), "UTF-8");//"udp%3A%2F%2F" + trackerHostName + "%3A" + trackerPort;
 				//"&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Ftracker.publicbt.com%3A80&tr=udp%3A%2F%2Ftracker.istole.it%3A6969&tr=udp%3A%2F%2Ftracker.ccc.de%3A80";
 
 				sb.append("    <item>\n");
-				sb.append("      <title><![CDATA[").append(subtitle.getFileName()).append("]]></title>\n");
+				sb.append("      <title><![CDATA[").append(subtitle.getName()).append("]]></title>\n");
 				sb.append("      <link><![CDATA[").append(magnetLink).append("]]></link>\n");
 				sb.append("      <guid isPermaLink=\"true\">").append(prepareGuid(magnetLink)).append("</guid>\n");
 //				sb.append("      <pubDate>").append(RFC822_DATE_FORMAT.format(torrent.getDateUploaded())).append("</pubDate>\n");
 				sb.append("    </item>\n");
 			} catch (Exception e) {
-				log.error("Failed generating rss for '" + subtitle.getFileName() + "': " + e.getMessage(), e);
+				log.error("Failed generating rss for '" + subtitle.getName() + "': " + e.getMessage(), e);
 			}
 		}
 

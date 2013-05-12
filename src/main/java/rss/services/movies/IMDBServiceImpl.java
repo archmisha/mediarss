@@ -163,7 +163,7 @@ public class IMDBServiceImpl implements IMDBService {
 					if (image == null) {
 						image = new Image(imdbImageUrl, pageDownloader.downloadImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
 						imageDao.persist(image);
-						logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
+						logService.debug(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
 					}
 
 					imageInputStream = new ByteArrayInputStream(image.getData());
