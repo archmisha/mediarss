@@ -8,9 +8,9 @@ public class CachedShow {
 
 	private long id;
 	private String name;
-	private boolean ended;
-	private int words;
 	private String normalizedName;
+	private int words;
+	private boolean ended;
 
 	public CachedShow(long id, String name, boolean ended) {
 		this.id = id;

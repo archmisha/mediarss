@@ -6,9 +6,9 @@ package rss.services.shows;
  */
 public class CachedShowSubset {
 	private String subset;
-	private int words;
+	private byte words;
 
-	public CachedShowSubset(String subset, int words) {
+	public CachedShowSubset(String subset, byte words) {
 		this.subset = subset.intern();
 		this.words = words;
 	}
@@ -17,7 +17,7 @@ public class CachedShowSubset {
 		return subset;
 	}
 
-	public int getWords() {
+	public byte getWords() {
 		return words;
 	}
 }

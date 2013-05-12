@@ -26,7 +26,7 @@ import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.SettingsService;
 import rss.services.downloader.DownloadResult;
-import rss.services.downloader.TVShowsTorrentEntriesDownloader;
+import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.EpisodeRequest;
 import rss.services.requests.FullSeasonRequest;
@@ -64,7 +64,7 @@ public class ShowServiceImpl implements ShowService {
 	private SettingsService settingsService;
 
 	@Autowired
-	private TVShowsTorrentEntriesDownloader torrentEntriesDownloader;
+	private EpisodeTorrentsDownloader torrentEntriesDownloader;
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
@@ -112,8 +112,8 @@ public class ShowServiceImpl implements ShowService {
 		downloadFullSchedule(show);
 	}
 
-	private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("['\"\\-]");
-	private static final Pattern NORMALIZE_TO_SPACE_PATTERN = Pattern.compile("[:&\\._\\+,\\(\\)!\\?/]");
+	private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("['\"]");
+	private static final Pattern NORMALIZE_TO_SPACE_PATTERN = Pattern.compile("[:&\\._\\+,\\(\\)!\\?/\\-]");
 	private static final Pattern NORMALIZE_SPACES_PATTERN = Pattern.compile("\\s+");
 
 	public static String normalize(String name) {

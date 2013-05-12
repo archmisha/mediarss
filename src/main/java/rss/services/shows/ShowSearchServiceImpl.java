@@ -13,7 +13,7 @@ import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.downloader.TVShowsTorrentEntriesDownloader;
+import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.ShowRequest;
 import rss.util.DurationMeter;
@@ -43,7 +43,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 	private EntityConverter entityConverter;
 
 	@Autowired
-	private TVShowsTorrentEntriesDownloader torrentEntriesDownloader;
+	private EpisodeTorrentsDownloader torrentEntriesDownloader;
 
 	@Autowired
 	private ShowService showService;
@@ -209,17 +209,17 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		final MutableInt bestLD = new MutableInt(Integer.MAX_VALUE);
 		// 5 is best from tries on my laptop (tried 1, 5, 10, 20, 30)
 		MultiThreadExecutor.execute(Executors.newFixedThreadPool(5), showsCacheService.getShowsSubsets(),
-				new MultiThreadExecutor.MultiThreadExecutorTask<Map.Entry<CachedShow, CachedShowSubset[]>>() {
+				new MultiThreadExecutor.MultiThreadExecutorTask<CachedShowSubsetSet>() {
 					@Override
-					public void run(Map.Entry<CachedShow, CachedShowSubset[]> entry) {
-						CachedShow show = entry.getKey();
+					public void run(CachedShowSubsetSet cachedShowSubsetSet) {
+						CachedShow show = cachedShowSubsetSet.getCachedShow();
 						if (show.getWords() < nameWords) {
 							// if show has less words that the search term - it doesn't match
 							return;
 						}
 
 						int ld = Integer.MAX_VALUE;
-						for (CachedShowSubset subset : entry.getValue()) {
+						for (CachedShowSubset subset : cachedShowSubsetSet.getSubsets()) {
 							// no point doing contains if there are less words in the subset than in the search term
 							if (subset.getWords() >= nameWords && subset.getSubset().contains(sortedNameJoined)) {
 								ld = 0;

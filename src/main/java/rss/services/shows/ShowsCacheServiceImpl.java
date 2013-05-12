@@ -39,7 +39,8 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	protected LogService logService;
 
 	private Map<Long, CachedShow> cache;
-	private Map<CachedShow, CachedShowSubset[]> showNameSubsets;
+	private Map<Long, CachedShowSubsetSet> showNameSubsets;
+
 	private ScheduledExecutorService executorService;
 
 	@PostConstruct
@@ -70,11 +71,20 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	private void reloadCache() {
 		DurationMeter duration = new DurationMeter();
 
-		cache.clear();
-		showNameSubsets.clear();
+		// store the ids of the existing shows in the cache, to know which to remove later
+		Set<Long> existingShowIds = new HashSet<>(cache.keySet());
 
 		for (CachedShow show : showDao.findCachedShows()) {
 			addShow(show);
+			existingShowIds.remove(show.getId());
+		}
+
+		// remove shows which were not found in the DB
+		for (Long existingShowId : existingShowIds) {
+			// only if found and removed the show from the first cache, try to remove it also from the second one
+			if (cache.remove(existingShowId) != null) {
+				showNameSubsets.remove(existingShowId);
+			}
 		}
 
 		duration.stop();
@@ -86,27 +96,6 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		if (cache.containsKey(show.getId())) {
 			cache.get(show.getId()).setEnded(show.isEnded());
 		}
-	}
-
-	private void addShow(CachedShow show) {
-		cache.put(show.getId(), show);
-
-		String cur = ShowServiceImpl.normalize(show.getName());
-		String[] arr = cur.split(" ");
-
-		show.setWords(arr.length);
-		show.setNormalizedName(cur);
-
-		List<ICombinatoricsVector<String>> subsets = getSubsets(arr).generateAllObjects();
-		CachedShowSubset[] cachedShowSubsets = new CachedShowSubset[subsets.size()];
-		int i = 0;
-		for (ICombinatoricsVector<String> subSet : subsets) {
-			List<String> permutation = subSet.getVector();
-			Collections.sort(permutation);
-			cachedShowSubsets[i++] = new CachedShowSubset(StringUtils.join(permutation, " "), permutation.size());
-		}
-
-		showNameSubsets.put(show, cachedShowSubsets);
 	}
 
 	private Generator<String> getSubsets(String[] arr) {
@@ -121,12 +110,38 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 	@Override
 	public Collection<CachedShow> getAll() {
-		// return a copy
-		return new ArrayList<>(cache.values());
+		return new CopyOnWriteArrayList<>(cache.values());
 	}
 
 	@Override
-	public Collection<Map.Entry<CachedShow, CachedShowSubset[]>> getShowsSubsets() {
-		return new CopyOnWriteArrayList<>(showNameSubsets.entrySet());
+	public Collection<CachedShowSubsetSet> getShowsSubsets() {
+		return new CopyOnWriteArrayList<>(showNameSubsets.values());
+	}
+
+	private void addShow(CachedShow show) {
+		// if cache already contains this show, the only thing to update is the ended field
+		if (cache.containsKey(show.getId())) {
+			cache.get(show.getId()).setEnded(show.isEnded());
+			return;
+		}
+
+		cache.put(show.getId(), show);
+
+		String cur = ShowServiceImpl.normalize(show.getName());
+		String[] arr = cur.split(" ");
+
+		show.setWords(arr.length);
+		show.setNormalizedName(cur);
+
+		List<ICombinatoricsVector<String>> subsets = getSubsets(arr).generateAllObjects();
+		CachedShowSubset[] cachedShowSubsets = new CachedShowSubset[subsets.size()];
+		int i = 0;
+		for (ICombinatoricsVector<String> subSet : subsets) {
+			List<String> permutation = subSet.getVector();
+			Collections.sort(permutation);
+			cachedShowSubsets[i++] = new CachedShowSubset(StringUtils.join(permutation, " "), (byte) permutation.size());
+		}
+
+		showNameSubsets.put(show.getId(), new CachedShowSubsetSet(show, cachedShowSubsets));
 	}
 }

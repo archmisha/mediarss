@@ -16,7 +16,7 @@ public interface ShowsCacheService {
 
 	Collection<CachedShow> getAll();
 
-	Collection<Map.Entry<CachedShow, CachedShowSubset[]>> getShowsSubsets();
+	Collection<CachedShowSubsetSet> getShowsSubsets();
 
 	void updateShowEnded(Show show);
 }
