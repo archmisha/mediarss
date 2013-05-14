@@ -111,13 +111,13 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 						@Override
 						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-							List<SubtitleLanguage> subtitlesLanguages = subtitlesDao.getSubtitlesLanguages();
+							/*List<SubtitleLanguage> subtitlesLanguages = subtitlesDao.getSubtitlesLanguages();
 							if (subtitlesLanguages.isEmpty()) {
 								return;
 							}
 							for (SubtitlesRequest subtitlesRequest : subtitlesRequests) {
 								subtitlesRequest.getLanguages().addAll(subtitlesLanguages);
-							}
+							}*/
 							subtitlesDownloader.download(subtitlesRequests);
 						}
 					});

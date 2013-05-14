@@ -6,7 +6,7 @@
     <img src="images/complete.png" width="20" height="20" class='movie-torrent-item-downloaded-image'
          title="Torrent Was Already Downloaded"/>
 </div>
-<div style="margin-left:30px;">
+<div class="movie-torrent-item-inner">
     <span class='movie-torrent-title' title='{{{title}}}'>{{{title}}}</span>
 
     <div class='movie-torrent-sub-title'>Uploaded on {{dateFormat uploadedDate format="DD/MM/YYYY HH:mm"
