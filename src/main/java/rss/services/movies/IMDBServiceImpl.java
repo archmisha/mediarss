@@ -140,7 +140,7 @@ public class IMDBServiceImpl implements IMDBService {
 			String imageUrl = matcher.group(1);
 			getImage(imageUrl);
 		} else {
-			logService.error(getClass(), "Failed parsing main image of movie: " + imdbUrl);
+			logService.warn(getClass(), "Failed parsing main image of movie: " + imdbUrl);
 		}
 	}
 
