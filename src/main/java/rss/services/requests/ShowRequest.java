@@ -2,11 +2,7 @@ package rss.services.requests;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.services.searchers.MatcherVisitor;
 import rss.services.searchers.MediaRequestVisitor;
-import rss.services.shows.ShowService;
-
-import java.util.List;
 
 /**
  * User: dikmanm

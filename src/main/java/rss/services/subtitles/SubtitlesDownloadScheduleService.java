@@ -6,5 +6,5 @@ package rss.services.subtitles;
  */
 public interface SubtitlesDownloadScheduleService {
 
-	public static String JOB_NAME = "SubtitlesDownloadScheduleService";
+	public static String JOB_NAME = "SubtitlesDownloader";
 }

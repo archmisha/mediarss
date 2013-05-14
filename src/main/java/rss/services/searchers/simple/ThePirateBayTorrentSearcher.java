@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.log.LogService;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SimpleTorrentSearcher;
-import rss.services.shows.ShowService;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -151,11 +151,11 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		return results;
 	}
 
-	protected void sortResults(List<ShowService.MatchCandidate> results) {
+	protected void sortResults(List<MatchCandidate> results) {
 		// sort by seeders
-		Collections.sort(results, new Comparator<ShowService.MatchCandidate>() {
+		Collections.sort(results, new Comparator<MatchCandidate>() {
 			@Override
-			public int compare(ShowService.MatchCandidate o1, ShowService.MatchCandidate o2) {
+			public int compare(MatchCandidate o1, MatchCandidate o2) {
 				Torrent torrent1 = o1.getObject();
 				Torrent torrent2 = o2.getObject();
 				return new Integer(torrent1.getSeeders()).compareTo(torrent2.getSeeders());
@@ -170,9 +170,9 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 		// sorting the urls to get the better results first and stuff like swesubs at the end
 		// /torrent/7837683/The.Big.Bang.Theory.S06E08.720p.SWESUB
 		// /torrent/7830137/The.Big.Bang.Theory.S06E08.720p.HDTV.X264-DIMENSION_[PublicHD]
-		Collections.sort(results, new Comparator<ShowService.MatchCandidate>() {
+		Collections.sort(results, new Comparator<MatchCandidate>() {
 			@Override
-			public int compare(ShowService.MatchCandidate o1, ShowService.MatchCandidate o2) {
+			public int compare(MatchCandidate o1, MatchCandidate o2) {
 				Torrent torrent1 = o1.getObject();
 				Torrent torrent2 = o2.getObject();
 				Integer n1 = rateUrl(torrent1);

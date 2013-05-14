@@ -28,6 +28,7 @@ import rss.services.SettingsService;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.EpisodeRequest;
 import rss.services.requests.FullSeasonRequest;
 import rss.services.requests.ShowRequest;
@@ -601,7 +602,6 @@ public class ShowServiceImpl implements ShowService {
 				}
 			}
 		}
-
 
 		if (pairs.isEmpty()) {
 			return Collections.emptyList();

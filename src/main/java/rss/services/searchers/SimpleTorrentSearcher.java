@@ -1,14 +1,14 @@
 package rss.services.searchers;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
+import rss.services.matching.MatchCandidate;
+import rss.services.matching.MatcherVisitor;
 import rss.services.requests.MediaRequest;
-import rss.services.requests.MovieRequest;
 import rss.services.shows.ShowService;
 import rss.util.Utils;
 
@@ -110,7 +110,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 			return SearchResult.createNotFound();
 		}
 
-		List<ShowService.MatchCandidate> filteredResults = filterMatchingResults(mediaRequest, torrents);
+		List<MatchCandidate> filteredResults = filterMatchingResults(mediaRequest, torrents);
 		if (filteredResults.isEmpty()) {
 			return SearchResult.createNotFound();
 		}
@@ -119,10 +119,10 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 			sortResults(filteredResults);
 		}
 
-		List<ShowService.MatchCandidate> subFilteredResults = filteredResults.subList(0, Math.min(filteredResults.size(), mediaRequest.getResultsLimit()));
+		List<MatchCandidate> subFilteredResults = filteredResults.subList(0, Math.min(filteredResults.size(), mediaRequest.getResultsLimit()));
 
 		SearchResult searchResult = new SearchResult(getName());
-		for (ShowService.MatchCandidate matchCandidate : subFilteredResults) {
+		for (MatchCandidate matchCandidate : subFilteredResults) {
 			searchResult.addDownloadable(matchCandidate.<Torrent>getObject());
 		}
 
@@ -173,10 +173,10 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 	}
 
 	// reverse sort by seeders
-	protected void sortResults(List<ShowService.MatchCandidate> filteredResults) {
-		Collections.sort(filteredResults, new Comparator<ShowService.MatchCandidate>() {
+	protected void sortResults(List<MatchCandidate> filteredResults) {
+		Collections.sort(filteredResults, new Comparator<MatchCandidate>() {
 			@Override
-			public int compare(ShowService.MatchCandidate o1, ShowService.MatchCandidate o2) {
+			public int compare(MatchCandidate o1, MatchCandidate o2) {
 				Torrent torrent1 = o1.getObject();
 				Torrent torrent2 = o2.getObject();
 				return new Integer(torrent2.getSeeders()).compareTo(torrent1.getSeeders());
@@ -184,8 +184,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		});
 	}
 
-	private ShowService.MatchCandidate toMatchCandidate(final Torrent torrent) {
-		return new ShowService.MatchCandidate() {
+	private MatchCandidate toMatchCandidate(final Torrent torrent) {
+		return new MatchCandidate() {
 			@Override
 			public String getText() {
 				return torrent.getTitle();
@@ -199,8 +199,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		};
 	}
 
-	protected List<ShowService.MatchCandidate> filterMatchingResults(T mediaRequest, List<Torrent> torrents) {
-		List<ShowService.MatchCandidate> matchCandidates = new ArrayList<>();
+	protected List<MatchCandidate> filterMatchingResults(T mediaRequest, List<Torrent> torrents) {
+		List<MatchCandidate> matchCandidates = new ArrayList<>();
 		for (Torrent torrent : torrents) {
 			matchCandidates.add(toMatchCandidate(torrent));
 		}

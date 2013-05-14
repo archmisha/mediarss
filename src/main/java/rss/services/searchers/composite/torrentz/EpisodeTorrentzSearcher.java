@@ -5,8 +5,9 @@ import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.ShowRequest;
-import rss.services.searchers.MatcherVisitor;
+import rss.services.matching.MatcherVisitor;
 import rss.services.shows.ShowService;
 
 import java.io.UnsupportedEncodingException;
@@ -39,14 +40,14 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 		String url = getSearchUrl(mediaRequest);
 		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
-		List<ShowService.MatchCandidate> filteredResults = filterMatching(mediaRequest, torrentzResults);
+		List<MatchCandidate> filteredResults = filterMatching(mediaRequest, torrentzResults);
 		if (filteredResults.isEmpty()) {
 			return;
 		}
 
-		TorrentzResult bestResult = new Ordering<ShowService.MatchCandidate>() {
+		TorrentzResult bestResult = new Ordering<MatchCandidate>() {
 			@Override
-			public int compare(ShowService.MatchCandidate movieRequest1, ShowService.MatchCandidate movieRequest2) {
+			public int compare(MatchCandidate movieRequest1, MatchCandidate movieRequest2) {
 				return Ints.compare(movieRequest1.<TorrentzResult>getObject().getUploaders(), movieRequest2.<TorrentzResult>getObject().getUploaders());
 			}
 		}.max(filteredResults).getObject();
@@ -58,10 +59,10 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 		enrichRequestWithSearcherIds(mediaRequest);
 	}
 
-	protected List<ShowService.MatchCandidate> filterMatching(ShowRequest mediaRequest, Set<TorrentzResult> mediaRequests) {
-		List<ShowService.MatchCandidate> matchCandidates = new ArrayList<>();
+	protected List<MatchCandidate> filterMatching(ShowRequest mediaRequest, Set<TorrentzResult> mediaRequests) {
+		List<MatchCandidate> matchCandidates = new ArrayList<>();
 		for (final TorrentzResult curRequest : mediaRequests) {
-			matchCandidates.add(new ShowService.MatchCandidate() {
+			matchCandidates.add(new MatchCandidate() {
 				@Override
 				public String getText() {
 					return curRequest.getTitle();

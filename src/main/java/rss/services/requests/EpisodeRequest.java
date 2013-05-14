@@ -2,12 +2,8 @@ package rss.services.requests;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.services.searchers.MatcherVisitor;
 import rss.services.searchers.MediaRequestVisitor;
-import rss.services.shows.ShowService;
 import rss.services.shows.ShowServiceImpl;
-
-import java.util.List;
 
 /**
  * User: Michael Dikman

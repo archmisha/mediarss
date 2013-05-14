@@ -21,5 +21,7 @@ public interface SubtitlesDao extends Dao<Subtitles> {
 
 	Collection<Subtitles> findByTorrent(Torrent torrent);
 
-	List<SubtitleLanguage> getSubtitlesLanguages(Torrent torrent);
+	List<SubtitleLanguage> getSubtitlesLanguagesForTorrent(Torrent torrent);
+
+	List<SubtitleLanguage> getSubtitlesLanguages();
 }

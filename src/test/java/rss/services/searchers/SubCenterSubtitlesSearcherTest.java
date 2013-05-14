@@ -10,13 +10,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import rss.BaseTest;
 import rss.entities.Episode;
-import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
-import rss.services.requests.ShowRequest;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.SingleEpisodeRequest;
-import rss.services.requests.SubtitlesEpisodeRequest;
+import rss.services.requests.SubtitlesSingleEpisodeRequest;
 import rss.services.shows.ShowService;
 
 import java.util.Date;
@@ -52,10 +51,10 @@ public class SubCenterSubtitlesSearcherTest extends BaseTest {
 				.thenReturn(loadPage("subcenter-search-results-house-page5"))
 				.thenReturn(loadPage("subcenter-search-results-house-page6"))
 				.thenReturn(loadPage("subcenter-search-results-house-page7"));
-		Mockito.doAnswer(new Answer<List<ShowService.MatchCandidate>>() {
+		Mockito.doAnswer(new Answer<List<MatchCandidate>>() {
 			@Override
-			public List<ShowService.MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
-				return (List<ShowService.MatchCandidate>) invocationOnMock.getArguments()[1];
+			public List<MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
+				return (List<MatchCandidate>) invocationOnMock.getArguments()[1];
 			}
 		}).when(showService).filterMatching(any(SingleEpisodeRequest.class), any(List.class));
 
@@ -63,8 +62,7 @@ public class SubCenterSubtitlesSearcherTest extends BaseTest {
 		Torrent torrent = new Torrent("House", "A", new Date(), 1, "a");
 		Episode episode = new Episode(1, 1);
 		episode.setShow(show);
-		ShowRequest showRequest = new SingleEpisodeRequest("House", show, MediaQuality.NORMAL, 1, 1);
 
-		SearchResult searchResult = subCenterSubtitlesSearcher.search(new SubtitlesEpisodeRequest(torrent, episode, showRequest));
+		SearchResult searchResult = subCenterSubtitlesSearcher.search(new SubtitlesSingleEpisodeRequest(torrent, show, 1, 1));
 	}
 }

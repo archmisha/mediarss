@@ -2,6 +2,7 @@ package rss.services.subtitles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,23 +102,28 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 			return;
 		}
 
+		final Class clazz = getClass();
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 		executorService.submit(new Runnable() {
 			@Override
 			public void run() {
-				transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-					@Override
-					protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-						for (SubtitlesRequest subtitlesRequest : subtitlesRequests) {
-							List<SubtitleLanguage> subtitlesLanguages = subtitlesDao.getSubtitlesLanguages(subtitlesRequest.getTorrent());
+				try {
+					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+						@Override
+						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+							List<SubtitleLanguage> subtitlesLanguages = subtitlesDao.getSubtitlesLanguages();
 							if (subtitlesLanguages.isEmpty()) {
 								return;
 							}
-							subtitlesRequest.getLanguages().addAll(subtitlesLanguages);
+							for (SubtitlesRequest subtitlesRequest : subtitlesRequests) {
+								subtitlesRequest.getLanguages().addAll(subtitlesLanguages);
+							}
+							subtitlesDownloader.download(subtitlesRequests);
 						}
-						subtitlesDownloader.download(subtitlesRequests);
-					}
-				});
+					});
+				} catch (Exception e) {
+					logService.error(clazz, e.getMessage(), e);
+				}
 			}
 		});
 		executorService.shutdown();

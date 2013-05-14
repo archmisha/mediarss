@@ -12,6 +12,7 @@ import rss.BaseTest;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.services.PageDownloader;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
@@ -89,10 +90,10 @@ public class TorrentSearcher1337xTest extends BaseTest {
 	}
 
 	private void mockFilterReturnAll() {
-		Mockito.doAnswer(new Answer<List<ShowService.MatchCandidate>>() {
+		Mockito.doAnswer(new Answer<List<MatchCandidate>>() {
 			@Override
-			public List<ShowService.MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
-				List<ShowService.MatchCandidate> matchCandidates = (List<ShowService.MatchCandidate>) invocationOnMock.getArguments()[1];
+			public List<MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
+				List<MatchCandidate> matchCandidates = (List<MatchCandidate>) invocationOnMock.getArguments()[1];
 				return matchCandidates;
 			}
 		}).when(showService).filterMatching(any(SingleEpisodeRequest.class), any(List.class));

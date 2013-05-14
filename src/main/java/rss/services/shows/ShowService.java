@@ -3,6 +3,7 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Show;
 import rss.services.requests.ShowRequest;
@@ -41,8 +42,4 @@ public interface ShowService {
 
 	void disconnectTorrentsFromEpisode(Episode episode);
 
-	public interface MatchCandidate {
-		String getText();
-		<T> T getObject();
-	}
 }

@@ -1,6 +1,5 @@
 package rss.services.requests;
 
-import rss.entities.Episode;
 import rss.entities.Torrent;
 import rss.services.subtitles.SubtitleLanguage;
 
@@ -15,11 +14,11 @@ public abstract class SubtitlesRequest implements SearchRequest {
 
 	private Torrent torrent;
 	private List<SubtitleLanguage> languages;
-	private MediaRequest mediaRequest;
+	private String name;
 
-	public SubtitlesRequest(Torrent torrent, MediaRequest mediaRequest) {
+	public SubtitlesRequest(Torrent torrent, String name) {
 		this.torrent = torrent;
-		this.mediaRequest = mediaRequest;
+		this.name = name;
 		this.languages = new ArrayList<>();
 	}
 
@@ -31,9 +30,7 @@ public abstract class SubtitlesRequest implements SearchRequest {
 		return languages;
 	}
 
-	public abstract List<Episode> getEpisodes();
-
-	public MediaRequest getMediaRequest() {
-		return mediaRequest;
+	public String getName() {
+		return name;
 	}
 }

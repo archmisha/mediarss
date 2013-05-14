@@ -8,7 +8,7 @@ import rss.dao.EpisodeDao;
 import rss.dao.SubtitlesDao;
 import rss.entities.Episode;
 import rss.entities.Subtitles;
-import rss.services.requests.SubtitlesRequest;
+import rss.services.requests.*;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SubCenterSubtitlesSearcher;
 import rss.services.subtitles.SubtitleLanguage;
@@ -38,10 +38,22 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	@Override
 	protected void processMissingRequests(Collection<SubtitlesRequest> missing) {
 		for (SubtitlesRequest subtitlesRequest : missing) {
-			for (Episode episode : subtitlesRequest.getEpisodes()) {
+			List<Episode> episodes = getEpisodesBySubtitlesRequests(subtitlesRequest);
+			for (Episode episode : episodes) {
 				episode.setSubtitlesScanDate(new Date());
 			}
 		}
+	}
+
+	private List<Episode> getEpisodesBySubtitlesRequests(SubtitlesRequest subtitlesRequest) {
+		if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
+			SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
+			return episodeDao.find(new SingleEpisodeRequest(sser.getName(), sser.getShow(), null, sser.getSeason(), sser.getEpisode()));
+		} else if (subtitlesRequest instanceof SubtitlesDoubleEpisodeRequest) {
+			SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) subtitlesRequest;
+			return episodeDao.find(new DoubleEpisodeRequest(sder.getName(), sder.getShow(), null, sder.getSeason(), sder.getEpisode1(), sder.getEpisode2()));
+		}
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -88,13 +100,16 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 				}
 			}
 
-			for (Episode episode : subtitlesRequest.getEpisodes()) {
-				Episode persistedEpisode = episodeDao.find(episode.getId());
-				persistedEpisode.setSubtitlesScanDate(new Date());
+			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
+				List<Episode> episodes = getEpisodesBySubtitlesRequests(subtitlesRequest);
+				for (Episode episode : episodes) {
+					Episode persistedEpisode = episodeDao.find(episode.getId());
+					persistedEpisode.setSubtitlesScanDate(new Date());
 
-				// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
-				if (StringUtils.isBlank(persistedEpisode.getShow().getSubcenterUrl())) {
-					persistedEpisode.getShow().setSubcenterUrl(episode.getShow().getSubcenterUrl());
+					// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
+					if (StringUtils.isBlank(persistedEpisode.getShow().getSubCenterUrl())) {
+						persistedEpisode.getShow().setSubCenterUrl(((SubtitlesEpisodeRequest) subtitlesRequest).getShow().getSubCenterUrl());
+					}
 				}
 			}
 			res.addAll(searchResult.<Subtitles>getDownloadables());

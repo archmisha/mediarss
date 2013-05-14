@@ -103,21 +103,62 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	}
 
 	private void handleSubtitles(ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
-		List<SubtitlesRequest> episodeRequests = new ArrayList<>();
+		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
 		if (showRequest instanceof SingleEpisodeRequest) {
-			episodeRequests.add(new SubtitlesEpisodeRequest(torrent, persistedEpisodes.get(0), showRequest));
+			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), persistedEpisodes.get(0).getSeason(), persistedEpisodes.get(0).getEpisode()));
 		} else if (showRequest instanceof DoubleEpisodeRequest) {
-			episodeRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, persistedEpisodes, showRequest));
+			subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, showRequest.getShow(), persistedEpisodes.get(0).getSeason(),
+					persistedEpisodes.get(0).getEpisode(), persistedEpisodes.get(1).getEpisode()));
 		} else if (showRequest instanceof FullSeasonRequest) {
 			// create request for each episode in the season and link to this single torrent
 			Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(showRequest.getShow());
 			for (Episode episode : showEpisodesMap.get(((FullSeasonRequest) showRequest).getSeason()).getKey()) {
-				episodeRequests.add(new SubtitlesEpisodeRequest(torrent, episode, showRequest));
+				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode()));
 			}
 		}
 
-		if (!episodeRequests.isEmpty()) {
-			subtitlesService.downloadSubtitlesAsync(episodeRequests);
+		if (!subtitlesRequests.isEmpty()) {
+			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
+		}
+	}
+
+	// for full season episode expand to single episodes and create subtitles requests for them
+	// the rest group by torrents, if single episode per torrent - create single request
+	// if 2 episodes per torrent - its a double request
+	private void handleSubtitles(Set<Episode> episodes) {
+		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+		Map<Torrent, List<Episode>> map = new HashMap<>();
+		for (Episode episode : episodes) {
+			for (Torrent torrent : torrentDao.find(episode.getTorrentIds())) {
+				if (episode.getEpisode() == -1) {
+					// create request for each episode in the season and link to this single torrent
+					Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(episode.getShow());
+					for (Episode curEpisode : showEpisodesMap.get(episode.getSeason()).getKey()) {
+						subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, curEpisode.getShow(), episode.getSeason(), episode.getEpisode()));
+					}
+				} else {
+					CollectionUtils.safeListPut(map, torrent, episode);
+				}
+			}
+		}
+
+		for (Map.Entry<Torrent, List<Episode>> entry : map.entrySet()) {
+			Torrent torrent = entry.getKey();
+			if (entry.getValue().size() == 1) {
+				Episode episode = entry.getValue().get(0);
+				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, episode.getShow(), episode.getSeason(), episode.getEpisode()));
+			} else if (entry.getValue().size() == 2){
+				Episode episode1 = entry.getValue().get(0);
+				Episode episode2 = entry.getValue().get(1);
+				subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, episode1.getShow(), episode1.getSeason(),
+						episode1.getEpisode(), episode2.getEpisode()));
+			} else {
+				logService.error(getClass(), "Weird case: " + entry.getValue().size() + " episodes per torrent: " + torrent + ". not downloading subtitles");
+			}
+		}
+
+		if (!subtitlesRequests.isEmpty()) {
+			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
 		}
 	}
 
@@ -157,6 +198,9 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 			cachedEpisodes = skipCachedEpisodes(episodeRequests, episodesMap);
 			skipScannedEpisodes(episodeRequests, eps, episodesMap);
 		}
+
+		// for cached episodes, check if need to search for any subtitles
+		handleSubtitles(cachedEpisodes);
 
 		return cachedEpisodes;
 	}

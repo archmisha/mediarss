@@ -1,31 +1,28 @@
 package rss.services.requests;
 
-import rss.entities.Episode;
+import rss.entities.Show;
 import rss.entities.Torrent;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * User: dikmanm
  * Date: 11/05/13 15:11
  */
-public class SubtitlesEpisodeRequest extends SubtitlesRequest {
+public abstract class SubtitlesEpisodeRequest extends SubtitlesRequest {
 
-	private Episode episode;
+	private Show show;
+	private int season;
 
-
-	public SubtitlesEpisodeRequest(Torrent torrent, Episode episodes, ShowRequest showRequest) {
-		super(torrent, showRequest);
-		this.episode = episodes;
+	public SubtitlesEpisodeRequest(Torrent torrent, Show show, int season) {
+		super(torrent, show.getName());
+		this.show = show;
+		this.season = season;
 	}
 
-	public Episode getEpisode() {
-		return episode;
+	public int getSeason() {
+		return season;
 	}
 
-	@Override
-	public List<Episode> getEpisodes() {
-		return Collections.singletonList(episode);
+	public Show getShow() {
+		return show;
 	}
 }

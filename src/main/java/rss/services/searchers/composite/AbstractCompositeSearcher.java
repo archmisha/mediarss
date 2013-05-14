@@ -10,6 +10,7 @@ import rss.entities.Torrent;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
+import rss.services.searchers.SearcherUtils;
 import rss.services.searchers.SimpleTorrentSearcher;
 
 import java.util.ArrayList;
@@ -96,12 +97,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	private void setTorrentQuality(CompositeSearcherData compositeSearcherData) {
 		// set the quality in the torrent
 		for (Torrent torrent : compositeSearcherData.getSuccessfulSearchResult().<Torrent>getDownloadables()) {
-			for (MediaQuality mediaQuality : MediaQuality.values()) {
-				if (torrent.getTitle().toLowerCase().contains(mediaQuality.toString())) {
-					torrent.setQuality(mediaQuality);
-					break;
-				}
-			}
+			torrent.setQuality(SearcherUtils.findQuality(torrent.getTitle()));
 		}
 	}
 

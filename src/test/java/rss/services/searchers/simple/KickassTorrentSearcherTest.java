@@ -13,6 +13,7 @@ import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
+import rss.services.matching.MatchCandidate;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
@@ -45,10 +46,10 @@ public class KickAssTorrentSearcherTest extends BaseTest {
 		SingleEpisodeRequest episodeRequest = new SingleEpisodeRequest("greys anatomy", new Show(), MediaQuality.HD720P, 1, 1);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("kickass-torrents-search-results-single-episode"));
-		Mockito.doAnswer(new Answer<List<ShowService.MatchCandidate>>() {
+		Mockito.doAnswer(new Answer<List<MatchCandidate>>() {
 			@Override
-			public List<ShowService.MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
-				return (List<ShowService.MatchCandidate>) invocationOnMock.getArguments()[1];
+			public List<MatchCandidate> answer(InvocationOnMock invocationOnMock) throws Throwable {
+				return (List<MatchCandidate>) invocationOnMock.getArguments()[1];
 			}
 		}).when(showService).filterMatching(any(SingleEpisodeRequest.class), any(List.class));
 
