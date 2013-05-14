@@ -5,8 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
 import rss.dao.ImageDao;
 import rss.entities.Image;
@@ -48,12 +52,17 @@ public class IMDBServiceImpl implements IMDBService {
 	@Autowired
 	private IMDBPreviewCacheService imdbPreviewCacheService;
 
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public IMDBParseResult downloadMovieFromIMDBAndImagesAsync(String imdbUrl) {
 		return downloadMovieFromIMDB(imdbUrl, true);
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public IMDBParseResult downloadMovieFromIMDB(String imdbUrl) {
 		return downloadMovieFromIMDB(imdbUrl, false);
 	}
@@ -111,11 +120,21 @@ public class IMDBServiceImpl implements IMDBService {
 
 	private void downloadImages(final String page, final String imdbUrl, boolean imagesAsync) {
 		if (imagesAsync) {
+			final Class clazz = getClass();
 			ExecutorService executorService = Executors.newSingleThreadExecutor();
 			executorService.submit(new Runnable() {
 				@Override
 				public void run() {
-					downloadImages(page, imdbUrl);
+					try {
+						transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+							@Override
+							protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+								downloadImages(page, imdbUrl);
+							}
+						});
+					} catch (Exception e) {
+						logService.error(clazz, "Failed downloading images for movie: '" + imdbUrl + "': " + e.getMessage(), e);
+					}
 				}
 			});
 			executorService.shutdown();
@@ -125,7 +144,7 @@ public class IMDBServiceImpl implements IMDBService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	@Transactional(propagation = Propagation.REQUIRED)
 	// no need a transaction here, each getImage has its own transaction
 	public void downloadImages(String page, String imdbUrl) {
 		Matcher matcher = PEOPLE_IMAGES_PATTERN.matcher(page);
@@ -163,7 +182,7 @@ public class IMDBServiceImpl implements IMDBService {
 					if (image == null) {
 						image = new Image(imdbImageUrl, pageDownloader.downloadImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
 						imageDao.persist(image);
-						logService.debug(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
+						logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
 					}
 
 					imageInputStream = new ByteArrayInputStream(image.getData());

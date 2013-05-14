@@ -76,7 +76,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 
 		moviePreviewPages.put(movie.getId(), page);
 
-		// pre-download movie images, so no concurrency issue arrise when the browser tries to fetch the images
+		// pre-download movie images, so no concurrency issue arise when the browser tries to fetch the images
 		imdbService.downloadImages(page, movie.getImdbUrl());
 
 		return page;
