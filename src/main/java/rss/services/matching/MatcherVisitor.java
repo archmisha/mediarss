@@ -33,7 +33,7 @@ public class MatcherVisitor implements MediaRequestVisitor<List<MatchCandidate>,
 		for (MatchCandidate searchResult : matchCandidates) {
 			String cur = searchResult.getText().toLowerCase();
 			// filter out low quality
-			if (cur.contains("brrip")) {
+			if (cur.contains("brrip") || cur.contains("dvdscr")) {
 				continue;
 			}
 
