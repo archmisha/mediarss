@@ -22,7 +22,6 @@ import rss.services.matching.MatchingUtils;
 import rss.services.requests.SubtitlesEpisodeRequest;
 import rss.services.requests.SubtitlesRequest;
 import rss.services.requests.SubtitlesSingleEpisodeRequest;
-import rss.services.shows.ShowService;
 import rss.services.subtitles.SubtitleLanguage;
 
 import java.security.InvalidParameterException;
@@ -40,7 +39,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 	public static final String NAME = "www.subscenter.org";
 	public static final String SEARCH_URL = "http://" + NAME + "/he/subtitle/search/?q=";
 	public static final String ENTRY_URL = "http://" + NAME + "/%s/%d/%d";
-	public static final String DATA_URL = "http://" + NAME + "/he/subtitle/download/%s/%s/?v=%s&key=%s";
+	public static final String DATA_URL = "http://" + NAME + "/he/subtitle/download/%s/%d/?v=%s&key=%s";
 	private static final Pattern ENTRY_FOUND_PATTERN = Pattern.compile("subtitles_info");
 
 	@Autowired
@@ -87,7 +86,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 						subtitles.setSubtitlesScanDate(new Date());
 						subtitles.setLanguage(foundSubtitles.getLanguage());
 						subtitles.setFileName(foundSubtitles.getName());
-						subtitles.setExternalId(foundSubtitles.getId());
+						subtitles.setExternalId(String.valueOf(foundSubtitles.getId()));
 						subtitles.setTorrent(mediaRequest.getTorrent());
 						subtitles.setDateUploaded(foundSubtitles.getDateUploaded());
 						subtitles.setData(data);
@@ -119,7 +118,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 		for (JsonNode node1 : IteratorUtils.toList(jsonNode.get(toSubCenterLanguages(subtitleLanguage)).getElements())) {
 			for (JsonNode node2 : IteratorUtils.toList(node1.getElements())) {
 				for (JsonNode node3 : IteratorUtils.toList(node2.getElements())) {
-					String id = node3.get("id").getTextValue();
+					long id = node3.get("id").getIntValue();
 					String key = node3.get("key").getTextValue();
 					String name = node3.get("subtitle_version").getTextValue();
 					int downloaded = node3.get("downloaded").getIntValue();
@@ -311,14 +310,14 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 	}
 
 	private class SubCenterSubtitles {
-		private String id;
+		private long id;
 		private String name;
 		private String key;
 		private int downloaded;
 		private SubtitleLanguage language;
 		private Date dateUploaded;
 
-		public SubCenterSubtitles(String id, String name, String key, int downloaded, SubtitleLanguage language, Date dateUploaded) {
+		public SubCenterSubtitles(long id, String name, String key, int downloaded, SubtitleLanguage language, Date dateUploaded) {
 			this.id = id;
 			this.name = name;
 			this.key = key;
@@ -369,7 +368,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 			return language;
 		}
 
-		public String getId() {
+		public long getId() {
 			return id;
 		}
 	}
