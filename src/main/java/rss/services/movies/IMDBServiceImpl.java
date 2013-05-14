@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,7 +179,7 @@ public class IMDBServiceImpl implements IMDBService {
 				} else {
 					Image image = imageDao.find(imdbImageUrl);
 					if (image == null) {
-						image = new Image(imdbImageUrl, pageDownloader.downloadImage(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
+						image = new Image(imdbImageUrl, pageDownloader.downloadData(IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
 						imageDao.persist(image);
 						logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
 					}

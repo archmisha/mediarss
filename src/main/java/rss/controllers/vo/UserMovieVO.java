@@ -14,7 +14,7 @@ public class UserMovieVO {
 	private long id;
 	private String title;
 	private String imdbUrl;
-	private List<UserMovieStatus> torrents;
+	private List<UserMovieTorrentVO> torrents;
 	private Date latestUploadDate;
 	private DownloadStatus downloadStatus;
 	private boolean viewed;
@@ -35,14 +35,18 @@ public class UserMovieVO {
 		this.viewed = isViewed;
 	}
 
-	public void addTorrentDownloadStatus(UserMovieStatus userMovieStatus) {
-		torrents.add(userMovieStatus);
+	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO, Date torrentUploadDate) {
+		torrents.add(userMovieTorrentVO);
 
 		// if any torrent got downloaded status use it, otherwise the next in line is scheduled and if nothing else the default is none.
-		if (userMovieStatus.getDownloadStatus() == DownloadStatus.DOWNLOADED) {
+		if (userMovieTorrentVO.getDownloadStatus() == DownloadStatus.DOWNLOADED) {
 			downloadStatus = DownloadStatus.DOWNLOADED;
-		} else if (userMovieStatus.getDownloadStatus() == DownloadStatus.SCHEDULED && downloadStatus != DownloadStatus.DOWNLOADED) {
+		} else if (userMovieTorrentVO.getDownloadStatus() == DownloadStatus.SCHEDULED && downloadStatus != DownloadStatus.DOWNLOADED) {
 			downloadStatus = DownloadStatus.SCHEDULED;
+		}
+
+		if (latestUploadDate == null || latestUploadDate.before(torrentUploadDate)) {
+			latestUploadDate = torrentUploadDate;
 		}
 	}
 
@@ -85,7 +89,7 @@ public class UserMovieVO {
 		return imdbUrl;
 	}
 
-	public List<UserMovieStatus> getTorrents() {
+	public List<UserMovieTorrentVO> getTorrents() {
 		return torrents;
 	}
 

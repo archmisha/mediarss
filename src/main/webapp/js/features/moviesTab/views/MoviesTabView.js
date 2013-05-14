@@ -232,7 +232,7 @@ define([
 
 				this._switchToUserMovies(null);
 				var that = this;
-				HttpUtils.get('rest/movies/userMovies', function(res) {
+				HttpUtils.get('rest/movies/user-movies', function(res) {
 					that._updateUserMovies(res.movies);
 					// must be before reset
 					that.movieTorrentColletionView.setEmptyMessage(NO_TORRENTS_MSG);
@@ -250,7 +250,7 @@ define([
 			_showAvailableMovies: function() {
 				this._switchToAvailableMovies(null);
 				var that = this;
-				HttpUtils.get('rest/movies/availableMovies', function(res) {
+				HttpUtils.get('rest/movies/available-movies', function(res) {
 					that._updateAvailableMovies(res.movies);
 
 					// must be before reset

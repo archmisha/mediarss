@@ -24,8 +24,8 @@ import java.util.Date;
 				query = "select s from Subtitles as s " +
 						"where s.torrent.id = :torrentId"),
 		@NamedQuery(name = "Subtitles.getSubtitlesLanguages",
-				query = "select u.subtitles from User as u " +
-						"where u.subtitles is not null"),
+				query = "select u.subtitles from User as u join u.shows as s " +
+						"where u.subtitles is not null and s.id = :showId"),
 		@NamedQuery(name = "Subtitles.getSubtitlesLanguagesForTorrent",
 				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e join e.torrentIds as tid " +
 						"where u.subtitles is not null and :torrentId = tid")
@@ -40,10 +40,7 @@ public class Subtitles extends Media implements Downloadable {
 	@JoinColumn(name = "torrent_id")
 	private Torrent torrent;
 
-	@Column(name = "release_name")
-	private String releaseName;
-
-	@Column(name = "data")
+	@Column(name = "data", nullable = false)
 	@Lob
 	private byte[] data;
 
@@ -77,14 +74,6 @@ public class Subtitles extends Media implements Downloadable {
 		return dateUploaded;
 	}
 
-	public String getReleaseName() {
-		return releaseName;
-	}
-
-	public void setReleaseName(String releaseName) {
-		this.releaseName = releaseName;
-	}
-
 	public byte[] getData() {
 		return data;
 	}
@@ -104,5 +93,13 @@ public class Subtitles extends Media implements Downloadable {
 	@Override
 	public String getName() {
 		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public void setDateUploaded(Date dateUploaded) {
+		this.dateUploaded = dateUploaded;
 	}
 }

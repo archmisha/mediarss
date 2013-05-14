@@ -3,6 +3,7 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
+import rss.entities.User;
 import rss.services.matching.MatchCandidate;
 import rss.services.requests.EpisodeRequest;
 import rss.entities.Show;
@@ -42,4 +43,5 @@ public interface ShowService {
 
 	void disconnectTorrentsFromEpisode(Episode episode);
 
+	void downloadEpisode(User user, long torrentId);
 }

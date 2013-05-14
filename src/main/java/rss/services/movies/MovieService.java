@@ -22,11 +22,11 @@ public interface MovieService {
 
 	ArrayList<UserMovieVO> getAvailableMovies(User loggedInUser);
 
-	Pair<UserMovie, Boolean> addFutureMovieDownload(User user, String imdbId);
+	Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId);
 
 	void markMovieViewed(User user, long movieId);
 
-	Pair<UserMovie, Boolean> addMovieDownload(User user, long movieId);
+	void addMovieDownload(User user, long movieId, long torrentId);
 
 	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
 }

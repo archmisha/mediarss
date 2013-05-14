@@ -1,6 +1,5 @@
 package rss.controllers;
 
-import org.hibernate.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
@@ -150,7 +149,7 @@ public class AdminController extends BaseController {
 		}
 
 		// allow deletion only if no one is tracking this movie
-		if (!movieDao.findUserMovies(movieId).isEmpty()) {
+		if (!movieDao.findUserMoviesByMovieId(movieId).isEmpty()) {
 			throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
 		}
 

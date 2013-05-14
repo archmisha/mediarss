@@ -1,6 +1,7 @@
 package rss.controllers.vo;
 
 import rss.entities.Torrent;
+import rss.entities.UserMovieTorrent;
 import rss.entities.UserTorrent;
 
 import java.util.Date;
@@ -10,7 +11,7 @@ import java.util.Date;
  * Date: 09/12/12
  * Time: 23:52
  */
-public class UserMovieStatus {
+public class UserMovieTorrentVO {
 
 	private String title;
 	private long torrentId;
@@ -21,7 +22,7 @@ public class UserMovieStatus {
 	private Date scheduledDate;
 	private long movieId;
 
-	public UserMovieStatus(DownloadStatus downloadStatus) {
+	public UserMovieTorrentVO(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
 	}
 
@@ -33,17 +34,17 @@ public class UserMovieStatus {
 		return torrentId;
 	}
 
-	public UserMovieStatus withTitle(String title) {
+	public UserMovieTorrentVO withTitle(String title) {
 		this.title = title;
 		return this;
 	}
 
-	public UserMovieStatus withUploadedDate(Date uploadedDate) {
+	public UserMovieTorrentVO withUploadedDate(Date uploadedDate) {
 		this.uploadedDate = uploadedDate;
 		return this;
 	}
 
-	public UserMovieStatus withTorrentId(long torrentId) {
+	public UserMovieTorrentVO withTorrentId(long torrentId) {
 		this.torrentId = torrentId;
 		return this;
 	}
@@ -52,12 +53,12 @@ public class UserMovieStatus {
 		return downloadDate;
 	}
 
-	public UserMovieStatus withDownloadDate(Date downloadDate) {
+	public UserMovieTorrentVO withDownloadDate(Date downloadDate) {
 		this.downloadDate = downloadDate;
 		return this;
 	}
 
-	public UserMovieStatus withScheduledOn(Date scheduledOn) {
+	public UserMovieTorrentVO withScheduledOn(Date scheduledOn) {
 		this.scheduledDate = scheduledOn;
 		return this;
 	}
@@ -66,7 +67,7 @@ public class UserMovieStatus {
 		return movieId;
 	}
 
-	public UserMovieStatus withMovieId(long movieId) {
+	public UserMovieTorrentVO withMovieId(long movieId) {
 		this.movieId = movieId;
 		return this;
 	}
@@ -83,7 +84,7 @@ public class UserMovieStatus {
 		this.downloadStatus = downloadStatus;
 	}
 
-	public static UserMovieStatus fromUserTorrent(UserTorrent userTorrent) {
+	public static UserMovieTorrentVO fromUserTorrent(UserMovieTorrent userTorrent) {
 		Torrent torrent = userTorrent.getTorrent();
 
 		DownloadStatus downloadStatus;
@@ -93,15 +94,25 @@ public class UserMovieStatus {
 			downloadStatus = DownloadStatus.SCHEDULED;
 		}
 
-		return new UserMovieStatus(downloadStatus)
+		return new UserMovieTorrentVO(downloadStatus)
 				.withDownloadDate(userTorrent.getDownloadDate())
 				.withTitle(torrent.getTitle())
 				.withTorrentId(torrent.getId())
 				.withUploadedDate(torrent.getDateUploaded())
-				.withScheduledOn(userTorrent.getAdded());
+				.withScheduledOn(userTorrent.getAdded())
+				.withMovieId(userTorrent.getUserMovie().getMovie().getId());
 	}
 
-	public UserMovieStatus withViewed(boolean viewed) {
+	public static UserMovieTorrentVO fromTorrent(Torrent torrent, long movieId) {
+		return new UserMovieTorrentVO(DownloadStatus.NONE)
+				.withTitle(torrent.getTitle())
+				.withTorrentId(torrent.getId())
+				.withUploadedDate(torrent.getDateUploaded())
+				.withScheduledOn(null)
+				.withMovieId(movieId);
+	}
+
+	public UserMovieTorrentVO withViewed(boolean viewed) {
 		this.viewed = viewed;
 		return this;
 	}

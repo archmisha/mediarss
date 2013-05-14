@@ -25,10 +25,7 @@ import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 @RequestMapping("/shows")
@@ -111,7 +108,7 @@ public class ShowsController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void episodeDownload(@RequestParam("torrentId") long torrentId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		downloadEpisode(torrentId, user);
+		showService.downloadEpisode(user, torrentId);
 	}
 
 	@RequestMapping(value = "/episode/downloadAll", method = RequestMethod.POST)
@@ -120,16 +117,7 @@ public class ShowsController extends BaseController {
 	public void episodeDownloadAll(@RequestParam("torrentIds[]") long[] torrentIds) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		for (long torrentId : torrentIds) {
-			downloadEpisode(torrentId, user);
-		}
-	}
-
-	private void downloadEpisode(long torrentId, User user) {
-		Torrent torrent = torrentDao.find(torrentId);
-		addUserTorrent(user, torrent, new UserEpisodeTorrent());
-		if (user.getSubtitles() != null) {
-//			Episode episode = episodeDao.find(torrent);
-//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
+			showService.downloadEpisode(user, torrentId);
 		}
 	}
 

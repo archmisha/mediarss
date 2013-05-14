@@ -11,11 +11,12 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
 import rss.controllers.vo.DownloadStatus;
-import rss.controllers.vo.UserMovieStatus;
+import rss.controllers.vo.UserMovieTorrentVO;
 import rss.controllers.vo.UserMovieVO;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
+import rss.dao.ViewDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.downloader.DownloadResult;
@@ -70,67 +71,49 @@ public class MovieServiceImpl implements MovieService {
 	@Autowired
 	private TorrentzParser torrentzParser;
 
+	@Autowired
+	private ViewDao viewDao;
+
 	@Transactional(propagation = Propagation.REQUIRED)
 	public long getUserMoviesCount(User user) {
-		Set<Long> movieIds = new HashSet<>();
-		movieIds.addAll(movieDao.findFutureUserMoviesIds(user));
-		movieIds.addAll(userTorrentDao.findScheduledUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY));
-		movieIds.addAll(movieDao.findScheduledUserMoviesIds(user, USER_MOVIES_DISPLAY_DAYS_HISTORY));
-		return movieIds.size();
+		return movieDao.findUserMoviesIds(user, USER_MOVIES_DISPLAY_DAYS_HISTORY).size();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
+		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
-		Set<Movie> movies = new HashSet<>();
+		Map<Long, Movie> movies = new HashMap<>();
 
-		// first add movies without any torrents - future movies
-		for (UserMovie userMovie : movieDao.findFutureUserMovies(user)) {
+		for (UserMovie userMovie : movieDao.findUserMovies(user, USER_MOVIES_DISPLAY_DAYS_HISTORY)) {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(userMovie.getMovie());
-			userMovieVO.withScheduledOn(userMovie.getUpdated())
-					.withAdded(userMovie.getUpdated());
+			userMovieVO.withScheduledOn(userMovie.getUpdated());
+			userMovieVO.withAdded(userMovie.getUpdated());
 			userMovieVO.setViewed(true);
-			userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
-			movies.add(userMovie.getMovie());
+			// if there are not torrents at all yet, it is a future movie
+			if (userMovie.getMovie().getTorrentIds().isEmpty()) {
+				userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
+			}
+			movies.put(userMovie.getMovie().getId(), userMovie.getMovie());
 		}
 
-		// add user specific movies
-		for (UserMovie userMovie : movieDao.findScheduledUserMovies(user, USER_MOVIES_DISPLAY_DAYS_HISTORY)) {
-			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(userMovie.getMovie());
-			userMovieVO.withScheduledOn(userMovie.getUpdated())
-					.withAdded(userMovie.getUpdated());
-			userMovieVO.setViewed(true);
-			userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
-			movies.add(userMovie.getMovie());
-		}
-
-		// then add movies that are not downloaded yet
-		for (UserTorrent userTorrent : userTorrentDao.findScheduledUserMovies(user, USER_MOVIES_DISPLAY_DAYS_HISTORY)) {
-			Torrent torrent = userTorrent.getTorrent();
-			Movie movie = movieDao.find(torrent);
+		// add UserMovieTorrents to those movies
+		for (UserMovieTorrent userTorrent : userTorrentDao.findUserMovieTorrents(user, movies.keySet())) {
+			Movie movie = userTorrent.getUserMovie().getMovie();
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			userMovieVO.withAdded(userTorrent.getAdded());
-			userMovieVO.setViewed(true);
-			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true).withMovieId(movie.getId()));
-			movies.add(movie);
+			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(true), userTorrent.getTorrent().getDateUploaded());
+			torrentsByIds.put(userTorrent.getTorrent().getId(), userTorrent.getTorrent());
 		}
 
 		// for all the movies add the rest of the torrents (which are not in userTorrents)
-		for (Movie movie : movies) {
-			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			Set<Long> torrentIds = new HashSet<>();
-			for (UserMovieStatus userMovieStatus : userMovieVO.getTorrents()) {
-				torrentIds.add(userMovieStatus.getTorrentId());
-			}
-			for (Long torrentId : movie.getTorrentIds()) {
-				if (!torrentIds.contains(torrentId)) {
-					addTorrentToUserMovieVO(userMovieVO, torrentId);
-				}
-			}
-		}
+		enrichWithNonUserTorrents(user, movies.values(), userMoviesVOContainer, torrentsByIds);
 
-		ArrayList<UserMovieVO> result = new ArrayList<>();
-		result.addAll(userMoviesVOContainer.getUserMovies());
+		ArrayList<UserMovieVO> result = new ArrayList<>(userMoviesVOContainer.getUserMovies());
+
+		UserMovieStatusComparator comparator = new UserMovieStatusComparator(torrentsByIds);
+		for (UserMovieVO userMovieVO : result) {
+			Collections.sort(userMovieVO.getTorrents(), comparator);
+		}
 
 		Collections.sort(result, new Comparator<UserMovieVO>() {
 			@Override
@@ -146,31 +129,19 @@ public class MovieServiceImpl implements MovieService {
 	public ArrayList<UserMovieVO> getAvailableMovies(User user) {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 		Set<Movie> latestMovies = getLatestMovies();
-		MoviesToTorrentsMapper moviesMapper = new MoviesToTorrentsMapper(latestMovies);
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 
-		// get all userMovies related to the latest movie "names"
-		for (UserTorrent userTorrent : userTorrentDao.findUserMovies(user, latestMovies)) {
+		// get all userMovieTorrents related to the latest movie "names"
+		for (UserMovieTorrent userTorrent : userTorrentDao.findUserMovies(user, latestMovies)) {
 			Torrent torrent = userTorrent.getTorrent();
 			torrentsByIds.put(torrent.getId(), torrent);
-			Movie movie = moviesMapper.getMovie(torrent);
+			Movie movie = userTorrent.getUserMovie().getMovie();
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			userMovieVO.addTorrentDownloadStatus(UserMovieStatus.fromUserTorrent(userTorrent).withViewed(true).withMovieId(movie.getId()));
-			updateLatestUploadDate(torrent, userMovieVO);
+			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(true), torrent.getDateUploaded());
 		}
 
-		// add movies that had no userMovies
-		for (Movie movie : latestMovies) {
-			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-
-			// if at least one is not viewed - show as not viewed
-			for (Long torrentId : movie.getTorrentIds()) {
-				if (!torrentsByIds.containsKey(torrentId)) {
-					Torrent torrent = addTorrentToUserMovieVO(userMovieVO, torrentId);
-					torrentsByIds.put(torrent.getId(), torrent);
-				}
-			}
-		}
+		// add movies that had no userMovieTorrents
+		enrichWithNonUserTorrents(user, latestMovies, userMoviesVOContainer, torrentsByIds);
 
 		// sort and set viewed status
 		ArrayList<UserMovieVO> result = new ArrayList<>(userMoviesVOContainer.getUserMovies());
@@ -179,7 +150,7 @@ public class MovieServiceImpl implements MovieService {
 		for (UserMovieVO userMovieVO : result) {
 			Collections.sort(userMovieVO.getTorrents(), comparator);
 
-			// now the first element is the newest
+			/*// now the first element is the newest
 			userMovieVO.setViewed(false);
 			if (!userMovieVO.getTorrents().isEmpty()) {
 				UserMovie userMovie = movieDao.findUserMovie(userMovieVO.getId(), user);
@@ -190,13 +161,13 @@ public class MovieServiceImpl implements MovieService {
 					userMovieVO.setViewed(true);
 				}
 
-				for (UserMovieStatus userMovieStatus : userMovieVO.getTorrents()) {
-					torrent = torrentsByIds.get(userMovieStatus.getTorrentId());
+				for (UserMovieTorrentVO userMovieTorrentVO : userMovieVO.getTorrents()) {
+					torrent = torrentsByIds.get(userMovieTorrentVO.getTorrentId());
 					if (userMovie != null && torrent.getDateUploaded().before(userMovie.getUpdated())) {
-						userMovieStatus.withViewed(true);
+						userMovieTorrentVO.withViewed(true);
 					}
 				}
-			}
+			}*/
 		}
 
 		Collections.sort(result, new Comparator<UserMovieVO>() {
@@ -216,28 +187,31 @@ public class MovieServiceImpl implements MovieService {
 		return result;
 	}
 
-	private Torrent addTorrentToUserMovieVO(UserMovieVO userMovieVO, Long torrentId) {
-		Torrent torrent = torrentDao.find(torrentId);
-		userMovieVO.addTorrentDownloadStatus(new UserMovieStatus(DownloadStatus.NONE)
-				.withTitle(torrent.getTitle())
-				.withTorrentId(torrent.getId())
-				.withUploadedDate(torrent.getDateUploaded())
-				.withScheduledOn(null)
-				.withMovieId(userMovieVO.getId()));
-		updateLatestUploadDate(torrent, userMovieVO);
-		return torrent;
-	}
-
-
-	private void updateLatestUploadDate(Torrent torrent, UserMovieVO userMovieVO) {
-		Date cur = torrent.getDateUploaded();
-		if (userMovieVO.getLatestUploadDate() == null || userMovieVO.getLatestUploadDate().before(cur)) {
-			userMovieVO.setLatestUploadDate(cur);
-		}
-	}
-
 	private Set<Movie> getLatestMovies() {
 		return new HashSet<>(movieDao.findUploadedSince(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7)));
+	}
+
+	private void enrichWithNonUserTorrents(User user, Collection<Movie> movies, UserMoviesVOContainer userMoviesVOContainer, Map<Long, Torrent> torrentsByIds) {
+		for (Movie movie : movies) {
+			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
+
+			boolean areAllViewed = true;
+			View view = viewDao.find(user, movie.getId());
+
+			for (Long torrentId : movie.getTorrentIds()) {
+				if (!torrentsByIds.containsKey(torrentId)) {
+					// todo: if slow optimize to one query per movie
+					Torrent torrent = torrentDao.find(torrentId);
+					torrentsByIds.put(torrent.getId(), torrent);
+
+					boolean isViewed = view != null && view.getCreated().after(torrent.getCreated());
+					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed), torrent.getDateUploaded());
+					areAllViewed &= isViewed;
+				}
+			}
+
+			userMovieVO.setViewed(areAllViewed);
+		}
 	}
 
 	public class UserMoviesVOContainer {
@@ -268,23 +242,7 @@ public class MovieServiceImpl implements MovieService {
 		}
 	}
 
-	public class MoviesToTorrentsMapper {
-		private Map<Long, Movie> movieByTorrents = new HashMap<>();
-
-		public MoviesToTorrentsMapper(Set<Movie> latestMovies) {
-			for (Movie movie : latestMovies) {
-				for (Long torrentId : movie.getTorrentIds()) {
-					movieByTorrents.put(torrentId, movie);
-				}
-			}
-		}
-
-		public Movie getMovie(Torrent torrent) {
-			return movieByTorrents.get(torrent.getId());
-		}
-	}
-
-	public static class UserMovieStatusComparator implements Comparator<UserMovieStatus>, Serializable {
+	public static class UserMovieStatusComparator implements Comparator<UserMovieTorrentVO>, Serializable {
 		private static final long serialVersionUID = -2265824299212043336L;
 
 		private Map<Long, Torrent> torrentsByIds;
@@ -294,7 +252,7 @@ public class MovieServiceImpl implements MovieService {
 		}
 
 		@Override
-		public int compare(UserMovieStatus o1, UserMovieStatus o2) {
+		public int compare(UserMovieTorrentVO o1, UserMovieTorrentVO o2) {
 			Torrent o2Torrent = torrentsByIds.get(o2.getTorrentId());
 			Torrent o1Torrent = torrentsByIds.get(o1.getTorrentId());
 			int i = o2Torrent.getDateUploaded().compareTo(o1Torrent.getDateUploaded());
@@ -307,15 +265,35 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Override
-	public Pair<UserMovie, Boolean> addMovieDownload(User user, long movieId) {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void addMovieDownload(User user, long movieId, long torrentId) {
 		Movie movie = movieDao.find(movieId);
-		return addMovieDownload(user, movie);
+		Torrent torrent = torrentDao.find(torrentId);
+		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
+		if (userMovie == null) {
+			userMovie = createUserMovie(user, movie);
+		}
+
+		UserMovieTorrent userTorrent = new UserMovieTorrent();
+		userTorrent.setUser(user);
+		userTorrent.setAdded(new Date());
+		userTorrent.setTorrent(torrent);
+		userTorrentDao.persist(userTorrent);
+
+		userMovie.getUserMovieTorrents().add(userTorrent);
+		userTorrent.setUserMovie(userMovie);
+
+		if (user.getSubtitles() != null) {
+//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
+		}
+
+		logService.info(getClass(), "User " + user + " downloads " + userMovie.getMovie());
 	}
 
 	// boolean: true if already exists, false if new
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Pair<UserMovie, Boolean> addFutureMovieDownload(User user, String imdbId) {
+	public Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId) {
 		try {
 			// just if someone entered some junk in the imdbid, better get 404 than malformed url
 			final String imdbUrl = IMDB_URL + URLEncoder.encode(imdbId, "UTF-8");
@@ -359,40 +337,41 @@ public class MovieServiceImpl implements MovieService {
 			// if movie is too old and there are no torrents now - then there won't be any. no point adding it to user as scheduled
 			Calendar c = Calendar.getInstance();
 			if (movie.getYear() < c.get(Calendar.YEAR) - 1 && movie.getTorrentIds().isEmpty()) {
-				throw new MediaRSSException("Unable to find torrents for movie '" + movie.getName() + "'").doNotLog();
+				throw new MediaRSSException("Movie is old, was unable to find torrents for movie '" + movie.getName() + "'").doNotLog();
 			}
 
-			return addMovieDownload(user, movie);
+			boolean isExists = true;
+			UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
+			if (userMovie == null) {
+				createUserMovie(user, movie);
+				isExists = false;
+			}
+			return new MutablePair<>(movie, isExists);
 		} catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}
 	}
 
-	private Pair<UserMovie, Boolean> addMovieDownload(User user, Movie movie) {
-		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
-		if (userMovie == null) {
-			userMovie = new UserMovie();
-			userMovie.setMovie(movie);
-			userMovie.setUser(user);
-			userMovie.setUpdated(new Date());
-			movieDao.persist(userMovie);
-			return new MutablePair<>(userMovie, false);
-		}
-
-		return new MutablePair<>(userMovie, true);
+	private UserMovie createUserMovie(User user, Movie movie) {
+		UserMovie userMovie = new UserMovie();
+		userMovie.setMovie(movie);
+		userMovie.setUser(user);
+		userMovie.setUpdated(new Date());
+		movieDao.persist(userMovie);
+		return userMovie;
 	}
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void markMovieViewed(User user, long movieId) {
-		UserMovie userMovie = movieDao.findUserMovie(movieId, user);
-		if (userMovie == null) {
-			userMovie = new UserMovie();
-			userMovie.setUser(user);
-			userMovie.setMovie(movieDao.find(movieId));
-			movieDao.persist(userMovie);
+		View view = viewDao.find(user, movieId);
+		if (view == null) {
+			view = new View();
+			view.setUser(user);
+			view.setObjectId(movieId);
+			viewDao.persist(view);
 		}
-		userMovie.setUpdated(new Date());
+		view.setCreated(new Date());
 	}
 
 	@Override

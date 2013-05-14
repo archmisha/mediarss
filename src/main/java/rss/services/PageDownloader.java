@@ -16,7 +16,7 @@ public interface PageDownloader {
 
 	String downloadPage(String url);
 
-	byte[] downloadImage(String url);
+	byte[] downloadData(String url);
 
 	String downloadPage(String url, Map<String, String> headers);
 

@@ -16,10 +16,10 @@ public abstract class SubtitlesRequest implements SearchRequest {
 	private List<SubtitleLanguage> languages;
 	private String name;
 
-	public SubtitlesRequest(Torrent torrent, String name) {
+	public SubtitlesRequest(Torrent torrent, String name, List<SubtitleLanguage> languages) {
 		this.torrent = torrent;
 		this.name = name;
-		this.languages = new ArrayList<>();
+		this.languages = new ArrayList<>(languages);
 	}
 
 	public Torrent getTorrent() {

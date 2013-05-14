@@ -8,18 +8,18 @@ import org.springframework.stereotype.Service;
 import rss.EpisodesComparator;
 import rss.MediaRSSException;
 import rss.ShowNotFoundException;
-import rss.dao.EpisodeDao;
-import rss.dao.ShowDao;
-import rss.dao.TorrentDao;
+import rss.dao.*;
 import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
+import rss.services.SessionService;
 import rss.services.requests.*;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.composite.EpisodeSearcher;
 import rss.services.shows.EpisodesMapper;
 import rss.services.shows.ShowService;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.services.subtitles.SubtitlesService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
@@ -53,6 +53,15 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	@Autowired
 	private SubtitlesService subtitlesService;
 
+	@Autowired
+	private SessionService sessionService;
+
+	@Autowired
+	private SubtitlesDao subtitlesDao;
+
+	@Autowired
+	private UserDao userDao;
+
 	@Override
 	protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
 		return episodeSearcher.search(episodeRequest);
@@ -72,6 +81,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 	@Override
 	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult>> results) {
+		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
 		List<Episode> res = new ArrayList<>();
 		for (Pair<ShowRequest, SearchResult> pair : results) {
 			SearchResult searchResult = pair.getValue();
@@ -89,7 +99,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 				torrentDao.persist(torrent);
 				persistedTorrent = torrent;
 
-				handleSubtitles(showRequest, torrent, persistedEpisodes);
+				handleSubtitles(languagesPerShow, showRequest, torrent, persistedEpisodes);
 			}
 
 			for (Episode persistedEpisode : persistedEpisodes) {
@@ -102,18 +112,23 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		return res;
 	}
 
-	private void handleSubtitles(ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
+	private void handleSubtitles(Map<Show, List<SubtitleLanguage>> languagesPerShow, ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
+		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow());
+		if (languages.isEmpty()) {
+			return;
+		}
+
 		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
 		if (showRequest instanceof SingleEpisodeRequest) {
-			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), persistedEpisodes.get(0).getSeason(), persistedEpisodes.get(0).getEpisode()));
+			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), persistedEpisodes.get(0).getSeason(), persistedEpisodes.get(0).getEpisode(), languages));
 		} else if (showRequest instanceof DoubleEpisodeRequest) {
 			subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, showRequest.getShow(), persistedEpisodes.get(0).getSeason(),
-					persistedEpisodes.get(0).getEpisode(), persistedEpisodes.get(1).getEpisode()));
+					persistedEpisodes.get(0).getEpisode(), persistedEpisodes.get(1).getEpisode(), languages));
 		} else if (showRequest instanceof FullSeasonRequest) {
 			// create request for each episode in the season and link to this single torrent
 			Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(showRequest.getShow());
 			for (Episode episode : showEpisodesMap.get(((FullSeasonRequest) showRequest).getSeason()).getKey()) {
-				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode()));
+				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages));
 			}
 		}
 
@@ -126,6 +141,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	// the rest group by torrents, if single episode per torrent - create single request
 	// if 2 episodes per torrent - its a double request
 	private void handleSubtitles(Set<Episode> episodes) {
+		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
 		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
 		Map<Torrent, List<Episode>> map = new HashMap<>();
 		for (Episode episode : episodes) {
@@ -134,7 +150,11 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 					// create request for each episode in the season and link to this single torrent
 					Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(episode.getShow());
 					for (Episode curEpisode : showEpisodesMap.get(episode.getSeason()).getKey()) {
-						subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, curEpisode.getShow(), episode.getSeason(), episode.getEpisode()));
+						Show show = curEpisode.getShow();
+						List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
+						if (!languages.isEmpty()) {
+							subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, episode.getSeason(), episode.getEpisode(), languages));
+						}
 					}
 				} else {
 					CollectionUtils.safeListPut(map, torrent, episode);
@@ -144,22 +164,42 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 		for (Map.Entry<Torrent, List<Episode>> entry : map.entrySet()) {
 			Torrent torrent = entry.getKey();
-			if (entry.getValue().size() == 1) {
-				Episode episode = entry.getValue().get(0);
-				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, episode.getShow(), episode.getSeason(), episode.getEpisode()));
-			} else if (entry.getValue().size() == 2){
-				Episode episode1 = entry.getValue().get(0);
-				Episode episode2 = entry.getValue().get(1);
-				subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, episode1.getShow(), episode1.getSeason(),
-						episode1.getEpisode(), episode2.getEpisode()));
-			} else {
-				logService.error(getClass(), "Weird case: " + entry.getValue().size() + " episodes per torrent: " + torrent + ". not downloading subtitles");
+			Show show = entry.getValue().get(0).getShow();
+			List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
+			if (!languages.isEmpty()) {
+				if (entry.getValue().size() == 1) {
+					Episode episode = entry.getValue().get(0);
+					subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, episode.getShow(), episode.getSeason(), episode.getEpisode(), languages));
+				} else if (entry.getValue().size() == 2) {
+					Episode episode1 = entry.getValue().get(0);
+					Episode episode2 = entry.getValue().get(1);
+					subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, episode1.getShow(), episode1.getSeason(),
+							episode1.getEpisode(), episode2.getEpisode(), languages));
+				} else {
+					logService.error(getClass(), "Weird case: " + entry.getValue().size() + " episodes per torrent: " + torrent + ". not downloading subtitles");
+				}
 			}
 		}
 
 		if (!subtitlesRequests.isEmpty()) {
 			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
 		}
+	}
+
+	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show) {
+		if (!languagesPerShow.containsKey(show)) {
+			if (sessionService.isUserLogged()) {
+				SubtitleLanguage subtitleLanguage = userDao.find(sessionService.getLoggedInUserId()).getSubtitles();
+				if (subtitleLanguage != null) {
+					languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
+				} else {
+					languagesPerShow.put(show, Collections.<SubtitleLanguage>emptyList());
+				}
+			} else {
+				languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
+			}
+		}
+		return languagesPerShow.get(show);
 	}
 
 	@Override
@@ -205,7 +245,8 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		return cachedEpisodes;
 	}
 
-	private Set<Episode> skipCachedEpisodes(Set<ShowRequest> episodeRequests, Map<Episode, Set<EpisodeRequest>> episodesMap) {
+	private Set<Episode> skipCachedEpisodes
+			(Set<ShowRequest> episodeRequests, Map<Episode, Set<EpisodeRequest>> episodesMap) {
 		Set<Episode> cachedEpisodes = new HashSet<>();
 		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();

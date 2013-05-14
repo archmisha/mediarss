@@ -161,22 +161,6 @@ public class BaseController {
 		}
 	}
 
-	protected UserTorrent addUserTorrent(User user, Torrent torrent, UserTorrent userTorrent) {
-		userTorrent.setUser(user);
-		userTorrent.setAdded(new Date());
-		userTorrent.setTorrent(torrent);
-		userTorrentDao.persist(userTorrent);
-		return userTorrent;
-	}
-
-	protected Date getMoviesLastUpdated() {
-		JobStatus jobStatus = jobStatusDao.find(MoviesScrabblerImpl.JOB_NAME);
-		if (jobStatus == null) {
-			return null;
-		}
-		return jobStatus.getStart();
-	}
-
 	protected List<ShowVO> sort(List<ShowVO> shows) {
 		Collections.sort(shows, new Comparator<ShowVO>() {
 			@Override

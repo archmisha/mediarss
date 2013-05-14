@@ -77,7 +77,7 @@ public class PageDownloaderImpl implements PageDownloader {
 	}
 
 	@Override
-	public byte[] downloadImage(String url) {
+	public byte[] downloadData(String url) {
 		return downloadPage(url, Collections.<String, String>emptyMap(), new ResponseStreamExtractor<byte[]>() {
 			@Override
 			public byte[] extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {

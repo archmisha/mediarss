@@ -1,10 +1,7 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.entities.Episode;
-import rss.entities.Movie;
-import rss.entities.User;
-import rss.entities.UserTorrent;
+import rss.entities.*;
 import rss.util.DateUtils;
 
 import java.util.*;
@@ -34,19 +31,11 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	}
 
 	@Override
-	public List<UserTorrent> findScheduledUserMovies(User user, int backlogDays) {
+	public List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Long> movieIds) {
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
-		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
-		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findScheduledUserMovies", params);
-	}
-
-	@Override
-	public List<Long> findScheduledUserMoviesCount(User user, int backlogDays) {
-		Map<String, Object> params = new HashMap<>(2);
-		params.put("userId", user.getId());
-		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
-		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findScheduledUserMoviesIds", params);
+		params.put("movieIds", movieIds);
+		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findUserMovieTorrents", params);
 	}
 
 	@Override
@@ -86,7 +75,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	}
 
 	@Override
-	public Collection<UserTorrent> findUserMovies(User user, Collection<Movie> movies) {
+	public Collection<UserMovieTorrent> findUserMovies(User user, Collection<Movie> movies) {
 		if (movies.isEmpty()) {
 			return Collections.emptyList();
 		}

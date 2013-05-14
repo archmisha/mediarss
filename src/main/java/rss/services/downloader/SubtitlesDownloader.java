@@ -69,6 +69,7 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 				if (subtitles != null) {
 					result.add(subtitles);
 					request.getLanguages().remove(subtitleLanguage);
+					logService.info(getClass(), "Found subtitles in cache: " + subtitleLanguage);
 				}
 			}
 			if (request.getLanguages().isEmpty()) {
@@ -90,11 +91,10 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 			SubtitlesRequest subtitlesRequest = result.getKey();
 			SearchResult searchResult = result.getValue();
 
-
 			for (Subtitles subtitles : searchResult.<Subtitles>getDownloadables()) {
 				Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest.getTorrent(), subtitles.getLanguage());
 				if (persistedSubtitles == null) {
-					subtitles.setTorrent(subtitlesRequest.getTorrent());
+					logService.info(getClass(), "Persisting new subtitles: " + subtitles);
 					subtitlesDao.persist(subtitles);
 					subtitlesTrackerService.announce(subtitles);
 				}

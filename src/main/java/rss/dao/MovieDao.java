@@ -30,15 +30,11 @@ public interface MovieDao extends Dao<Movie> {
 
 	Movie findByImdbUrl(String imdbUrl);
 
-	List<UserMovie> findFutureUserMovies(User user);
-
-	List<UserMovie> findScheduledUserMovies(User user, int backlogDays);
+	List<UserMovie> findUserMovies(User user, int backlogDays);
 
 	Collection<User> findUsersForFutureMovie(Movie movie);
 
-	Collection<UserMovie> findUserMovies(long movieId);
+	Collection<UserMovie> findUserMoviesByMovieId(long movieId);
 
-	List<Long> findFutureUserMoviesIds(User user);
-
-	List<Long> findScheduledUserMoviesIds(User user, int backlogDays);
+	List<Long> findUserMoviesIds(User user, int backlogDays);
 }

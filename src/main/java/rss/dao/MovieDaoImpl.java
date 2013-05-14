@@ -64,40 +64,26 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 	}
 
 	@Override
-	public List<UserMovie> findFutureUserMovies(User user) {
-		Map<String, Object> params = new HashMap<>(1);
-		params.put("userId", user.getId());
-		return super.findByNamedQueryAndNamedParams("UserMovie.findFutureUserMovies", params);
-	}
-
-	@Override
-	public List<UserMovie> findScheduledUserMovies(User user, int backlogDays) {
+	public List<UserMovie> findUserMovies(User user, int backlogDays) {
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
 		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
-		return super.findByNamedQueryAndNamedParams("UserMovie.findScheduledUserMovies", params);
+		return super.findByNamedQueryAndNamedParams("UserMovie.findUserMovies", params);
 	}
 
 	@Override
-	public List<Long> findFutureUserMoviesIds(User user) {
-		Map<String, Object> params = new HashMap<>(1);
-		params.put("userId", user.getId());
-		return super.findByNamedQueryAndNamedParams("UserMovie.findFutureUserMoviesIds", params);
-	}
-
-	@Override
-	public List<Long> findScheduledUserMoviesIds(User user, int backlogDays) {
+	public List<Long> findUserMoviesIds(User user, int backlogDays) {
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
 		params.put("downloadDate", DateUtils.getPastDate(backlogDays));
-		return super.findByNamedQueryAndNamedParams("UserMovie.findScheduledUserMoviesIds", params);
+		return super.findByNamedQueryAndNamedParams("UserMovie.findUserMoviesIds", params);
 	}
 
 	@Override
-	public Collection<UserMovie> findUserMovies(long movieId) {
+	public Collection<UserMovie> findUserMoviesByMovieId(long movieId) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("movieId", movieId);
-		return super.findByNamedQueryAndNamedParams("UserMovie.findUserMovies", params);
+		return super.findByNamedQueryAndNamedParams("UserMovie.findUserMoviesByMovieId", params);
 	}
 
 	@Override

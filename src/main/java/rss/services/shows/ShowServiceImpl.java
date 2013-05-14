@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.PageDownloadException;
 import rss.EpisodesComparator;
+import rss.PageDownloadException;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.dao.*;
@@ -656,5 +656,20 @@ public class ShowServiceImpl implements ShowService {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void downloadEpisode(User user, long torrentId) {
+		Torrent torrent = torrentDao.find(torrentId);
+		UserTorrent userTorrent = new UserEpisodeTorrent();
+		userTorrent.setUser(user);
+		userTorrent.setAdded(new Date());
+		userTorrent.setTorrent(torrent);
+		userTorrentDao.persist(userTorrent);
+		if (user.getSubtitles() != null) {
+//			Episode episode = episodeDao.find(torrent);
+//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
+		}
 	}
 }

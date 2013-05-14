@@ -202,7 +202,7 @@ public class OOTBContentLoader {
 		}
 
 		@Override
-		public byte[] downloadImage(String url) {
+		public byte[] downloadData(String url) {
 			throw new UnsupportedOperationException();
 		}
 

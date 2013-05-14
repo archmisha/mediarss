@@ -17,7 +17,9 @@ import rss.services.matching.MatchCandidate;
 import rss.services.requests.SingleEpisodeRequest;
 import rss.services.requests.SubtitlesSingleEpisodeRequest;
 import rss.services.shows.ShowService;
+import rss.services.subtitles.SubtitleLanguage;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -63,6 +65,7 @@ public class SubCenterSubtitlesSearcherTest extends BaseTest {
 		Episode episode = new Episode(1, 1);
 		episode.setShow(show);
 
-		SearchResult searchResult = subCenterSubtitlesSearcher.search(new SubtitlesSingleEpisodeRequest(torrent, show, 1, 1));
+		List<SubtitleLanguage> languages = Collections.singletonList(SubtitleLanguage.HEBREW);
+		SearchResult searchResult = subCenterSubtitlesSearcher.search(new SubtitlesSingleEpisodeRequest(torrent, show, 1, 1, languages));
 	}
 }

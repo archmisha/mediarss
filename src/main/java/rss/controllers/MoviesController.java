@@ -16,12 +16,14 @@ import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.movies.IMDBPreviewCacheService;
 import rss.services.movies.IMDBService;
+import rss.services.movies.MoviesScrabblerImpl;
 import rss.util.DurationMeter;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,9 +39,6 @@ public class MoviesController extends BaseController {
 
 	@Autowired
 	private MovieDao movieDao;
-
-	@Autowired
-	private TorrentDao torrentDao;
 
 	@Autowired
 	private IMDBPreviewCacheService imdbPreviewCacheService;
@@ -89,18 +88,8 @@ public class MoviesController extends BaseController {
 											 @RequestParam("movieId") long movieId,
 											 @RequestParam("isUserMovies") boolean isUserMovies) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		Torrent torrent = torrentDao.find(torrentId);
-		Pair<UserMovie, Boolean> futureMovieResult = movieService.addMovieDownload(user, movieId);
-		UserMovie userMovie = futureMovieResult.getKey();
-		UserMovieTorrent userMovieTorrent = new UserMovieTorrent();
-		addUserTorrent(user, torrent, userMovieTorrent);
-		userMovie.getUserMovieTorrents().add(userMovieTorrent);
-		userMovieTorrent.setUserMovie(userMovie);
-		if (user.getSubtitles() != null) {
-//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
-		}
+		movieService.addMovieDownload(user, movieId, torrentId);
 
-		logService.info(getClass(), "User " + user + " downloads " + userMovie.getMovie());
 		Map<String, Object> result = new HashMap<>();
 		if (isUserMovies) {
 			result.put("movies", movieService.getUserMovies(user));
@@ -124,14 +113,13 @@ public class MoviesController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> addFutureMovie(@RequestParam("imdbId") String imdbId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		Pair<UserMovie, Boolean> futureMovieResult = movieService.addFutureMovieDownload(user, imdbId);
+		Pair<Movie, Boolean> futureMovieResult = movieService.addFutureMovieDownload(user, imdbId);
 		if (futureMovieResult == null) {
 			throw new MediaRSSException("Movie ID was not found in IMDB").doNotLog();
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		UserMovie userMovie = futureMovieResult.getKey();
-		Movie movie = userMovie.getMovie();
+		Movie movie = futureMovieResult.getKey();
 		if (futureMovieResult.getValue()) {
 			result.put("message", "Movie '" + movie.getName() + "' was already scheduled for download");
 		} else {
@@ -169,7 +157,7 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
-	@RequestMapping(value = "/userMovies", method = RequestMethod.GET)
+	@RequestMapping(value = "/user-movies", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getUserMovies() {
@@ -179,7 +167,7 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
-	@RequestMapping(value = "/availableMovies", method = RequestMethod.GET)
+	@RequestMapping(value = "/available-movies", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getAvailableMovies() {
@@ -205,5 +193,13 @@ public class MoviesController extends BaseController {
 		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
 
 		return result;
+	}
+
+	private Date getMoviesLastUpdated() {
+		JobStatus jobStatus = jobStatusDao.find(MoviesScrabblerImpl.JOB_NAME);
+		if (jobStatus == null) {
+			return null;
+		}
+		return jobStatus.getStart();
 	}
 }

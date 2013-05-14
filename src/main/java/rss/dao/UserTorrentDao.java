@@ -1,9 +1,6 @@
 package rss.dao;
 
-import rss.entities.Episode;
-import rss.entities.Movie;
-import rss.entities.User;
-import rss.entities.UserTorrent;
+import rss.entities.*;
 
 import java.util.Collection;
 import java.util.Date;
@@ -20,17 +17,11 @@ public interface UserTorrentDao extends Dao<UserTorrent> {
 
 	List<UserTorrent> findEpisodesAddedSince(User user, Date dateUploaded);
 
-	List<UserTorrent> findScheduledUserMovies(User user, int backlogDays);
-
-//	UserTorrent findMovieUserTorrentByTorrentId(long torrentId, User user);
+	List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Long> movieIds);
 
 	List<UserTorrent> findUserEpisodeTorrentByTorrentId(long torrentId);
 
-//	UserTorrent findEpisodeUserTorrentByTorrentId(long torrentId, User user);
-
 	Collection<UserTorrent> findUserEpisodes(Collection<Episode> episodes, User user);
 
-	Collection<UserTorrent> findUserMovies(User user, Collection<Movie> movies);
-
-	List<Long> findScheduledUserMoviesCount(User user, int backlogDays);
+	Collection<UserMovieTorrent> findUserMovies(User user, Collection<Movie> movies);
 }

@@ -2,6 +2,9 @@ package rss.services.requests;
 
 import rss.entities.Show;
 import rss.entities.Torrent;
+import rss.services.subtitles.SubtitleLanguage;
+
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -12,8 +15,8 @@ public class SubtitlesDoubleEpisodeRequest extends SubtitlesEpisodeRequest {
 	private int episode1;
 	private int episode2;
 
-	public SubtitlesDoubleEpisodeRequest(Torrent torrent, Show show, int season, int episode1, int episode2) {
-		super(torrent, show, season);
+	public SubtitlesDoubleEpisodeRequest(Torrent torrent, Show show, int season, int episode1, int episode2, List<SubtitleLanguage> languages) {
+		super(torrent, show, season, languages);
 		this.episode1 = episode1;
 		this.episode2 = episode2;
 	}
