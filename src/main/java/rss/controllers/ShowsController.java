@@ -41,15 +41,6 @@ public class ShowsController extends BaseController {
 	private ShowDao showDao;
 
 	@Autowired
-	private SubtitlesService subtitlesService;
-
-	@Autowired
-	private EpisodeDao episodeDao;
-
-	@Autowired
-	private TorrentDao torrentDao;
-
-	@Autowired
 	protected ShowSearchService showSearchService;
 
 	@RequestMapping(value = "/addTracked/{showId}", method = RequestMethod.POST)
@@ -72,7 +63,7 @@ public class ShowsController extends BaseController {
 		return result;
 	}
 
-	@RequestMapping(value = "/removeTracked/{showId}", method = RequestMethod.POST)
+	@RequestMapping(value = "/remove-tracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> removeTracked(@PathVariable long showId) {

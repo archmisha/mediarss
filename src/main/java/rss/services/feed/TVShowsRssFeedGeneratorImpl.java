@@ -78,7 +78,7 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		// add subtitles
 		Collection<Subtitles> subtitles;
 		if (user.getSubtitles() != null) {
-			subtitles = subtitlesDao.find(torrentEntries, user.getSubtitles(), SubtitleLanguage.ENGLISH);
+			subtitles = subtitlesDao.find(torrentEntries, user.getSubtitles()/*, SubtitleLanguage.ENGLISH*/);
 		} else {
 			subtitles = Collections.emptyList();
 		}

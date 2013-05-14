@@ -667,9 +667,5 @@ public class ShowServiceImpl implements ShowService {
 		userTorrent.setAdded(new Date());
 		userTorrent.setTorrent(torrent);
 		userTorrentDao.persist(userTorrent);
-		if (user.getSubtitles() != null) {
-//			Episode episode = episodeDao.find(torrent);
-//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
-		}
 	}
 }

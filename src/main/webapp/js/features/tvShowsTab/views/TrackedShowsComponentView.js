@@ -86,7 +86,7 @@ define([
 				var that = this;
 				Spinner.mask();
 				setTimeout(function() {
-					HttpUtils.post("rest/shows/removeTracked/" + show.id, {}, function(res) {
+					HttpUtils.post("rest/shows/remove-tracked/" + show.id, {}, function(res) {
 						Spinner.unmask();
 						var showModel = that.trackedShowsCollection.get(show.id);
 						that.trackedShowsCollection.remove(show);
