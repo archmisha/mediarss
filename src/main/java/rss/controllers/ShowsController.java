@@ -100,7 +100,7 @@ public class ShowsController extends BaseController {
 		showService.downloadEpisode(user, torrentId);
 	}
 
-	@RequestMapping(value = "/episode/downloadAll", method = RequestMethod.POST)
+	@RequestMapping(value = "/episode/download-all", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void episodeDownloadAll(@RequestParam("torrentIds[]") long[] torrentIds) {
@@ -144,10 +144,10 @@ public class ShowsController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/initial-data", method = RequestMethod.GET)
+	@RequestMapping(value = "/tracked-shows", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> initialData() {
+	public Map<String, Object> getTrackedShows() {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 
 		List<ShowVO> shows = entityConverter.toThinShows(user.getShows());
@@ -161,10 +161,25 @@ public class ShowsController extends BaseController {
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
 		result.put("trackedShows", shows);
+		result.put("isAdmin", isAdmin(user));
+		duration.stop();
+		logService.info(getClass(), "Tracked shows " + duration.getDuration() + " millis");
+
+		return result;
+	}
+
+	@RequestMapping(value = "/schedule", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> getSchedule() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		DurationMeter duration = new DurationMeter();
+		Map<String, Object> result = new HashMap<>();
 		result.put("schedule", showService.getSchedule(user.getShows()));
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
-		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Schedule " + duration.getDuration() + " millis");
 
 		return result;
 	}

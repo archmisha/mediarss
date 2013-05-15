@@ -207,7 +207,7 @@ define([
 				});
 
 				var that = this;
-				HttpUtils.post("rest/shows/episode/downloadAll", {
+				HttpUtils.post("rest/shows/episode/download-all", {
 					torrentIds: torrentIds
 				}, function(res) {
 					// set all in downloaded state in ui

@@ -41,6 +41,9 @@ public class Torrent extends BaseEntity implements Downloadable, Comparable<Torr
 	@Column(name = "hash", unique = true)
 	private String hash;
 
+	@Column(name = "size")
+	private String size;
+
     // not stored in the database, because first it will become outdated and second it is only used while
     // searching for a specific episode on the internet
     @Transient

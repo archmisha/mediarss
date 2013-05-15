@@ -64,8 +64,11 @@ define([
 				this.showsScheduleRegion.show(this.showsScheduleView);
 
 				var that = this;
-				HttpUtils.get("rest/shows/initial-data", function(res) {
+				HttpUtils.get("rest/shows/tracked-shows", function(res) {
 					that.trackedShowsView.setTrackedShows(res.trackedShows);
+					that.searchShowsView.setAdmin(res.isAdmin);
+				}, false); // no need loading here
+				HttpUtils.get("rest/shows/schedule", function(res) {
 					that.showsScheduleView.setSchedule(res.schedule);
 					that.searchShowsView.setAdmin(res.isAdmin);
 				}, false); // no need loading here
