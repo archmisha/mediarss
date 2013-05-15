@@ -16,7 +16,7 @@ import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.PageDownloaderImpl;
 import rss.services.searchers.SearchResult;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.composite.MoviesCompositeSearcher;
 import rss.entities.Movie;
 import rss.entities.Torrent;

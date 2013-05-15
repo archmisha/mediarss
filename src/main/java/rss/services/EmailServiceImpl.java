@@ -5,8 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.requests.MovieRequest;
-import rss.services.requests.ShowRequest;
+import rss.services.requests.movies.MovieRequest;
+import rss.services.requests.episodes.ShowRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.util.GoogleMail;
 
 import javax.mail.MessagingException;
@@ -77,8 +78,8 @@ public class EmailServiceImpl implements EmailService {
 
 		notifyToAdmins(
 				JOBS_TITLE_SUFFIX,
-				"The following torrents were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
-				"Failed sending email of missing torrent");
+				"The following episodes were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
+				"Failed sending email of missing episodes");
 	}
 
 	@Override
@@ -94,8 +95,20 @@ public class EmailServiceImpl implements EmailService {
 
 		notifyToAdmins(
 				JOBS_TITLE_SUFFIX,
-				"The following torrents were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
-				"Failed sending email of missing torrent");
+				"The following movies were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
+				"Failed sending email of missing movies");
+	}
+
+	@Override
+	public void notifyOfMissingSubtitles(Collection<SubtitlesRequest> missingRequests) {
+		if (missingRequests.isEmpty()) {
+			return;
+		}
+
+		notifyToAdmins(
+				JOBS_TITLE_SUFFIX, // not really a job but still
+				"The following subtitles were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
+				"Failed sending email of missing subtitles");
 	}
 
 	@Override

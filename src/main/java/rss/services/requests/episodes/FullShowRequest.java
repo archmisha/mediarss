@@ -1,4 +1,4 @@
-package rss.services.requests;
+package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
@@ -8,21 +8,21 @@ import rss.entities.Show;
  * Date: 22/12/12
  * Time: 15:42
  */
-public class FullSeasonRequest extends EpisodeRequest {
+public class FullShowRequest extends ShowRequest {
 
 	private static final long serialVersionUID = -6622950945609852366L;
 
-	public FullSeasonRequest(String title, Show show, MediaQuality quality, int season) {
-		super(title, show, quality, season);
-	}
-
-	public String getSeasonEpisode() {
-		return "season " + getSeason();
+	public FullShowRequest(String title, Show show, MediaQuality quality) {
+		super(title, show, quality);
 	}
 
 	@Override
 	public EpisodeRequest copy() {
-		return new FullSeasonRequest(getTitle(), getShow(), getQuality(), getSeason());
+		throw new UnsupportedOperationException();
+	}
+
+	public String getSeasonEpisode() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -30,11 +30,10 @@ public class FullSeasonRequest extends EpisodeRequest {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
-		FullSeasonRequest that = (FullSeasonRequest) o;
+		FullShowRequest that = (FullShowRequest) o;
 
 		if (!getTitle().equalsIgnoreCase(that.getTitle()))
 			return false; // important ignore case! - when come from search for example
-		if (getSeason() != that.getSeason()) return false;
 		if (getQuality() != that.getQuality()) return false;
 
 		return true;
@@ -44,7 +43,6 @@ public class FullSeasonRequest extends EpisodeRequest {
 	public int hashCode() {
 		int result = getQuality().hashCode();
 		result = 31 * result + getTitle().toLowerCase().hashCode(); // to match ignore case equals
-		result = 31 * result + getSeason();
 		return result;
 	}
 }

@@ -1,4 +1,4 @@
-package rss.services.requests;
+package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;

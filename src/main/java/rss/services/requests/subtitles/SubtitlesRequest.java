@@ -1,6 +1,7 @@
-package rss.services.requests;
+package rss.services.requests.subtitles;
 
 import rss.entities.Torrent;
+import rss.services.requests.SearchRequest;
 import rss.services.subtitles.SubtitleLanguage;
 
 import java.util.ArrayList;
@@ -32,5 +33,15 @@ public abstract class SubtitlesRequest implements SearchRequest {
 
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder().append(name).append(" ");
+		for (SubtitleLanguage language : languages) {
+			sb.append(language.name()).append(", ");
+		}
+		sb.deleteCharAt(sb.length() - 1).deleteCharAt(sb.length() - 1);
+		return sb.toString();
 	}
 }

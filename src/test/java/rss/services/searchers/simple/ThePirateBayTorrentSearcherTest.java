@@ -9,7 +9,7 @@ import rss.BaseTest;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.searchers.SearchResult;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 
 import java.util.Calendar;
 import java.util.Date;

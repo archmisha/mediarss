@@ -2,8 +2,8 @@ package rss.services.searchers;
 
 import org.apache.commons.lang3.tuple.Pair;
 import rss.entities.Torrent;
-import rss.services.requests.EpisodeRequest;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.requests.movies.MovieRequest;
 
 import java.util.List;
 

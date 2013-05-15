@@ -15,8 +15,8 @@ import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
-import rss.services.requests.ShowRequest;
-import rss.services.requests.SingleEpisodeRequest;
+import rss.services.requests.episodes.ShowRequest;
+import rss.services.requests.episodes.SingleEpisodeRequest;
 
 import java.util.Collection;
 import java.util.Collections;

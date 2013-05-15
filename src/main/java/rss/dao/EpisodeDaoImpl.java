@@ -4,7 +4,7 @@ import org.springframework.stereotype.Repository;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Torrent;
-import rss.services.requests.*;
+import rss.services.requests.episodes.*;
 
 import java.util.*;
 

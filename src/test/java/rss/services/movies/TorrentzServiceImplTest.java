@@ -14,7 +14,7 @@ import rss.BaseTest;
 import rss.entities.Movie;
 import rss.services.PageDownloader;
 import rss.services.downloader.DownloadResult;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.downloader.MoviesTorrentEntriesDownloader;
 import rss.services.searchers.composite.torrentz.TorrentzParser;
 import rss.services.searchers.composite.torrentz.TorrentzSearcher;

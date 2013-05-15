@@ -24,7 +24,7 @@ import java.util.Date;
 				query = "select s from Subtitles as s " +
 						"where s.torrent.id = :torrentId"),
 		@NamedQuery(name = "Subtitles.getSubtitlesLanguages",
-				query = "select u.subtitles from User as u join u.shows as s " +
+				query = "select distinct u.subtitles from User as u join u.shows as s " +
 						"where u.subtitles is not null and s.id = :showId"),
 		@NamedQuery(name = "Subtitles.getSubtitlesLanguagesForTorrent",
 				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e join e.torrentIds as tid " +

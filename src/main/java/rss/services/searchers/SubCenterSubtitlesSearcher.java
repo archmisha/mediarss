@@ -2,7 +2,6 @@ package rss.services.searchers;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.primitives.Ints;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonNode;
@@ -10,20 +9,24 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.MediaQuality;
+import rss.entities.Movie;
 import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.matching.MatchCandidate;
 import rss.services.matching.MatchingUtils;
-import rss.services.requests.SubtitlesEpisodeRequest;
-import rss.services.requests.SubtitlesRequest;
-import rss.services.requests.SubtitlesSingleEpisodeRequest;
+import rss.services.requests.subtitles.SubtitlesEpisodeRequest;
+import rss.services.requests.subtitles.SubtitlesMovieRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
+import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.subtitles.SubtitleLanguage;
 
+import java.net.URLEncoder;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -38,7 +41,8 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 
 	public static final String NAME = "www.subscenter.org";
 	public static final String SEARCH_URL = "http://" + NAME + "/he/subtitle/search/?q=";
-	public static final String ENTRY_URL = "http://" + NAME + "/%s/%d/%d";
+	public static final String SHOW_ENTRY_URL = "http://" + NAME + "/%s/%d/%d";
+	public static final String MOVIE_ENTRY_URL = "http://" + NAME + "/%s";
 	public static final String DATA_URL = "http://" + NAME + "/he/subtitle/download/%s/%d/?v=%s&key=%s";
 	private static final Pattern ENTRY_FOUND_PATTERN = Pattern.compile("subtitles_info");
 
@@ -54,48 +58,57 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 	}
 
 	@Override
-	public SearchResult search(SubtitlesRequest mediaRequest) {
+	public SearchResult search(SubtitlesRequest subtitlesRequest) {
 		try {
 			// first find the url for the show, if don't have it yet
-			if (mediaRequest instanceof SubtitlesEpisodeRequest) {
-				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) mediaRequest;
+			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
+				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
 				Show show = ser.getShow();
+
 				if (StringUtils.isBlank(show.getSubCenterUrl())) {
-					getSubCenterShowUrl(show, mediaRequest);
-				}
+					String subCenterShowUrl = getSubCenterShowUrl(subtitlesRequest.getName(), true);
 
-				// now download the page of the specific request
-				logService.info(getClass(), "SubCenter show url: " + show.getSubCenterUrl());
-				if (StringUtils.isBlank(show.getSubCenterUrl())) {
-					return SearchResult.createNotFound();
-				}
-
-				if (mediaRequest instanceof SubtitlesSingleEpisodeRequest) {
-					SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) mediaRequest;
-					String page = pageDownloader.downloadPageUntilFound(String.format(ENTRY_URL, show.getSubCenterUrl(), ser.getSeason(), sser.getEpisode()), ENTRY_FOUND_PATTERN);
-
-					SearchResult searchResult = new SearchResult(NAME);
-					for (SubtitleLanguage subtitleLanguage : ser.getLanguages()) {
-						SubCenterSubtitles foundSubtitles = parseEntryPage(mediaRequest, sser, page, subtitleLanguage);
-
-						// for the best result only, download the actual subtitles
-						byte[] data = pageDownloader.downloadData(String.format(DATA_URL,
-								toSubCenterLanguages(subtitleLanguage), foundSubtitles.getId(), foundSubtitles.getName(), foundSubtitles.getKey()));
-
-						Subtitles subtitles = new Subtitles();
-						subtitles.setLanguage(foundSubtitles.getLanguage());
-						subtitles.setFileName(foundSubtitles.getName());
-						subtitles.setExternalId(String.valueOf(foundSubtitles.getId()));
-						subtitles.setTorrent(mediaRequest.getTorrent());
-						subtitles.setDateUploaded(foundSubtitles.getDateUploaded());
-						subtitles.setData(data);
-
-						logService.info(getClass(), "FINAL: '" + foundSubtitles + "' for '" + sser.getTorrent().getTitle() + "'");
-						searchResult.addDownloadable(subtitles);
+					// now download the page of the specific request
+					logService.info(getClass(), "SubCenter show url: " + subCenterShowUrl);
+					if (StringUtils.isBlank(subCenterShowUrl)) {
+						return SearchResult.createNotFound();
 					}
 
+					show.setSubCenterUrl(subCenterShowUrl);
+				}
+
+				if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
+					SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
+					String entryUrl = String.format(SHOW_ENTRY_URL, show.getSubCenterUrl(), ser.getSeason(), sser.getEpisode());
+					SearchResult searchResult = downloadSubtitles(subtitlesRequest, entryUrl);
 					return searchResult;
 				}
+			} else if (subtitlesRequest instanceof SubtitlesMovieRequest) {
+				SubtitlesMovieRequest smr = (SubtitlesMovieRequest) subtitlesRequest;
+				Movie movie = smr.getMovie();
+
+				if (StringUtils.isBlank(movie.getSubCenterUrl())) {
+					String name = subtitlesRequest.getName();
+					// strip the year brackets of the movie
+					int idx = name.indexOf('(');
+					if (idx > -1) {
+						name = name.substring(0, idx).trim();
+					}
+
+					String subCenterShowUrl = getSubCenterShowUrl(name, false);
+
+					// now download the page of the specific request
+					logService.info(getClass(), "SubCenter show url: " + subCenterShowUrl);
+					if (StringUtils.isBlank(subCenterShowUrl)) {
+						return SearchResult.createNotFound();
+					}
+
+					movie.setSubCenterUrl(subCenterShowUrl);
+				}
+
+				String entryUrl = String.format(MOVIE_ENTRY_URL, movie.getSubCenterUrl());
+				SearchResult searchResult = downloadSubtitles(subtitlesRequest, entryUrl);
+				return searchResult;
 			}
 		} catch (Exception e) {
 			logService.error(getClass(), e.getMessage(), e);
@@ -103,8 +116,32 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 		return SearchResult.createNotFound();
 	}
 
-	private SubCenterSubtitles parseEntryPage(SubtitlesRequest mediaRequest, SubtitlesSingleEpisodeRequest sser,
-											  String page, SubtitleLanguage subtitleLanguage) throws Exception {
+	private SearchResult downloadSubtitles(SubtitlesRequest subtitlesRequest, String entryUrl) throws Exception {
+		String page = pageDownloader.downloadPageUntilFound(entryUrl, ENTRY_FOUND_PATTERN);
+
+		SearchResult searchResult = new SearchResult(NAME);
+		for (SubtitleLanguage subtitleLanguage : subtitlesRequest.getLanguages()) {
+			SubCenterSubtitles foundSubtitles = parseEntryPage(subtitlesRequest, page, subtitleLanguage);
+
+			// for the best result only, download the actual subtitles
+			byte[] data = pageDownloader.downloadData(String.format(DATA_URL, toSubCenterLanguages(subtitleLanguage),
+					foundSubtitles.getId(), URLEncoder.encode(foundSubtitles.getName(), "UTF-8"), foundSubtitles.getKey()));
+
+			Subtitles subtitles = new Subtitles();
+			subtitles.setLanguage(foundSubtitles.getLanguage());
+			subtitles.setFileName(foundSubtitles.getName());
+			subtitles.setExternalId(String.valueOf(foundSubtitles.getId()));
+			subtitles.setTorrent(subtitlesRequest.getTorrent());
+			subtitles.setDateUploaded(foundSubtitles.getDateUploaded());
+			subtitles.setData(data);
+
+			logService.info(getClass(), "FINAL: '" + foundSubtitles + "' for '" + subtitlesRequest.getTorrent().getTitle() + "'");
+			searchResult.addDownloadable(subtitles);
+		}
+		return searchResult;
+	}
+
+	private SubCenterSubtitles parseEntryPage(SubtitlesRequest mediaRequest, String page, SubtitleLanguage subtitleLanguage) throws Exception {
 		// parse subtitles found on page
 		int idx = page.indexOf("subtitles_groups = ") + "subtitles_groups = ".length();
 		String subsInfo = page.substring(idx, page.indexOf("subtitles_info", idx)).trim();
@@ -128,9 +165,18 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 						name += ".zip";
 					}
 
+					// remove file suffixes
+					String nameWithoutSuffix = name;
+					for (String suffix : Arrays.asList(".zip", ".srt")) {
+						if (name.endsWith(suffix)) {
+							nameWithoutSuffix = name.substring(0, name.length() - suffix.length());
+							break;
+						}
+					}
+
 					// take the best downloaded value
-					if (!results.containsKey(name) || results.get(name).getDownloaded() < downloaded) {
-						results.put(name, new SubCenterSubtitles(id, name, key, downloaded, SubtitleLanguage.HEBREW, dateUploaded));
+					if (!results.containsKey(nameWithoutSuffix) || results.get(nameWithoutSuffix).getDownloaded() < downloaded) {
+						results.put(nameWithoutSuffix, new SubCenterSubtitles(id, name, key, downloaded, SubtitleLanguage.HEBREW, dateUploaded));
 					}
 				}
 			}
@@ -144,13 +190,6 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 
 		for (Map.Entry<String, SubCenterSubtitles> entry : new ArrayList<>(results.entrySet())) {
 			String name = entry.getKey().toLowerCase();
-			// remove file suffixes
-			for (String suffix : Arrays.asList(".zip", ".srt")) {
-				if (name.endsWith(suffix)) {
-					name = name.substring(0, name.length() - suffix.length());
-					break;
-				}
-			}
 
 			// determine quality
 			MediaQuality quality = SearcherUtils.findQuality(name);
@@ -168,44 +207,70 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 			}
 		}
 
-		logService.info(getClass(), "left with: " + StringUtils.join(results, ", "));
-		ArrayList<SubCenterSubtitles> list = new ArrayList<>(results.values());
-		Collections.sort(list, new Comparator<SubCenterSubtitles>() {
+		logService.info(getClass(), "left with: " + StringUtils.join(results.values(), ", "));
+//		ArrayList<SubCenterSubtitles> list = new ArrayList<>(results.values());
+//		Collections.sort(list, new Comparator<SubCenterSubtitles>() {
+//			@Override
+//			public int compare(SubCenterSubtitles o1, SubCenterSubtitles o2) {
+//				return Ints.compare(o2.getDownloaded(), o1.getDownloaded());
+//			}
+//		});
+//		SubCenterSubtitles bestResult = list.get(0);
+
+		// using the entries and not the values, cuz in the key of the map there is the names without the .srt / .zip suffix which is better for matching
+		SubCenterSubtitles bestResult = MatchingUtils.filterByLevenshteinDistance(mediaRequest.getTorrent().getTitle(), Collections2.transform(results.entrySet(),
+				new Function<Map.Entry<String, SubCenterSubtitles>, MatchCandidate>() {
 			@Override
-			public int compare(SubCenterSubtitles o1, SubCenterSubtitles o2) {
-				return Ints.compare(o2.getDownloaded(), o1.getDownloaded());
+			public MatchCandidate apply(final Map.Entry<String, SubCenterSubtitles> entry) {
+				return new MatchCandidate() {
+					@Override
+					public String getText() {
+						return entry.getKey();
+					}
+
+					@SuppressWarnings({"unchecked"})
+					@Override
+					public <T> T getObject() {
+						return (T) entry.getValue();
+					}
+				};
 			}
-		});
-		SubCenterSubtitles bestResult = list.get(0);
+		}), logService).getObject();
 
 		return bestResult;
 	}
 
-	private void getSubCenterShowUrl(Show show, SubtitlesRequest mediaRequest) {
-		String page = pageDownloader.downloadPage(SEARCH_URL + show.getName());
-
-		// figure out how many pages there are
+	private String getSubCenterShowUrl(String name, boolean isShow) {
+		String page = pageDownloader.downloadPage(SEARCH_URL + name);
 		Document doc = Jsoup.parse(page);
-		String pagesPart = doc.select(".minibuttonpage").get(0).children().get(0).html();
+
+		// figure out how many pages there are, default is 1
+		int pages = 1;
+		Elements select = doc.select(".minibuttonpage");
+		if (select.size() > 0) {
+			String pagesPart = select.get(0).children().get(0).html();
 //		System.out.println(pagesPart.split(" ")[5]);
-		int pages = Integer.parseInt(pagesPart.split(" ")[5]);
+			pages = Integer.parseInt(pagesPart.split(" ")[5]);
+		}
 
 		List<SubCenterSearchResult> searchResults = new ArrayList<>();
 		searchResults.addAll(parseSearchResultsPage(doc));
 		for (int i = 1; i <= pages; ++i) {
-			page = pageDownloader.downloadPage(SEARCH_URL + show.getName() + "&page=" + i);
+			page = pageDownloader.downloadPage(SEARCH_URL + name + "&page=" + i);
 			doc = Jsoup.parse(page);
 			searchResults.addAll(parseSearchResultsPage(doc));
 		}
 
 		for (SubCenterSearchResult searchResult : new ArrayList<>(searchResults)) {
-			if (!searchResult.isShow()) {
+			if ((isShow && !searchResult.isShow()) ||
+				(!isShow && searchResult.isShow())) {
 				searchResults.remove(searchResult);
 			}
 		}
 
 //		System.out.println("found search results: " + searchResults.size());
-		SubCenterSearchResult subCenterSearchResult = MatchingUtils.filterByLevenshteinDistance(mediaRequest.getName(), Collections2.transform(searchResults, new Function<SubCenterSearchResult, MatchCandidate>() {
+		SubCenterSearchResult subCenterSearchResult = MatchingUtils.filterByLevenshteinDistance(name, Collections2.transform(searchResults,
+				new Function<SubCenterSearchResult, MatchCandidate>() {
 			@Override
 			public MatchCandidate apply(final SubCenterSearchResult subCenterSearchResult) {
 				return new MatchCandidate() {
@@ -221,12 +286,14 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 					}
 				};
 			}
-		})).getObject();
+		}), logService).getObject();
 
 		if (subCenterSearchResult != null) {
 			logService.info(getClass(), "Filtered candidates: " + subCenterSearchResult);
-			show.setSubCenterUrl(subCenterSearchResult.getSubCenterUrl());
+			return subCenterSearchResult.getSubCenterUrl();
 		}
+
+		return null;
 	}
 
 	private Collection<SubCenterSearchResult> parseSearchResultsPage(Document doc) {

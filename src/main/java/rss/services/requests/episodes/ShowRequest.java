@@ -1,7 +1,9 @@
-package rss.services.requests;
+package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.requests.MediaRequest;
+import rss.services.requests.episodes.EpisodeRequest;
 import rss.services.searchers.MediaRequestVisitor;
 
 /**

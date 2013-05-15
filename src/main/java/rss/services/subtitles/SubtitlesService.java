@@ -1,12 +1,7 @@
 package rss.services.subtitles;
 
-import rss.entities.Subtitles;
-import rss.entities.Episode;
-import rss.entities.Torrent;
-import rss.services.requests.SubtitlesEpisodeRequest;
-import rss.services.requests.SubtitlesRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

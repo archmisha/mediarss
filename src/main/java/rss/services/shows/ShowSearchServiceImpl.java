@@ -15,7 +15,7 @@ import rss.dao.UserTorrentDao;
 import rss.entities.*;
 import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
-import rss.services.requests.ShowRequest;
+import rss.services.requests.episodes.ShowRequest;
 import rss.util.DurationMeter;
 import rss.util.MultiThreadExecutor;
 

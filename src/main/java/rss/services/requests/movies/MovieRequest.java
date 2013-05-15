@@ -1,5 +1,6 @@
-package rss.services.requests;
+package rss.services.requests.movies;
 
+import rss.services.requests.MediaRequest;
 import rss.services.searchers.MediaRequestVisitor;
 
 /**

@@ -1,7 +1,7 @@
 package rss.services.searchers;
 
-import rss.services.requests.EpisodeRequest;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.requests.movies.MovieRequest;
 
 /**
  * User: dikmanm

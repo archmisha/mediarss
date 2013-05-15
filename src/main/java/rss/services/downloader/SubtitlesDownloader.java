@@ -9,7 +9,11 @@ import rss.dao.SubtitlesDao;
 import rss.entities.Episode;
 import rss.entities.Subtitles;
 import rss.entities.SubtitlesScanHistory;
-import rss.services.requests.*;
+import rss.services.EmailService;
+import rss.services.requests.subtitles.SubtitlesDoubleEpisodeRequest;
+import rss.services.requests.subtitles.SubtitlesEpisodeRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
+import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SubCenterSubtitlesSearcher;
 import rss.services.subtitles.SubtitleLanguage;
@@ -35,52 +39,40 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	private SubCenterSubtitlesSearcher subCenterSubtitlesSearcher;
 
 	@Autowired
-	private EpisodeDao episodeDao;
+	private EmailService emailService;
 
 	@Override
 	protected void processMissingRequests(Collection<SubtitlesRequest> missing) {
 		for (SubtitlesRequest subtitlesRequest : missing) {
 			updateScanDate(subtitlesRequest);
 		}
+		emailService.notifyOfMissingSubtitles(missing);
 	}
-
-//	private List<Episode> getEpisodesBySubtitlesRequests(SubtitlesRequest subtitlesRequest) {
-//		if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
-//			SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
-//			return episodeDao.find(new SingleEpisodeRequest(sser.getName(), sser.getShow(), null, sser.getSeason(), sser.getEpisode()));
-//		} else if (subtitlesRequest instanceof SubtitlesDoubleEpisodeRequest) {
-//			SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) subtitlesRequest;
-//			return episodeDao.find(new DoubleEpisodeRequest(sder.getName(), sder.getShow(), null, sder.getSeason(), sder.getEpisode1(), sder.getEpisode2()));
-//		}
-//		return Collections.emptyList();
-//	}
 
 	@Override
 	protected Collection<Subtitles> preDownloadPhase(Set<SubtitlesRequest> requests, boolean forceDownload) {
-		skipScannedSubtitles(requests);
-		Set<Subtitles> result = skipCachedSubtitles(requests);
-		return result;
+		Set<Subtitles> cachedSubtitles;
+		if (forceDownload) {
+			cachedSubtitles = Collections.emptySet();
+		} else {
+			cachedSubtitles = skipCachedSubtitles(requests);
+			skipScannedSubtitles(requests);
+		}
+		return cachedSubtitles;
 	}
 
 	private void skipScannedSubtitles(Set<SubtitlesRequest> requests) {
 		for (SubtitlesRequest request : new ArrayList<>(requests)) {
 			for (SubtitleLanguage subtitleLanguage : request.getLanguages()) {
-				Date scanDate = null;
-				SubtitlesScanHistory subtitleScanHistory = subtitlesDao.findSubtitleScanHistory(request.getTorrent(), subtitleLanguage);
-				if (subtitleScanHistory != null) {
-					scanDate = subtitleScanHistory.getScanDate();
-				}
-
-				Date backlogDate = DateUtils.getPastDate(14);
-				if (request instanceof SubtitlesSingleEpisodeRequest) {
-					SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) request;
-					if (scanDate != null && sser.getAirDate() != null && sser.getAirDate().before(backlogDate)) {
-						request.getLanguages().remove(subtitleLanguage);
-						logService.info(getClass(), "Skipping downloading " + subtitleLanguage + " subtitles for '" + request.getTorrent() + "' - already scanned and airdate is older than 14 days ago");
+				if (request instanceof SubtitlesEpisodeRequest) {
+					SubtitlesEpisodeRequest sser = (SubtitlesEpisodeRequest) request;
+					Date backlogDate = DateUtils.getPastDate(14);
+					Date scanDate = null;
+					SubtitlesScanHistory subtitleScanHistory = subtitlesDao.findSubtitleScanHistory(request.getTorrent(), subtitleLanguage);
+					if (subtitleScanHistory != null) {
+						scanDate = subtitleScanHistory.getScanDate();
 					}
-				} else if (request instanceof SubtitlesDoubleEpisodeRequest) {
-					SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) request;
-					if (scanDate != null && sder.getOldestAirDate() != null && sder.getOldestAirDate().before(backlogDate)) {
+					if (scanDate != null && sser.getAirDate() != null && sser.getAirDate().before(backlogDate)) {
 						request.getLanguages().remove(subtitleLanguage);
 						logService.info(getClass(), "Skipping downloading " + subtitleLanguage + " subtitles for '" + request.getTorrent() + "' - already scanned and airdate is older than 14 days ago");
 					}
@@ -133,10 +125,10 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 				}
 			}
 
+			updateScanDate(subtitlesRequest);
+
 			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
 				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
-				updateScanDate(subtitlesRequest);
-
 				// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
 				if (StringUtils.isBlank(ser.getShow().getSubCenterUrl())) {
 					ser.getShow().setSubCenterUrl(((SubtitlesEpisodeRequest) subtitlesRequest).getShow().getSubCenterUrl());

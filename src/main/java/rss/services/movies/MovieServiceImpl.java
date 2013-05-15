@@ -22,10 +22,13 @@ import rss.services.SessionService;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.MovieTorrentsDownloader;
 import rss.services.log.LogService;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
+import rss.services.requests.subtitles.SubtitlesMovieRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.searchers.composite.torrentz.TorrentzParser;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.searchers.composite.torrentz.TorrentzResult;
+import rss.services.subtitles.SubtitlesService;
 import rss.util.DateUtils;
 
 import java.io.Serializable;
@@ -73,6 +76,9 @@ public class MovieServiceImpl implements MovieService {
 
 	@Autowired
 	private ViewDao viewDao;
+
+	@Autowired
+	private SubtitlesService subtitlesService;
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public long getUserMoviesCount(User user) {
@@ -284,10 +290,11 @@ public class MovieServiceImpl implements MovieService {
 		userTorrent.setUserMovie(userMovie);
 
 		if (user.getSubtitles() != null) {
-//			subtitlesService.downloadEpisodeSubtitles(torrent, episode, user.getSubtitles());
+			SubtitlesMovieRequest smr = new SubtitlesMovieRequest(torrent, movie, Collections.singletonList(user.getSubtitles()));
+			subtitlesService.downloadSubtitlesAsync(Collections.<SubtitlesRequest>singletonList(smr));
 		}
 
-		logService.info(getClass(), "User " + user + " downloads " + userMovie.getMovie());
+		logService.info(getClass(), "User " + user + " downloads '" + userMovie.getMovie() + "'");
 	}
 
 	// boolean: true if already exists, false if new

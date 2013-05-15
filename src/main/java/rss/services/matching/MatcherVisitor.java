@@ -1,9 +1,8 @@
 package rss.services.matching;
 
 import rss.entities.MediaQuality;
-import rss.services.matching.MatchCandidate;
-import rss.services.requests.EpisodeRequest;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.MediaRequestVisitor;
 import rss.services.shows.ShowService;
 import rss.util.CollectionUtils;

@@ -6,7 +6,7 @@ import org.apache.http.cookie.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.services.PageDownloader;
-import rss.services.requests.EpisodeRequest;
+import rss.services.requests.episodes.EpisodeRequest;
 import rss.util.DurationMeter;
 import rss.util.CollectionUtils;
 

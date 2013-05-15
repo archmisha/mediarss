@@ -1,4 +1,4 @@
-package rss.services.requests;
+package rss.services.requests.subtitles;
 
 import rss.entities.Show;
 import rss.entities.Torrent;
@@ -14,7 +14,6 @@ import java.util.List;
 public class SubtitlesSingleEpisodeRequest extends SubtitlesEpisodeRequest {
 
 	private int episode;
-	private Date airDate;
 
 	public SubtitlesSingleEpisodeRequest(Torrent torrent, Show show, int season, int episode, List<SubtitleLanguage> languages, Date airDate) {
 		super(torrent, show, season, languages);
@@ -24,9 +23,5 @@ public class SubtitlesSingleEpisodeRequest extends SubtitlesEpisodeRequest {
 
 	public int getEpisode() {
 		return episode;
-	}
-
-	public Date getAirDate() {
-		return airDate;
 	}
 }

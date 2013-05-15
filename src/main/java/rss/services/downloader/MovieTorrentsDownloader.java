@@ -4,15 +4,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.dao.MovieDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserTorrentDao;
+import rss.dao.*;
 import rss.entities.*;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.MovieSearcher;
 import rss.services.searchers.SearchResult;
+import rss.services.subtitles.SubtitleLanguage;
 import rss.util.CollectionUtils;
 
 import java.util.*;
@@ -65,6 +64,7 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 			CollectionUtils.safeListPut(imdbIdMap, getImdbId(searchResult), pair);
 		}
 
+		Map<Movie, List<SubtitleLanguage>> languagesPerMovie = new HashMap<>();
 		List<Movie> res = new ArrayList<>();
 		for (Map.Entry<String, List<Pair<MovieRequest, SearchResult>>> entry : imdbIdMap.entrySet()) {
 			String imdbId = entry.getKey();
@@ -93,7 +93,13 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 				}
 
 				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-					Torrent persistedTorrent = persistTorrent(torrent, movieRequest.getHash());
+					Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
+					if (persistedTorrent == null) {
+						torrentDao.persist(torrent);
+						persistedTorrent = torrent;
+
+//						handleSubtitles(languagesPerMovie, persistedMovie, torrent);
+					}
 
 					if (persistedMovie.getTorrentIds().isEmpty()) {
 						// if movie already existed and had no torrents - this is the case where it is a future movie request by user
@@ -144,24 +150,6 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 		return movie;
 	}
 
-	private Torrent persistTorrent(Torrent torrent, String hash) {
-		Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
-		if (persistedTorrent == null) {
-			torrentDao.persist(torrent);
-			persistedTorrent = torrent;
-		}
-
-		// set the quality of the torrent
-		for (MediaQuality mediaQuality : MediaQuality.topToBottom()) {
-			if (persistedTorrent.getTitle().contains(mediaQuality.toString())) {
-				persistedTorrent.setQuality(mediaQuality);
-				break;
-			}
-		}
-		persistedTorrent.setHash(hash);
-		return persistedTorrent;
-	}
-
 	@Override
 	protected void processMissingRequests(Collection<MovieRequest> missing) {
 
@@ -169,7 +157,13 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 
 	@Override
 	protected Collection<Movie> preDownloadPhase(Set<MovieRequest> requests, boolean forceDownload) {
-		Set<Movie> result = new HashSet<>();
+		Set<Movie> cachedMovies = skipCachedMovies(requests);
+//		handleSubtitles(cachedMovies);
+		return cachedMovies;
+	}
+
+	private Set<Movie> skipCachedMovies(Set<MovieRequest> requests) {
+		Set<Movie> cachedMovies = new HashSet<>();
 
 		Map<String, MovieRequest> byHash = new HashMap<>();
 		for (MovieRequest request : requests) {
@@ -182,11 +176,10 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 		for (Torrent torrent : torrents) {
 			Movie movie = movieDao.find(torrent);
 			logService.info(this.getClass(), String.format("Movie \"%s\" was found in cache (torrent: \"%s\")", movie, torrent.getTitle()));
-			result.add(movie);
+			cachedMovies.add(movie);
 			requests.remove(byHash.get(torrent.getHash()));
 		}
-
-		return result;
+		return cachedMovies;
 	}
 
 	private String getImdbId(SearchResult searchResult) {
@@ -197,4 +190,46 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 		}
 		return null;
 	}
+
+//	private void handleSubtitles(Map<Movie, List<SubtitleLanguage>> languagesPerMovie, Movie movie, Torrent torrent) {
+//		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow());
+//		if (languages.isEmpty()) {
+//			return;
+//		}
+//		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+//
+//
+//		if (!subtitlesRequests.isEmpty()) {
+//			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
+//		}
+//	}
+//
+//	private void handleSubtitles(Set<Movie> movies) {
+//		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+//
+//		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
+//		if (!languages.isEmpty()) {
+//			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+//		}
+//
+//		if (!subtitlesRequests.isEmpty()) {
+//			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
+//		}
+//	}
+//
+//	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Movie movie) {
+//		if (!languagesPerShow.containsKey(show)) {
+//			if (sessionService.isUserLogged()) {
+//				SubtitleLanguage subtitleLanguage = userDao.find(sessionService.getLoggedInUserId()).getSubtitles();
+//				if (subtitleLanguage != null) {
+//					languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
+//				} else {
+//					languagesPerShow.put(show, Collections.<SubtitleLanguage>emptyList());
+//				}
+//			} else {
+//				languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(movie));
+//			}
+//		}
+//		return languagesPerShow.get(show);
+//	}
 }

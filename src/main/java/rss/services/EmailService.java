@@ -1,8 +1,9 @@
 package rss.services;
 
 import rss.entities.User;
-import rss.services.requests.MovieRequest;
-import rss.services.requests.ShowRequest;
+import rss.services.requests.movies.MovieRequest;
+import rss.services.requests.episodes.ShowRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
 
 import java.util.Collection;
 
@@ -24,6 +25,8 @@ public interface EmailService {
 	void notifyOfMissingEpisodes(Collection<ShowRequest> missingRequests);
 
 	void notifyOfMissingMovies(Collection<MovieRequest> missingRequests);
+
+	void notifyOfMissingSubtitles(Collection<SubtitlesRequest> missingRequests);
 
 	void sendPasswordRecoveryEmail(User user);
 

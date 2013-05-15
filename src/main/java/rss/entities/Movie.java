@@ -37,6 +37,10 @@ public class Movie extends Media {
 	@Column(name = "year")
 	private int year;
 
+	//, unique = true
+	@Column(name = "subcenter_url")
+	private String subCenterUrl;
+
 	// for hibernate
 	@SuppressWarnings("UnusedDeclaration")
 	private Movie() {
@@ -93,5 +97,13 @@ public class Movie extends Media {
 
 	public void setYear(int year) {
 		this.year = year;
+	}
+
+	public String getSubCenterUrl() {
+		return subCenterUrl;
+	}
+
+	public void setSubCenterUrl(String subCenterUrl) {
+		this.subCenterUrl = subCenterUrl;
 	}
 }

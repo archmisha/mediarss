@@ -14,7 +14,10 @@ import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.SessionService;
-import rss.services.requests.*;
+import rss.services.requests.episodes.*;
+import rss.services.requests.subtitles.SubtitlesDoubleEpisodeRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
+import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.composite.EpisodeSearcher;
 import rss.services.shows.EpisodesMapper;
@@ -110,99 +113,6 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 			res.addAll(persistedEpisodes);
 		}
 		return res;
-	}
-
-	private void handleSubtitles(Map<Show, List<SubtitleLanguage>> languagesPerShow, ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
-		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow());
-		if (languages.isEmpty()) {
-			return;
-		}
-
-		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
-		if (showRequest instanceof SingleEpisodeRequest) {
-			Episode episode = persistedEpisodes.get(0);
-			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
-		} else if (showRequest instanceof DoubleEpisodeRequest) {
-			Episode episode1 = persistedEpisodes.get(0);
-			Episode episode2 = persistedEpisodes.get(1);
-			subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, showRequest.getShow(), episode1.getSeason(),
-					episode1.getEpisode(), episode2.getEpisode(), languages, episode1.getAirDate(), episode2.getAirDate()));
-		} else if (showRequest instanceof FullSeasonRequest) {
-			// create request for each episode in the season and link to this single torrent
-			Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(showRequest.getShow());
-			for (Episode episode : showEpisodesMap.get(((FullSeasonRequest) showRequest).getSeason()).getKey()) {
-				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
-			}
-		}
-
-		if (!subtitlesRequests.isEmpty()) {
-			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
-		}
-	}
-
-	// for full season episode expand to single episodes and create subtitles requests for them
-	// the rest group by torrents, if single episode per torrent - create single request
-	// if 2 episodes per torrent - its a double request
-	private void handleSubtitles(Set<Episode> episodes) {
-		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
-		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
-		Map<Torrent, List<Episode>> map = new HashMap<>();
-		for (Episode episode : episodes) {
-			for (Torrent torrent : torrentDao.find(episode.getTorrentIds())) {
-				if (episode.getEpisode() == -1) {
-					// create request for each episode in the season and link to this single torrent
-					Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(episode.getShow());
-					for (Episode curEpisode : showEpisodesMap.get(episode.getSeason()).getKey()) {
-						Show show = curEpisode.getShow();
-						List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
-						if (!languages.isEmpty()) {
-							subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
-						}
-					}
-				} else {
-					CollectionUtils.safeListPut(map, torrent, episode);
-				}
-			}
-		}
-
-		for (Map.Entry<Torrent, List<Episode>> entry : map.entrySet()) {
-			Torrent torrent = entry.getKey();
-			Show show = entry.getValue().get(0).getShow();
-			List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
-			if (!languages.isEmpty()) {
-				if (entry.getValue().size() == 1) {
-					Episode episode = entry.getValue().get(0);
-					subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, episode.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
-				} else if (entry.getValue().size() == 2) {
-					Episode episode1 = entry.getValue().get(0);
-					Episode episode2 = entry.getValue().get(1);
-					subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, episode1.getShow(), episode1.getSeason(),
-							episode1.getEpisode(), episode2.getEpisode(), languages, episode1.getAirDate(), episode2.getAirDate()));
-				} else {
-					logService.error(getClass(), "Weird case: " + entry.getValue().size() + " episodes per torrent: " + torrent + ". not downloading subtitles");
-				}
-			}
-		}
-
-		if (!subtitlesRequests.isEmpty()) {
-			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
-		}
-	}
-
-	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show) {
-		if (!languagesPerShow.containsKey(show)) {
-			if (sessionService.isUserLogged()) {
-				SubtitleLanguage subtitleLanguage = userDao.find(sessionService.getLoggedInUserId()).getSubtitles();
-				if (subtitleLanguage != null) {
-					languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
-				} else {
-					languagesPerShow.put(show, Collections.<SubtitleLanguage>emptyList());
-				}
-			} else {
-				languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
-			}
-		}
-		return languagesPerShow.get(show);
 	}
 
 	@Override
@@ -517,5 +427,98 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 				}
 			}
 		}
+	}
+
+	private void handleSubtitles(Map<Show, List<SubtitleLanguage>> languagesPerShow, ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
+		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow());
+		if (languages.isEmpty()) {
+			return;
+		}
+
+		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+		if (showRequest instanceof SingleEpisodeRequest) {
+			Episode episode = persistedEpisodes.get(0);
+			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+		} else if (showRequest instanceof DoubleEpisodeRequest) {
+			Episode episode1 = persistedEpisodes.get(0);
+			Episode episode2 = persistedEpisodes.get(1);
+			subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, showRequest.getShow(), episode1.getSeason(),
+					episode1.getEpisode(), episode2.getEpisode(), languages, episode1.getAirDate(), episode2.getAirDate()));
+		} else if (showRequest instanceof FullSeasonRequest) {
+			// create request for each episode in the season and link to this single torrent
+			Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(showRequest.getShow());
+			for (Episode episode : showEpisodesMap.get(((FullSeasonRequest) showRequest).getSeason()).getKey()) {
+				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+			}
+		}
+
+		if (!subtitlesRequests.isEmpty()) {
+			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
+		}
+	}
+
+	// for full season episode expand to single episodes and create subtitles requests for them
+	// the rest group by torrents, if single episode per torrent - create single request
+	// if 2 episodes per torrent - its a double request
+	private void handleSubtitles(Set<Episode> episodes) {
+		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
+		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+		Map<Torrent, List<Episode>> map = new HashMap<>();
+		for (Episode episode : episodes) {
+			for (Torrent torrent : torrentDao.find(episode.getTorrentIds())) {
+				if (episode.getEpisode() == -1) {
+					// create request for each episode in the season and link to this single torrent
+					Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(episode.getShow());
+					for (Episode curEpisode : showEpisodesMap.get(episode.getSeason()).getKey()) {
+						Show show = curEpisode.getShow();
+						List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
+						if (!languages.isEmpty()) {
+							subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+						}
+					}
+				} else {
+					CollectionUtils.safeListPut(map, torrent, episode);
+				}
+			}
+		}
+
+		for (Map.Entry<Torrent, List<Episode>> entry : map.entrySet()) {
+			Torrent torrent = entry.getKey();
+			Show show = entry.getValue().get(0).getShow();
+			List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
+			if (!languages.isEmpty()) {
+				if (entry.getValue().size() == 1) {
+					Episode episode = entry.getValue().get(0);
+					subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, episode.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+				} else if (entry.getValue().size() == 2) {
+					Episode episode1 = entry.getValue().get(0);
+					Episode episode2 = entry.getValue().get(1);
+					subtitlesRequests.add(new SubtitlesDoubleEpisodeRequest(torrent, episode1.getShow(), episode1.getSeason(),
+							episode1.getEpisode(), episode2.getEpisode(), languages, episode1.getAirDate(), episode2.getAirDate()));
+				} else {
+					logService.error(getClass(), "Weird case: " + entry.getValue().size() + " episodes per torrent: " + torrent + ". not downloading subtitles");
+				}
+			}
+		}
+
+		if (!subtitlesRequests.isEmpty()) {
+			subtitlesService.downloadSubtitlesAsync(subtitlesRequests);
+		}
+	}
+
+	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show) {
+		if (!languagesPerShow.containsKey(show)) {
+			if (sessionService.isUserLogged()) {
+				SubtitleLanguage subtitleLanguage = userDao.find(sessionService.getLoggedInUserId()).getSubtitles();
+				if (subtitleLanguage != null) {
+					languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
+				} else {
+					languagesPerShow.put(show, Collections.<SubtitleLanguage>emptyList());
+				}
+			} else {
+				languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
+			}
+		}
+		return languagesPerShow.get(show);
 	}
 }

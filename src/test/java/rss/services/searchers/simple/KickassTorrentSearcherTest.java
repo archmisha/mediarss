@@ -14,7 +14,7 @@ import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.matching.MatchCandidate;
-import rss.services.requests.SingleEpisodeRequest;
+import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 

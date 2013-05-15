@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.entities.Torrent;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 
 import java.io.UnsupportedEncodingException;

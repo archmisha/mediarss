@@ -1,4 +1,4 @@
-package rss.services.requests;
+package rss.services.requests.episodes;
 
 import org.apache.commons.lang3.StringUtils;
 import rss.entities.MediaQuality;

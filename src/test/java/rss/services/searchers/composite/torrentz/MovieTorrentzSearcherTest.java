@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
 import rss.services.PageDownloader;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 
 import java.util.Set;

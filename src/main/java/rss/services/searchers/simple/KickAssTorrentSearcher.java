@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.requests.*;
+import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.requests.episodes.FullSeasonRequest;
+import rss.services.requests.episodes.SingleEpisodeRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 

@@ -112,3 +112,20 @@ loading shwos cache rewrite
   remove commons-lang 1.0
   remove commosn-collections old and add comons-collections 4.0 snapshot
   after deply need to deelte all duplicate hashes in torrents and create unique index and then remove the code that geenrates the hasehs on boot
+
+
+
+
+subtitles logic:
+shows:
+  when persisting a new torrent to db attempt to download its subtitles
+    if user is logged in - this is a result of user search and download - use his subtitles settings
+    if user is not logged in - this is a background job, query all users that have this show tracked and merge their subtitles settings
+movies:
+  when persisting a new torrent it might be a human search by imdbid but also might be a job and then this movie is not belongs to anyone yet
+  so no point downloading subtitles here
+  if user search by imdb id also not enough cuz he not downloads the movie yet
+  when user pressed the blue down arrow to download a movie - only then attempt to download subtitles for that movie by the settings of that user
+
+(this all might change if we would like to show per torrent in the ui if it has subtitles available, then it cant be async like now in the background
+but will have to be somehow before, in the process of the search already know and display the subs with the results)

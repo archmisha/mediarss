@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import rss.entities.Episode;
-import rss.services.requests.ShowRequest;
+import rss.services.requests.episodes.ShowRequest;
 import rss.services.searchers.AbstractMediaSearcher;
 import rss.services.searchers.composite.torrentz.EpisodeTorrentzSearcher;
 import rss.services.searchers.composite.torrentz.TorrentzSearcher;

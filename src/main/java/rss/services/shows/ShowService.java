@@ -5,9 +5,9 @@ import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
 import rss.entities.User;
 import rss.services.matching.MatchCandidate;
-import rss.services.requests.EpisodeRequest;
+import rss.services.requests.episodes.EpisodeRequest;
 import rss.entities.Show;
-import rss.services.requests.ShowRequest;
+import rss.services.requests.episodes.ShowRequest;
 
 import java.util.Collection;
 import java.util.List;

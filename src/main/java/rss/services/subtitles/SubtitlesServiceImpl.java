@@ -2,7 +2,6 @@ package rss.services.subtitles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +11,7 @@ import rss.dao.SubtitlesDao;
 import rss.services.SettingsService;
 import rss.services.downloader.SubtitlesDownloader;
 import rss.services.log.LogService;
-import rss.services.requests.SubtitlesRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

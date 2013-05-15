@@ -4,9 +4,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import rss.controllers.vo.UserMovieVO;
 import rss.entities.Movie;
 import rss.entities.User;
-import rss.entities.UserMovie;
 import rss.services.downloader.DownloadResult;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 
 import java.util.ArrayList;
 

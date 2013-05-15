@@ -92,7 +92,7 @@ public class MoviesController extends BaseController {
 	@RequestMapping(value = "/download", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> movieDownload(@RequestParam("torrentId") long torrentId,
+	public Map<String, Object> downloadMovie(@RequestParam("torrentId") long torrentId,
 											 @RequestParam("movieId") long movieId,
 											 @RequestParam("isUserMovies") boolean isUserMovies) {
 		User user = userDao.find(sessionService.getLoggedInUserId());

@@ -8,7 +8,7 @@ import rss.entities.Movie;
 import rss.services.EmailService;
 import rss.services.JobRunner;
 import rss.services.downloader.DownloadResult;
-import rss.services.requests.MovieRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.util.QuartzJob;
 
 /**

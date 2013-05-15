@@ -1,11 +1,10 @@
 package rss.dao;
 
 import rss.entities.Show;
-import rss.services.requests.EpisodeRequest;
+import rss.services.requests.episodes.EpisodeRequest;
 import rss.entities.Torrent;
-import rss.services.subtitles.SubtitleLanguage;
 import rss.entities.Episode;
-import rss.services.requests.ShowRequest;
+import rss.services.requests.episodes.ShowRequest;
 
 import java.util.Collection;
 import java.util.List;
