@@ -42,6 +42,8 @@ define(['MessageBox', 'Spinner'],
 
 				if (res.readyState === 0 && res.status === 0) {
 					MessageBox.error('Unable to communicate with the server');
+				} else if (res.status === 503) {
+					MessageBox.error('Server is not responding for too long');
 				} else {
 					MessageBox.error(res);
 				}
