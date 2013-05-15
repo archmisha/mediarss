@@ -17,7 +17,6 @@ import rss.util.DurationMeter;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +41,9 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	private Map<Long, CachedShowSubsetSet> showNameSubsets;
 
 	private ScheduledExecutorService executorService;
+
+	private ArrayList<CachedShow> readOnlyCachedShows;
+	private ArrayList<CachedShowSubsetSet> readOnlyShowSubsets;
 
 	@PostConstruct
 	private void postConstruct() {
@@ -87,6 +89,9 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 			}
 		}
 
+		readOnlyCachedShows = new ArrayList<>(cache.values());
+		readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
+
 		duration.stop();
 		logService.info(getClass(), String.format("Loaded shows cache (%d millis)", duration.getDuration()));
 	}
@@ -98,31 +103,30 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		}
 	}
 
-	private Generator<String> getSubsets(String[] arr) {
-		ICombinatoricsVector<String> initialSet = Factory.createVector(arr);
-		return Factory.createSubSetGenerator(initialSet);
-	}
-
 	@Override
 	public void put(Show show) {
-		addShow(new CachedShow(show.getId(), show.getName(), show.isEnded()));
+		boolean isChangedMaps = addShow(new CachedShow(show.getId(), show.getName(), show.isEnded()));
+		if (isChangedMaps) {
+			readOnlyCachedShows = new ArrayList<>(cache.values());
+			readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
+		}
 	}
 
 	@Override
 	public Collection<CachedShow> getAll() {
-		return new CopyOnWriteArrayList<>(cache.values());
+		return readOnlyCachedShows;
 	}
 
 	@Override
 	public Collection<CachedShowSubsetSet> getShowsSubsets() {
-		return new CopyOnWriteArrayList<>(showNameSubsets.values());
+		return readOnlyShowSubsets;
 	}
 
-	private void addShow(CachedShow show) {
+	private boolean addShow(CachedShow show) {
 		// if cache already contains this show, the only thing to update is the ended field
 		if (cache.containsKey(show.getId())) {
 			cache.get(show.getId()).setEnded(show.isEnded());
-			return;
+			return false;
 		}
 
 		cache.put(show.getId(), show);
@@ -143,5 +147,11 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		}
 
 		showNameSubsets.put(show.getId(), new CachedShowSubsetSet(show, cachedShowSubsets));
+		return true;
+	}
+
+	private Generator<String> getSubsets(String[] arr) {
+		ICombinatoricsVector<String> initialSet = Factory.createVector(arr);
+		return Factory.createSubSetGenerator(initialSet);
 	}
 }
