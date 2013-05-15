@@ -102,7 +102,9 @@ public class IMDBServiceImpl implements IMDBService {
 		if (!isComingSoon) {
 			Matcher viewersMatcher = VIEWERS_PATTERN.matcher(partialPage);
 			if (!viewersMatcher.find()) {
-				logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "': " + partialPage);
+				// not printing the partial page in purpose, it just spams the log file
+//				logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "': " + partialPage);
+				logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "'");
 			} else {
 				String viewersStr = viewersMatcher.group(1);
 				viewersStr = viewersStr.replaceAll(",", "");
