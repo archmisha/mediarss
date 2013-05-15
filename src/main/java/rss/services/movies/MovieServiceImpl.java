@@ -232,8 +232,8 @@ public class MovieServiceImpl implements MovieService {
 			if (userMovieVO == null) {
 				userMovieVO = new UserMovieVO()
 						.withId(movie.getId())
-						.withTitle(movie.getName())
-						.withImdbUrl(movie.getImdbUrl());
+						.withTitle(movie.getName());
+//						.withImdbUrl(movie.getImdbUrl());
 				lwUserMovies.put(movie.getName(), userMovieVO);
 			}
 			return userMovieVO;

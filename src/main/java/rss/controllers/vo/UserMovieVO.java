@@ -13,7 +13,7 @@ public class UserMovieVO {
 
 	private long id;
 	private String title;
-	private String imdbUrl;
+//	private String imdbUrl;
 	private List<UserMovieTorrentVO> torrents;
 	private Date latestUploadDate;
 	private DownloadStatus downloadStatus;
@@ -64,10 +64,10 @@ public class UserMovieVO {
 		return this;
 	}
 
-	public UserMovieVO withImdbUrl(String imdbUrl) {
-		this.imdbUrl = imdbUrl;
-		return this;
-	}
+//	public UserMovieVO withImdbUrl(String imdbUrl) {
+//		this.imdbUrl = imdbUrl;
+//		return this;
+//	}
 
 	public void setLatestUploadDate(Date latestUploadDate) {
 		this.latestUploadDate = latestUploadDate;
@@ -85,9 +85,9 @@ public class UserMovieVO {
 		return title;
 	}
 
-	public String getImdbUrl() {
-		return imdbUrl;
-	}
+//	public String getImdbUrl() {
+//		return imdbUrl;
+//	}
 
 	public List<UserMovieTorrentVO> getTorrents() {
 		return torrents;

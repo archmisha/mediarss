@@ -14,28 +14,6 @@ import java.util.*;
 @Repository
 public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 
-	/*@Override
-	public Collection<Torrent> find(Set<String> titles) {
-		if (titles.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		StringBuilder query = new StringBuilder();
-		List<Object> params = new ArrayList<>();
-
-		String orPart = " or ";
-		query.append("select t from Torrent as t where ");
-		int counter = 0;
-		for (String title : titles) {
-			query.append("(t.title = :p").append(counter++).append(")");
-			query.append(orPart);
-			params.add(title);
-		}
-		query.delete(query.length() - orPart.length(), query.length());
-
-		return find(query.toString(), params.toArray());
-	}*/
-
 	@Override
 	public Collection<Torrent> findByHash(Set<String> hashes) {
 		if (hashes.isEmpty()) {
@@ -63,10 +41,5 @@ public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("url", url);
 		return uniqueResult(super.<Torrent>findByNamedQueryAndNamedParams("Torrent.findByUrl", params));
-	}
-
-	@Override
-	public Collection<Torrent> findA() {
-		return super.find("from Torrent where hash is null");
 	}
 }

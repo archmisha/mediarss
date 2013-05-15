@@ -74,9 +74,6 @@ public class AppConfigListener implements ServletContextListener {
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 
-	@Autowired
-	protected TorrentDao torrentDao;
-
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		String base = ".";
@@ -136,24 +133,6 @@ public class AppConfigListener implements ServletContextListener {
 					startMemoryPrinter();
 				} else if (!settingsService.isLogMemory() && logMemoryExecutorService != null) {
 					stopMemoryPrinter();
-				}
-			}
-		});
-
-
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-				for (Torrent torrent : torrentDao.findA()) {
-					if (torrent.getHash() == null) {
-						Pattern MAGNET_LINK_HASH_PART_PATTERN = Pattern.compile("btih:([^&]+)&");
-						java.util.regex.Matcher matcher = MAGNET_LINK_HASH_PART_PATTERN.matcher(torrent.getUrl());
-						if (matcher.find()) {
-							torrent.setHash(matcher.group(1));
-						} else {
-							logService.error(getClass(), "Failed extracting hash from magnet: " + torrent.getUrl());
-						}
-					}
 				}
 			}
 		});

@@ -64,7 +64,6 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 			CollectionUtils.safeListPut(imdbIdMap, getImdbId(searchResult), pair);
 		}
 
-		Map<Movie, List<SubtitleLanguage>> languagesPerMovie = new HashMap<>();
 		List<Movie> res = new ArrayList<>();
 		for (Map.Entry<String, List<Pair<MovieRequest, SearchResult>>> entry : imdbIdMap.entrySet()) {
 			String imdbId = entry.getKey();
@@ -97,8 +96,6 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 					if (persistedTorrent == null) {
 						torrentDao.persist(torrent);
 						persistedTorrent = torrent;
-
-//						handleSubtitles(languagesPerMovie, persistedMovie, torrent);
 					}
 
 					if (persistedMovie.getTorrentIds().isEmpty()) {

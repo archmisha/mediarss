@@ -17,6 +17,4 @@ public interface TorrentDao extends Dao<Torrent> {
 	Collection<Torrent> findByHash(Set<String> hashes);
 
 	Torrent findByUrl(String url);
-
-	Collection<Torrent> findA();
 }
