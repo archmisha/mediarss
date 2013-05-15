@@ -9,15 +9,21 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import rss.entities.Torrent;
 import rss.services.OOTBContentLoader;
 import rss.services.SettingsService;
 import rss.services.log.LogService;
 import rss.util.QuartzJob;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -39,6 +45,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.*;
 
 /**
  * User: Michael Dikman
@@ -62,6 +69,12 @@ public class AppConfigListener implements ServletContextListener {
 	private LogService logService;
 
 	private ScheduledExecutorService logMemoryExecutorService;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
+	@PersistenceContext
+	protected EntityManager em;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -122,6 +135,24 @@ public class AppConfigListener implements ServletContextListener {
 					startMemoryPrinter();
 				} else if (!settingsService.isLogMemory() && logMemoryExecutorService != null) {
 					stopMemoryPrinter();
+				}
+			}
+		});
+
+
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+				for (Torrent torrent : (List<Torrent>)em.createQuery("from Torrent where hash is null").getResultList()) {
+					if (torrent.getHash() == null) {
+						Pattern MAGNET_LINK_HASH_PART_PATTERN = Pattern.compile("btih:([^&]+)&");
+						java.util.regex.Matcher matcher = MAGNET_LINK_HASH_PART_PATTERN.matcher(torrent.getUrl());
+						if (matcher.find()) {
+							torrent.setHash(matcher.group(1));
+						} else {
+							logService.error(getClass(), "Failed extracting hash from magnet: " + torrent.getUrl());
+						}
+					}
 				}
 			}
 		});
