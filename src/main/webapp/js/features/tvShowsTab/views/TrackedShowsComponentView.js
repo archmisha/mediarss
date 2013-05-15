@@ -70,7 +70,7 @@ define([
 				var that = this;
 				Spinner.mask();
 				setTimeout(function() {
-					HttpUtils.post("rest/shows/addTracked/" + showId, {}, function(res) {
+					HttpUtils.post("rest/shows/add-tracked/" + showId, {}, function(res) {
 						Spinner.unmask();
 						that.trackedShowsCollection.add(new Show({id: comboShow.id, name: comboShow.text}));
 						that.trackedShowsCollection.sort();
