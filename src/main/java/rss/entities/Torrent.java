@@ -38,7 +38,7 @@ public class Torrent extends BaseEntity implements Downloadable, Comparable<Torr
     @Column(name = "quality", nullable = false)
     private MediaQuality quality;
 
-	@Column(name = "hash")
+	@Column(name = "hash", unique = true)
 	private String hash;
 
     // not stored in the database, because first it will become outdated and second it is only used while
