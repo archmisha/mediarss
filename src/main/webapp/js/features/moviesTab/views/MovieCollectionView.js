@@ -16,6 +16,12 @@ define([
 				this.itemViewOptions = { vent: options.vent };
 
 				Marionette.CollectionView.prototype.constructor.apply(this, arguments);
+
+				this.collection.bind("change reset add remove", this._updateLoadingLabel, this);
+			},
+
+			_updateLoadingLabel: function() {
+				this.$el.find('.movies-list-empty-label-container').html('No movies');
 			}
 		});
 	});
