@@ -16,17 +16,5 @@ import java.util.Set;
 public abstract class Media extends BaseEntity {
 	private static final long serialVersionUID = 2655420980314962072L;
 
-	//    @OneToMany(mappedBy = "media", targetEntity = Torrent.class)
-	@ElementCollection(fetch = FetchType.EAGER)
-	private Set<Long> torrentIds;
-
-	public Media() {
-		torrentIds = new HashSet<>();
-	}
-
 	public abstract String getName();
-
-	public Set<Long> getTorrentIds() {
-		return torrentIds;
-	}
 }

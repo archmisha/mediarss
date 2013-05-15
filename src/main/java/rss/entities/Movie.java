@@ -1,6 +1,8 @@
 package rss.entities;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -41,15 +43,24 @@ public class Movie extends Media {
 	@Column(name = "subcenter_url")
 	private String subCenterUrl;
 
+	@ElementCollection(fetch = FetchType.EAGER)
+	private Set<Long> torrentIds;
+
 	// for hibernate
 	@SuppressWarnings("UnusedDeclaration")
 	private Movie() {
+		torrentIds = new HashSet<>();
 	}
 
 	public Movie(String name, String imdbUrl, int year) {
+		this();
 		this.name = name;
 		this.imdbUrl = imdbUrl;
 		this.year = year;
+	}
+
+	public Set<Long> getTorrentIds() {
+		return torrentIds;
 	}
 
 	public String getName() {

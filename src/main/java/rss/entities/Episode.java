@@ -6,6 +6,8 @@ import org.hibernate.annotations.Index;
 import javax.persistence.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -46,18 +48,27 @@ public class Episode extends Media {
 	@Column(name = "scan_date")
 	private Date scanDate;
 
+	@ElementCollection(fetch = FetchType.EAGER)
+	private Set<Long> torrentIds;
+
 	@SuppressWarnings("UnusedDeclaration")
 	public Episode() {
+		torrentIds = new HashSet<>();
+	}
+
+	public Episode(int season, int episode) {
+		this();
+		this.season = season;
+		this.episode = episode;
+	}
+
+	public Set<Long> getTorrentIds() {
+		return torrentIds;
 	}
 
 	@Override
 	public String getName() {
 		return show.getName();
-	}
-
-	public Episode(int season, int episode) {
-		this.season = season;
-		this.episode = episode;
 	}
 
 	public int getSeason() {
