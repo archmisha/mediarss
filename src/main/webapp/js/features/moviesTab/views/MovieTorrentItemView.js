@@ -21,6 +21,7 @@ define([
 				scheduledImage: '.movie-torrent-item-scheduled-image',
 				downloadedImage: '.movie-torrent-item-downloaded-image',
 				movieTorrentTitle: '.movie-torrent-title',
+				movieTorrentItem: '.movie-torrent-item-inner',
 				scheduledOn: '.movie-torrent-scheduled-on',
 				scheduledOnDate: '.movie-torrent-scheduled-on-date'
 			},
@@ -64,10 +65,16 @@ define([
 
 				this.updateDownloadStatus();
 
-				[this.ui.downloadImage, this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTorrentTitle].forEach(
+				[this.ui.downloadImage, this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTorrentItem].forEach(
 					function(el) {
 						el.qtip({
-							style: 'rssStyle'
+							style: 'rssStyle',
+							position: {
+								corner: {
+									target: 'bottomLeft',
+									tooltip: 'topLeft'
+								}
+							}
 						});
 					});
 

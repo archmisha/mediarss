@@ -126,13 +126,15 @@ require([
 				border: {
 					width: 1,
 					radius: 4
-				}
+				},
+				whiteSpace: 'nowrap',
+				width: 'auto'
 			};
 
 			// preload error dialog images
 			$(['images/jqueryMessageBox/error.jpg',
 				'images/jqueryMessageBox/msgBoxBackGround.png']).each(function() {
-					$('<img />').attr('src',this).appendTo('body').css('display','none');
+					$('<img />').attr('src', this).appendTo('body').css('display', 'none');
 				});
 		});
 
