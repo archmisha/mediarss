@@ -170,8 +170,12 @@ public class MoviesController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getUserMovies() {
 		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
 		result.put("movies", movieService.getUserMovies(user));
+		duration.stop();
+		logService.info(getClass(), "User movies " + duration.getDuration() + " millis");
 		return result;
 	}
 
@@ -180,8 +184,12 @@ public class MoviesController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getAvailableMovies() {
 		User user = userDao.find(sessionService.getLoggedInUserId());
+
+		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
 		result.put("movies", movieService.getAvailableMovies(user));
+		duration.stop();
+		logService.info(getClass(), "Available movies " + duration.getDuration() + " millis");
 		return result;
 	}
 
