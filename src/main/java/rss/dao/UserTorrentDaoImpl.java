@@ -2,7 +2,6 @@ package rss.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.entities.*;
-import rss.util.DateUtils;
 
 import java.util.*;
 
@@ -32,6 +31,9 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 
 	@Override
 	public List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Long> movieIds) {
+		if (movieIds.isEmpty()) {
+			return Collections.emptyList();
+		}
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
 		params.put("movieIds", movieIds);
