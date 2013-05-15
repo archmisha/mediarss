@@ -51,7 +51,7 @@ public class Subtitles extends Media implements Downloadable {
 	private String fileName;
 
 	@Column(name = "date_uploaded")
-	@Index(name = "date_uploaded_idx")
+	@Index(name = "subs_date_uploaded_idx")
 	private Date dateUploaded;
 
 	public SubtitleLanguage getLanguage() {
