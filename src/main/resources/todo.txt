@@ -43,8 +43,6 @@ schedule - if some show has an episode in more than 7 days - maybe should add it
 schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to display more days?
 take all tracked shows, sort the episode airdates, take the 7 before now and the 7 after now (occurances)
 
-make subtitles be totally optional!
-
 
 2013-04-28 00:02:22,149 [INFO ] ShowServiceImpl - Removing 'survivor africa season 3' cuz a bad show name match for 'Survivor season 3'
 
@@ -87,31 +85,6 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)
         ... 27 more
 
-
-
-
-
-
-
-subtitles
-job to download periodically
-scan data in subtitles like in episodes and make logic when to skip
-downloader for subtitles
-query name should be by the torrent name
-search doesnt work on subcenter:
-  seach for show name if match then can append the season / episode to the url
-
-
-loading shwos cache rewrite
-  ugly thing in the searcher with the inheritance and the imdbid there and on torrent found uplicated
-
-
-
-  when deploying:
-  remove commons-cli 1.0
-  remove commons-lang 1.0
-  remove commosn-collections old and add comons-collections 4.0 snapshot
-  after deply need to deelte all duplicate hashes in torrents and create unique index and then remove the code that geenrates the hasehs on boot
 
 
 

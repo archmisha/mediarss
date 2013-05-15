@@ -155,25 +155,6 @@ public class MovieServiceImpl implements MovieService {
 		UserMovieStatusComparator comparator = new UserMovieStatusComparator(torrentsByIds);
 		for (UserMovieVO userMovieVO : result) {
 			Collections.sort(userMovieVO.getTorrents(), comparator);
-
-			/*// now the first element is the newest
-			userMovieVO.setViewed(false);
-			if (!userMovieVO.getTorrents().isEmpty()) {
-				UserMovie userMovie = movieDao.findUserMovie(userMovieVO.getId(), user);
-
-				// userMovie is viewed only if all its torrents date are before the last movie view date
-				Torrent torrent = torrentsByIds.get(userMovieVO.getTorrents().get(0).getTorrentId());
-				if (userMovie != null && torrent.getDateUploaded().before(userMovie.getUpdated())) {
-					userMovieVO.setViewed(true);
-				}
-
-				for (UserMovieTorrentVO userMovieTorrentVO : userMovieVO.getTorrents()) {
-					torrent = torrentsByIds.get(userMovieTorrentVO.getTorrentId());
-					if (userMovie != null && torrent.getDateUploaded().before(userMovie.getUpdated())) {
-						userMovieTorrentVO.withViewed(true);
-					}
-				}
-			}*/
 		}
 
 		Collections.sort(result, new Comparator<UserMovieVO>() {
