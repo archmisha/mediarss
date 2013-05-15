@@ -4,7 +4,7 @@ import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import rss.services.requests.SubtitlesRequest;
+import rss.services.log.LogService;
 import rss.services.shows.ShowServiceImpl;
 
 import java.util.*;
@@ -15,12 +15,17 @@ import java.util.*;
  */
 public class MatchingUtils {
 
-	public static MatchCandidate filterByLevenshteinDistance(String title, Collection<MatchCandidate> candidates) {
+	public static MatchCandidate filterByLevenshteinDistance(String title, Collection<MatchCandidate> candidates, LogService logService) {
 		// filter matching results
 		String normalizedTitle = ShowServiceImpl.normalize(title);
+		logService.info(MatchingUtils.class, "Calculating LD with '" + normalizedTitle + "'");
 		List<Pair<Integer, MatchCandidate>> pairs = new ArrayList<>();
 		for (MatchCandidate candidate : candidates) {
-			pairs.add(new ImmutablePair<>(StringUtils.getLevenshteinDistance(candidate.getText().trim(), normalizedTitle), candidate));
+			String candidateText = candidate.getText();
+			String normalizedCandidateText = ShowServiceImpl.normalize(candidateText);
+			int ld = StringUtils.getLevenshteinDistance(normalizedCandidateText, normalizedTitle);
+			pairs.add(new ImmutablePair<>(ld, candidate));
+			logService.info(MatchingUtils.class, "LD=" + ld + " " + normalizedCandidateText);
 		}
 
 		MatchCandidate bestCandidate = null;
