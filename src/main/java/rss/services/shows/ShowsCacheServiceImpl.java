@@ -20,6 +20,8 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: dikmanm
@@ -37,19 +39,18 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	@Autowired
 	protected LogService logService;
 
-	private Map<Long, CachedShow> cache;
-	private Map<Long, CachedShowSubsetSet> showNameSubsets;
+	private Map<Long, CachedShow> cache = new HashMap<>();
+	private Map<Long, CachedShowSubsetSet> showNameSubsets = new HashMap<>();
 
 	private ScheduledExecutorService executorService;
 
 	private ArrayList<CachedShow> readOnlyCachedShows;
 	private ArrayList<CachedShowSubsetSet> readOnlyShowSubsets;
 
+	private Lock lock = new ReentrantLock();
+
 	@PostConstruct
 	private void postConstruct() {
-		cache = new HashMap<>();
-		showNameSubsets = new HashMap<>();
-
 		executorService = Executors.newSingleThreadScheduledExecutor();
 		executorService.scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -71,44 +72,59 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	}
 
 	private void reloadCache() {
-		DurationMeter duration = new DurationMeter();
+		lock.lock();
+		try {
+			DurationMeter duration = new DurationMeter();
 
-		// store the ids of the existing shows in the cache, to know which to remove later
-		Set<Long> existingShowIds = new HashSet<>(cache.keySet());
+			// store the ids of the existing shows in the cache, to know which to remove later
+			Set<Long> existingShowIds = new HashSet<>(cache.keySet());
 
-		for (CachedShow show : showDao.findCachedShows()) {
-			addShow(show);
-			existingShowIds.remove(show.getId());
-		}
-
-		// remove shows which were not found in the DB
-		for (Long existingShowId : existingShowIds) {
-			// only if found and removed the show from the first cache, try to remove it also from the second one
-			if (cache.remove(existingShowId) != null) {
-				showNameSubsets.remove(existingShowId);
+			for (CachedShow show : showDao.findCachedShows()) {
+				addShow(show);
+				existingShowIds.remove(show.getId());
 			}
+
+			// remove shows which were not found in the DB
+			for (Long existingShowId : existingShowIds) {
+				// only if found and removed the show from the first cache, try to remove it also from the second one
+				if (cache.remove(existingShowId) != null) {
+					showNameSubsets.remove(existingShowId);
+				}
+			}
+
+			readOnlyCachedShows = new ArrayList<>(cache.values());
+			readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
+
+			duration.stop();
+			logService.info(getClass(), String.format("Loaded shows cache (%d millis)", duration.getDuration()));
+		} finally {
+			lock.unlock();
 		}
-
-		readOnlyCachedShows = new ArrayList<>(cache.values());
-		readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
-
-		duration.stop();
-		logService.info(getClass(), String.format("Loaded shows cache (%d millis)", duration.getDuration()));
 	}
 
 	@Override
 	public void updateShowEnded(Show show) {
-		if (cache.containsKey(show.getId())) {
-			cache.get(show.getId()).setEnded(show.isEnded());
+		lock.lock();
+		try {
+			if (cache.containsKey(show.getId())) {
+				cache.get(show.getId()).setEnded(show.isEnded());
+			}
+		} finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public void put(Show show) {
-		boolean isChangedMaps = addShow(new CachedShow(show.getId(), show.getName(), show.isEnded()));
-		if (isChangedMaps) {
-			readOnlyCachedShows = new ArrayList<>(cache.values());
-			readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
+		lock.lock();
+		try {
+			boolean isChangedMaps = addShow(new CachedShow(show.getId(), show.getName(), show.isEnded()));
+			if (isChangedMaps) {
+				readOnlyCachedShows = new ArrayList<>(cache.values());
+				readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
+			}
+		} finally {
+			lock.unlock();
 		}
 	}
 
@@ -124,12 +140,11 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 	private boolean addShow(CachedShow show) {
 		// if cache already contains this show, the only thing to update is the ended field
-		if (cache.containsKey(show.getId())) {
-			cache.get(show.getId()).setEnded(show.isEnded());
+		CachedShow cachedShow = cache.get(show.getId());
+		if (cachedShow != null) {
+			cachedShow.setEnded(show.isEnded());
 			return false;
 		}
-
-		cache.put(show.getId(), show);
 
 		String cur = ShowServiceImpl.normalize(show.getName());
 		String[] arr = cur.split(" ");
@@ -146,6 +161,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 			cachedShowSubsets[i++] = new CachedShowSubset(StringUtils.join(permutation, " "), (byte) permutation.size());
 		}
 
+		cache.put(show.getId(), show);
 		showNameSubsets.put(show.getId(), new CachedShowSubsetSet(show, cachedShowSubsets));
 		return true;
 	}
