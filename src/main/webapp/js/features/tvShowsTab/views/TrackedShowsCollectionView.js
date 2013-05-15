@@ -15,6 +15,10 @@ define([
 				this.itemViewOptions = { vent: options.vent };
 
 				Marionette.CollectionView.prototype.constructor.apply(this, arguments);
+			},
+
+			onRender: function() {
+				this.$el.find('.tracked-shows-empty-label-container').html('No tracked shows');
 			}
 		});
 	});
