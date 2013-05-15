@@ -64,4 +64,9 @@ public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 		params.put("url", url);
 		return uniqueResult(super.<Torrent>findByNamedQueryAndNamedParams("Torrent.findByUrl", params));
 	}
+
+	@Override
+	public Collection<Torrent> findA() {
+		return super.find("from Torrent where hash is null");
+	}
 }

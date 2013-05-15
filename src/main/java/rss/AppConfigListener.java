@@ -16,6 +16,7 @@ import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import rss.dao.TorrentDao;
 import rss.entities.Torrent;
 import rss.services.OOTBContentLoader;
 import rss.services.SettingsService;
@@ -73,8 +74,8 @@ public class AppConfigListener implements ServletContextListener {
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 
-	@PersistenceContext
-	protected EntityManager em;
+	@Autowired
+	protected TorrentDao torrentDao;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -143,7 +144,7 @@ public class AppConfigListener implements ServletContextListener {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-				for (Torrent torrent : (List<Torrent>)em.createQuery("from Torrent where hash is null").getResultList()) {
+				for (Torrent torrent : torrentDao.findA()) {
 					if (torrent.getHash() == null) {
 						Pattern MAGNET_LINK_HASH_PART_PATTERN = Pattern.compile("btih:([^&]+)&");
 						java.util.regex.Matcher matcher = MAGNET_LINK_HASH_PART_PATTERN.matcher(torrent.getUrl());

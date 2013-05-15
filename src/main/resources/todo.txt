@@ -104,3 +104,11 @@ search doesnt work on subcenter:
 
 loading shwos cache rewrite
   ugly thing in the searcher with the inheritance and the imdbid there and on torrent found uplicated
+
+
+
+  when deploying:
+  remove commons-cli 1.0
+  remove commons-lang 1.0
+  remove commosn-collections old and add comons-collections 4.0 snapshot
+  after deply need to deelte all duplicate hashes in torrents and create unique index and then remove the code that geenrates the hasehs on boot
