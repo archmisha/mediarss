@@ -9,13 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
-import rss.dao.MovieDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserDao;
+import rss.dao.*;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.movies.IMDBPreviewCacheService;
 import rss.services.movies.IMDBService;
+import rss.services.movies.MovieService;
 import rss.services.movies.MoviesScrabblerImpl;
 import rss.util.DurationMeter;
 
@@ -45,6 +44,15 @@ public class MoviesController extends BaseController {
 
 	@Autowired
 	private IMDBService imdbService;
+
+	@Autowired
+	private JobStatusDao jobStatusDao;
+
+	@Autowired
+	private MovieService movieService;
+
+	@Autowired
+	protected UserTorrentDao userTorrentDao;
 
 	@RequestMapping(value = "/imdb/{movieId}", method = RequestMethod.GET)
 	@ResponseBody

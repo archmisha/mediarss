@@ -13,20 +13,12 @@ import java.util.Set;
  */
 @MappedSuperclass
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-//@org.hibernate.annotations.Table(appliesTo = "media",
-//                                 indexes = {
-//                                         @Index(name = "media_name_idx", columnNames = {"name"})
-//                                 })
 public abstract class Media extends BaseEntity {
 	private static final long serialVersionUID = 2655420980314962072L;
 
 	//    @OneToMany(mappedBy = "media", targetEntity = Torrent.class)
-//	@GwtTransient // no need PersistentSet gwt rpc exceptions
 	@ElementCollection(fetch = FetchType.EAGER)
 	private Set<Long> torrentIds;
-
-	@Column(name = "subtitles_scan_date")
-	private Date subtitlesScanDate;
 
 	public Media() {
 		torrentIds = new HashSet<>();
@@ -36,13 +28,5 @@ public abstract class Media extends BaseEntity {
 
 	public Set<Long> getTorrentIds() {
 		return torrentIds;
-	}
-
-	public Date getSubtitlesScanDate() {
-		return subtitlesScanDate;
-	}
-
-	public void setSubtitlesScanDate(Date subtitlesScanDate) {
-		this.subtitlesScanDate = subtitlesScanDate;
 	}
 }

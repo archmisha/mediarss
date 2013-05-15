@@ -9,10 +9,7 @@ import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.EmailService;
-import rss.services.SessionService;
-import rss.services.SettingsService;
-import rss.services.UserServiceImpl;
+import rss.services.*;
 import rss.services.log.LogService;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.util.DurationMeter;
@@ -42,6 +39,9 @@ public class UserController extends BaseController {
 
 	@Autowired
 	private LogService logService;
+
+	@Autowired
+	private UserService userService;
 
 	@RequestMapping(value = "/pre-login/{tab}", method = RequestMethod.GET)
 	@ResponseBody

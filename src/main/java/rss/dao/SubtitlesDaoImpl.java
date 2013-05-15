@@ -1,11 +1,8 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.entities.Episode;
-import rss.entities.Show;
+import rss.entities.*;
 import rss.services.subtitles.SubtitleLanguage;
-import rss.entities.Subtitles;
-import rss.entities.Torrent;
 
 import java.util.*;
 
@@ -74,5 +71,13 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("showId", show.getId());
 		return super.findByNamedQueryAndNamedParams("Subtitles.getSubtitlesLanguages", params);
+	}
+
+	@Override
+	public SubtitlesScanHistory findSubtitleScanHistory(Torrent torrent, SubtitleLanguage language) {
+		Map<String, Object> params = new HashMap<>(2);
+		params.put("torrentId", torrent.getId());
+		params.put("language", language);
+		return uniqueResult(super.<SubtitlesScanHistory>findByNamedQueryAndNamedParams("SubtitlesScanHistory.find", params));
 	}
 }

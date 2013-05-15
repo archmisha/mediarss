@@ -83,7 +83,6 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 								toSubCenterLanguages(subtitleLanguage), foundSubtitles.getId(), foundSubtitles.getName(), foundSubtitles.getKey()));
 
 						Subtitles subtitles = new Subtitles();
-						subtitles.setSubtitlesScanDate(new Date());
 						subtitles.setLanguage(foundSubtitles.getLanguage());
 						subtitles.setFileName(foundSubtitles.getName());
 						subtitles.setExternalId(String.valueOf(foundSubtitles.getId()));

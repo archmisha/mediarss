@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
 import rss.controllers.vo.EpisodeSearchResult;
+import rss.controllers.vo.ShowVO;
 import rss.dao.EpisodeDao;
 import rss.dao.ShowDao;
 import rss.dao.TorrentDao;
@@ -152,9 +153,17 @@ public class ShowsController extends BaseController {
 	public Map<String, Object> initialData() {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 
+		List<ShowVO> shows = entityConverter.toThinShows(user.getShows());
+		Collections.sort(shows, new Comparator<ShowVO>() {
+			@Override
+			public int compare(ShowVO o1, ShowVO o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
+			}
+		});
+
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
-		result.put("trackedShows", sort(entityConverter.toThinShows(user.getShows())));
+		result.put("trackedShows", shows);
 		result.put("schedule", showService.getSchedule(user.getShows()));
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();

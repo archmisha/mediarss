@@ -66,6 +66,6 @@ public class SubCenterSubtitlesSearcherTest extends BaseTest {
 		episode.setShow(show);
 
 		List<SubtitleLanguage> languages = Collections.singletonList(SubtitleLanguage.HEBREW);
-		SearchResult searchResult = subCenterSubtitlesSearcher.search(new SubtitlesSingleEpisodeRequest(torrent, show, 1, 1, languages));
+		SearchResult searchResult = subCenterSubtitlesSearcher.search(new SubtitlesSingleEpisodeRequest(torrent, show, 1, 1, languages, episode.getAirDate()));
 	}
 }

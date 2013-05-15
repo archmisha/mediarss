@@ -102,4 +102,13 @@ public class Subtitles extends Media implements Downloadable {
 	public void setDateUploaded(Date dateUploaded) {
 		this.dateUploaded = dateUploaded;
 	}
+
+	@Override
+	public String toString() {
+		return "Subtitles{" +
+			   "language=" + language.name() +
+			   ", fileName='" + fileName + '\'' +
+			   ", dateUploaded=" + dateUploaded +
+			   '}';
+	}
 }

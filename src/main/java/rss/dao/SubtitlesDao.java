@@ -2,6 +2,7 @@ package rss.dao;
 
 import rss.entities.Show;
 import rss.entities.Subtitles;
+import rss.entities.SubtitlesScanHistory;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.entities.Torrent;
 
@@ -25,4 +26,6 @@ public interface SubtitlesDao extends Dao<Subtitles> {
 	List<SubtitleLanguage> getSubtitlesLanguagesForTorrent(Torrent torrent);
 
 	List<SubtitleLanguage> getSubtitlesLanguages(Show show);
+
+	SubtitlesScanHistory findSubtitleScanHistory(Torrent torrent, SubtitleLanguage language);
 }

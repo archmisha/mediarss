@@ -53,9 +53,7 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 			curRequest.setUploaders(foundRequest.getUploaders());
 			enrichRequestWithSearcherIds(curRequest);
 
-			CompositeSearcherData compositeSearcherData = new CompositeSearcherData();
-			super.search(curRequest);
-			SearchResult searchResult = compositeSearcherData.getSuccessfulSearchResult();
+			SearchResult searchResult = super.search(curRequest);
 
 			// null means not found
 			if (searchResult != null) {
@@ -73,31 +71,32 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 			}
 		}
 
-		if (results.isEmpty()) {
-			if (awaitingAgingResult != null) {
-				return awaitingAgingResult;
-			} else {
-				return SearchResult.createNotFound();
+		if (!results.isEmpty()) {
+			// merge results into one
+			SearchResult searchResult = results.remove(0);
+//			searchResult.setSource(TorrentzParserImpl.NAME);
+			for (SearchResult result : results) {
+				searchResult.getDownloadables().addAll(result.getDownloadables());
+				searchResult.setSource(searchResult.getSource() + ", " + result.getSource());
 			}
+
+			return searchResult;
 		}
 
-		// merge results into one
-		SearchResult searchResult = results.remove(0);
-		searchResult.setSource(TorrentzParserImpl.NAME);
-		for (SearchResult result : results) {
-			searchResult.getDownloadables().addAll(result.getDownloadables());
+		if (awaitingAgingResult != null) {
+			return awaitingAgingResult;
 		}
 
-		return searchResult;
+		return SearchResult.createNotFound();
 	}
 
 	@Override
-	protected void onTorrentFound(CompositeSearcherData compositeSearcherData, SearchResult searchResult,
-								  String searcherName) {
+	protected String onTorrentFound(SearchResult searchResult) {
 		// case of no IMDB url
 		if (getImdbId(searchResult) == null) {
-			compositeSearcherData.getNoIMDBUrlSearchers().add(searcherName);
+			return "no IMDB id";
 		}
+		return null;
 	}
 
 	private String getImdbId(SearchResult searchResult) {

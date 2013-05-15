@@ -47,22 +47,10 @@ public class BaseController {
 	protected LogService logService;
 
 	@Autowired
-	protected UserTorrentDao userTorrentDao;
-
-	@Autowired
 	protected SettingsService settingsService;
 
 	@Autowired
-	protected MovieService movieService;
-
-	@Autowired
-	protected JobStatusDao jobStatusDao;
-
-	@Autowired
 	protected EntityConverter entityConverter;
-
-	@Autowired
-	protected UserService userService;
 
 	@Autowired
 	protected ShowService showService;
@@ -159,16 +147,6 @@ public class BaseController {
 		public void setSuccess(boolean success) {
 			this.success = success;
 		}
-	}
-
-	protected List<ShowVO> sort(List<ShowVO> shows) {
-		Collections.sort(shows, new Comparator<ShowVO>() {
-			@Override
-			public int compare(ShowVO o1, ShowVO o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}
-		});
-		return shows;
 	}
 
 	protected void autoCompleteShowNames(HttpServletRequest request, HttpServletResponse response, boolean includeEnded,
