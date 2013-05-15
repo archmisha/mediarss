@@ -3,6 +3,7 @@ package rss.services.downloader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.EpisodesComparator;
@@ -508,14 +509,19 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show) {
 		if (!languagesPerShow.containsKey(show)) {
-			if (sessionService.isUserLogged()) {
-				SubtitleLanguage subtitleLanguage = userDao.find(sessionService.getLoggedInUserId()).getSubtitles();
-				if (subtitleLanguage != null) {
-					languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
+			try {
+				if (sessionService.isUserLogged()) {
+					SubtitleLanguage subtitleLanguage = userDao.find(sessionService.getLoggedInUserId()).getSubtitles();
+					if (subtitleLanguage != null) {
+						languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
+					} else {
+						languagesPerShow.put(show, Collections.<SubtitleLanguage>emptyList());
+					}
 				} else {
-					languagesPerShow.put(show, Collections.<SubtitleLanguage>emptyList());
+					languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
 				}
-			} else {
+			} catch (BeansException e) {
+				// if user is not logged in and we don't have a session , we will have an exception here
 				languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
 			}
 		}
