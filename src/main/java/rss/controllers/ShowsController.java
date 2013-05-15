@@ -41,7 +41,7 @@ public class ShowsController extends BaseController {
 	@Autowired
 	protected ShowSearchService showSearchService;
 
-	@RequestMapping(value = "/addTracked/{showId}", method = RequestMethod.POST)
+	@RequestMapping(value = "/add-tracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> addTracked(@PathVariable final long showId) {
