@@ -20,7 +20,7 @@ define([
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.model = new ShowsSchedule();
-				this.vent.on('shows-schedule-update', this._updateShowsSchedule, this);
+				this.vent.on('shows-schedule-update', this.setSchedule, this);
 			},
 
 			setSchedule: function(schedule) {
@@ -28,11 +28,6 @@ define([
 				this.render();
 				// must call after the render call
 				this.ui.loadingComponent.hide();
-			},
-
-			_updateShowsSchedule: function(schedule) {
-				this.model.set('schedule', schedule);
-				this.render();
 			}
 		});
 	});

@@ -15,9 +15,11 @@ define([
 				this.itemViewOptions = { vent: options.vent };
 
 				Marionette.CollectionView.prototype.constructor.apply(this, arguments);
+
+				this.collection.bind("change reset add remove", this._updateLoadingLabel, this);
 			},
 
-			onRender: function() {
+			_updateLoadingLabel: function() {
 				this.$el.find('.tracked-shows-empty-label-container').html('No tracked shows');
 			}
 		});
