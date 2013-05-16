@@ -26,6 +26,7 @@ import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.subtitles.SubtitleLanguage;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.InvalidParameterException;
 import java.text.SimpleDateFormat;
@@ -220,78 +221,83 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 		// using the entries and not the values, cuz in the key of the map there is the names without the .srt / .zip suffix which is better for matching
 		SubCenterSubtitles bestResult = MatchingUtils.filterByLevenshteinDistance(mediaRequest.getTorrent().getTitle(), Collections2.transform(results.entrySet(),
 				new Function<Map.Entry<String, SubCenterSubtitles>, MatchCandidate>() {
-			@Override
-			public MatchCandidate apply(final Map.Entry<String, SubCenterSubtitles> entry) {
-				return new MatchCandidate() {
 					@Override
-					public String getText() {
-						return entry.getKey();
-					}
+					public MatchCandidate apply(final Map.Entry<String, SubCenterSubtitles> entry) {
+						return new MatchCandidate() {
+							@Override
+							public String getText() {
+								return entry.getKey();
+							}
 
-					@SuppressWarnings({"unchecked"})
-					@Override
-					public <T> T getObject() {
-						return (T) entry.getValue();
+							@SuppressWarnings({"unchecked"})
+							@Override
+							public <T> T getObject() {
+								return (T) entry.getValue();
+							}
+						};
 					}
-				};
-			}
-		}), logService).getObject();
+				}), logService).getObject();
 
 		return bestResult;
 	}
 
 	private String getSubCenterShowUrl(String name, boolean isShow) {
-		name = StringUtils.replace(name, "'", "");
-		String page = pageDownloader.downloadPage(SEARCH_URL + name);
-		Document doc = Jsoup.parse(page);
+		try {
+			name = StringUtils.replace(name, "'", "");
+			name = URLEncoder.encode(name, "UTF-8");
+			String page = pageDownloader.downloadPage(SEARCH_URL + name);
+			Document doc = Jsoup.parse(page);
 
-		// figure out how many pages there are, default is 1
-		int pages = 1;
-		Elements select = doc.select(".minibuttonpage");
-		if (select.size() > 0) {
-			String pagesPart = select.get(0).children().get(0).html();
-//		System.out.println(pagesPart.split(" ")[5]);
-			pages = Integer.parseInt(pagesPart.split(" ")[5]);
-		}
-
-		List<SubCenterSearchResult> searchResults = new ArrayList<>();
-		searchResults.addAll(parseSearchResultsPage(doc));
-		for (int i = 1; i <= pages; ++i) {
-			page = pageDownloader.downloadPage(SEARCH_URL + name + "&page=" + i);
-			doc = Jsoup.parse(page);
-			searchResults.addAll(parseSearchResultsPage(doc));
-		}
-
-		for (SubCenterSearchResult searchResult : new ArrayList<>(searchResults)) {
-			if ((isShow && !searchResult.isShow()) ||
-				(!isShow && searchResult.isShow())) {
-				searchResults.remove(searchResult);
+			// figure out how many pages there are, default is 1
+			int pages = 1;
+			Elements select = doc.select(".minibuttonpage");
+			if (select.size() > 0) {
+				String pagesPart = select.get(0).children().get(0).html();
+				//		System.out.println(pagesPart.split(" ")[5]);
+				pages = Integer.parseInt(pagesPart.split(" ")[5]);
 			}
-		}
+
+			List<SubCenterSearchResult> searchResults = new ArrayList<>();
+			searchResults.addAll(parseSearchResultsPage(doc));
+			for (int i = 1; i <= pages; ++i) {
+				page = pageDownloader.downloadPage(SEARCH_URL + name + "&page=" + i);
+				doc = Jsoup.parse(page);
+				searchResults.addAll(parseSearchResultsPage(doc));
+			}
+
+			for (SubCenterSearchResult searchResult : new ArrayList<>(searchResults)) {
+				if ((isShow && !searchResult.isShow()) ||
+					(!isShow && searchResult.isShow())) {
+					searchResults.remove(searchResult);
+				}
+			}
 
 //		System.out.println("found search results: " + searchResults.size());
-		SubCenterSearchResult subCenterSearchResult = MatchingUtils.filterByLevenshteinDistance(name, Collections2.transform(searchResults,
-				new Function<SubCenterSearchResult, MatchCandidate>() {
-			@Override
-			public MatchCandidate apply(final SubCenterSearchResult subCenterSearchResult) {
-				return new MatchCandidate() {
-					@Override
-					public String getText() {
-						return subCenterSearchResult.getName();
-					}
+			SubCenterSearchResult subCenterSearchResult = MatchingUtils.filterByLevenshteinDistance(name, Collections2.transform(searchResults,
+					new Function<SubCenterSearchResult, MatchCandidate>() {
+						@Override
+						public MatchCandidate apply(final SubCenterSearchResult subCenterSearchResult) {
+							return new MatchCandidate() {
+								@Override
+								public String getText() {
+									return subCenterSearchResult.getName();
+								}
 
-					@SuppressWarnings("unchecked")
-					@Override
-					public <T> T getObject() {
-						return (T) subCenterSearchResult;
-					}
-				};
+								@SuppressWarnings("unchecked")
+								@Override
+								public <T> T getObject() {
+									return (T) subCenterSearchResult;
+								}
+							};
+						}
+					}), logService).getObject();
+
+			if (subCenterSearchResult != null) {
+				logService.info(getClass(), "Filtered candidates: " + subCenterSearchResult);
+				return subCenterSearchResult.getSubCenterUrl();
 			}
-		}), logService).getObject();
-
-		if (subCenterSearchResult != null) {
-			logService.info(getClass(), "Filtered candidates: " + subCenterSearchResult);
-			return subCenterSearchResult.getSubCenterUrl();
+		} catch (UnsupportedEncodingException e) {
+			logService.error(getClass(), "Failed downloading SubCenter url for '" + name + "':" + e.getMessage(), e);
 		}
 
 		return null;
