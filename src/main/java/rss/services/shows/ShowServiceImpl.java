@@ -42,6 +42,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -646,6 +647,12 @@ public class ShowServiceImpl implements ShowService {
 		titleSuffix = titleSuffix.trim();
 		// take only when after season 1 there is text or number > 100 or  nothing
 		if (StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
+			// if it starts with e, then it might be something of the sort S08E01 E05 - then need to skip it
+			Pattern rangeEpisodesPattern = Pattern.compile("e\\d+");
+			Matcher matcher = rangeEpisodesPattern.matcher(titleSuffix);
+			if (matcher.find()) {
+				return false;
+			}
 			return true;
 		}
 
