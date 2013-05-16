@@ -141,6 +141,10 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		return null;
 	}
 
+	public int getPriority() {
+		return 10;
+	}
+
 	protected abstract String getEntryUrl();
 
 	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);

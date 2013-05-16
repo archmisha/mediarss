@@ -11,8 +11,6 @@ import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,6 +31,11 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> ex
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	@Override
+	public int getPriority() {
+		return 3;
 	}
 
 	@Override

@@ -42,6 +42,11 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	}
 
 	@Override
+	public int getPriority() {
+		return 1;
+	}
+
+	@Override
 	protected String getEntryUrl() {
 		return ENTRY_URL;
 	}

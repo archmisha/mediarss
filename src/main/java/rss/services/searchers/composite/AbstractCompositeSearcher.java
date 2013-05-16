@@ -1,5 +1,6 @@
 package rss.services.searchers.composite;
 
+import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,7 @@ import rss.services.searchers.SearchResult;
 import rss.services.searchers.SearcherUtils;
 import rss.services.searchers.SimpleTorrentSearcher;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,10 +101,18 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 
 	@SuppressWarnings("unchecked")
 	protected Collection<? extends SimpleTorrentSearcher<T, Media>> getTorrentSearchers() {
-		Collection<SimpleTorrentSearcher<T, Media>> searchers = new ArrayList<>();
+		List<SimpleTorrentSearcher<T, Media>> searchers = new ArrayList<>();
 		for (SimpleTorrentSearcher searcher : applicationContext.getBeansOfType(SimpleTorrentSearcher.class).values()) {
 			searchers.add(searcher);
 		}
+
+		// sort by preference (kat.ph is always better than 1337x.org)
+		Collections.sort(searchers, new Comparator<SimpleTorrentSearcher<T, Media>>() {
+			@Override
+			public int compare(SimpleTorrentSearcher<T, Media> o1, SimpleTorrentSearcher<T, Media> o2) {
+				return Ints.compare(o1.getPriority(), o2.getPriority());
+			}
+		});
 		return searchers;
 	}
 

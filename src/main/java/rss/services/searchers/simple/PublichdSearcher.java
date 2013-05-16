@@ -39,6 +39,11 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	}
 
 	@Override
+	public int getPriority() {
+		return 4;
+	}
+
+	@Override
 	protected String getEntryUrl() {
 		return ENTRY_URL;
 	}

@@ -42,6 +42,11 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	}
 
 	@Override
+	public int getPriority() {
+		return 2;
+	}
+
+	@Override
 	protected String getEntryUrl() {
 		return ENTRY_URL;
 	}
