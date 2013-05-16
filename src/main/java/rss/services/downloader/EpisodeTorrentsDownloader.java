@@ -98,7 +98,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 			// sometimes the same torrent returned from search for different episodes
 			// it can happen when there are torrents like s01e01-e04 will be returned for s01e(-1) request also
-			Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
+			Torrent persistedTorrent = torrentDao.findByHash(torrent.getHash());
 			if (persistedTorrent == null) {
 				torrentDao.persist(torrent);
 				persistedTorrent = torrent;

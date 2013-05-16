@@ -92,7 +92,7 @@ public class MovieTorrentsDownloader extends BaseDownloader<MovieRequest, Movie>
 				}
 
 				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-					Torrent persistedTorrent = torrentDao.findByUrl(torrent.getUrl());
+					Torrent persistedTorrent = torrentDao.findByHash(torrent.getHash());
 					if (persistedTorrent == null) {
 						torrentDao.persist(torrent);
 						persistedTorrent = torrent;

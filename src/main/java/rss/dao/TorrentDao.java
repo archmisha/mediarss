@@ -12,9 +12,7 @@ import java.util.Set;
  */
 public interface TorrentDao extends Dao<Torrent> {
 
-//    Collection<Torrent> find(Set<String> titles);
+	Torrent findByHash(String hash);
 
 	Collection<Torrent> findByHash(Set<String> hashes);
-
-	Torrent findByUrl(String url);
 }

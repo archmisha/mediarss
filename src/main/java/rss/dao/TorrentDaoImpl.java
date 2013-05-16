@@ -2,7 +2,6 @@ package rss.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.entities.Torrent;
-import rss.entities.User;
 
 import java.util.*;
 
@@ -13,6 +12,15 @@ import java.util.*;
  */
 @Repository
 public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
+
+	@Override
+	public Torrent findByHash(String hash) {
+		Collection<Torrent> torrents = findByHash(Collections.singleton(hash));
+		if (torrents.isEmpty()) {
+			return null;
+		}
+		return torrents.iterator().next();
+	}
 
 	@Override
 	public Collection<Torrent> findByHash(Set<String> hashes) {
@@ -36,10 +44,10 @@ public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
 		return find(query.toString(), params.toArray());
 	}
 
-	@Override
-	public Torrent findByUrl(String url) {
-		Map<String, Object> params = new HashMap<>(1);
-		params.put("url", url);
-		return uniqueResult(super.<Torrent>findByNamedQueryAndNamedParams("Torrent.findByUrl", params));
-	}
+//	@Override
+//	public Torrent findByUrl(String url) {
+//		Map<String, Object> params = new HashMap<>(1);
+//		params.put("url", url);
+//		return uniqueResult(super.<Torrent>findByNamedQueryAndNamedParams("Torrent.findByUrl", params));
+//	}
 }
