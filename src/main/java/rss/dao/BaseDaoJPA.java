@@ -2,14 +2,15 @@ package rss.dao;
 
 
 import org.hibernate.NonUniqueResultException;
-import rss.entities.Torrent;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -58,6 +59,7 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		return queryObject.getResultList();
 	}
 
+	@SuppressWarnings({"unchecked"})
 	protected final <E> List<E> findByNativeQuery(Class clazz, final String ejbqlString, final Object... values) {
 		Query queryObject = em.createNativeQuery(ejbqlString, clazz);
 		setParameters(queryObject, values);
@@ -73,14 +75,17 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		return queryObject;
 	}
 
+	@Override
 	public void persist(T entity) {
 		em.persist(entity);
 	}
 
+	@Override
 	public T merge(T entity) {
 		return em.merge(entity);
 	}
 
+	@Override
 	public final T find(Long primaryKey) {
 		if (primaryKey == null) {
 			throw new IllegalArgumentException("primaryKey is null");
@@ -88,15 +93,16 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		return em.find(persistentClass, primaryKey);
 	}
 
-	public Collection<T> find(Set<Long> ids) {
-		Collection<T> result = new ArrayList<>();
-		for (Long id : ids) {
-			result.add(find(id));
-		}
-		return result;
+	@SuppressWarnings({"unchecked"})
+	@Override
+	public Collection<T> find(Collection<Long> ids) {
+		Query queryObject = em.createQuery("select e from " + persistentClass.getName() + " as e where e.id in (:ids)");
+		queryObject.setParameter("ids", ids);
+		return queryObject.getResultList();
 	}
 
 	@SuppressWarnings({"unchecked"})
+	@Override
 	public final List<T> findAll() {
 		Query queryObject = em.createQuery("select e from " + persistentClass.getName() + " as e");
 		return queryObject.getResultList();
@@ -135,7 +141,7 @@ public class BaseDaoJPA<T> implements Dao<T> {
 
 	protected String generateQuestionMarks(int size, int counter) {
 		StringBuilder sb = new StringBuilder();
-		for (int i=0; i<size; ++i) {
+		for (int i = 0; i < size; ++i) {
 			sb.append(":p").append(counter++).append(",");
 		}
 		sb.deleteCharAt(sb.length() - 1);

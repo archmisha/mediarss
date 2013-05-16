@@ -17,11 +17,9 @@ public interface UserTorrentDao extends Dao<UserTorrent> {
 
 	List<UserTorrent> findEpisodesAddedSince(User user, Date dateUploaded);
 
-	List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Long> movieIds);
+	List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Movie> movies);
 
 	List<UserTorrent> findUserEpisodeTorrentByTorrentId(long torrentId);
 
-	Collection<UserTorrent> findUserEpisodes(Collection<Episode> episodes, User user);
-
-	Collection<UserMovieTorrent> findUserMovies(User user, Collection<Movie> movies);
+	Collection<UserTorrent> findUserEpisodes(User user, Collection<Episode> episodes);
 }

@@ -36,5 +36,5 @@ public interface MovieDao extends Dao<Movie> {
 
 	Collection<UserMovie> findUserMoviesByMovieId(long movieId);
 
-	List<Long> findUserMoviesIds(User user, int backlogDays);
+	int findUserMoviesCount(User user, int backlogDays);
 }

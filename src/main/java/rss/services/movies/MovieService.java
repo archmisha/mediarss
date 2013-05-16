@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public interface MovieService {
 
-	long getUserMoviesCount(User user);
+	int getUserMoviesCount(User user);
 
 	ArrayList<UserMovieVO> getUserMovies(User user);
 

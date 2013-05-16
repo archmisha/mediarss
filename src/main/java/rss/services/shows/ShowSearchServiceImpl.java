@@ -119,7 +119,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		ArrayList<UserTorrentVO> result = new ArrayList<>();
 
 		// add those containing user torrent
-		for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(downloaded, user)) {
+		for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(user, downloaded)) {
 			Torrent torrent = userTorrent.getTorrent();
 			episodeByTorrents.remove(torrent);
 			UserTorrentVO userTorrentVO = new UserTorrentVO()
@@ -176,7 +176,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			shouldDownloadSchedule = false;
 		} else {
 			ArrayList<Episode> episodes = new ArrayList<>(show.getEpisodes());
-			if (episodes.isEmpty()) {
+			if (!episodes.isEmpty()) {
 				Collections.sort(episodes, new EpisodesComparator());
 				Episode lastEpisode = episodes.get(episodes.size() - 1);
 				if (lastEpisode.getAirDate() != null && lastEpisode.getAirDate().after(new Date())) {

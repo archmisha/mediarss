@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface EpisodeDao extends Dao<Episode> {
 
-	List<Episode> find(Collection<ShowRequest> episodes);
+	List<Episode> findByRequests(Collection<ShowRequest> showRequests);
 
 	List<Episode> find(EpisodeRequest episodeRequest);
 

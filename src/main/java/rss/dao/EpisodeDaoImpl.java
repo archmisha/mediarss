@@ -18,12 +18,12 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 
 	@Override
 	public List<Episode> find(EpisodeRequest episodeRequest) {
-		return find(Collections.<ShowRequest>singletonList(episodeRequest));
+		return findByRequests(Collections.<ShowRequest>singletonList(episodeRequest));
 	}
 
 	@Override
-	public List<Episode> find(Collection<ShowRequest> episodeRequests) {
-		if (episodeRequests.isEmpty()) {
+	public List<Episode> findByRequests(Collection<ShowRequest> showRequests) {
+		if (showRequests.isEmpty()) {
 			return Collections.emptyList();
 		}
 
@@ -33,7 +33,7 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		String orPart = " or ";
 		query.append("select t from Episode as t where ");
 		int counter = 0;
-		for (ShowRequest episodeRequest : episodeRequests) {
+		for (ShowRequest episodeRequest : showRequests) {
 			if (episodeRequest instanceof SingleEpisodeRequest) {
 				SingleEpisodeRequest ser = (SingleEpisodeRequest) episodeRequest;
 				counter = generateSingleEpisodePart(query, params, orPart, counter, episodeRequest.getShow().getId(), ser.getSeason(), ser.getEpisode());

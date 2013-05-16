@@ -20,10 +20,10 @@ import javax.persistence.Table;
 		@NamedQuery(name = "UserEpisodeTorrent.findEpisodesAddedSince",
 				query = "select ut from UserEpisodeTorrent as ut " +
 						"where ut.user.id = :userId and ut.added >= :dateAdded"),
-//		@NamedQuery(name = "UserEpisodeTorrent.findUserTorrentByTorrentId",
-//				query = "select ut from UserEpisodeTorrent as ut where ut.user.id = :userId and ut.torrent.id = :torrentId"),
-		@NamedQuery(name = "UserEpisodeTorrent.findUserTorrentByTorrentId2",
-				query = "select ut from UserEpisodeTorrent as ut where ut.torrent.id = :torrentId")
+		@NamedQuery(name = "UserEpisodeTorrent.findUserTorrentByTorrentId",
+				query = "select ut from UserEpisodeTorrent as ut where ut.torrent.id = :torrentId"),
+		@NamedQuery(name = "UserEpisodeTorrent.findUserEpisodeTorrents",
+				query = "select ut from UserEpisodeTorrent as ut where ut.user.id = :userId and ut.torrent.id in (:torrentIds)")
 })
 public class UserEpisodeTorrent extends UserTorrent {
 	private static final long serialVersionUID = 8134537615057339812L;

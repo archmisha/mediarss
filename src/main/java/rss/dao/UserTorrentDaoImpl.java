@@ -1,5 +1,7 @@
 package rss.dao;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import org.springframework.stereotype.Repository;
 import rss.entities.*;
 
@@ -30,13 +32,19 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	}
 
 	@Override
-	public List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Long> movieIds) {
-		if (movieIds.isEmpty()) {
+	public List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Movie> movies) {
+		if (movies.isEmpty()) {
 			return Collections.emptyList();
 		}
+
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
-		params.put("movieIds", movieIds);
+		params.put("movieIds", Collections2.transform(movies, new Function<Movie, Long>() {
+			@Override
+			public Long apply(rss.entities.Movie movie) {
+				return movie.getId();
+			}
+		}));
 		return super.findByNamedQueryAndNamedParams("UserMovieTorrent.findUserMovieTorrents", params);
 	}
 
@@ -44,58 +52,23 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	public List<UserTorrent> findUserEpisodeTorrentByTorrentId(long torrentId) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("torrentId", torrentId);
-		return super.findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserTorrentByTorrentId2", params);
+		return super.findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserTorrentByTorrentId", params);
 	}
 
 	@Override
-	public Collection<UserTorrent> findUserEpisodes(Collection<Episode> episodes, User user) {
+	public Collection<UserTorrent> findUserEpisodes(User user, Collection<Episode> episodes) {
 		if (episodes.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		StringBuilder query = new StringBuilder();
-		List<Object> params = new ArrayList<>();
-
-		query.append("select t from UserEpisodeTorrent as t where user.id = :p0 and t.torrent.id in (");
-		params.add(user.getId());
-		int counter = 1;
+		Set<Long> ids = new HashSet<>();
 		for (Episode episode : episodes) {
-			for (Long torrentId : episode.getTorrentIds()) {
-				query.append(":p").append(counter++).append(",");
-				params.add(torrentId);
-			}
+			ids.addAll(episode.getTorrentIds());
 		}
 
-		// if no torrent ids for the given episodes
-		if (params.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		query.setCharAt(query.length() - 1, ')');
-
-		return find(query.toString(), params.toArray());
-	}
-
-	@Override
-	public Collection<UserMovieTorrent> findUserMovies(User user, Collection<Movie> movies) {
-		if (movies.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		StringBuilder query = new StringBuilder();
-		List<Object> params = new ArrayList<>();
-
-		query.append("select t from UserMovieTorrent as t where t.user.id = :p0 and t.torrent.id in (");
-		params.add(user.getId());
-		int counter = 1;
-		for (Movie movie : movies) {
-			for (Long torrentId : movie.getTorrentIds()) {
-				query.append(":p").append(counter++).append(",");
-				params.add(torrentId);
-			}
-		}
-		query.setCharAt(query.length() - 1, ')');
-
-		return find(query.toString(), params.toArray());
+		Map<String, Object> params = new HashMap<>(2);
+		params.put("userId", user.getId());
+		params.put("torrentIds", ids);
+		return super.findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserEpisodeTorrents", params);
 	}
 }

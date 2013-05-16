@@ -17,7 +17,7 @@ public interface Dao<T> {
 
 	T find(Long primaryKey);
 
-	Collection<T> find(Set<Long> ids);
+	Collection<T> find(Collection<Long> ids);
 
 	List<T> findAll();
 

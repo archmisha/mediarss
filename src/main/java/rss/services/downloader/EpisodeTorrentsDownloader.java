@@ -73,7 +73,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 	@Override
 	protected void processMissingRequests(Collection<ShowRequest> missing) {
-		for (Episode episode : episodeDao.find(missing)) {
+		for (Episode episode : episodeDao.findByRequests(missing)) {
 			episode.setScanDate(new Date());
 		}
 	}
