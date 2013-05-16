@@ -241,6 +241,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 	}
 
 	private String getSubCenterShowUrl(String name, boolean isShow) {
+		name = StringUtils.replace(name, "'", "");
 		String page = pageDownloader.downloadPage(SEARCH_URL + name);
 		Document doc = Jsoup.parse(page);
 
