@@ -241,11 +241,11 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 		return bestResult;
 	}
 
-	private String getSubCenterShowUrl(String name, boolean isShow) {
+	private String getSubCenterShowUrl(final String name, boolean isShow) {
 		try {
-			name = StringUtils.replace(name, "'", "");
-			name = URLEncoder.encode(name, "UTF-8");
-			String page = pageDownloader.downloadPage(SEARCH_URL + name);
+			String encodedName = StringUtils.replace(name, "'", "");
+			encodedName = URLEncoder.encode(encodedName, "UTF-8");
+			String page = pageDownloader.downloadPage(SEARCH_URL + encodedName);
 			Document doc = Jsoup.parse(page);
 
 			// figure out how many pages there are, default is 1
@@ -260,7 +260,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 			List<SubCenterSearchResult> searchResults = new ArrayList<>();
 			searchResults.addAll(parseSearchResultsPage(doc));
 			for (int i = 1; i <= pages; ++i) {
-				page = pageDownloader.downloadPage(SEARCH_URL + name + "&page=" + i);
+				page = pageDownloader.downloadPage(SEARCH_URL + encodedName + "&page=" + i);
 				doc = Jsoup.parse(page);
 				searchResults.addAll(parseSearchResultsPage(doc));
 			}
@@ -272,7 +272,10 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 				}
 			}
 
-//		System.out.println("found search results: " + searchResults.size());
+			if (searchResults.isEmpty()) {
+				return null;
+			}
+
 			SubCenterSearchResult subCenterSearchResult = MatchingUtils.filterByLevenshteinDistance(name, Collections2.transform(searchResults,
 					new Function<SubCenterSearchResult, MatchCandidate>() {
 						@Override
