@@ -471,10 +471,14 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 					// create request for each episode in the season and link to this single torrent
 					Map<Integer, Pair<TreeSet<Episode>, Boolean>> showEpisodesMap = createShowEpisodesMap(episode.getShow());
 					for (Episode curEpisode : showEpisodesMap.get(episode.getSeason()).getKey()) {
+						// skip full season episode
+						if (curEpisode.getEpisode() == -1) {
+							continue;
+						}
 						Show show = curEpisode.getShow();
 						List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show);
 						if (!languages.isEmpty()) {
-							subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+							subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, curEpisode.getSeason(), curEpisode.getEpisode(), languages, curEpisode.getAirDate()));
 						}
 					}
 				} else {

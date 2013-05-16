@@ -1,6 +1,7 @@
 package rss.entities;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,9 +19,6 @@ import java.util.Set;
 		@NamedQuery(name = "Movie.findByTorrent",
 				query = "select m from Movie as m join m.torrentIds as tid " +
 						"where :torrentId = tid"),
-//		@NamedQuery(name = "Movie.findByName",
-//				query = "select m from Movie as m " +
-//						"where m.name = :name"),
 		@NamedQuery(name = "Movie.findByImdbUrl",
 				query = "select m from Movie as m " +
 						"where m.imdbUrl = :imdbUrl")
@@ -43,13 +41,12 @@ public class Movie extends Media {
 	@Column(name = "subcenter_url")
 	private String subCenterUrl;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	private Set<Long> torrentIds;
+	@Column(name = "subcenter_url_scan_date")
+	private Date subCenterUrlScanDate;
 
 	// for hibernate
 	@SuppressWarnings("UnusedDeclaration")
 	private Movie() {
-		torrentIds = new HashSet<>();
 	}
 
 	public Movie(String name, String imdbUrl, int year) {
@@ -57,10 +54,6 @@ public class Movie extends Media {
 		this.name = name;
 		this.imdbUrl = imdbUrl;
 		this.year = year;
-	}
-
-	public Set<Long> getTorrentIds() {
-		return torrentIds;
 	}
 
 	public String getName() {
@@ -116,5 +109,13 @@ public class Movie extends Media {
 
 	public void setSubCenterUrl(String subCenterUrl) {
 		this.subCenterUrl = subCenterUrl;
+	}
+
+	public Date getSubCenterUrlScanDate() {
+		return subCenterUrlScanDate;
+	}
+
+	public void setSubCenterUrlScanDate(Date subCenterUrlScanDate) {
+		this.subCenterUrlScanDate = subCenterUrlScanDate;
 	}
 }

@@ -1,19 +1,17 @@
 package rss.services.downloader;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.dao.EpisodeDao;
+import rss.dao.ShowDao;
 import rss.dao.SubtitlesDao;
-import rss.entities.Episode;
+import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.entities.SubtitlesScanHistory;
 import rss.services.EmailService;
-import rss.services.requests.subtitles.SubtitlesDoubleEpisodeRequest;
 import rss.services.requests.subtitles.SubtitlesEpisodeRequest;
 import rss.services.requests.subtitles.SubtitlesRequest;
-import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SubCenterSubtitlesSearcher;
 import rss.services.subtitles.SubtitleLanguage;
@@ -41,10 +39,21 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	@Autowired
 	private EmailService emailService;
 
+	@Autowired
+	private ShowDao showDao;
+
 	@Override
 	protected void processMissingRequests(Collection<SubtitlesRequest> missing) {
 		for (SubtitlesRequest subtitlesRequest : missing) {
 			updateScanDate(subtitlesRequest);
+
+			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
+				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
+				// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
+				Show show = showDao.find(ser.getShow().getId());
+				show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
+				show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
+			}
 		}
 		emailService.notifyOfMissingSubtitles(missing);
 	}
@@ -93,7 +102,7 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 				if (subtitles != null) {
 					result.add(subtitles);
 					request.getLanguages().remove(subtitleLanguage);
-					logService.info(getClass(), "Found subtitles in cache: " + subtitles);
+					logService.info(getClass(), "Found subtitles in cache: " + subtitles + " for torrent: " + request.getTorrent());
 				}
 			}
 
@@ -130,9 +139,9 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
 				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
 				// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
-				if (StringUtils.isBlank(ser.getShow().getSubCenterUrl())) {
-					ser.getShow().setSubCenterUrl(((SubtitlesEpisodeRequest) subtitlesRequest).getShow().getSubCenterUrl());
-				}
+				Show show = showDao.find(ser.getShow().getId());
+				show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
+				show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
 			}
 			res.addAll(searchResult.<Subtitles>getDownloadables());
 		}

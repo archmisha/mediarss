@@ -175,8 +175,8 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		} else if (userDao.isShowBeingTracked(show)) {
 			shouldDownloadSchedule = false;
 		} else {
-			ArrayList<Episode> episodes = new ArrayList<>(show.getEpisodes());
-			if (!episodes.isEmpty()) {
+			if (!show.getEpisodes().isEmpty()) {
+				ArrayList<Episode> episodes = new ArrayList<>(show.getEpisodes());
 				Collections.sort(episodes, new EpisodesComparator());
 				Episode lastEpisode = episodes.get(episodes.size() - 1);
 				if (lastEpisode.getAirDate() != null && lastEpisode.getAirDate().after(new Date())) {

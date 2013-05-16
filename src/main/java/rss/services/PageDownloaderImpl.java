@@ -1,6 +1,8 @@
 package rss.services;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.*;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -14,6 +16,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
@@ -41,6 +45,8 @@ import java.util.zip.GZIPInputStream;
 @Service
 public class PageDownloaderImpl implements PageDownloader {
 
+	private static final String LAST_REDIRECT_URL = "LAST_REDIRECT_URL";
+
 	private static CoolDownStatus coolDownStatus = new CoolDownStatus();
 
 	@Autowired
@@ -51,7 +57,7 @@ public class PageDownloaderImpl implements PageDownloader {
 		// download 1000 chars first and then advance by 50
 		ResponseStreamExtractor<String> streamExtractor = new ResponseStreamExtractor<String>() {
 			@Override
-			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
+			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
 				InputStream is = extractInputStreamFromResponse(httpResponse);
 				byte[] arr = new byte[1000];
 				int read = is.read(arr);
@@ -80,7 +86,7 @@ public class PageDownloaderImpl implements PageDownloader {
 	public byte[] downloadData(String url) {
 		return downloadPage(url, Collections.<String, String>emptyMap(), new ResponseStreamExtractor<byte[]>() {
 			@Override
-			public byte[] extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
+			public byte[] extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
 				byte[] res = IOUtils.toByteArray(httpResponse.getEntity().getContent());
 				return res;
 			}
@@ -94,8 +100,18 @@ public class PageDownloaderImpl implements PageDownloader {
 	public String downloadPage(String url, Map<String, String> headers) {
 		return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
 			@Override
-			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
+			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
 				return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
+			}
+		});
+	}
+
+	public Pair<String, String> downloadPageWithRedirect(String url) {
+		return downloadPage(url, Collections.<String, String>emptyMap(), new ResponseStreamExtractor<Pair<String, String>>() {
+			@Override
+			public Pair<String, String> extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
+				String lastRedirectUrl = (String) context.getAttribute(LAST_REDIRECT_URL);
+				return new ImmutablePair<>(IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8"), lastRedirectUrl);
 			}
 		});
 	}
@@ -137,7 +153,7 @@ public class PageDownloaderImpl implements PageDownloader {
 			httpPost.setEntity(httpEntity);
 			return sendRequest(httpPost, new ResponseStreamExtractor<List<Cookie>>() {
 				@Override
-				public List<Cookie> extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception {
+				public List<Cookie> extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
 					return httpClient.getCookieStore().getCookies();
 				}
 			});
@@ -167,18 +183,32 @@ public class PageDownloaderImpl implements PageDownloader {
 				httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 			}
 
+			httpClient.addResponseInterceptor(new HttpResponseInterceptor() {
+				@Override
+				public void process(HttpResponse response, HttpContext context)
+						throws HttpException, IOException {
+					if (response.containsHeader("Location")) {
+						Header[] locations = response.getHeaders("Location");
+						if (locations.length > 0)
+							context.setAttribute(LAST_REDIRECT_URL, locations[0].getValue());
+					}
+				}
+			});
+
+
 			HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 30 * 1000); // 130 secs
 			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 30 secs
 			AutoRetryHttpClient retryClient = new AutoRetryHttpClient(httpClient, new DefaultServiceUnavailableRetryStrategy(3, 100));
 
-			HttpResponse httpResponse = retryClient.execute(httpRequest);
+			HttpContext context = new BasicHttpContext();
+			HttpResponse httpResponse = retryClient.execute(httpRequest, context);
 
 			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK &&
 				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
 				throw new RuntimeException("Url " + url + ": " + httpResponse.getStatusLine());
 			}
 
-			return streamExtractor.extractResponseStream(httpClient, httpResponse);
+			return streamExtractor.extractResponseStream(httpClient, httpResponse, context);
 		} catch (Exception e) {
 			if (Utils.isRootCauseMessageContains(e, "timed out")) {
 				throw new PageDownloadException("Connection timed out for url: " + url);
@@ -199,6 +229,6 @@ public class PageDownloaderImpl implements PageDownloader {
 	}
 
 	private interface ResponseStreamExtractor<T> {
-		public T extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse) throws Exception;
+		public T extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception;
 	}
 }

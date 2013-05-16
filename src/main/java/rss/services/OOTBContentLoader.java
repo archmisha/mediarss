@@ -1,6 +1,7 @@
 package rss.services;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.cookie.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -224,6 +225,11 @@ public class OOTBContentLoader {
 
 		@Override
 		public String downloadPage(String url, Map<String, String> headers) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Pair<String, String> downloadPageWithRedirect(String url) {
 			throw new UnsupportedOperationException();
 		}
 

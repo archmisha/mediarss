@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
  * Date: 02/12/12
  * Time: 23:49
  */
-public abstract class BaseDownloader<S extends SearchRequest, T extends Media> {
+public abstract class BaseDownloader<S extends SearchRequest, T> {
 
 	public static final int MAX_CONCURRENT_REQUESTS = 15;
 

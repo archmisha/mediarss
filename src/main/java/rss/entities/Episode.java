@@ -48,22 +48,14 @@ public class Episode extends Media {
 	@Column(name = "scan_date")
 	private Date scanDate;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	private Set<Long> torrentIds;
-
 	@SuppressWarnings("UnusedDeclaration")
 	public Episode() {
-		torrentIds = new HashSet<>();
 	}
 
 	public Episode(int season, int episode) {
 		this();
 		this.season = season;
 		this.episode = episode;
-	}
-
-	public Set<Long> getTorrentIds() {
-		return torrentIds;
 	}
 
 	@Override

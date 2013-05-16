@@ -9,7 +9,7 @@ import rss.services.searchers.composite.torrentz.TorrentzSearcher;
  * User: dikmanm
  * Date: 12/05/13 21:03
  */
-public abstract class AbstractMediaSearcher<T extends MediaRequest, S extends Media> implements Searcher<T, S> {
+public abstract class AbstractMediaSearcher<T extends MediaRequest, S extends Media> implements Searcher<T> {
 
 	@Override
 	public SearchResult search(T mediaRequest) {

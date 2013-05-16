@@ -30,7 +30,7 @@ import java.util.Date;
 				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e join e.torrentIds as tid " +
 						"where u.subtitles is not null and :torrentId = tid")
 })
-public class Subtitles extends Media implements Downloadable {
+public class Subtitles extends BaseEntity implements Downloadable {
 	private static final long serialVersionUID = 5929747050786576285L;
 
 	@Column(name = "language")

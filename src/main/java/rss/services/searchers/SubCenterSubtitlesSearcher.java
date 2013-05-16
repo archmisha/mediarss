@@ -4,6 +4,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jsoup.Jsoup;
@@ -38,7 +40,7 @@ import java.util.regex.Pattern;
  * Date: 11/05/13 17:31
  */
 @Service
-public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Subtitles> {
+public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 
 	public static final String NAME = "www.subscenter.org";
 	public static final String SEARCH_URL = "http://" + NAME + "/he/subtitle/search/?q=";
@@ -66,29 +68,32 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
 				Show show = ser.getShow();
 
-				if (StringUtils.isBlank(show.getSubCenterUrl())) {
-					String subCenterShowUrl = getSubCenterShowUrl(subtitlesRequest.getName(), true);
-
-					// now download the page of the specific request
-					logService.info(getClass(), "SubCenter show url: " + subCenterShowUrl);
-					if (StringUtils.isBlank(subCenterShowUrl)) {
-						return SearchResult.createNotFound();
-					}
+				if (show.getSubCenterUrl() == null && show.getSubCenterUrlScanDate() == null) {
+					Pair<String, String> pair = getSubCenterShowUrl(subtitlesRequest.getName(), true);
+					String subCenterShowUrl = pair.getValue();
 
 					show.setSubCenterUrl(subCenterShowUrl);
+					show.setSubCenterUrlScanDate(new Date());
+					logService.info(getClass(), "SubCenter show url: " + subCenterShowUrl);
+
+					// cant parse the entry page here, cuz should add season and episode to the url
+				}
+
+				if (show.getSubCenterUrl() == null) {
+					return SearchResult.createNotFound();
 				}
 
 				if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
 					SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
 					String entryUrl = String.format(SHOW_ENTRY_URL, show.getSubCenterUrl(), ser.getSeason(), sser.getEpisode());
-					SearchResult searchResult = downloadSubtitles(subtitlesRequest, entryUrl);
-					return searchResult;
+					String page = pageDownloader.downloadPageUntilFound(entryUrl, ENTRY_FOUND_PATTERN);
+					return downloadSubtitles(subtitlesRequest, page);
 				}
 			} else if (subtitlesRequest instanceof SubtitlesMovieRequest) {
 				SubtitlesMovieRequest smr = (SubtitlesMovieRequest) subtitlesRequest;
 				Movie movie = smr.getMovie();
 
-				if (StringUtils.isBlank(movie.getSubCenterUrl())) {
+				if (movie.getSubCenterUrl() == null && movie.getSubCenterUrlScanDate() == null) {
 					String name = subtitlesRequest.getName();
 					// strip the year brackets of the movie
 					int idx = name.indexOf('(');
@@ -96,20 +101,26 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 						name = name.substring(0, idx).trim();
 					}
 
-					String subCenterShowUrl = getSubCenterShowUrl(name, false);
-
-					// now download the page of the specific request
-					logService.info(getClass(), "SubCenter show url: " + subCenterShowUrl);
-					if (StringUtils.isBlank(subCenterShowUrl)) {
-						return SearchResult.createNotFound();
-					}
+					Pair<String, String> pair = getSubCenterShowUrl(name, false);
+					String subCenterShowUrl = pair.getValue();
 
 					movie.setSubCenterUrl(subCenterShowUrl);
+					movie.setSubCenterUrlScanDate(new Date());
+					logService.info(getClass(), "SubCenter show url: " + subCenterShowUrl);
+
+					// if also got already the entry page, can parse it right now
+					if (pair.getKey() != null) {
+						downloadSubtitles(subtitlesRequest, pair.getKey());
+					}
+				}
+
+				if (movie.getSubCenterUrl() == null) {
+					return SearchResult.createNotFound();
 				}
 
 				String entryUrl = String.format(MOVIE_ENTRY_URL, movie.getSubCenterUrl());
-				SearchResult searchResult = downloadSubtitles(subtitlesRequest, entryUrl);
-				return searchResult;
+				String page = pageDownloader.downloadPageUntilFound(entryUrl, ENTRY_FOUND_PATTERN);
+				return downloadSubtitles(subtitlesRequest, page);
 			}
 		} catch (Exception e) {
 			logService.error(getClass(), e.getMessage(), e);
@@ -117,9 +128,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 		return SearchResult.createNotFound();
 	}
 
-	private SearchResult downloadSubtitles(SubtitlesRequest subtitlesRequest, String entryUrl) throws Exception {
-		String page = pageDownloader.downloadPageUntilFound(entryUrl, ENTRY_FOUND_PATTERN);
-
+	private SearchResult downloadSubtitles(SubtitlesRequest subtitlesRequest, String page) throws Exception {
 		SearchResult searchResult = new SearchResult(NAME);
 		for (SubtitleLanguage subtitleLanguage : subtitlesRequest.getLanguages()) {
 			SubCenterSubtitles foundSubtitles = parseEntryPage(subtitlesRequest, page, subtitleLanguage);
@@ -241,11 +250,18 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 		return bestResult;
 	}
 
-	private String getSubCenterShowUrl(final String name, boolean isShow) {
+	private Pair<String, String> getSubCenterShowUrl(final String name, boolean isShow) {
 		try {
 			String encodedName = StringUtils.replace(name, "'", "");
 			encodedName = URLEncoder.encode(encodedName, "UTF-8");
-			String page = pageDownloader.downloadPage(SEARCH_URL + encodedName);
+			Pair<String, String> pair = pageDownloader.downloadPageWithRedirect(SEARCH_URL + encodedName);
+			String page = pair.getKey();
+			// if got redirect url, then found the match and also downloaded the entry page
+			if (pair.getValue() != null) {
+				String newValue = pair.getValue().substring(pair.getValue().indexOf(NAME) + NAME.length());
+				newValue = StringUtils.strip(newValue, "/");
+				return new ImmutablePair<>(pair.getKey(), newValue);
+			}
 			Document doc = Jsoup.parse(page);
 
 			// figure out how many pages there are, default is 1
@@ -273,7 +289,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 			}
 
 			if (searchResults.isEmpty()) {
-				return null;
+				return new ImmutablePair<>(null, null);
 			}
 
 			SubCenterSearchResult subCenterSearchResult = MatchingUtils.filterByLevenshteinDistance(name, Collections2.transform(searchResults,
@@ -297,13 +313,13 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest, Su
 
 			if (subCenterSearchResult != null) {
 				logService.info(getClass(), "Filtered candidates: " + subCenterSearchResult);
-				return subCenterSearchResult.getSubCenterUrl();
+				return new ImmutablePair<>(null, subCenterSearchResult.getSubCenterUrl());
 			}
 		} catch (UnsupportedEncodingException e) {
 			logService.error(getClass(), "Failed downloading SubCenter url for '" + name + "':" + e.getMessage(), e);
 		}
 
-		return null;
+		return new ImmutablePair<>(null, null);
 	}
 
 	private Collection<SubCenterSearchResult> parseSearchResultsPage(Document doc) {

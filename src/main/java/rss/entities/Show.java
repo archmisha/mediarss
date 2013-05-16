@@ -54,6 +54,9 @@ public class Show extends BaseEntity {
 	@Column(name = "subcenter_url")
 	private String subCenterUrl;
 
+	@Column(name = "subcenter_url_scan_date")
+	private Date subCenterUrlScanDate;
+
 	public Show() {
 		episodes = new HashSet<>();
 	}
@@ -118,6 +121,14 @@ public class Show extends BaseEntity {
 
 	public void setSubCenterUrl(String subCenterUrl) {
 		this.subCenterUrl = subCenterUrl;
+	}
+
+	public Date getSubCenterUrlScanDate() {
+		return subCenterUrlScanDate;
+	}
+
+	public void setSubCenterUrlScanDate(Date subCenterUrlScanDate) {
+		this.subCenterUrlScanDate = subCenterUrlScanDate;
 	}
 
 	@Override

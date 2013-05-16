@@ -1,6 +1,5 @@
 package rss.services.searchers;
 
-import rss.entities.Media;
 import rss.services.requests.SearchRequest;
 
 /**
@@ -8,7 +7,7 @@ import rss.services.requests.SearchRequest;
  * Date: 24/11/12
  * Time: 14:35
  */
-public interface Searcher<T extends SearchRequest, S extends Media> {
+public interface Searcher<T extends SearchRequest> {
 
 	String getName();
 

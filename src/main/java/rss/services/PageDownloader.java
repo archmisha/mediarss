@@ -1,5 +1,6 @@
 package rss.services;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.cookie.Cookie;
 
 import java.util.List;
@@ -19,6 +20,8 @@ public interface PageDownloader {
 	byte[] downloadData(String url);
 
 	String downloadPage(String url, Map<String, String> headers);
+
+	Pair<String, String> downloadPageWithRedirect(String url);
 
 	List<Cookie> sendPostRequest(String url, Map<String, String> params);
 }
