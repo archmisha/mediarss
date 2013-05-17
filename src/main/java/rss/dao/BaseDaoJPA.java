@@ -9,6 +9,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -96,6 +97,9 @@ public class BaseDaoJPA<T> implements Dao<T> {
 	@SuppressWarnings({"unchecked"})
 	@Override
 	public Collection<T> find(Collection<Long> ids) {
+		if (ids.isEmpty()) {
+			return Collections.emptyList();
+		}
 		Query queryObject = em.createQuery("select e from " + persistentClass.getName() + " as e where e.id in (:ids)");
 		queryObject.setParameter("ids", ids);
 		return queryObject.getResultList();
