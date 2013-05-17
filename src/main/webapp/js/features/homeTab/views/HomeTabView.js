@@ -51,8 +51,7 @@ define([
 				var that = this;
 				HttpUtils.get('rest/user/initial-data', function(res) {
 					that.tabData = res;
-					var subtitleValues = [SUBTITLES_NONE];
-					subtitleValues = subtitleValues.concat(that.tabData.subtitles);
+					var subtitleValues = [SUBTITLES_NONE].concat(that.tabData.subtitles);
 					subtitleValues.forEach(function(subtitle) {
 						that.ui.subtitlesCombobox.append(
 							$('<option></option>').val(subtitle).html(subtitle)
@@ -65,10 +64,9 @@ define([
 					// register copy to clipboard
 					that.setCopyToClipboard();
 
-					Utils.waitForDisplayAndCreate('.subtitles-settings-combobox', that.createChosen);
-					if (that.tabData.userSubtitles) {
-						that.ui.subtitlesCombobox.val(that.tabData.userSubtitles);
-					}
+					Utils.waitForDisplayAndCreate('.subtitles-settings-combobox', function(selector) {
+						that.createChosen(selector);
+					});
 				}, false);
 			},
 
@@ -117,12 +115,13 @@ define([
 				});
 			},
 
-			/*onShow: function() {
-
-			 },*/
-
 			createChosen: function(selector) {
 				$(selector).chosen();
+
+				if (this.tabData.userSubtitles) {
+					$(selector).val(this.tabData.userSubtitles);
+					$(selector).trigger("liszt:updated");
+				}
 			}
 		});
 	});
