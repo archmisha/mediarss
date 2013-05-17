@@ -5,7 +5,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.entities.Media;
 import rss.services.log.LogService;
 import rss.services.requests.SearchRequest;
 import rss.services.searchers.Downloadable;
@@ -87,10 +86,10 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 						case FOUND:
 							if (validateSearchResult(mediaRequest, searchResult)) {
 								// printing the returned torrent and not the original , as it might undergone some transformations
-								logService.info(aClass, String.format("Downloading \"%s\" took %d millis. Found in %s",
+								logService.info(aClass, String.format("Downloading \"%s\" took %d millis. %s",
 										searchResult.getTorrentTitles(),
 										System.currentTimeMillis() - from,
-										searchResult.getSource()));
+										getFoundInPart(searchResult)));
 								results.add(new ImmutablePair<>(mediaRequest, searchResult));
 							}
 							break;
@@ -122,4 +121,16 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 	protected abstract List<T> processSearchResults(Collection<Pair<S, SearchResult>> results);
 
 	protected abstract SearchResult downloadTorrent(S request);
+
+	private String getFoundInPart(SearchResult searchResult) {
+		StringBuilder sb = new StringBuilder().append("Found in ").append(searchResult.getSource());
+		if (!searchResult.getFailedSearchers().isEmpty()) {
+			sb.append(" (was missing at: ");
+			for (Pair<String, String> pair : searchResult.getFailedSearchers()) {
+				sb.append(pair.getKey()).append(" - ").append(pair.getValue()).append(", ");
+			}
+			sb.deleteCharAt(sb.length() - 1).deleteCharAt(sb.length() - 1).append(")");
+		}
+		return sb.toString();
+	}
 }

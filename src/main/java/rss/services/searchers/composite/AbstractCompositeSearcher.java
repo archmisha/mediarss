@@ -33,10 +33,10 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	private ApplicationContext applicationContext;
 
 	public SearchResult search(T mediaRequest) {
+		List<Pair<String, String>> failedSearchers = new ArrayList<>();
 		try {
 			prepareSearchRequest(mediaRequest);
 
-			List<Pair<String, String>> failedSearchers = new ArrayList<>();
 			SearchResult awaitingAgingSearchResult = null;
 
 			for (SimpleTorrentSearcher<T, Media> torrentSearcher : getTorrentSearchers()) {
@@ -52,7 +52,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 							// save a successful result for the end, if searching for IMDB url fails
 							String msg = onTorrentFound(searchResult);
 							if (msg == null) {
-								logTorrentFound(mediaRequest, searchResult, failedSearchers);
+								searchResult.getFailedSearchers().addAll(failedSearchers);
 								return searchResult;
 							}
 
@@ -72,14 +72,14 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 			}
 
 			if (awaitingAgingSearchResult != null) {
-				logTorrentFound(mediaRequest, awaitingAgingSearchResult, failedSearchers);
+				awaitingAgingSearchResult.getFailedSearchers().addAll(failedSearchers);
 				return awaitingAgingSearchResult;
 			}
 		} catch (Exception e) {
 			logService.error(getClass(), e.getMessage(), e);
 		}
 
-		return SearchResult.createNotFound();
+		return SearchResult.createNotFound(failedSearchers);
 	}
 
 	private void setTorrentHash(SearchResult searchResult) {
@@ -126,17 +126,5 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 
 	protected String onTorrentFound(SearchResult searchResult) {
 		return null;
-	}
-
-	protected void logTorrentFound(T mediaRequest, SearchResult searchResult, List<Pair<String, String>> failedSearchers) {
-		StringBuilder sb = new StringBuilder().append("Found \"").append(mediaRequest.toString()).append("\" in ").append(searchResult.getSource());
-		if (!failedSearchers.isEmpty()) {
-			sb.append(" (was missing at: ");
-			for (Pair<String, String> pair : failedSearchers) {
-				sb.append(pair.getKey()).append(" - ").append(pair.getValue()).append(", ");
-			}
-			sb.deleteCharAt(sb.length() - 1).deleteCharAt(sb.length() - 1).append(")");
-		}
-		logService.info(getClass(), sb.toString());
 	}
 }

@@ -74,10 +74,9 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 		if (!results.isEmpty()) {
 			// merge results into one
 			SearchResult searchResult = results.remove(0);
-//			searchResult.setSource(TorrentzParserImpl.NAME);
 			for (SearchResult result : results) {
 				searchResult.getDownloadables().addAll(result.getDownloadables());
-				searchResult.setSource(searchResult.getSource() + ", " + result.getSource());
+				searchResult.appendSource(result.getSource());
 			}
 
 			return searchResult;

@@ -1,7 +1,6 @@
 package rss.services.searchers;
 
-import org.apache.commons.lang3.StringUtils;
-import rss.entities.Torrent;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,19 +20,27 @@ public class SearchResult {
 	private SearchStatus searchStatus;
 	private List<Downloadable> downloadables;
 	private String source;
+	private List<Pair<String, String>> failedSearchers;
+
+	public SearchResult(SearchStatus searchStatus) {
+		downloadables = new ArrayList<>();
+		failedSearchers = new ArrayList<>();
+		this.searchStatus = searchStatus;
+	}
 
 	public SearchResult(String source) {
 		this(SearchStatus.FOUND);
 		this.source = source;
 	}
 
-	public SearchResult(SearchStatus searchStatus) {
-		downloadables = new ArrayList<>();
-		this.searchStatus = searchStatus;
-	}
-
 	public static SearchResult createNotFound() {
 		return new SearchResult(SearchStatus.NOT_FOUND);
+	}
+
+	public static SearchResult createNotFound(List<Pair<String, String>> failedSearchers) {
+		SearchResult searchResult = createNotFound();
+		searchResult.getFailedSearchers().addAll(failedSearchers);
+		return searchResult;
 	}
 
 	// for tests
@@ -41,6 +48,10 @@ public class SearchResult {
 		this(source);
 		this.setSearchStatus(searchStatus);
 		this.addDownloadable(downloadable);
+	}
+
+	public List<Pair<String, String>> getFailedSearchers() {
+		return failedSearchers;
 	}
 
 	public SearchStatus getSearchStatus() {
@@ -53,7 +64,7 @@ public class SearchResult {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Downloadable> List<T> getDownloadables() {
-		return (List<T>)downloadables;
+		return (List<T>) downloadables;
 	}
 
 	public void addDownloadable(Downloadable downloadable) {
@@ -66,6 +77,14 @@ public class SearchResult {
 
 	public String getSource() {
 		return source;
+	}
+
+	public void appendSource(String source) {
+		if (this.source == null) {
+			this.source = source;
+		} else if (!this.source.contains(source)) {
+			this.source += ", " + source;
+		}
 	}
 
 	public String getTorrentTitles() {

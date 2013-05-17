@@ -32,7 +32,8 @@ public class IMDBServiceImpl implements IMDBService {
 
 	public static final Pattern NAME_YEAR_PATTERN = Pattern.compile("\\(?[^\\d]*(\\d+)[^\\d]*\\)?");
 	public static final Pattern COMING_SOON_PATTERN = Pattern.compile("<div class=\"showtime\">.*?<h2>Coming Soon</h2>", Pattern.MULTILINE | Pattern.DOTALL);
-	public static final Pattern NOT_YET_RELEASED_PATTERN = Pattern.compile("<div class=\"rating-ineligible\">.*?Not yet released.*?</div>", Pattern.MULTILINE | Pattern.DOTALL);
+	// itemprop="description" blocks from finding other Not yet released string afterwards in the page
+	public static final Pattern NOT_YET_RELEASED_PATTERN = Pattern.compile("<div class=\"rating-ineligible\">.*?Not yet released.*?</div>.*?itemprop=\"description\"", Pattern.MULTILINE | Pattern.DOTALL);
 	public static final Pattern VIEWERS_PATTERN = Pattern.compile("<span itemprop=\"ratingCount\">([^<]*)</span>");
 	public static final Pattern OLD_YEAR_PATTERN = Pattern.compile("<meta name=\"title\" content=\"(.*?) - IMDb\" />");
 	public static final Pattern STORY_LINE_PATTERN = Pattern.compile("id=\"titleStoryLine\"");
@@ -87,7 +88,7 @@ public class IMDBServiceImpl implements IMDBService {
 		String name = oldYearMatcher.group(1);
 		name = StringEscapeUtils.unescapeHtml4(name);
 
-		logService.info(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
+		logService.debug(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
 
 		Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(partialPage);
 		boolean isComingSoon = comingSoonMatcher.find();
