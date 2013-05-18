@@ -438,7 +438,9 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
 		if (showRequest instanceof SingleEpisodeRequest) {
 			Episode episode = persistedEpisodes.get(0);
-			subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+			if (episode.getEpisode() != -1) {
+				subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, showRequest.getShow(), episode.getSeason(), episode.getEpisode(), languages, episode.getAirDate()));
+			}
 		} else if (showRequest instanceof DoubleEpisodeRequest) {
 			Episode episode1 = persistedEpisodes.get(0);
 			Episode episode2 = persistedEpisodes.get(1);

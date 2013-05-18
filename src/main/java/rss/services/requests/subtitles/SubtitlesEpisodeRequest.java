@@ -37,7 +37,7 @@ public abstract class SubtitlesEpisodeRequest extends SubtitlesRequest {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder().append(getName()).append(" ").append(getSeasonEpisode());
+		StringBuilder sb = new StringBuilder().append(getName()).append(" ").append(getSeasonEpisode()).append(" ");
 		for (SubtitleLanguage language : getLanguages()) {
 			sb.append(language.name()).append(", ");
 		}

@@ -74,12 +74,12 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 				}
 
 				if (show.getSubCenterUrl() == null) {
-					return SearchResult.createNotFound();
+					return SearchResult.createNotFound(NAME, SearchResult.SearcherFailedReason.NO_SUBCENTER_URL);
 				}
 
 				if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
 					SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
-					String entryUrl = String.format(SHOW_ENTRY_URL, show.getSubCenterUrl(), ser.getSeason(), sser.getEpisode());
+					String entryUrl = String.format(SHOW_ENTRY_URL, show.getSubCenterUrl(), sser.getSeason(), sser.getEpisode());
 					String page = pageDownloader.downloadPageUntilFound(entryUrl, ENTRY_FOUND_PATTERN);
 					return downloadSubtitles(subtitlesRequest, page);
 				}
@@ -109,7 +109,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 				}
 
 				if (movie.getSubCenterUrl() == null) {
-					return SearchResult.createNotFound();
+					return SearchResult.createNotFound(NAME, SearchResult.SearcherFailedReason.NO_SUBCENTER_URL);
 				}
 
 				String entryUrl = String.format(MOVIE_ENTRY_URL, movie.getSubCenterUrl());
@@ -119,13 +119,16 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed searching for subtitles for " + subtitlesRequest + ": " + e.getMessage(), e);
 		}
-		return SearchResult.createNotFound();
+		return SearchResult.createNotFound(NAME, SearchResult.SearcherFailedReason.EXCEPTION);
 	}
 
 	private SearchResult downloadSubtitles(SubtitlesRequest subtitlesRequest, String page) throws Exception {
 		SearchResult searchResult = new SearchResult(NAME);
 		for (SubtitleLanguage subtitleLanguage : subtitlesRequest.getLanguages()) {
 			SubCenterSubtitles foundSubtitles = parseEntryPage(subtitlesRequest, page, subtitleLanguage);
+			if (foundSubtitles == null) {
+				continue;
+			}
 
 			// for the best result only, download the actual subtitles
 			byte[] data = pageDownloader.downloadData(String.format(DATA_URL, toSubCenterLanguages(subtitleLanguage),
@@ -153,6 +156,11 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 			logService.info(getClass(), "FINAL: '" + foundSubtitles + "' for '" + subtitlesRequest.getTorrent().getTitle() + "'");
 			searchResult.addDownloadable(subtitles);
 		}
+
+		if (searchResult.getDownloadables().isEmpty()) {
+			return SearchResult.createNotFound(NAME, SearchResult.SearcherFailedReason.NOT_FOUND);
+		}
+
 		return searchResult;
 	}
 
@@ -162,11 +170,16 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 		String subsInfo = page.substring(idx, page.indexOf("subtitles_info", idx)).trim();
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode jsonNode = mapper.readTree(subsInfo);
+		JsonNode langNode = jsonNode.get(toSubCenterLanguages(subtitleLanguage));
+		if (langNode == null) {
+			// no subtitles for the needed language
+			return null;
+		}
 
 		// for the same subtitles name, pick the one with the most downloads
 		SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy ,HH:mm");
 		Map<String, SubCenterSubtitles> results = new HashMap<>();
-		for (JsonNode node1 : IteratorUtils.toList(jsonNode.get(toSubCenterLanguages(subtitleLanguage)).getElements())) {
+		for (JsonNode node1 : IteratorUtils.toList(langNode.getElements())) {
 			for (JsonNode node2 : IteratorUtils.toList(node1.getElements())) {
 				for (JsonNode node3 : IteratorUtils.toList(node2.getElements())) {
 					long id = node3.get("id").getIntValue();
@@ -197,6 +210,10 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 			}
 		}
 
+		if (results.isEmpty()) {
+			return null;
+		}
+
 		String[] keywords = new String[]{"dvdrip"};
 		Map<String, Boolean> keywordMatches = new HashMap<>();
 		for (String keyword : keywords) {
@@ -220,6 +237,10 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 					}
 				}
 			}
+		}
+
+		if (results.isEmpty()) {
+			return null;
 		}
 
 		logService.info(getClass(), "left with: " + StringUtils.join(results.values(), ", "));

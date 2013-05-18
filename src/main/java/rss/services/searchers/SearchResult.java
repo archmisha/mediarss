@@ -31,6 +31,11 @@ public class SearchResult {
 			public String toString() {
 				return "exception";
 			}
+		},
+		NO_SUBCENTER_URL {
+			public String toString() {
+				return "no subcenter url";
+			}
 		}
 	}
 
@@ -58,6 +63,12 @@ public class SearchResult {
 	public static SearchResult createNotFound(Map<String, SearcherFailedReason> failedSearchers) {
 		SearchResult searchResult = createNotFound();
 		searchResult.addFailedSearchers(failedSearchers);
+		return searchResult;
+	}
+
+	public static SearchResult createNotFound(String searcherName, SearcherFailedReason failedReason) {
+		SearchResult searchResult = createNotFound();
+		searchResult.addFailedSearchers(Collections.singletonMap(searcherName, failedReason));
 		return searchResult;
 	}
 
