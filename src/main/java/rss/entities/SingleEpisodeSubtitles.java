@@ -10,7 +10,6 @@ import javax.persistence.Table;
  * Date: 18/05/13 11:59
  */
 @Entity
-@Table(name = "subtitles")
 @DiscriminatorValue(value = "single_episode")
 public class SingleEpisodeSubtitles extends EpisodeSubtitles {
 	private static final long serialVersionUID = 5160599347471452815L;
