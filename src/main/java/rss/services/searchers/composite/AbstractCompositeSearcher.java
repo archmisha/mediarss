@@ -33,7 +33,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	private ApplicationContext applicationContext;
 
 	public SearchResult search(T mediaRequest) {
-		List<Pair<String, String>> failedSearchers = new ArrayList<>();
+		Map<String, SearchResult.SearcherFailedReason> failedSearchers = new HashMap<>();
 		try {
 			prepareSearchRequest(mediaRequest);
 
@@ -46,33 +46,33 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 					setTorrentHash(searchResult);
 					switch (searchResult.getSearchStatus()) {
 						case NOT_FOUND:
-							failedSearchers.add(new ImmutablePair<>(torrentSearcher.getName(), "not found"));
+							failedSearchers.put(torrentSearcher.getName(), SearchResult.SearcherFailedReason.NOT_FOUND);
 							break;
 						case FOUND:
 							// save a successful result for the end, if searching for IMDB url fails
-							String msg = onTorrentFound(searchResult);
+							SearchResult.SearcherFailedReason msg = onTorrentFound(searchResult);
 							if (msg == null) {
-								searchResult.getFailedSearchers().addAll(failedSearchers);
+								searchResult.addFailedSearchers(failedSearchers);
 								return searchResult;
 							}
 
-							failedSearchers.add(new ImmutablePair<>(torrentSearcher.getName(), msg));
+							failedSearchers.put(torrentSearcher.getName(), msg);
 							break;
 						case AWAITING_AGING:
 							awaitingAgingSearchResult = searchResult;
 							break;
 					}
 				} catch (PageDownloadException e) {
-					failedSearchers.add(new ImmutablePair<>(torrentSearcher.getName(), "exception"));
+					failedSearchers.put(torrentSearcher.getName(), SearchResult.SearcherFailedReason.EXCEPTION);
 					logService.error(getClass(), e.getMessage());
 				} catch (Exception e) {
-					failedSearchers.add(new ImmutablePair<>(torrentSearcher.getName(), "exception"));
+					failedSearchers.put(torrentSearcher.getName(), SearchResult.SearcherFailedReason.EXCEPTION);
 					logService.error(getClass(), e.getMessage(), e);
 				}
 			}
 
 			if (awaitingAgingSearchResult != null) {
-				awaitingAgingSearchResult.getFailedSearchers().addAll(failedSearchers);
+				awaitingAgingSearchResult.addFailedSearchers(failedSearchers);
 				return awaitingAgingSearchResult;
 			}
 		} catch (Exception e) {
@@ -124,7 +124,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 
 	protected abstract SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T, Media> torrentSearcher);
 
-	protected String onTorrentFound(SearchResult searchResult) {
+	protected SearchResult.SearcherFailedReason onTorrentFound(SearchResult searchResult) {
 		return null;
 	}
 }

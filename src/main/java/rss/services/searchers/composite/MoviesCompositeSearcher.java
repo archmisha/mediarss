@@ -15,10 +15,10 @@ import rss.services.searchers.SearchResult;
 public class MoviesCompositeSearcher extends DefaultCompositeSearcher<MovieRequest> {
 
 	@Override
-	protected String onTorrentFound(SearchResult searchResult) {
+	protected SearchResult.SearcherFailedReason onTorrentFound(SearchResult searchResult) {
 		// case of no IMDB url
 		if (getImdbId(searchResult) == null) {
-			return "no IMDB id";
+			return SearchResult.SearcherFailedReason.NO_IMDB_ID;
 		}
 		return null;
 	}

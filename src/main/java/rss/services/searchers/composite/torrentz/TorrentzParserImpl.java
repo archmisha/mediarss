@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,10 +45,25 @@ public class TorrentzParserImpl implements TorrentzParser {
 	@Autowired
 	protected PageDownloader pageDownloader;
 
-	public Set<TorrentzResult> downloadByUrl(String url) {
+	public Collection<TorrentzResult> downloadByUrl(String url) {
 		String page = pageDownloader.downloadPage(url);
-		Set<TorrentzResult> mediaRequests = parse(page);
-		return mediaRequests;
+		Set<TorrentzResult> torrentzResults = parse(page);
+
+		// group requests by name and for each name leave only the one with the best seeders
+		// this way we eliminate torrents with same name and lower seeders number
+		Map<String, TorrentzResult> map = new HashMap<>();
+		for (TorrentzResult foundRequest : torrentzResults) {
+			String title = foundRequest.getTitle();
+			if (map.containsKey(title)) {
+				if (map.get(title).getUploaders() < foundRequest.getUploaders()) {
+					map.put(title, foundRequest);
+				}
+			} else {
+				map.put(title, foundRequest);
+			}
+		}
+
+		return map.values();
 	}
 
 	@SuppressWarnings("unchecked")

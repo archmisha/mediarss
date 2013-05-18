@@ -3,7 +3,6 @@ package rss.services.searchers.composite;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import rss.entities.Episode;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.searchers.AbstractMediaSearcher;
 import rss.services.searchers.composite.torrentz.EpisodeTorrentzSearcher;
@@ -14,7 +13,7 @@ import rss.services.searchers.composite.torrentz.TorrentzSearcher;
  * Date: 12/05/13 21:30
  */
 @Service
-public class EpisodeSearcher extends AbstractMediaSearcher<ShowRequest, Episode> {
+public class EpisodeSearcher extends AbstractMediaSearcher<ShowRequest> {
 
 	@Autowired
 	@Qualifier("defaultCompositeSearcher")

@@ -350,7 +350,7 @@ public class MovieServiceImpl implements MovieService {
 	@Override
 	public DownloadResult<Movie, MovieRequest> downloadLatestMovies() {
 		logService.info(getClass(), "Downloading '" + TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d" + "'");
-		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d");
+		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d");
 
 		// retry with 7 days
 		if (torrentzResults.isEmpty()) {
@@ -367,7 +367,9 @@ public class MovieServiceImpl implements MovieService {
 			if (!name.contains(String.valueOf(curYear)) && !name.contains(String.valueOf(prevYear))) {
 				logService.info(getClass(), "Skipping movie '" + name + "' due to old year");
 			} else {
-				movieRequests.add(new MovieRequest(torrentzResult.getTitle(), torrentzResult.getHash()));
+				MovieRequest movieRequest = new MovieRequest(torrentzResult.getTitle(), torrentzResult.getHash());
+				movieRequest.setUploaders(torrentzResult.getUploaders());
+				movieRequests.add(movieRequest);
 			}
 		}
 

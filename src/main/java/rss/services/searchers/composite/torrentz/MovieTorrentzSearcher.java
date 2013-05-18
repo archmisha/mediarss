@@ -30,33 +30,21 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 	@Override
 	public SearchResult search(MovieRequest mediaRequest) {
 		String url = getSearchUrl(mediaRequest);
-		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
+		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
-		// group requests by name and for each name leave only the one with the best seeders
-		// this way we eliminate torrents with same name and lower seeders number
-		Map<String, TorrentzResult> map = new HashMap<>();
-		for (TorrentzResult foundRequest : torrentzResults) {
-			String title = foundRequest.getTitle();
-			if (map.containsKey(title)) {
-				if (map.get(title).getUploaders() < foundRequest.getUploaders()) {
-					map.put(title, foundRequest);
-				}
-			} else {
-				map.put(title, foundRequest);
-			}
-		}
-
-		List<SearchResult> results = new ArrayList<>();
+		List<SearchResult> foundSearchResults = new ArrayList<>();
+		List<SearchResult> notFoundSearchResults = new ArrayList<>();
 		SearchResult awaitingAgingResult = null;
-		for (TorrentzResult foundRequest : map.values()) {
+		for (TorrentzResult foundRequest : torrentzResults) {
 			MovieRequest curRequest = new MovieRequest(foundRequest.getTitle(), foundRequest.getHash());
 			curRequest.setUploaders(foundRequest.getUploaders());
 			enrichRequestWithSearcherIds(curRequest);
 
 			SearchResult searchResult = super.search(curRequest);
 
-			// null means not found
-			if (searchResult != null) {
+			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
+				notFoundSearchResults.add(searchResult);
+			} else {
 				// override torrent titles, because it might differ from the torrentz side, which combines all
 				// other sites. And the we get double torrent names
 				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
@@ -64,19 +52,20 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 				}
 
 				if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND) {
-					results.add(searchResult);
+					foundSearchResults.add(searchResult);
 				} else if (searchResult.getSearchStatus() == SearchResult.SearchStatus.AWAITING_AGING) {
 					awaitingAgingResult = searchResult;
 				}
 			}
 		}
 
-		if (!results.isEmpty()) {
+		if (!foundSearchResults.isEmpty()) {
 			// merge results into one
-			SearchResult searchResult = results.remove(0);
-			for (SearchResult result : results) {
+			SearchResult searchResult = foundSearchResults.remove(0);
+			for (SearchResult result : foundSearchResults) {
 				searchResult.getDownloadables().addAll(result.getDownloadables());
-				searchResult.appendSource(result.getSource());
+				searchResult.addSources(result.getSources());
+				searchResult.addFailedSearchers(result.getFailedSearchers());
 			}
 
 			return searchResult;
@@ -86,14 +75,18 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 			return awaitingAgingResult;
 		}
 
-		return SearchResult.createNotFound();
+		SearchResult notFound = SearchResult.createNotFound();
+		for (SearchResult searchResult : notFoundSearchResults) {
+			notFound.addFailedSearchers(searchResult.getFailedSearchers());
+		}
+		return notFound;
 	}
 
 	@Override
-	protected String onTorrentFound(SearchResult searchResult) {
+	protected SearchResult.SearcherFailedReason onTorrentFound(SearchResult searchResult) {
 		// case of no IMDB url
 		if (getImdbId(searchResult) == null) {
-			return "no IMDB id";
+			return SearchResult.SearcherFailedReason.NO_IMDB_ID;
 		}
 		return null;
 	}

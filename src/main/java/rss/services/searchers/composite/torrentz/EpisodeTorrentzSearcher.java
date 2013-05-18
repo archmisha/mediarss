@@ -13,6 +13,7 @@ import rss.services.shows.ShowService;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 	@Override
 	protected void prepareSearchRequest(ShowRequest mediaRequest) {
 		String url = getSearchUrl(mediaRequest);
-		Set<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
+		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
 		List<MatchCandidate> filteredResults = filterMatching(mediaRequest, torrentzResults);
 		if (filteredResults.isEmpty()) {
@@ -59,7 +60,7 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 		enrichRequestWithSearcherIds(mediaRequest);
 	}
 
-	protected List<MatchCandidate> filterMatching(ShowRequest mediaRequest, Set<TorrentzResult> mediaRequests) {
+	protected List<MatchCandidate> filterMatching(ShowRequest mediaRequest, Collection<TorrentzResult> mediaRequests) {
 		List<MatchCandidate> matchCandidates = new ArrayList<>();
 		for (final TorrentzResult curRequest : mediaRequests) {
 			matchCandidates.add(new MatchCandidate() {

@@ -69,7 +69,7 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
-		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(new SearchResult(SearchResult.SearchStatus.NOT_FOUND));
+		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(SearchResult.createNotFound());
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
 
@@ -83,8 +83,12 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
+		searchResult.addDownloadable(torrent);
+
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
-		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(new SearchResult(torrent, "source", SearchResult.SearchStatus.AWAITING_AGING));
+		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
 
@@ -99,7 +103,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
 
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
-		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND));
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
+		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
 		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
 
@@ -113,7 +119,8 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		final MovieRequest movieRequest = new MovieRequest("Batman 1966 " + curYear, "hash"); // putting both current year and old year on same
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
-		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
 		String imdbUrl = "some imdb url";
 		torrent.setImdbId(imdbUrl);
 
@@ -135,7 +142,8 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		final MovieRequest movieRequest = new MovieRequest("Batman 1966 " + curYear, "hash"); // putting both current year and old year on same
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
-		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
 		String imdbUrl = "some imdb url";
 		torrent.setImdbId(imdbUrl);
 
@@ -156,7 +164,8 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		final MovieRequest movieRequest = new MovieRequest("name", "hash");
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
-		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
 		String imdbUrl = "http://www.imdb.com/title/tt2193021/";
 		torrent.setImdbId(imdbUrl);
 
@@ -185,7 +194,8 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		final MovieRequest movieRequest = new MovieRequest("name", "hash");
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
-		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
 		String imdbUrl = "http://www.imdb.com/title/tt2402582/";
 		torrent.setImdbId(imdbUrl);
 
@@ -210,7 +220,8 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		final MovieRequest movieRequest = new MovieRequest("name", "hash");
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
-		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
 		String imdbUrl = "http://www.imdb.com/title/tt2402582/";
 		torrent.setImdbId(imdbUrl);
 
@@ -235,7 +246,8 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		final MovieRequest movieRequest = new MovieRequest("name", "hash");
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		Torrent torrent = new Torrent("title", "url", new Date(), 5);
-		SearchResult searchResult = new SearchResult(torrent, "source", SearchResult.SearchStatus.FOUND);
+		SearchResult searchResult = new SearchResult("source");
+		searchResult.addDownloadable(torrent);
 		String imdbUrl = "url";
 		torrent.setImdbId(imdbUrl);
 

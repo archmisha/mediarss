@@ -11,7 +11,7 @@ import rss.services.PageDownloader;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 
-import java.util.Set;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -43,7 +43,7 @@ public class MovieTorrentzSearcherTest extends BaseTest {
 		MovieRequest movieRequest = new MovieRequest("2 Fast 2 Furious (2003) keltz", null);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(page);
-		Set<TorrentzResult> torrentzResults = realTorrentzParser.downloadByUrl("bla");
+		Collection<TorrentzResult> torrentzResults = realTorrentzParser.downloadByUrl("bla");
 		when(torrentzParser.downloadByUrl(any(String.class))).thenReturn(torrentzResults);
 
 		SearchResult searchResult = movieTorrentzSearcher.search(movieRequest);

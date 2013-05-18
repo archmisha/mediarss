@@ -1,6 +1,6 @@
 package rss.services.searchers.composite.torrentz;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * User: dikmanm
@@ -8,5 +8,5 @@ import java.util.Set;
  */
 public interface TorrentzParser {
 
-	Set<TorrentzResult> downloadByUrl(String url);
+	Collection<TorrentzResult> downloadByUrl(String url);
 }

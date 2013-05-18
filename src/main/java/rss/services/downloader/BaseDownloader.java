@@ -68,9 +68,10 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 					final SearchResult searchResult = downloadTorrent(mediaRequest);
 					switch (searchResult.getSearchStatus()) {
 						case NOT_FOUND:
-							logService.info(aClass, String.format("Media \"%s\" is not found. Took %d millis.",
+							logService.info(aClass, String.format("Downloading \"%s\" took %d millis. %s",
 									mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
-									System.currentTimeMillis() - from));
+									System.currentTimeMillis() - from,
+									getFoundInPart(searchResult)));
 							missing.add(mediaRequest);
 							break;
 						case AWAITING_AGING:
@@ -87,7 +88,7 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 							if (validateSearchResult(mediaRequest, searchResult)) {
 								// printing the returned torrent and not the original , as it might undergone some transformations
 								logService.info(aClass, String.format("Downloading \"%s\" took %d millis. %s",
-										searchResult.getTorrentTitles(),
+										searchResult.getDownloadablesDisplayString(),
 										System.currentTimeMillis() - from,
 										getFoundInPart(searchResult)));
 								results.add(new ImmutablePair<>(mediaRequest, searchResult));
@@ -123,13 +124,20 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 	protected abstract SearchResult downloadTorrent(S request);
 
 	private String getFoundInPart(SearchResult searchResult) {
-		StringBuilder sb = new StringBuilder().append("Found in ").append(searchResult.getSource());
-		if (!searchResult.getFailedSearchers().isEmpty()) {
-			sb.append(" (was missing at: ");
-			for (Pair<String, String> pair : searchResult.getFailedSearchers()) {
-				sb.append(pair.getKey()).append(" - ").append(pair.getValue()).append(", ");
+		StringBuilder sb = new StringBuilder();
+		if (searchResult.getSearchStatus() != SearchResult.SearchStatus.NOT_FOUND) {
+			sb.append("Found in ").append(searchResult.getSourcesDisplayString());
+			if (!searchResult.getFailedSearchers().isEmpty()) {
+				sb.append(" (was missing at: ");
 			}
-			sb.deleteCharAt(sb.length() - 1).deleteCharAt(sb.length() - 1).append(")");
+		} else {
+			sb.append("Not found in: ");
+		}
+
+		sb.append(searchResult.getFailedSearchersDisplayString());
+
+		if (searchResult.getSearchStatus() != SearchResult.SearchStatus.NOT_FOUND && !searchResult.getFailedSearchers().isEmpty()) {
+			sb.append(")");
 		}
 		return sb.toString();
 	}

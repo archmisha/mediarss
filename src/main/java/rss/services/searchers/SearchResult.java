@@ -1,9 +1,8 @@
 package rss.services.searchers;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: Michael Dikman
@@ -17,41 +16,73 @@ public class SearchResult {
 		NOT_FOUND, FOUND, AWAITING_AGING
 	}
 
+	public enum SearcherFailedReason {
+		NOT_FOUND {
+			public String toString() {
+				return "not found";
+			}
+		},
+		NO_IMDB_ID {
+			public String toString() {
+				return "no IMDB ID";
+			}
+		},
+		EXCEPTION {
+			public String toString() {
+				return "exception";
+			}
+		}
+	}
+
 	private SearchStatus searchStatus;
 	private List<Downloadable> downloadables;
-	private String source;
-	private List<Pair<String, String>> failedSearchers;
+	private Set<String> sources;
+	private Map<String, SearcherFailedReason> failedSearchers;
 
-	public SearchResult(SearchStatus searchStatus) {
-		downloadables = new ArrayList<>();
-		failedSearchers = new ArrayList<>();
+	private SearchResult(SearchStatus searchStatus) {
+		this.downloadables = new ArrayList<>();
+		this.failedSearchers = new HashMap<>();
+		this.sources = new HashSet<>();
 		this.searchStatus = searchStatus;
 	}
 
 	public SearchResult(String source) {
 		this(SearchStatus.FOUND);
-		this.source = source;
+		this.sources.add(source);
 	}
 
 	public static SearchResult createNotFound() {
 		return new SearchResult(SearchStatus.NOT_FOUND);
 	}
 
-	public static SearchResult createNotFound(List<Pair<String, String>> failedSearchers) {
+	public static SearchResult createNotFound(Map<String, SearcherFailedReason> failedSearchers) {
 		SearchResult searchResult = createNotFound();
-		searchResult.getFailedSearchers().addAll(failedSearchers);
+		searchResult.addFailedSearchers(failedSearchers);
 		return searchResult;
 	}
 
-	// for tests
-	public SearchResult(Downloadable downloadable, String source, SearchStatus searchStatus) {
-		this(source);
-		this.setSearchStatus(searchStatus);
-		this.addDownloadable(downloadable);
+	public void addFailedSearchers(Map<String, SearcherFailedReason> failedSearchers) {
+		// smart overriding
+		for (Map.Entry<String, SearcherFailedReason> entry : failedSearchers.entrySet()) {
+			if (!this.failedSearchers.containsKey(entry.getKey())) {
+				this.failedSearchers.put(entry.getKey(), entry.getValue());
+			}
+		}
 	}
 
-	public List<Pair<String, String>> getFailedSearchers() {
-		return failedSearchers;
+	public Map<String, SearcherFailedReason> getFailedSearchers() {
+		return new HashMap<>(failedSearchers);
+	}
+
+	public String getFailedSearchersDisplayString() {
+		StringBuilder sb = new StringBuilder();
+		if (!failedSearchers.isEmpty()) {
+			for (Map.Entry<String, SearcherFailedReason> entry : failedSearchers.entrySet()) {
+				sb.append(entry.getKey()).append(" - ").append(entry.getValue().toString()).append(", ");
+			}
+			sb.deleteCharAt(sb.length() - 1).deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
 	}
 
 	public SearchStatus getSearchStatus() {
@@ -71,23 +102,19 @@ public class SearchResult {
 		this.downloadables.add(downloadable);
 	}
 
-	public void setSource(String source) {
-		this.source = source;
+	public String getSourcesDisplayString() {
+		return StringUtils.join(sources, ", ");
 	}
 
-	public String getSource() {
-		return source;
+	public void addSources(Collection<String> sources) {
+		this.sources.addAll(sources);
 	}
 
-	public void appendSource(String source) {
-		if (this.source == null) {
-			this.source = source;
-		} else if (!this.source.contains(source)) {
-			this.source += ", " + source;
-		}
+	public Collection<String> getSources() {
+		return Collections.unmodifiableCollection(sources);
 	}
 
-	public String getTorrentTitles() {
+	public String getDownloadablesDisplayString() {
 		StringBuilder sb = new StringBuilder();
 		for (Downloadable downloadable : downloadables) {
 			sb.append(downloadable.getName());
