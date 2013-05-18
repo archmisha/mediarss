@@ -117,7 +117,7 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 				return downloadSubtitles(subtitlesRequest, page);
 			}
 		} catch (Exception e) {
-			logService.error(getClass(), e.getMessage(), e);
+			logService.error(getClass(), "Failed searching for subtitles for " + subtitlesRequest + ": " + e.getMessage(), e);
 		}
 		return SearchResult.createNotFound();
 	}
