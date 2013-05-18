@@ -158,7 +158,7 @@ public class UserController extends BaseController {
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
 		result.put("subtitles", SubtitleLanguage.getValues());
-		result.put("userSubtitles", user.getSubtitles());
+		result.put("userSubtitles", user.getSubtitles() == null ? null : user.getSubtitles().toString());
 		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
 		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
 		duration.stop();
