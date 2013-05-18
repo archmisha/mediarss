@@ -128,17 +128,15 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 				Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest, subtitles.getLanguage());
 				if (persistedSubtitles == null) {
 					persistedSubtitles = subtitlesDao.findByName(subtitles.getName());
-					if (persistedSubtitles != null) {
-						logService.info(getClass(), "Found subtitles by the same name, only connecting: " + subtitles);
-						persistedSubtitles.getTorrentIds().addAll(subtitles.getTorrentIds());
-					} else {
-						logService.info(getClass(), "Persisting new subtitles: " + subtitles);
-						subtitlesDao.persist(subtitles);
-						subtitlesTrackerService.announce(subtitles);
-					}
-				} else {
-					logService.info(getClass(), "Found subtitles for this request, only connecting: " + subtitles);
+				}
+
+				if (persistedSubtitles != null) {
+					logService.info(getClass(), "Found matching existing subtitles, only connecting: " + subtitles);
 					persistedSubtitles.getTorrentIds().addAll(subtitles.getTorrentIds());
+				} else {
+					logService.info(getClass(), "Persisting new subtitles: " + subtitles);
+					subtitlesDao.persist(subtitles);
+					subtitlesTrackerService.announce(subtitles);
 				}
 			}
 
