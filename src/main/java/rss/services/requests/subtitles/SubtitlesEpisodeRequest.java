@@ -34,4 +34,16 @@ public abstract class SubtitlesEpisodeRequest extends SubtitlesRequest {
 	public Date getAirDate() {
 		return airDate;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder().append(getName()).append(" ").append(getSeasonEpisode());
+		for (SubtitleLanguage language : getLanguages()) {
+			sb.append(language.name()).append(", ");
+		}
+		sb.deleteCharAt(sb.length() - 1).deleteCharAt(sb.length() - 1);
+		return sb.toString();
+	}
+
+	protected abstract String getSeasonEpisode();
 }

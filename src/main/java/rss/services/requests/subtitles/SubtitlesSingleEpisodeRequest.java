@@ -1,5 +1,6 @@
 package rss.services.requests.subtitles;
 
+import org.apache.commons.lang3.StringUtils;
 import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.services.subtitles.SubtitleLanguage;
@@ -23,5 +24,11 @@ public class SubtitlesSingleEpisodeRequest extends SubtitlesEpisodeRequest {
 
 	public int getEpisode() {
 		return episode;
+	}
+
+	@Override
+	protected String getSeasonEpisode() {
+		return "s" + StringUtils.leftPad(String.valueOf(getSeason()), 2, '0') +
+			   "e" + StringUtils.leftPad(String.valueOf(episode), 2, '0');
 	}
 }
