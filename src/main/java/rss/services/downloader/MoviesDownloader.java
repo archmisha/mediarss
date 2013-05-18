@@ -141,7 +141,6 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 
 	@Override
 	protected void processMissingRequests(Collection<MovieRequest> missing) {
-
 	}
 
 	@Override

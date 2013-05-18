@@ -37,7 +37,7 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 	}
 
 	@Override
-	protected void prepareSearchRequest(ShowRequest mediaRequest) {
+	protected void preSearch(ShowRequest mediaRequest) {
 		String url = getSearchUrl(mediaRequest);
 		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 

@@ -64,9 +64,9 @@ public class SubtitlesTrackerServiceImpl implements SubtitlesTrackerService {
 
 			// save the torrent file for the rtorrent client
 			File file = new File(settingsService.getTorrentWatchPath() + File.separator + torrent.getName() + ".torrent");
-			FileOutputStream fos = new FileOutputStream(file);
-			torrent.save(fos);
-			fos.close();
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				torrent.save(fos);
+			}
 
 			// register the torrent with the tracker
 			embeddedTracker.announce(new TrackedTorrent(torrent));

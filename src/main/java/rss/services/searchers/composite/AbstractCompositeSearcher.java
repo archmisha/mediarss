@@ -1,8 +1,6 @@
 package rss.services.searchers.composite;
 
 import com.google.common.primitives.Ints;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import rss.PageDownloadException;
@@ -35,7 +33,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	public SearchResult search(T mediaRequest) {
 		Map<String, SearchResult.SearcherFailedReason> failedSearchers = new HashMap<>();
 		try {
-			prepareSearchRequest(mediaRequest);
+			preSearch(mediaRequest);
 
 			SearchResult awaitingAgingSearchResult = null;
 
@@ -53,6 +51,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 							SearchResult.SearcherFailedReason msg = onTorrentFound(searchResult);
 							if (msg == null) {
 								searchResult.addFailedSearchers(failedSearchers);
+								postSearch(searchResult);
 								return searchResult;
 							}
 
@@ -73,13 +72,16 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 
 			if (awaitingAgingSearchResult != null) {
 				awaitingAgingSearchResult.addFailedSearchers(failedSearchers);
+				postSearch(awaitingAgingSearchResult);
 				return awaitingAgingSearchResult;
 			}
 		} catch (Exception e) {
 			logService.error(getClass(), e.getMessage(), e);
 		}
 
-		return SearchResult.createNotFound(failedSearchers);
+		SearchResult notFoundSearchResult = SearchResult.createNotFound(failedSearchers);
+		postSearch(notFoundSearchResult);
+		return notFoundSearchResult;
 	}
 
 	private void setTorrentHash(SearchResult searchResult) {
@@ -96,7 +98,10 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 		}
 	}
 
-	protected void prepareSearchRequest(T mediaRequest) {
+	protected void preSearch(T mediaRequest) {
+	}
+
+	protected void postSearch(SearchResult searchResult) {
 	}
 
 	@SuppressWarnings("unchecked")
