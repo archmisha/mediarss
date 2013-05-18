@@ -28,8 +28,13 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 	}
 
 	@Override
-	public SearchResult search(MovieRequest mediaRequest) {
-		String url = getSearchUrl(mediaRequest);
+	public SearchResult search(MovieRequest movieRequest) {
+		// optimization in case there is already hash given
+		if (movieRequest.getHash() != null) {
+			return searchByHash(movieRequest);
+		}
+
+		String url = getSearchUrl(movieRequest);
 		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
 		List<SearchResult> foundSearchResults = new ArrayList<>();
@@ -80,6 +85,11 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 			notFound.addFailedSearchers(searchResult.getFailedSearchers());
 		}
 		return notFound;
+	}
+
+	private SearchResult searchByHash(MovieRequest movieRequest) {
+		enrichRequestWithSearcherIds(movieRequest);
+		return super.search(movieRequest);
 	}
 
 	@Override

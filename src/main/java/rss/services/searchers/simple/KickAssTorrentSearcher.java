@@ -35,6 +35,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
 
 	private static final Pattern KICK_ASS_TORRENTS_ID = Pattern.compile("http://www.kickasstorrents.com/([^\"/]+)");
+	private static final Pattern KAT_PH_ID = Pattern.compile("http://kat.ph/([^\"/]+)");
 
 	@Override
 	public String getName() {
@@ -77,6 +78,10 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
 		Matcher matcher = KICK_ASS_TORRENTS_ID.matcher(page);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+		matcher = KAT_PH_ID.matcher(page);
 		if (matcher.find()) {
 			return matcher.group(1);
 		}

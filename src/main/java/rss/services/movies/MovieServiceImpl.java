@@ -20,6 +20,7 @@ import rss.dao.ViewDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.downloader.DownloadResult;
+import rss.services.downloader.LatestMoviesDownloader;
 import rss.services.downloader.MovieTorrentsDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.movies.MovieRequest;
@@ -66,7 +67,10 @@ public class MovieServiceImpl implements MovieService {
 	private LogService logService;
 
 	@Autowired
-	private MovieTorrentsDownloader moviesTorrentEntriesDownloader;
+	private LatestMoviesDownloader latestMoviesDownloader;
+
+	@Autowired
+	private MovieTorrentsDownloader movieTorrentsDownloader;
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
@@ -301,7 +305,7 @@ public class MovieServiceImpl implements MovieService {
 			if (movie.getTorrentIds().isEmpty()) {
 				MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
 				movieRequest.setImdbId(imdbUrl);
-				moviesTorrentEntriesDownloader.download(Collections.singleton(movieRequest));
+				movieTorrentsDownloader.download(Collections.singleton(movieRequest));
 
 				// re-fetch the movie in this transaction after it got torrents
 				movie = movieDao.find(movie.getId());
@@ -373,6 +377,6 @@ public class MovieServiceImpl implements MovieService {
 			}
 		}
 
-		return moviesTorrentEntriesDownloader.download(movieRequests);
+		return latestMoviesDownloader.download(movieRequests);
 	}
 }
