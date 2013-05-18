@@ -30,11 +30,11 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 			return uniqueResult(super.<Subtitles>findByNamedQueryAndNamedParams("Subtitles.find", params));
 		} else if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
 			SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
-			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2";
+			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2 and t.episode2 is null";
 			return uniqueResult(super.<Subtitles>find(query, language, sser.getSeason(), sser.getEpisode()));
 		} else if (subtitlesRequest instanceof SubtitlesDoubleEpisodeRequest) {
 			SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) subtitlesRequest;
-			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2 and t.episode2 =:p3";
+			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2 and t.episode2 = :p3";
 			return uniqueResult(super.<Subtitles>find(query, language, sder.getSeason(), sder.getEpisode1(), sder.getEpisode2()));
 		} else {
 			throw new IllegalArgumentException("Cannot search for requests of type: " + subtitlesRequest.getClass());
