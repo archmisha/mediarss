@@ -14,18 +14,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.entities.MediaQuality;
-import rss.entities.Movie;
-import rss.entities.Show;
-import rss.entities.Subtitles;
+import rss.entities.*;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.services.matching.MatchCandidate;
 import rss.services.matching.MatchingUtils;
-import rss.services.requests.subtitles.SubtitlesEpisodeRequest;
-import rss.services.requests.subtitles.SubtitlesMovieRequest;
-import rss.services.requests.subtitles.SubtitlesRequest;
-import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
+import rss.services.requests.subtitles.*;
 import rss.services.subtitles.SubtitleLanguage;
 
 import java.io.UnsupportedEncodingException;
@@ -137,11 +131,22 @@ public class SubCenterSubtitlesSearcher implements Searcher<SubtitlesRequest> {
 			byte[] data = pageDownloader.downloadData(String.format(DATA_URL, toSubCenterLanguages(subtitleLanguage),
 					foundSubtitles.getId(), URLEncoder.encode(foundSubtitles.getName(), "UTF-8"), foundSubtitles.getKey()));
 
-			Subtitles subtitles = new Subtitles();
+			Subtitles subtitles;
+			if (subtitlesRequest instanceof SubtitlesMovieRequest) {
+				subtitles = new Subtitles();
+			} else if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
+				SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
+				subtitles = new SingleEpisodeSubtitles(sser.getSeason(), sser.getEpisode());
+			} else if (subtitlesRequest instanceof SubtitlesDoubleEpisodeRequest) {
+				SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) subtitlesRequest;
+				subtitles = new DoubleEpisodeSubtitles(sder.getSeason(), sder.getEpisode1(), sder.getEpisode2());
+			} else {
+				throw new InvalidParameterException("Unsupported request type: " + subtitlesRequest.getClass());
+			}
 			subtitles.setLanguage(foundSubtitles.getLanguage());
 			subtitles.setFileName(foundSubtitles.getName());
 			subtitles.setExternalId(String.valueOf(foundSubtitles.getId()));
-			subtitles.setTorrent(subtitlesRequest.getTorrent());
+			subtitles.getTorrentIds().add(subtitlesRequest.getTorrent().getId());
 			subtitles.setDateUploaded(foundSubtitles.getDateUploaded());
 			subtitles.setData(data);
 

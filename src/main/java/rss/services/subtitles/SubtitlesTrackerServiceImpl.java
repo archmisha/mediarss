@@ -84,7 +84,7 @@ public class SubtitlesTrackerServiceImpl implements SubtitlesTrackerService {
 	public com.turn.ttorrent.common.Torrent toTorrent(Subtitles subtitle) {
 		try {
 			File file = new File(settingsService.getTorrentDownloadedPath() + File.separator +
-								 subtitle.getTorrent().getTitle() + "-" + subtitle.getLanguage() +
+								 subtitle.getName() + "-" + subtitle.getLanguage() +
 								 subtitle.getName().substring(subtitle.getName().lastIndexOf(".")));
 			if (!file.exists()) {
 				FileOutputStream fos = new FileOutputStream(file);

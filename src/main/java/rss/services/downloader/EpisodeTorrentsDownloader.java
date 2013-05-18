@@ -159,8 +159,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		return cachedEpisodes;
 	}
 
-	private Set<Episode> skipCachedEpisodes
-			(Set<ShowRequest> episodeRequests, Map<Episode, Set<EpisodeRequest>> episodesMap) {
+	private Set<Episode> skipCachedEpisodes(Set<ShowRequest> episodeRequests, Map<Episode, Set<EpisodeRequest>> episodesMap) {
 		Set<Episode> cachedEpisodes = new HashSet<>();
 		for (Map.Entry<Episode, Set<EpisodeRequest>> entry : new ArrayList<>(episodesMap.entrySet())) {
 			Episode episode = entry.getKey();

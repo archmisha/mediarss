@@ -6,6 +6,8 @@ import rss.services.subtitles.SubtitleLanguage;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: dikmanm
@@ -13,22 +15,34 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "subtitles")
-@org.hibernate.annotations.Table(appliesTo = "subtitles", indexes = {
-		@Index(name = "subtitles_language_torrent_id_idx", columnNames = {"language", "torrent_id"})
-})
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+		name = "discriminator",
+		discriminatorType = DiscriminatorType.STRING
+)
+@DiscriminatorValue(value = "movie")
+//@org.hibernate.annotations.Table(appliesTo = "subtitles", indexes = {
+//		@Index(name = "subtitles_language_torrent_id_idx", columnNames = {"language", "torrent_id"})
+//})
 @NamedQueries({
 		@NamedQuery(name = "Subtitles.find",
-				query = "select s from Subtitles as s " +
-						"where s.torrent.id = :torrentId and s.language = :language"),
+				query = "select s from Subtitles as s join s.torrentIds as tid " +
+						"where tid = :torrentId and s.language = :language"),
 		@NamedQuery(name = "Subtitles.findByTorrent",
+				query = "select s from Subtitles as s join s.torrentIds as tid " +
+						"where tid = :torrentId"),
+		@NamedQuery(name = "Subtitles.findByName",
 				query = "select s from Subtitles as s " +
-						"where s.torrent.id = :torrentId"),
+						"where s.fileName = :name"),
 		@NamedQuery(name = "Subtitles.getSubtitlesLanguages",
 				query = "select distinct u.subtitles from User as u join u.shows as s " +
 						"where u.subtitles is not null and s.id = :showId"),
 		@NamedQuery(name = "Subtitles.getSubtitlesLanguagesForTorrent",
 				query = "select u.subtitles from User as u join u.shows as s join s.episodes as e join e.torrentIds as tid " +
-						"where u.subtitles is not null and :torrentId = tid")
+						"where u.subtitles is not null and tid = :torrentId"),
+		@NamedQuery(name = "Subtitles.getSubtitlesForTorrents",
+				query = "select s from Subtitles as s join s.torrentIds as tid " +
+						"where s.language = :subtitlesLanguage and tid in (:torrentIds)")
 })
 public class Subtitles extends BaseEntity implements Downloadable {
 	private static final long serialVersionUID = 5929747050786576285L;
@@ -36,9 +50,8 @@ public class Subtitles extends BaseEntity implements Downloadable {
 	@Column(name = "language")
 	private SubtitleLanguage language;
 
-	@ManyToOne(targetEntity = Torrent.class, fetch = FetchType.EAGER)
-	@JoinColumn(name = "torrent_id")
-	private Torrent torrent;
+	@ElementCollection(fetch = FetchType.EAGER)
+	private Set<Long> torrentIds;
 
 	@Column(name = "data", nullable = false)
 	@Lob
@@ -47,12 +60,16 @@ public class Subtitles extends BaseEntity implements Downloadable {
 	@Column(name = "external_id")
 	private String externalId;
 
-	@Column(name = "file_name")
+	@Column(name = "file_name", unique = true)
 	private String fileName;
 
 	@Column(name = "date_uploaded")
 	@Index(name = "subs_date_uploaded_idx")
 	private Date dateUploaded;
+
+	public Subtitles() {
+		torrentIds = new HashSet<>();
+	}
 
 	public SubtitleLanguage getLanguage() {
 		return language;
@@ -62,12 +79,8 @@ public class Subtitles extends BaseEntity implements Downloadable {
 		this.language = language;
 	}
 
-	public Torrent getTorrent() {
-		return torrent;
-	}
-
-	public void setTorrent(Torrent torrent) {
-		this.torrent = torrent;
+	public Set<Long> getTorrentIds() {
+		return torrentIds;
 	}
 
 	public Date getDateUploaded() {

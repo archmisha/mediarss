@@ -1,7 +1,14 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
-import rss.entities.*;
+import rss.entities.Show;
+import rss.entities.Subtitles;
+import rss.entities.SubtitlesScanHistory;
+import rss.entities.Torrent;
+import rss.services.requests.subtitles.SubtitlesDoubleEpisodeRequest;
+import rss.services.requests.subtitles.SubtitlesMovieRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
+import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.subtitles.SubtitleLanguage;
 
 import java.util.*;
@@ -15,11 +22,23 @@ import java.util.*;
 public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements SubtitlesDao {
 
 	@Override
-	public Subtitles find(Torrent torrent, SubtitleLanguage language) {
-		Map<String, Object> params = new HashMap<>(2);
-		params.put("torrentId", torrent.getId());
-		params.put("language", language);
-		return uniqueResult(super.<Subtitles>findByNamedQueryAndNamedParams("Subtitles.find", params));
+	public Subtitles find(SubtitlesRequest subtitlesRequest, SubtitleLanguage language) {
+		if (subtitlesRequest instanceof SubtitlesMovieRequest) {
+			Map<String, Object> params = new HashMap<>(2);
+			params.put("torrentId", subtitlesRequest.getTorrent().getId());
+			params.put("language", language);
+			return uniqueResult(super.<Subtitles>findByNamedQueryAndNamedParams("Subtitles.find", params));
+		} else if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
+			SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
+			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2";
+			return uniqueResult(super.<Subtitles>find(query, language, sser.getSeason(), sser.getEpisode()));
+		} else if (subtitlesRequest instanceof SubtitlesDoubleEpisodeRequest) {
+			SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) subtitlesRequest;
+			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2 and t.episode2 =:p3";
+			return uniqueResult(super.<Subtitles>find(query, language, sder.getSeason(), sder.getEpisode1(), sder.getEpisode2()));
+		} else {
+			throw new IllegalArgumentException("Cannot search for requests of type: " + subtitlesRequest.getClass());
+		}
 	}
 
 	@Override
@@ -31,32 +50,20 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 
 	@Override
 	// languages are prioritized. if torrent subs found with language 1 then this torrent wont be searched for the other languages
-	public Collection<Subtitles> find(Set<Torrent> torrents, SubtitleLanguage... subtitleLanguages) {
+	public Collection<Subtitles> find(Set<Torrent> torrents, SubtitleLanguage subtitleLanguage) {
 		if (torrents.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		Collection<Subtitles> result = new ArrayList<>();
-		Set<Torrent> torrentsCopy = new HashSet<>(torrents);
-		for (SubtitleLanguage subtitleLanguage : subtitleLanguages) {
-			List<Object> params = new ArrayList<>();
-			params.add(subtitleLanguage);
-			for (Torrent torrent : torrentsCopy) {
-				params.add(torrent.getId());
-			}
-			String query = "select t from Subtitles as t where t.language = :p0 and t.torrent.id in (" + generateQuestionMarks(torrentsCopy.size(), 1) + ")";
-			List<Subtitles> subs = find(query, params.toArray());
-			result.addAll(subs);
-
-			for (Subtitles sub : subs) {
-				torrentsCopy.remove(sub.getTorrent());
-			}
-			if (torrentsCopy.isEmpty()) {
-				break;
-			}
+		Set<Long> ids = new HashSet<>();
+		for (Torrent torrent : torrents) {
+			ids.add(torrent.getId());
 		}
 
-		return result;
+		Map<String, Object> params = new HashMap<>(2);
+		params.put("subtitlesLanguage", subtitleLanguage);
+		params.put("torrentIds", ids);
+		return super.findByNamedQueryAndNamedParams("Subtitles.getSubtitlesForTorrents", params);
 	}
 
 	@Override
@@ -71,6 +78,13 @@ public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements Subtitles
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("showId", show.getId());
 		return super.findByNamedQueryAndNamedParams("Subtitles.getSubtitlesLanguages", params);
+	}
+
+	@Override
+	public Subtitles findByName(String name) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("name", name);
+		return uniqueResult(super.<Subtitles>findByNamedQueryAndNamedParams("Subtitles.findByName", params));
 	}
 
 	@Override

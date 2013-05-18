@@ -1,6 +1,5 @@
 package rss.services.downloader;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,11 +70,11 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	}
 
 	private void skipScannedSubtitles(Set<SubtitlesRequest> requests) {
+		Date backlogDate = DateUtils.getPastDate(14);
 		for (SubtitlesRequest request : new ArrayList<>(requests)) {
 			for (SubtitleLanguage subtitleLanguage : request.getLanguages()) {
 				if (request instanceof SubtitlesEpisodeRequest) {
 					SubtitlesEpisodeRequest sser = (SubtitlesEpisodeRequest) request;
-					Date backlogDate = DateUtils.getPastDate(14);
 					Date scanDate = null;
 					SubtitlesScanHistory subtitleScanHistory = subtitlesDao.findSubtitleScanHistory(request.getTorrent(), subtitleLanguage);
 					if (subtitleScanHistory != null) {
@@ -98,7 +97,7 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 		Set<Subtitles> result = new HashSet<>();
 		for (SubtitlesRequest request : new ArrayList<>(requests)) {
 			for (SubtitleLanguage subtitleLanguage : new ArrayList<>(request.getLanguages())) {
-				Subtitles subtitles = subtitlesDao.find(request.getTorrent(), subtitleLanguage);
+				Subtitles subtitles = subtitlesDao.find(request, subtitleLanguage);
 				if (subtitles != null) {
 					result.add(subtitles);
 					request.getLanguages().remove(subtitleLanguage);
@@ -126,11 +125,20 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 			SearchResult searchResult = result.getValue();
 
 			for (Subtitles subtitles : searchResult.<Subtitles>getDownloadables()) {
-				Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest.getTorrent(), subtitles.getLanguage());
+				Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest, subtitles.getLanguage());
 				if (persistedSubtitles == null) {
-					logService.info(getClass(), "Persisting new subtitles: " + subtitles);
-					subtitlesDao.persist(subtitles);
-					subtitlesTrackerService.announce(subtitles);
+					persistedSubtitles = subtitlesDao.findByName(subtitles.getName());
+					if (persistedSubtitles != null) {
+						logService.info(getClass(), "Found subtitles by the same name, only connecting: " + subtitles);
+						persistedSubtitles.getTorrentIds().addAll(subtitles.getTorrentIds());
+					} else {
+						logService.info(getClass(), "Persisting new subtitles: " + subtitles);
+						subtitlesDao.persist(subtitles);
+						subtitlesTrackerService.announce(subtitles);
+					}
+				} else {
+					logService.info(getClass(), "Found subtitles for this request, only connecting: " + subtitles);
+					persistedSubtitles.getTorrentIds().addAll(subtitles.getTorrentIds());
 				}
 			}
 
