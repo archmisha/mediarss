@@ -37,7 +37,11 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 			@Override
 			public String doInTransaction(TransactionStatus arg0) {
 				DownloadResult<Movie, MovieRequest> downloadResult = movieService.downloadLatestMovies();
-				emailService.notifyOfMissingMovies(downloadResult.getMissing());
+
+				// no need to send emails here, we didn't search by name for something specific
+				// if one of the movies in the latest list is not found, it means maybe was no IMDB ID on the page
+//				emailService.notifyOfMissingMovies(downloadResult.getMissing());
+
 				return null;
 			}
 		});

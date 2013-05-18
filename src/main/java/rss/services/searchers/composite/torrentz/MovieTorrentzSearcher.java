@@ -1,6 +1,5 @@
 package rss.services.searchers.composite.torrentz;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.entities.Torrent;
@@ -9,7 +8,9 @@ import rss.services.searchers.SearchResult;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -103,7 +104,7 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 
 	private String getImdbId(SearchResult searchResult) {
 		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-			if (!StringUtils.isBlank(torrent.getImdbId())) {
+			if (torrent.getImdbId() != null) {
 				return torrent.getImdbId();
 			}
 		}

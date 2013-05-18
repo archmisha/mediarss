@@ -146,7 +146,6 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 	@Override
 	protected Collection<Movie> preDownloadPhase(Set<MovieRequest> requests, boolean forceDownload) {
 		Set<Movie> cachedMovies = skipCachedMovies(requests);
-//		handleSubtitles(cachedMovies);
 		return cachedMovies;
 	}
 
@@ -172,7 +171,7 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 
 	private String getImdbId(SearchResult searchResult) {
 		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-			if (!StringUtils.isBlank(torrent.getImdbId())) {
+			if (torrent.getImdbId() != null) {
 				return torrent.getImdbId();
 			}
 		}

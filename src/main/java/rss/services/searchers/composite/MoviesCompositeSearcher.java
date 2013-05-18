@@ -1,6 +1,5 @@
 package rss.services.searchers.composite;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import rss.entities.Torrent;
 import rss.services.requests.movies.MovieRequest;
@@ -25,7 +24,7 @@ public class MoviesCompositeSearcher extends DefaultCompositeSearcher<MovieReque
 
 	private String getImdbId(SearchResult searchResult) {
 		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-			if (!StringUtils.isBlank(torrent.getImdbId())) {
+			if (torrent.getImdbId() != null) {
 				return torrent.getImdbId();
 			}
 		}
