@@ -5,13 +5,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
+import rss.MediaRSSException;
 import rss.entities.Media;
 import rss.entities.Torrent;
-import rss.services.requests.*;
+import rss.services.requests.MediaRequest;
+import rss.services.requests.episodes.DoubleEpisodeRequest;
 import rss.services.requests.episodes.EpisodeRequest;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
+import rss.services.searchers.MediaRequestVisitor;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
@@ -54,25 +57,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 
 	@Override
 	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		// todo: need some kind of visitor here
-		if (mediaRequest instanceof EpisodeRequest) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("season:").append(((EpisodeRequest) mediaRequest).getSeason());
-			if (mediaRequest instanceof SingleEpisodeRequest) {
-				sb.append(" episode:").append(((SingleEpisodeRequest) mediaRequest).getEpisode());
-			} else if (mediaRequest instanceof FullSeasonRequest) {
-				// its ok
-			} else {
-				return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
-			}
-			//"greys anatomy category:tv season:1 episode:1"
-			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
-		} else if (mediaRequest instanceof MovieRequest) {
-			// http://kat.ph/usearch/iron%20man%20category:movies/
-			return SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString() + " category:movies", "UTF-8");
-		} else {
-			throw new IllegalArgumentException(mediaRequest.getClass() + " is not supported");
-		}
+		return mediaRequest.visit(new SearchURLVisitor(), null);
 	}
 
 	@Override
@@ -149,6 +134,54 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed parsing page of search by " + NAME + " torrent id: " + mediaRequest.getSearcherId(NAME) + ". Page:" + page + " Error: " + e.getMessage(), e);
 			return null;
+		}
+	}
+
+	private class SearchURLVisitor implements MediaRequestVisitor<Object, String> {
+
+		@Override
+		public String visit(SingleEpisodeRequest episodeRequest, Object config) {
+			try {
+				StringBuilder sb = new StringBuilder();
+				sb.append("season:").append(episodeRequest.getSeason());
+				sb.append(" episode:").append(episodeRequest.getEpisode());
+				//"greys anatomy category:tv season:1 episode:1"
+				return SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new MediaRSSException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String visit(DoubleEpisodeRequest episodeRequest, Object config) {
+			try {
+				StringBuilder sb = new StringBuilder();
+				sb.append("season:").append(episodeRequest.getSeason());
+				return SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new MediaRSSException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String visit(FullSeasonRequest episodeRequest, Object config) {
+			try {
+				StringBuilder sb = new StringBuilder();
+				sb.append("season:").append(episodeRequest.getSeason());
+				return SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new MediaRSSException(e.getMessage(), e);
+			}
+		}
+
+		@Override
+		public String visit(MovieRequest movieRequest, Object config) {
+			try {
+				// http://kat.ph/usearch/iron%20man%20category:movies/
+				return SEARCH_URL + URLEncoder.encode(movieRequest.toQueryString() + " category:movies", "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new MediaRSSException(e.getMessage(), e);
+			}
 		}
 	}
 }

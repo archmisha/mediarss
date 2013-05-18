@@ -40,7 +40,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Me
 		String url = null;
 		try {
 			url = getSearchUrl(mediaRequest);
-		} catch (UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			logService.error(getClass(), "Failed encoding: " + url + " error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}

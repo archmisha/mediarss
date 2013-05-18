@@ -3,19 +3,12 @@ help
 tvshows change icons, add shceduled state
 instead by imdb id - search by name
 
- Wrong/not existing subtitles - no eng default
- subcenter
-
  - Stop searching in the middle of the search - Stuck everything! strange red line
  - Tracked TV shows - table looks bad
 
 movies mark all as viewed
 
-when tracked show becomes ended - notify somehow to the user in the ui? (so he can remove it manually) - dont remove it for him
-   cuz maybe he still not downloaded some episode from that show with the rss
-
 save all jobs run history not only the last one
-make all tooltips be one line
 sections to contain also the body - refactor
 
 movies:
@@ -35,9 +28,9 @@ shows:
 
 2013-04-17 19:53:24,400 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'How I Met Your Mother Season 07 720p' cuz a bad match for 'How I Met Your Mother season 7 720p'
 
-when both jobs run the same time - one locks shows table and the other crashes cuz cant lock and timeout
-
 if a show has ended and some user has it tracked - mark in the ui for him red alert
+  when tracked show becomes ended - notify somehow to the user in the ui? (so he can remove it manually) - dont remove it for him
+   cuz maybe he still not downloaded some episode from that show with the rss
 
 schedule - if some show has an episode in more than 7 days - maybe should add it too
 schedule - if 7 days ahead have only 1 episode or no episdodes, maybe  better to display more days?
@@ -84,21 +77,3 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: excuteAPI er
 Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download limit reached
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)
         ... 27 more
-
-
-
-
-
-subtitles logic:
-shows:
-  when persisting a new torrent to db attempt to download its subtitles
-    if user is logged in - this is a result of user search and download - use his subtitles settings
-    if user is not logged in - this is a background job, query all users that have this show tracked and merge their subtitles settings
-movies:
-  when persisting a new torrent it might be a human search by imdbid but also might be a job and then this movie is not belongs to anyone yet
-  so no point downloading subtitles here
-  if user search by imdb id also not enough cuz he not downloads the movie yet
-  when user pressed the blue down arrow to download a movie - only then attempt to download subtitles for that movie by the settings of that user
-
-(this all might change if we would like to show per torrent in the ui if it has subtitles available, then it cant be async like now in the background
-but will have to be somehow before, in the process of the search already know and display the subs with the results)

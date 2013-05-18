@@ -2,6 +2,7 @@ package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.searchers.MediaRequestVisitor;
 
 /**
  * User: Michael Dikman
@@ -9,8 +10,6 @@ import rss.entities.Show;
  * Time: 15:42
  */
 public class FullSeasonRequest extends EpisodeRequest {
-
-	private static final long serialVersionUID = -6622950945609852366L;
 
 	public FullSeasonRequest(String title, Show show, MediaQuality quality, int season) {
 		super(title, show, quality, season);
@@ -46,5 +45,10 @@ public class FullSeasonRequest extends EpisodeRequest {
 		result = 31 * result + getTitle().toLowerCase().hashCode(); // to match ignore case equals
 		result = 31 * result + getSeason();
 		return result;
+	}
+
+	@Override
+	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
+		return visitor.visit(this, config);
 	}
 }

@@ -3,6 +3,7 @@ package rss.services.requests.episodes;
 import org.apache.commons.lang3.StringUtils;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.services.searchers.MediaRequestVisitor;
 
 /**
  * User: Michael Dikman
@@ -10,8 +11,6 @@ import rss.entities.Show;
  * Time: 15:42
  */
 public class SingleEpisodeRequest extends EpisodeRequest {
-
-	private static final long serialVersionUID = -6622950945609852366L;
 
 	private int episode;
 
@@ -61,5 +60,10 @@ public class SingleEpisodeRequest extends EpisodeRequest {
 		result = 31 * result + getSeason();
 		result = 31 * result + episode;
 		return result;
+	}
+
+	@Override
+	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
+		return visitor.visit(this, config);
 	}
 }

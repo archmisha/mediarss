@@ -51,9 +51,4 @@ public abstract class EpisodeRequest extends ShowRequest {
 	public void setSeason(int season) {
 		this.season = season;
 	}
-
-	@Override
-	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
-		return visitor.visit(this, config);
-	}
 }

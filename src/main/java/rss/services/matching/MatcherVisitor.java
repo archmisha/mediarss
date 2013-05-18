@@ -1,7 +1,10 @@
 package rss.services.matching;
 
 import rss.entities.MediaQuality;
+import rss.services.requests.episodes.DoubleEpisodeRequest;
 import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.requests.episodes.FullSeasonRequest;
+import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.MediaRequestVisitor;
 import rss.services.shows.ShowService;
@@ -21,9 +24,23 @@ public class MatcherVisitor implements MediaRequestVisitor<List<MatchCandidate>,
 		this.showService = showService;
 	}
 
-	@Override
-	public List<MatchCandidate> visit(EpisodeRequest episodeRequest, List<MatchCandidate> matchCandidates) {
+	private List<MatchCandidate> episodeVisitHelper(EpisodeRequest episodeRequest, List<MatchCandidate> matchCandidates) {
 		return filterByQuality(showService.filterMatching(episodeRequest, matchCandidates), MediaQuality.HD720P, MediaQuality.HD1080P, MediaQuality.NORMAL);
+	}
+
+	@Override
+	public List<MatchCandidate> visit(SingleEpisodeRequest episodeRequest, List<MatchCandidate> config) {
+		return episodeVisitHelper(episodeRequest, config);
+	}
+
+	@Override
+	public List<MatchCandidate> visit(DoubleEpisodeRequest episodeRequest, List<MatchCandidate> config) {
+		return episodeVisitHelper(episodeRequest, config);
+	}
+
+	@Override
+	public List<MatchCandidate> visit(FullSeasonRequest episodeRequest, List<MatchCandidate> config) {
+		return episodeVisitHelper(episodeRequest, config);
 	}
 
 	@Override

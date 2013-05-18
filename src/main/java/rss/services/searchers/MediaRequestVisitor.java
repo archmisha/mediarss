@@ -1,6 +1,9 @@
 package rss.services.searchers;
 
+import rss.services.requests.episodes.DoubleEpisodeRequest;
 import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.requests.episodes.FullSeasonRequest;
+import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
 
 /**
@@ -9,7 +12,11 @@ import rss.services.requests.movies.MovieRequest;
  */
 public interface MediaRequestVisitor<S, T> {
 
-	T visit(EpisodeRequest episodeRequest, S config);
+	T visit(SingleEpisodeRequest episodeRequest, S config);
+
+	T visit(DoubleEpisodeRequest episodeRequest, S config);
+
+	T visit(FullSeasonRequest episodeRequest, S config);
 
 	T visit(MovieRequest movieRequest, S config);
 }
