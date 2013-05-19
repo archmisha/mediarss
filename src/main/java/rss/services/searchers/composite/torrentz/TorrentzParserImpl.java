@@ -96,11 +96,13 @@ public class TorrentzParserImpl implements TorrentzParser {
 				}
 			}
 
-			String tmpName = name.toLowerCase();
-			for (String keyword : KEYWORDS_TO_SKIP) {
-				if (tmpName.contains(keyword)) {
-					logService.info(getClass(), "Skipping movie '" + name + "' due to keyword: '" + keyword + "'");
-					skip = true;
+			if (!skip) {
+				String tmpName = name.toLowerCase();
+				for (String keyword : KEYWORDS_TO_SKIP) {
+					if (tmpName.contains(keyword)) {
+						logService.info(getClass(), "Skipping movie '" + name + "' due to keyword: '" + keyword + "'");
+						skip = true;
+					}
 				}
 			}
 
