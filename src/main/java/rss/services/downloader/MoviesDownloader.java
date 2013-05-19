@@ -90,21 +90,6 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 						persistedTorrent = torrent;
 					}
 
-					if (persistedMovie.getTorrentIds().isEmpty()) {
-						// if movie already existed and had no torrents - this is the case where it is a future movie request by user
-						Collection<User> users = movieDao.findUsersForFutureMovie(persistedMovie);
-						if (!users.isEmpty()) {
-							logService.info(getClass(), "Detected a FUTURE movie " + persistedMovie.getName() + " for users: " + StringUtils.join(users, ", "));
-							for (User user : users) {
-								UserMovieTorrent userTorrent = new UserMovieTorrent();
-								userTorrent.setUser(user);
-								userTorrent.setAdded(new Date());
-								userTorrent.setTorrent(persistedTorrent);
-								userTorrentDao.persist(userTorrent);
-							}
-						}
-					}
-
 					persistedMovie.getTorrentIds().add(persistedTorrent.getId());
 				}
 			}
