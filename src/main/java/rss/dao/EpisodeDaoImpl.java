@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Torrent;
+import rss.entities.User;
 import rss.services.requests.episodes.*;
 
 import java.util.*;
@@ -71,20 +72,11 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 	}
 
 	@Override
-	public Collection<Episode> getEpisodesForSchedule(List<Long> showIds) {
-		if (showIds.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		List<Object> params = new ArrayList<>();
-		params.add(getScheduleLowerDate());
-		params.add(getScheduleUpperDate());
-		params.addAll(showIds);
-
-		StringBuilder query = new StringBuilder();
-		query.append("select t from Episode as t where :p0 <= t.airDate and t.airDate <= :p1 and t.show.id in (").append(generateQuestionMarks(showIds.size(), 2)).append(")");
-
-		return find(query.toString(), params.toArray());
+	public Collection<Episode> getEpisodesForSchedule(User user) {
+		return Collections.emptyList();
+//		Map<String, Object> params = new HashMap<>(1);
+//		params.put("userId", user.getId());
+//		return super.findByNamedQueryAndNamedParams("Episode.getEpisodesForSchedule", params);
 	}
 
 	@Override
@@ -95,27 +87,5 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		query.append("select count(t) from Episode as t where ");
 		generateSingleEpisodePart(query, params, "", 0, show.getId(), episode.getSeason(), episode.getEpisode());
 		return uniqueResult(super.<Long>find(query.toString(), params.toArray())) > 0;
-	}
-
-	private Date getScheduleUpperDate() {
-		Calendar c = Calendar.getInstance();
-		c.setTime(new Date());
-		c.add(Calendar.DAY_OF_YEAR, 7);
-		c.set(Calendar.HOUR_OF_DAY, 0);
-		c.set(Calendar.MINUTE, 0);
-		c.set(Calendar.SECOND, 0);
-		c.set(Calendar.MILLISECOND, 0);
-		return c.getTime();
-	}
-
-	private Date getScheduleLowerDate() {
-		Calendar c = Calendar.getInstance();
-		c.setTime(new Date());
-		c.add(Calendar.DAY_OF_YEAR, -7);
-		c.set(Calendar.HOUR_OF_DAY, 0);
-		c.set(Calendar.MINUTE, 0);
-		c.set(Calendar.SECOND, 0);
-		c.set(Calendar.MILLISECOND, 0);
-		return c.getTime();
 	}
 }

@@ -76,10 +76,7 @@ public class MoviesController extends BaseController {
 		// imageFileName can sometimes arrive without the suffix (like .jpg) for some reason
 		StringBuffer url = request.getRequestURL();
 		imageFileName = url.substring(url.indexOf("/imdb/image/") + "/imdb/image/".length());
-//			response.setContentType("image/jpeg");
-
 		InputStream imageInputStream = imdbService.getImage(imageFileName);
-
 		try (OutputStream os = response.getOutputStream()) {
 			int bytes = IOUtils.copy(imageInputStream, os);
 			response.setContentLength(bytes);

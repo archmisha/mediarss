@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
-import rss.controllers.vo.EpisodeSearchResult;
+import rss.controllers.vo.SearchResultVO;
 import rss.controllers.vo.ShowVO;
 import rss.dao.ShowDao;
 import rss.dao.UserDao;
@@ -57,7 +57,7 @@ public class ShowsController extends BaseController {
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", showService.getSchedule(user.getShows()));
+		result.put("schedule", showService.getSchedule(user));
 		return result;
 	}
 
@@ -70,7 +70,7 @@ public class ShowsController extends BaseController {
 		user.getShows().remove(show);
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", showService.getSchedule(user.getShows()));
+		result.put("schedule", showService.getSchedule(user));
 		return result;
 	}
 
@@ -113,7 +113,7 @@ public class ShowsController extends BaseController {
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public EpisodeSearchResult search(@RequestParam("title") String title,
+	public SearchResultVO search(@RequestParam("title") String title,
 									  @RequestParam(value = "season", required = false) Integer season,
 									  @RequestParam(value = "episode", required = false) Integer episode,
 									  @RequestParam(value = "showId", required = false) Long showId,
@@ -140,7 +140,7 @@ public class ShowsController extends BaseController {
 			}
 			return showSearchService.search(episodeRequest, user, forceDownload);
 		} catch (ShowNotFoundException e) {
-			return EpisodeSearchResult.createNoResults(title);
+			return SearchResultVO.createNoResults(title);
 		}
 	}
 
@@ -176,7 +176,7 @@ public class ShowsController extends BaseController {
 
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", showService.getSchedule(user.getShows()));
+		result.put("schedule", showService.getSchedule(user));
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
 		logService.info(getClass(), "Schedule " + duration.getDuration() + " millis");

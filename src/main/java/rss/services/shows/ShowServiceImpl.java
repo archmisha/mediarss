@@ -306,13 +306,8 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public ShowsScheduleVO getSchedule(Set<Show> shows) {
-		List<Long> showIds = new ArrayList<>();
-		for (Show show : shows) {
-			showIds.add(show.getId());
-		}
-
-		Collection<Episode> episodes = episodeDao.getEpisodesForSchedule(showIds);
+	public ShowsScheduleVO getSchedule(User user) {
+		Collection<Episode> episodes = episodeDao.getEpisodesForSchedule(user);
 		Map<Date, Set<ShowScheduleEpisodeItem>> map = new HashMap<>();
 		// add today
 		map.put(new Date(), new HashSet<ShowScheduleEpisodeItem>());

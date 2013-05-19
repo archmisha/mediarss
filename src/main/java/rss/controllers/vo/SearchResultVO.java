@@ -3,20 +3,19 @@ package rss.controllers.vo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * User: dikmanm
  * Date: 21/02/13 22:25
  */
-public class EpisodeSearchResult {
+public class SearchResultVO {
 
 	private Collection<UserTorrentVO> episodes;
 	private String originalSearchTerm;
 	private String actualSearchTerm;
 	private Collection<ShowVO> didYouMean;
 
-	public EpisodeSearchResult(String originalSearchTerm, String actualSearchTerm, Collection<UserTorrentVO> episodes) {
+	public SearchResultVO(String originalSearchTerm, String actualSearchTerm, Collection<UserTorrentVO> episodes) {
 		this.episodes = episodes;
 		this.originalSearchTerm = originalSearchTerm;
 		this.actualSearchTerm = actualSearchTerm;
@@ -39,19 +38,19 @@ public class EpisodeSearchResult {
 		return didYouMean;
 	}
 
-	public static EpisodeSearchResult createNoResults(String searchTerm) {
-		return new EpisodeSearchResult(searchTerm, searchTerm, Collections.<UserTorrentVO>emptyList());
+	public static SearchResultVO createNoResults(String searchTerm) {
+		return new SearchResultVO(searchTerm, searchTerm, Collections.<UserTorrentVO>emptyList());
 	}
 
-	public static EpisodeSearchResult createDidYouMean(String searchTerm, Collection<ShowVO> shows) {
-		EpisodeSearchResult esr = new EpisodeSearchResult(searchTerm, null, Collections.<UserTorrentVO>emptyList());
+	public static SearchResultVO createDidYouMean(String searchTerm, Collection<ShowVO> shows) {
+		SearchResultVO esr = new SearchResultVO(searchTerm, null, Collections.<UserTorrentVO>emptyList());
 		esr.didYouMean.addAll(shows);
 		return esr;
 	}
 
-	public static EpisodeSearchResult createWithResult(String originalSearchTerm, String actualSearchTerm,
-													   Collection<UserTorrentVO> episodes, Collection<ShowVO> shows) {
-		EpisodeSearchResult esr = new EpisodeSearchResult(originalSearchTerm, actualSearchTerm, episodes);
+	public static SearchResultVO createWithResult(String originalSearchTerm, String actualSearchTerm,
+												  Collection<UserTorrentVO> episodes, Collection<ShowVO> shows) {
+		SearchResultVO esr = new SearchResultVO(originalSearchTerm, actualSearchTerm, episodes);
 		esr.didYouMean.addAll(shows);
 		return esr;
 	}

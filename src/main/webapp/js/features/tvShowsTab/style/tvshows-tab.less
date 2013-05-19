@@ -133,43 +133,25 @@
 @shows-search-result-item-padding: 5px;
 .shows-search-result-item {
   padding: @shows-search-result-item-padding;
-  padding-left: @shows-search-result-item-padding+5;
-  padding-right: 100px; /* to overcome the download button */
+//  padding-left: @shows-search-result-item-padding+5;
+//  padding-right: 100px; /* to overcome the download button */
   position: relative;
   height: 26px;
   line-height: 26px;
 
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+
 }
 
-@shows-search-result-item-download-button: 10px;
 @shows-search-results-download-all-button-right: 10px;
 .shows-search-result-item:hover {
   padding: @shows-search-result-item-padding - 1; /* minus 1 for the border */
-  padding-left: @shows-search-result-item-padding+5-1; /* minus 1 for the border */
-  padding-right: 99px; /* to overcome the download button 100-1 */
+//  padding-left: @shows-search-result-item-padding+5-1; /* minus 1 for the border */
+//  padding-right: 99px; /* to overcome the download button 100-1 */
   border: 1px solid #dcdcdc;
   background-color: #f5f5f5;
-
-  .shows-search-result-item-download-button {
-    right: @shows-search-result-item-download-button - 1; /* minus 1 for the border */
-  }
-
-  .shows-search-result-item-downloaded-status {
-    right: @shows-search-result-item-download-button + 4 - 1; /* minus 1 for the border */
-  }
 }
 
-.shows-search-result-item-downloaded-status {
-  color: green;
-  position: absolute;
-  right: @shows-search-result-item-download-button + 4;
-}
-
-.shows-search-results-download-all-button,
-.shows-search-result-item-download-button {
+.shows-search-results-download-all-button {
   height: 25px;
   padding: 3px 6px;
 }
@@ -178,11 +160,6 @@
   display: none;
   height: 26px;
   margin-top: 10px;
-}
-
-.shows-search-result-item-download-button {
-  position: absolute;
-  right: @shows-search-result-item-download-button;
 }
 
 .shows-search-results-download-all-button { //  right: @shows-search-results-download-all-button-right;

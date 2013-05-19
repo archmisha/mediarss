@@ -1,0 +1,27 @@
+@search-result-item-status-width: 30px;
+
+.search-result-item {
+  position: relative;
+}
+
+.search-result-item:hover {
+}
+
+.search-result-item-status {
+  width: @search-result-item-status-width;
+  position: absolute;
+  left: 2px;
+  top: -2px;
+  height: 25px;
+}
+
+.search-result-item-body {
+  margin-left: @search-result-item-status-width;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-result-item-download-image {
+  cursor: pointer;
+}

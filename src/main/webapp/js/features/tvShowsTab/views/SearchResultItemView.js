@@ -11,23 +11,14 @@ define([
 			className: 'shows-search-result-item',
 
 			ui: {
-				downloadedStatus: '.shows-search-result-item-downloaded-status',
-				downloadButton: '.shows-search-result-item-download-button',
+				downloadedStatus: '.search-result-item-downloaded-image',
+				downloadButton: '.search-result-item-download-image',
+				scheduledStatus: '.search-result-item-scheduled-image',
 				title: '.shows-search-result-item-title'
 			},
 
 			events: {
-				'click .shows-search-result-item-download-button': 'onDownloadButtonClick'
-			},
-
-			setDownloadedState: function() {
-				this.ui.downloadButton.hide();
-				this.ui.downloadedStatus.css('display', 'inline'); // show make display: block we need inline here
-			},
-
-			setNotDownloadedState: function() {
-				this.ui.downloadButton.show();
-				this.ui.downloadedStatus.hide();
+				'click .search-result-item-download-image': 'onDownloadButtonClick'
 			},
 
 			constructor: function(options) {
@@ -35,17 +26,13 @@ define([
 				this.vent = options.vent;
 
 				var that = this;
-				this.model.on('change:downloaded', function() {
-					that.setDownloadedState();
+				this.model.on('change:downloadStatus', function() {
+					that.updateDownloadStatus();
 				});
 			},
 
 			onRender: function() {
-				if (this.model.get('downloaded')) {
-					this.setDownloadedState();
-				} else {
-					this.setNotDownloadedState();
-				}
+				this.updateDownloadStatus();
 
 				this.ui.title.qtip({
 					style: 'rssStyle'
@@ -54,6 +41,20 @@ define([
 
 			onDownloadButtonClick: function() {
 				this.vent.trigger('show-episode-download', this.model);
+			},
+
+			updateDownloadStatus: function() {
+				this.ui.downloadButton.hide();
+				this.ui.scheduledStatus.hide();
+				this.ui.downloadedStatus.hide();
+
+				if (this.model.get('downloadStatus') == 'SCHEDULED') {
+					this.ui.scheduledStatus.show();
+				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
+					this.ui.downloadedStatus.show();
+				} else if (this.model.get('downloadStatus') == 'NONE') {
+					this.ui.downloadButton.show();
+				}
 			}
 		});
 	});

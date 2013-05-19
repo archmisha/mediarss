@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.EpisodesComparator;
 import rss.controllers.EntityConverter;
-import rss.controllers.vo.EpisodeSearchResult;
+import rss.controllers.vo.SearchResultVO;
 import rss.controllers.vo.UserTorrentVO;
 import rss.dao.ShowDao;
 import rss.dao.TorrentDao;
@@ -61,7 +61,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 	private ShowsCacheService showsCacheService;
 
 	@Override
-	public EpisodeSearchResult search(ShowRequest episodeRequest, User user, boolean forceDownload) {
+	public SearchResultVO search(ShowRequest episodeRequest, User user, boolean forceDownload) {
 		// saving original search term - it might change during the search
 		String originalSearchTerm = episodeRequest.getTitle();
 		String actualSearchTerm;
@@ -82,7 +82,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			}
 			didYouMeanShows.remove(show); // don't show this show as did you mean, already showing results for it
 		} else if (didYouMeanShows.isEmpty()) {
-			return EpisodeSearchResult.createNoResults(originalSearchTerm);
+			return SearchResultVO.createNoResults(originalSearchTerm);
 		} else if (didYouMeanShows.size() == 1) {
 			Show didYouMeanShow = didYouMeanShows.iterator().next();
 			episodeRequest.setShow(didYouMeanShow);
@@ -93,7 +93,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			}
 			didYouMeanShows = Collections.emptyList();
 		} else {
-			return EpisodeSearchResult.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
+			return SearchResultVO.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
 		}
 
 		downloadShowScheduleBeforeSearch(episodeRequest.getShow());
@@ -120,22 +120,13 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 		// add those containing user torrent
 		for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(user, downloaded)) {
-			Torrent torrent = userTorrent.getTorrent();
-			episodeByTorrents.remove(torrent);
-			UserTorrentVO userTorrentVO = new UserTorrentVO()
-					.withTitle(torrent.getTitle())
-					.withTorrentId(torrent.getId())
-					.withDownloaded(true);
-			result.add(userTorrentVO);
+			episodeByTorrents.remove(userTorrent.getTorrent());
+			result.add(UserTorrentVO.fromUserTorrent(userTorrent));
 		}
 
 		// add the rest of the episodes
 		for (Torrent torrent : episodeByTorrents.keySet()) {
-			UserTorrentVO userTorrentVO = new UserTorrentVO()
-					.withTitle(torrent.getTitle())
-					.withTorrentId(torrent.getId())
-					.withDownloaded(false);
-			result.add(userTorrentVO);
+			result.add(UserTorrentVO.fromTorrent(torrent));
 		}
 
 		final EpisodesComparator episodesComparator = new EpisodesComparator();
@@ -149,7 +140,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		});
 
 
-		return EpisodeSearchResult.createWithResult(originalSearchTerm, actualSearchTerm, result, entityConverter.toThinShows(didYouMeanShows));
+		return SearchResultVO.createWithResult(originalSearchTerm, actualSearchTerm, result, entityConverter.toThinShows(didYouMeanShows));
 	}
 
 	private Show findShowByName(String name) {

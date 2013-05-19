@@ -33,7 +33,7 @@ public interface ShowService {
 
 	List<AutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super AutoCompleteItem> predicate);
 
-	ShowsScheduleVO getSchedule(Set<Show> shows);
+	ShowsScheduleVO getSchedule(User user);
 
 	List<MatchCandidate> filterMatching(EpisodeRequest mediaRequest, Collection<MatchCandidate> movieRequests);
 

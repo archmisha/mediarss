@@ -34,7 +34,7 @@ define([
 				HttpUtils.post("rest/shows/episode/download", {
 					torrentId: userTorrent.get('torrentId')
 				}, function(res) {
-					userTorrent.set('downloaded', true);
+					userTorrent.set('downloadStatus', 'SCHEDULED');
 				});
 			}
 		});

@@ -23,7 +23,12 @@ import java.util.Set;
 @NamedQueries({
 		@NamedQuery(name = "Episode.findByTorrent",
 				query = "select e from Episode as e join e.torrentIds as tid " +
-						"where :torrentId = tid")
+						"where :torrentId = tid"),
+		@NamedQuery(name = "Episode.getEpisodesForSchedule",
+		query = "select e from User as u join u.shows as s join s.episodes as e " +
+				"where u.id = :userId ")
+
+
 })
 public class Episode extends Media {
 
