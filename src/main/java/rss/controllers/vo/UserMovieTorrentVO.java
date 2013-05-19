@@ -21,6 +21,7 @@ public class UserMovieTorrentVO {
 	private Date uploadedDate;
 	private Date scheduledDate;
 	private long movieId;
+	private int size;
 
 	public UserMovieTorrentVO(DownloadStatus downloadStatus) {
 		this.downloadStatus = downloadStatus;
@@ -51,6 +52,11 @@ public class UserMovieTorrentVO {
 
 	public Date getDownloadDate() {
 		return downloadDate;
+	}
+
+	public UserMovieTorrentVO withSize(int size) {
+		this.size = size;
+		return this;
 	}
 
 	public UserMovieTorrentVO withDownloadDate(Date downloadDate) {
@@ -99,6 +105,7 @@ public class UserMovieTorrentVO {
 				.withTitle(torrent.getTitle())
 				.withTorrentId(torrent.getId())
 				.withUploadedDate(torrent.getDateUploaded())
+				.withSize(torrent.getSize())
 				.withScheduledOn(userTorrent.getAdded())
 				.withMovieId(userTorrent.getUserMovie().getMovie().getId());
 	}
@@ -109,6 +116,7 @@ public class UserMovieTorrentVO {
 				.withTorrentId(torrent.getId())
 				.withUploadedDate(torrent.getDateUploaded())
 				.withScheduledOn(null)
+				.withSize(torrent.getSize())
 				.withMovieId(movieId);
 	}
 
@@ -123,5 +131,9 @@ public class UserMovieTorrentVO {
 
 	public Date getScheduledDate() {
 		return scheduledDate;
+	}
+
+	public int getSize() {
+		return size;
 	}
 }

@@ -37,6 +37,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
+	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam"};
 
 
 	@Autowired
@@ -78,24 +79,33 @@ public class TorrentzParserImpl implements TorrentzParser {
 			String hash = matcher.group(1);
 			String name = matcher.group(2);
 			String type = matcher.group(3);
-			String size = matcher.group(4);
+			String sizeStr = matcher.group(4);
 			String uploaders = matcher.group(5);
 
 			name = stripTags(name);
 			name = StringEscapeUtils.unescapeHtml4(name);
-			type = stripTags(type);
+			type = stripTags(type).toLowerCase();
 			uploaders = uploaders.replaceAll(",", "");
+			int size = Integer.parseInt(sizeStr.split(" ")[0]);
 
 			boolean skip = false;
 			for (String keyword : TYPES_TO_SKIP) {
 				if (type.contains(keyword)) {
-					logService.info(getClass(), "Skipping movie '" + name + "' due to type: '" + type + "'");
+					logService.info(getClass(), "Skipping movie '" + name + "' due to type: '" + keyword + "'");
+					skip = true;
+				}
+			}
+
+			String tmpName = name.toLowerCase();
+			for (String keyword : KEYWORDS_TO_SKIP) {
+				if (tmpName.contains(keyword)) {
+					logService.info(getClass(), "Skipping movie '" + name + "' due to keyword: '" + keyword + "'");
 					skip = true;
 				}
 			}
 
 			if (!skip) {
-				TorrentzResult movieRequest = new TorrentzResult(name, hash, Integer.parseInt(uploaders));
+				TorrentzResult movieRequest = new TorrentzResult(name, hash, Integer.parseInt(uploaders), size);
 				movies.add(movieRequest);
 			}
 		}

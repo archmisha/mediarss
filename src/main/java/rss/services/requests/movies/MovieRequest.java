@@ -10,6 +10,8 @@ import rss.services.searchers.MediaRequestVisitor;
  */
 public class MovieRequest extends MediaRequest {
 
+	private int size;
+
 	public MovieRequest(String title, String hash) {
 		super(title, hash, Integer.MAX_VALUE);
 	}
@@ -17,5 +19,13 @@ public class MovieRequest extends MediaRequest {
 	@Override
 	public <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config) {
 		return visitor.visit(this, config);
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public int getSize() {
+		return size;
 	}
 }

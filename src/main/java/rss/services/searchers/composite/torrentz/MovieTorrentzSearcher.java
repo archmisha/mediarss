@@ -32,7 +32,9 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 	public SearchResult search(MovieRequest movieRequest) {
 		// optimization in case there is already hash given
 		if (movieRequest.getHash() != null) {
-			return searchByHash(movieRequest);
+			SearchResult searchResult = searchByHash(movieRequest);
+			postProcessSearchResult(movieRequest, searchResult);
+			return searchResult;
 		}
 
 		String url = getSearchUrl(movieRequest);
@@ -44,6 +46,7 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 		for (TorrentzResult foundRequest : torrentzResults) {
 			MovieRequest curRequest = new MovieRequest(foundRequest.getTitle(), foundRequest.getHash());
 			curRequest.setUploaders(foundRequest.getUploaders());
+			curRequest.setSize(foundRequest.getSize());
 			enrichRequestWithSearcherIds(curRequest);
 
 			SearchResult searchResult = super.search(curRequest);
@@ -51,11 +54,7 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 			if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
 				notFoundSearchResults.add(searchResult);
 			} else {
-				// override torrent titles, because it might differ from the torrentz side, which combines all
-				// other sites. And the we get double torrent names
-				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-					torrent.setTitle(foundRequest.getTitle());
-				}
+				postProcessSearchResult(curRequest, searchResult);
 
 				if (searchResult.getSearchStatus() == SearchResult.SearchStatus.FOUND) {
 					foundSearchResults.add(searchResult);
@@ -86,6 +85,15 @@ public class MovieTorrentzSearcher extends TorrentzSearcher<MovieRequest> {
 			notFound.addFailedSearchers(searchResult.getFailedSearchers());
 		}
 		return notFound;
+	}
+
+	// override torrent titles, because it might differ from the torrentz side, which combines all
+	// other sites. And the we get double torrent names
+	private void postProcessSearchResult(MovieRequest curRequest, SearchResult searchResult) {
+		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
+			torrent.setTitle(curRequest.getTitle());
+			torrent.setSize(curRequest.getSize());
+		}
 	}
 
 	private SearchResult searchByHash(MovieRequest movieRequest) {

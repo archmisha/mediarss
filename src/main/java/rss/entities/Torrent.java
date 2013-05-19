@@ -42,7 +42,7 @@ public class Torrent extends BaseEntity implements Downloadable, Comparable<Torr
 	private String hash;
 
 	@Column(name = "size")
-	private String size;
+	private int size;
 
     // not stored in the database, because first it will become outdated and second it is only used while
     // searching for a specific episode on the internet
@@ -141,6 +141,14 @@ public class Torrent extends BaseEntity implements Downloadable, Comparable<Torr
 
 	public String getImdbId() {
 		return imdbId;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
 	}
 
 	public void setImdbId(String imdbId) {

@@ -23,7 +23,8 @@ define([
 				movieTorrentTitle: '.movie-torrent-title',
 				movieTorrentItem: '.movie-torrent-item-inner',
 				scheduledOn: '.movie-torrent-scheduled-on',
-				scheduledOnDate: '.movie-torrent-scheduled-on-date'
+				scheduledOnDate: '.movie-torrent-scheduled-on-date',
+				size: '.movie-torrent-size'
 			},
 
 			constructor: function(options) {
@@ -80,6 +81,9 @@ define([
 
 				if (this.model.get('scheduledDate') == null) {
 					this.ui.scheduledOn.hide();
+				}
+				if (!this.model.get('size')) {
+					this.ui.size.hide();
 				}
 			},
 

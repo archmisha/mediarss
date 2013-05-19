@@ -9,11 +9,13 @@ public class TorrentzResult {
 	private String title;
 	private String hash;
 	private int uploaders;
+	private int size;
 
-	public TorrentzResult(String name, String hash, int uploaders) {
+	public TorrentzResult(String name, String hash, int uploaders, int size) {
 		this.title = name;
 		this.hash = hash;
 		this.uploaders = uploaders;
+		this.size = size;
 	}
 
 	public String getTitle() {
@@ -26,5 +28,9 @@ public class TorrentzResult {
 
 	public String getHash() {
 		return hash;
+	}
+
+	public int getSize() {
+		return size;
 	}
 }

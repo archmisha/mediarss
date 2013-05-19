@@ -373,6 +373,7 @@ public class MovieServiceImpl implements MovieService {
 			} else {
 				MovieRequest movieRequest = new MovieRequest(torrentzResult.getTitle(), torrentzResult.getHash());
 				movieRequest.setUploaders(torrentzResult.getUploaders());
+				movieRequest.setSize(torrentzResult.getSize());
 				movieRequests.add(movieRequest);
 			}
 		}
