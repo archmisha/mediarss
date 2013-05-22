@@ -245,7 +245,7 @@ public class MovieServiceImpl implements MovieService {
 	public void addMovieDownload(User user, long movieId, long torrentId) {
 		Movie movie = movieDao.find(movieId);
 		Torrent torrent = torrentDao.find(torrentId);
-		UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
+		UserMovie userMovie = movieDao.findUserMovie(user, movie.getId());
 		if (userMovie == null) {
 			userMovie = createUserMovie(user, movie);
 		}
@@ -318,11 +318,15 @@ public class MovieServiceImpl implements MovieService {
 			}
 
 			boolean isExists = true;
-			UserMovie userMovie = movieDao.findUserMovie(movie.getId(), user);
+			UserMovie userMovie = movieDao.findUserMovie(user, movie.getId());
 			if (userMovie == null) {
 				createUserMovie(user, movie);
 				isExists = false;
+			} else {
+				// update userMovie date so it will show in mmy movies list on top for sure
+				userMovie.setUpdated(new Date());
 			}
+
 			return new MutablePair<>(movie, isExists);
 		} catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);

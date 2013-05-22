@@ -26,11 +26,11 @@ import java.util.Set;
 				query = "select um from UserMovie as um join um.movie as m " +
 						"where m.id = :movieId"),
 		@NamedQuery(name = "UserMovie.findUserMovies",
-				query = "select um from UserMovie as um join um.movie as m " +
-						"where um.user.id = :userId and (m.torrentIds.size = 0 or (m.torrentIds.size > 0 and um.updated > :downloadDate))"),
+				query = "select um from UserMovie as um " +
+						"where um.user.id = :userId and (um.userMovieTorrents.size = 0 or (um.userMovieTorrents.size > 0 and um.updated > :downloadDate))"),
 		@NamedQuery(name = "UserMovie.findUserMoviesCount",
-				query = "select distinct count(m.id) from UserMovie as um join um.movie as m " +
-						"where um.user.id = :userId and (m.torrentIds.size = 0 or (m.torrentIds.size > 0 and um.updated > :downloadDate))"),
+				query = "select distinct count(um) from UserMovie as um " +
+						"where um.user.id = :userId and (um.userMovieTorrents.size = 0 or (um.userMovieTorrents.size > 0 and um.updated > :downloadDate))"),
 		@NamedQuery(name = "UserMovie.findUsersForFutureMovie",
 				query = "select um.user from UserMovie as um join um.movie as m " +
 						"where m.id = :movieId and m.torrentIds.size = 0")

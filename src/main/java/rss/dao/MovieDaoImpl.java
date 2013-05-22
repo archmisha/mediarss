@@ -49,7 +49,7 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 	}
 
 	@Override
-	public UserMovie findUserMovie(long movieId, User user) {
+	public UserMovie findUserMovie(User user, long movieId) {
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("movieId", movieId);
 		params.put("userId", user.getId());

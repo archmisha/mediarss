@@ -26,7 +26,7 @@ public interface MovieDao extends Dao<Movie> {
 
 	void delete(UserMovie userMovie);
 
-	UserMovie findUserMovie(long movieId, User user);
+	UserMovie findUserMovie(User user, long movieId);
 
 	Movie findByImdbUrl(String imdbUrl);
 

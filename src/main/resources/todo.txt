@@ -77,3 +77,10 @@ Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: excuteAPI er
 Caused by: com.googlecode.opensubtitlesjapi.OpenSubtitlesException: 407 Download limit reached
         at com.googlecode.opensubtitlesjapi.OpenSubtitlesAPI.executeAPI(OpenSubtitlesAPI.java:195)
         ... 27 more
+
+
+
+
+select count(*)
+from episode
+where air_date <> parsedatetime(formatdatetime(air_date, 'dd/MM/yyyy'), 'dd/MM/yyyy')

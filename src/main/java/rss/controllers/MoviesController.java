@@ -126,12 +126,12 @@ public class MoviesController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		Movie movie = futureMovieResult.getKey();
 		if (futureMovieResult.getValue()) {
-			result.put("message", "Movie '" + movie.getName() + "' was already scheduled for download");
+			result.put("message", "Movie '" + movie.getName() + "' was added");
 		} else {
 			if (!movie.getTorrentIds().isEmpty()) {
 				result.put("message", "Movie '" + movie.getName() + "' was added to your movies and already available for download");
 			} else {
-				result.put("message", "Movie '" + movie.getName() + "' was scheduled for download when it will be available");
+				result.put("message", "Movie '" + movie.getName() + "' was added but is not yet available for download");
 			}
 		}
 
@@ -148,7 +148,7 @@ public class MoviesController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> removeFutureMovie(@RequestParam("movieId") long movieId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
-		UserMovie userMovie = movieDao.findUserMovie(movieId, user);
+		UserMovie userMovie = movieDao.findUserMovie(user, movieId);
 		// now idea how can happen, dima had it
 		if (userMovie != null) {
 			for (UserMovieTorrent userMovieTorrent : userMovie.getUserMovieTorrents()) {
