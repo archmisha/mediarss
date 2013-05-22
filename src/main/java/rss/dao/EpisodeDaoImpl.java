@@ -73,10 +73,22 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 
 	@Override
 	public Collection<Episode> getEpisodesForSchedule(User user) {
-		return Collections.emptyList();
-//		Map<String, Object> params = new HashMap<>(1);
-//		params.put("userId", user.getId());
-//		return super.findByNamedQueryAndNamedParams("Episode.getEpisodesForSchedule", params);
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("userId", user.getId());
+		List<Date> datesBefore = super.findByNamedQueryAndNamedParams("Episode.getAirDatesBeforeNow", params, 7);
+		List<Date> datesAfter = super.findByNamedQueryAndNamedParams("Episode.getAirDatesAfterNow", params, 7);
+		List<Date> dates = new ArrayList<>();
+		dates.addAll(datesBefore);
+		dates.addAll(datesAfter);
+
+		if (dates.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		Map<String, Object> params2 = new HashMap<>(1);
+		params2.put("userId", user.getId());
+		params2.put("airDates", dates);
+		return super.findByNamedQueryAndNamedParams("Episode.getEpisodesByAirDate", params2);
 	}
 
 	@Override

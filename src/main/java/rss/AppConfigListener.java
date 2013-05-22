@@ -16,15 +16,13 @@ import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.dao.TorrentDao;
-import rss.entities.Torrent;
+import rss.dao.EpisodeDao;
+import rss.entities.Episode;
 import rss.services.OOTBContentLoader;
 import rss.services.SettingsService;
 import rss.services.log.LogService;
 import rss.util.QuartzJob;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -39,14 +37,10 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.*;
 
 /**
  * User: Michael Dikman
@@ -74,6 +68,9 @@ public class AppConfigListener implements ServletContextListener {
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 
+	@Autowired
+	private EpisodeDao episodeDao;
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		String base = ".";
@@ -86,7 +83,7 @@ public class AppConfigListener implements ServletContextListener {
 		System.setProperty("rssFeed.logs_folder", logsFolder);
 		System.out.println("setting up logs folder to: " + logsFolder);
 
-		Log log = LogFactory.getLog(AppConfigListener.class);
+		final Log log = LogFactory.getLog(AppConfigListener.class);
 		try {
 			// no need for /WEB-INF/classes/ prefix
 			File log4jPropsFile = new ClassPathResource("log4j.properties", AppConfigListener.class.getClassLoader()).getFile();

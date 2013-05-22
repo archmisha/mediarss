@@ -119,11 +119,20 @@ public class BaseDaoJPA<T> implements Dao<T> {
 
 	@SuppressWarnings({"unchecked"})
 	public <E> List<E> findByNamedQueryAndNamedParams(String queryName, Map<String, ?> params) {
+		return findByNamedQueryAndNamedParams(queryName, params, -1);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E> List<E> findByNamedQueryAndNamedParams(String queryName, Map<String, ?> params, int maxResults) {
 		Query queryObject = em.createNamedQuery(queryName);
 		if (params != null) {
 			for (Map.Entry<String, ?> entry : params.entrySet()) {
 				queryObject.setParameter(entry.getKey(), entry.getValue());
 			}
+		}
+
+		if (maxResults != -1) {
+			queryObject.setMaxResults(maxResults);
 		}
 
 		return queryObject.getResultList();
