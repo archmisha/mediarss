@@ -13,18 +13,4 @@
         <span class='shows-search-admin-force-download-label'>Force episodes download</span>
     </div>
 </div>
-<div class='shows-search-results-header'>
-    <div class='shows-search-results-showing-results-for'>Showing results for <span
-            class='shows-search-results-showing-results-for-text'></span></div>
-    <div class='shows-search-results-did-you-mean'>Did you mean: <span
-            class='shows-search-results-did-you-mean-list'></span></div>
-    <div class='shows-search-results-header-title-container'>
-        <div class='shows-search-results-header-title-multiple'>There are <span
-                class='shows-search-results-header-count'></span> results
-        </div>
-        <div class='shows-search-results-header-title-single'>There is 1 result</div>
-        <button class='btn shows-search-results-download-all-button'>Download all</button>
-    </div>
-</div>
 <div class='shows-search-results'></div>
-<div class='shows-search-status-no-results'>There are no results</div>

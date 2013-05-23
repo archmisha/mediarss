@@ -1,20 +1,20 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/tvShowsTab/templates/search-result-item.tpl'
+	'text!components/search-result/templates/search-result-item.tpl'
 ],
 	function(Marionette, Handlebars, template) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
 			template: Handlebars.compile(template),
-			className: 'shows-search-result-item',
+			className: 'search-result-item',
 
 			ui: {
 				downloadedStatus: '.search-result-item-downloaded-image',
 				downloadButton: '.search-result-item-download-image',
 				scheduledStatus: '.search-result-item-scheduled-image',
-				title: '.shows-search-result-item-title'
+				title: '.search-result-item-title'
 			},
 
 			events: {
@@ -22,8 +22,8 @@ define([
 			},
 
 			constructor: function(options) {
-				Marionette.ItemView.prototype.constructor.apply(this, arguments);
 				this.vent = options.vent;
+				Marionette.ItemView.prototype.constructor.apply(this, arguments);
 
 				var that = this;
 				this.model.on('change:downloadStatus', function() {
@@ -40,7 +40,7 @@ define([
 			},
 
 			onDownloadButtonClick: function() {
-				this.vent.trigger('show-episode-download', this.model);
+				this.vent.trigger('search-result-item-download', this.model);
 			},
 
 			updateDownloadStatus: function() {

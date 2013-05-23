@@ -1,0 +1,116 @@
+@search-result-item-status-width: 30px;
+@search-result-item-padding: 5px;
+
+.search-results-list {
+  max-height: 300px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.search-result-item {
+  position: relative;
+  padding: @search-result-item-padding;
+}
+
+.search-result-item:hover {
+  padding: @search-result-item-padding - 1; /* minus 1 for the border */
+  border: 1px solid #dcdcdc;
+  background-color: #f5f5f5;
+
+  .search-result-item-status {
+    top: -1px;
+    left: 1px;
+  }
+}
+
+.search-result-item-status {
+  width: @search-result-item-status-width;
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  height: 26px;
+  line-height: 26px;
+}
+
+.search-result-item-body {
+  margin-left: @search-result-item-status-width;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 26px;
+}
+
+.search-result-item-download-image {
+  cursor: pointer;
+}
+
+.search-results-download-all-button {
+  height: 25px;
+  padding: 3px 6px;
+  float: right;
+}
+
+.search-results-header-title-container {
+  display: none;
+  height: 26px;
+  margin-top: 10px;
+}
+
+@search-results-download-all-button-right: 10px;
+.search-results-download-all-button-with-scroll {
+  right: @search-results-download-all-button-right + 20;
+}
+
+.search-status-no-results {
+  color: black;
+  font-style: italic;
+  display: none;
+  position: absolute;
+  bottom: -25px;
+}
+
+.search-results-header { //  display: none;
+  margin-left: 5px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.search-results-showing-results-for-text,
+.search-results-header-title-single,
+.search-results-header-title-multiple {
+  font-weight: bold;
+}
+
+.search-results-header-title-single,
+.search-results-header-title-multiple {
+  width: 260px;
+  float: left;
+  margin-top: 5px;
+}
+
+.search-results-showing-results-for {
+  font-style: italic;
+  margin-bottom: 5px;
+  display: none;
+}
+
+.search-results-header-with-showing-results-for {
+
+  .search-results-showing-results-for {
+    display: inherit;
+  }
+}
+
+.search-results-did-you-mean {
+  display: none;
+  margin-top: 10px;
+}
+
+.search-results-did-you-mean-item {
+  color: @theme-color;
+}
+
+.search-results-did-you-mean-item:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
