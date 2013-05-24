@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.PageDownloadException;
 import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
@@ -91,6 +92,9 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 				Torrent torrent = parseTorrentPage(mediaRequest, entryPage);
 				results.add(torrent);
 			}
+		} catch (PageDownloadException e) {
+			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage());
+			return Collections.emptyList();
 		} catch (Exception e) {
 			// in case of an error in parsing, printing the page so be able to reproduce
 			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
