@@ -81,43 +81,49 @@ public class IMDBServiceImpl implements IMDBService {
 			return IMDBParseResult.createNotFound(imdbUrl);
 		}
 
-		// check for old year
-		// <meta name="title" content="The Prestige (2006) - IMDb" />
-		Matcher oldYearMatcher = OLD_YEAR_PATTERN.matcher(partialPage);
-		oldYearMatcher.find();
-		String name = oldYearMatcher.group(1);
-		name = StringEscapeUtils.unescapeHtml4(name);
+		try {
+			// check for old year
+			// <meta name="title" content="The Prestige (2006) - IMDb" />
+			Matcher oldYearMatcher = OLD_YEAR_PATTERN.matcher(partialPage);
+			oldYearMatcher.find();
+			String name = oldYearMatcher.group(1);
+			name = StringEscapeUtils.unescapeHtml4(name);
 
-		logService.debug(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
+			logService.debug(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
 
-		Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(partialPage);
-		boolean isComingSoon = comingSoonMatcher.find();
+			Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(partialPage);
+			boolean isComingSoon = comingSoonMatcher.find();
 
-		if (!isComingSoon) {
-			Matcher notYetReleasedMatcher = NOT_YET_RELEASED_PATTERN.matcher(partialPage);
-			isComingSoon = notYetReleasedMatcher.find();
-		}
-
-		int viewers = -1;
-		// if not yet released, no point parsing for viewers
-		if (!isComingSoon) {
-			Matcher viewersMatcher = VIEWERS_PATTERN.matcher(partialPage);
-			if (!viewersMatcher.find()) {
-				// not printing the partial page in purpose, it just spams the log file
-//				logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "': " + partialPage);
-				logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "'");
-			} else {
-				String viewersStr = viewersMatcher.group(1);
-				viewersStr = viewersStr.replaceAll(",", "");
-				viewers = Integer.parseInt(viewersStr);
+			if (!isComingSoon) {
+				Matcher notYetReleasedMatcher = NOT_YET_RELEASED_PATTERN.matcher(partialPage);
+				isComingSoon = notYetReleasedMatcher.find();
 			}
+
+			int viewers = -1;
+			// if not yet released, no point parsing for viewers
+			if (!isComingSoon) {
+				Matcher viewersMatcher = VIEWERS_PATTERN.matcher(partialPage);
+				if (!viewersMatcher.find()) {
+					// not printing the partial page in purpose, it just spams the log file
+	//				logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "': " + partialPage);
+					logService.warn(getClass(), "Failed retrieving number of viewers for '" + name + "'");
+				} else {
+					String viewersStr = viewersMatcher.group(1);
+					viewersStr = viewersStr.replaceAll(",", "");
+					viewers = Integer.parseInt(viewersStr);
+				}
+			}
+
+			// clean the imdb page before parsing for images, in order to avoid images like ad.doubleclick and so on
+			partialPage = imdbPreviewCacheService.cleanImdbPage(name, partialPage);
+			downloadImages(partialPage, imdbUrl, imagesAsync);
+
+			return IMDBParseResult.createFound(imdbUrl, name, parseMovieYear(name), isComingSoon, viewers);
+		} catch (Exception e) {
+			// for any reason, regexp might fail or something else
+			logService.error(getClass(), "Failed downloading IMDB page " + imdbUrl + ": " + e.getMessage(), e);
+			return IMDBParseResult.createNotFound(imdbUrl);
 		}
-
-		// clean the imdb page before parsing for images, in order to avoid images like ad.doubleclick and so on
-		partialPage = imdbPreviewCacheService.cleanImdbPage(name, partialPage);
-		downloadImages(partialPage, imdbUrl, imagesAsync);
-
-		return IMDBParseResult.createFound(imdbUrl, name, parseMovieYear(name), isComingSoon, viewers);
 	}
 
 	private void downloadImages(final String page, final String imdbUrl, boolean imagesAsync) {
