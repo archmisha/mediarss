@@ -43,6 +43,9 @@
         <property name="maxPoolSize" value="${c3p0.maxPoolSize}" />
         <property name="maxIdleTime" value="${c3p0.maxIdleTime}" />
         <property name="maxStatements" value="${c3p0.maxStatements}" />
+        <property name="maxIdleTimeExcessConnections" value="${c3p0.maxIdleTimeExcessConnections}" />
+        <property name="numHelperThreads" value="${c3p0.numHelperThreads}" />
+        <property name="unreturnedConnectionTimeout" value="${c3p0.unreturnedConnectionTimeout}" />
     </bean>
 
     <bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
