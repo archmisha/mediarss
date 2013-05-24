@@ -19,7 +19,7 @@ public interface EpisodeDao extends Dao<Episode> {
 
 	List<Episode> findByRequests(Collection<ShowRequest> showRequests);
 
-	List<Episode> find(EpisodeRequest episodeRequest);
+	List<Episode> find(ShowRequest episodeRequest);
 
 	Episode find(Torrent torrent);
 

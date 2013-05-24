@@ -3,8 +3,11 @@ package rss.services.downloader;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import rss.services.log.LogService;
 import rss.services.requests.SearchRequest;
 import rss.services.searchers.Downloadable;
@@ -30,6 +33,9 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 	@Autowired
 	protected LogService logService;
 
+	@Autowired
+	private TransactionTemplate transactionTemplate;
+
 	@Transactional(propagation = Propagation.REQUIRED)
 	public DownloadResult<T, S> download(Collection<S> mediaRequests) {
 		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_REQUESTS), false);
@@ -45,7 +51,8 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 		// copying to avoid UnsupportedOperationException if immutable collections is given
 		final Set<S> mediaRequestsCopy = new HashSet<>(mediaRequests);
 
-		final ConcurrentLinkedQueue<Pair<S, SearchResult>> results = new ConcurrentLinkedQueue<>();
+		final ConcurrentLinkedQueue<Pair<S, SearchResult>> notProcessedResults = new ConcurrentLinkedQueue<>();
+		final ConcurrentLinkedQueue<T> processedResults = new ConcurrentLinkedQueue<>();
 		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
 		final Class aClass = getClass();
 
@@ -72,8 +79,19 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 									mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
 									System.currentTimeMillis() - from,
 									getFoundInPart(searchResult)));
-							missing.add(mediaRequest);
+
+							if (isSingleTransaction()) {
+								missing.add(mediaRequest);
+							} else {
+								transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+									@Override
+									protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+										processSingleMissingRequest(mediaRequest);
+									}
+								});
+							}
 							break;
+
 						case AWAITING_AGING:
 							// should be only one of those here
 							final Downloadable searchResultTorrent = searchResult.getDownloadables().get(0);
@@ -91,7 +109,17 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 										searchResult.getDownloadablesDisplayString(),
 										System.currentTimeMillis() - from,
 										getFoundInPart(searchResult)));
-								results.add(new ImmutablePair<>(mediaRequest, searchResult));
+
+								if (isSingleTransaction()) {
+									notProcessedResults.add(new ImmutablePair<>(mediaRequest, searchResult));
+								} else {
+									transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+										@Override
+										protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+											processedResults.addAll(processSingleSearchResult(mediaRequest, searchResult));
+										}
+									});
+								}
 							}
 							break;
 					}
@@ -101,23 +129,33 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 			}
 		});
 
-		Collection<T> result = new ArrayList<>();
-
-		result.addAll(processSearchResults(results));
+		Collection<T> result = new ArrayList<>(processedResults);
 
 		// add cached torrents to the list
 		result.addAll(cachedTorrentEntries);
 
-		processMissingRequests(missing);
+		if (!notProcessedResults.isEmpty()) {
+			result.addAll(processSearchResults(notProcessedResults));
+		}
+
+		if (!missing.isEmpty()) {
+			processMissingRequests(missing);
+		}
 
 		return new DownloadResult<>(result, missing);
 	}
+
+	protected abstract boolean isSingleTransaction();
+
+	protected abstract void processSingleMissingRequest(S missing);
 
 	protected abstract void processMissingRequests(Collection<S> missing);
 
 	protected abstract Collection<T> preDownloadPhase(Set<S> mediaRequestsCopy, boolean forceDownload);
 
 	protected abstract boolean validateSearchResult(S mediaRequest, SearchResult searchResult);
+
+	protected abstract Collection<T> processSingleSearchResult(S mediaRequest, SearchResult searchResult);
 
 	protected abstract List<T> processSearchResults(Collection<Pair<S, SearchResult>> results);
 

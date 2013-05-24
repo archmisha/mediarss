@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.ShowDao;
 import rss.dao.SubtitlesDao;
+import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.entities.SubtitlesScanHistory;
 import rss.services.EmailService;
+import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.subtitles.SubtitlesEpisodeRequest;
 import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.searchers.SearchResult;
@@ -36,25 +38,41 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	private SubCenterSubtitlesSearcher subCenterSubtitlesSearcher;
 
 	@Autowired
-	private EmailService emailService;
-
-	@Autowired
 	private ShowDao showDao;
 
 	@Override
-	protected void processMissingRequests(Collection<SubtitlesRequest> missing) {
-		for (SubtitlesRequest subtitlesRequest : missing) {
-			updateScanDate(subtitlesRequest);
+	protected boolean isSingleTransaction() {
+		return false;
+	}
 
-			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
-				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
-				// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
-				Show show = showDao.find(ser.getShow().getId());
-				show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
-				show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
-			}
+	@Override
+	protected void processSingleMissingRequest(SubtitlesRequest missing) {
+		updateScanDate(missing);
+
+		if (missing instanceof SubtitlesEpisodeRequest) {
+			SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) missing;
+			// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
+			Show show = showDao.find(ser.getShow().getId());
+			show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
+			show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
 		}
-		emailService.notifyOfMissingSubtitles(missing);
+	}
+
+	@Override
+	protected void processMissingRequests(Collection<SubtitlesRequest> missing) {
+		throw new UnsupportedOperationException();
+//		for (SubtitlesRequest subtitlesRequest : missing) {
+//			updateScanDate(subtitlesRequest);
+//
+//			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
+//				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
+//				update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
+//				Show show = showDao.find(ser.getShow().getId());
+//				show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
+//				show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
+//			}
+//		}
+//		emailService.notifyOfMissingSubtitles(missing);
 	}
 
 	@Override
@@ -118,40 +136,48 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	}
 
 	@Override
-	protected List<Subtitles> processSearchResults(Collection<Pair<SubtitlesRequest, SearchResult>> results) {
-		List<Subtitles> res = new ArrayList<>();
-		for (Pair<SubtitlesRequest, SearchResult> result : results) {
-			SubtitlesRequest subtitlesRequest = result.getKey();
-			SearchResult searchResult = result.getValue();
-
-			for (Subtitles subtitles : searchResult.<Subtitles>getDownloadables()) {
-				Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest, subtitles.getLanguage());
-				if (persistedSubtitles == null) {
-					persistedSubtitles = subtitlesDao.findByName(subtitles.getName());
-				}
-
-				if (persistedSubtitles != null) {
-					logService.info(getClass(), "Found matching existing subtitles, only connecting: " + subtitles);
-					persistedSubtitles.getTorrentIds().addAll(subtitles.getTorrentIds());
-				} else {
-					logService.info(getClass(), "Persisting new subtitles: " + subtitles);
-					subtitlesDao.persist(subtitles);
-					subtitlesTrackerService.announce(subtitles);
-				}
+	protected Collection<Subtitles> processSingleSearchResult(SubtitlesRequest subtitlesRequest, SearchResult searchResult) {
+		for (Subtitles subtitles : searchResult.<Subtitles>getDownloadables()) {
+			Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest, subtitles.getLanguage());
+			if (persistedSubtitles == null) {
+				persistedSubtitles = subtitlesDao.findByName(subtitles.getName());
 			}
 
-			updateScanDate(subtitlesRequest);
-
-			if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
-				SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
-				// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
-				Show show = showDao.find(ser.getShow().getId());
-				show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
-				show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
+			if (persistedSubtitles != null) {
+				logService.info(getClass(), "Found matching existing subtitles, only connecting: " + subtitles);
+				persistedSubtitles.getTorrentIds().addAll(subtitles.getTorrentIds());
+			} else {
+				logService.info(getClass(), "Persisting new subtitles: " + subtitles);
+				subtitlesDao.persist(subtitles);
+				subtitlesTrackerService.announce(subtitles);
 			}
-			res.addAll(searchResult.<Subtitles>getDownloadables());
 		}
-		return res;
+
+		updateScanDate(subtitlesRequest);
+
+		if (subtitlesRequest instanceof SubtitlesEpisodeRequest) {
+			SubtitlesEpisodeRequest ser = (SubtitlesEpisodeRequest) subtitlesRequest;
+			// update subCenter url of the show, in the request episode it must not be null, otherwise couldn't find the results
+			Show show = showDao.find(ser.getShow().getId());
+			show.setSubCenterUrl(ser.getShow().getSubCenterUrl());
+			show.setSubCenterUrlScanDate(ser.getShow().getSubCenterUrlScanDate());
+		}
+
+		return searchResult.getDownloadables();
+	}
+
+	@Override
+	protected List<Subtitles> processSearchResults(Collection<Pair<SubtitlesRequest, SearchResult>> results) {
+		throw new UnsupportedOperationException();
+//		List<Subtitles> res = new ArrayList<>();
+//		for (Pair<SubtitlesRequest, SearchResult> result : results) {
+//			SubtitlesRequest subtitlesRequest = result.getKey();
+//			SearchResult searchResult = result.getValue();
+//
+//
+//			res.addAll(searchResult.<Subtitles>getDownloadables());
+//		}
+//		return res;
 	}
 
 	private void updateScanDate(SubtitlesRequest subtitlesRequest) {

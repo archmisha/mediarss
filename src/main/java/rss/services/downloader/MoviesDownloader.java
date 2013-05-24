@@ -1,6 +1,5 @@
 package rss.services.downloader;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.dao.MovieDao;
@@ -8,11 +7,10 @@ import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.Movie;
 import rss.entities.Torrent;
-import rss.entities.User;
-import rss.entities.UserMovieTorrent;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
 import rss.services.requests.movies.MovieRequest;
+import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.searchers.SearchResult;
 import rss.util.CollectionUtils;
 
@@ -31,10 +29,12 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 	private TorrentDao torrentDao;
 
 	@Autowired
-	private UserTorrentDao userTorrentDao;
-
-	@Autowired
 	private IMDBService imdbService;
+
+	@Override
+	protected boolean isSingleTransaction() {
+		return true;
+	}
 
 	@Override
 	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult searchResult) {
@@ -47,6 +47,12 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 		return true;
 	}
 
+	@Override
+	protected Collection<Movie> processSingleSearchResult(MovieRequest mediaRequest, SearchResult searchResult) {
+		throw new UnsupportedOperationException();
+	}
+
+	// movies are processes at the end in bulk, to group by IMDB ID, thats why for a single result we return empty list and not process it yet
 	@Override
 	protected List<Movie> processSearchResults(Collection<Pair<MovieRequest, SearchResult>> results) {
 		// first group by search result imdbid, because there might be duplications
@@ -122,6 +128,11 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 			movieDao.persist(movie);
 		}
 		return movie;
+	}
+
+	@Override
+	protected void processSingleMissingRequest(MovieRequest missing) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

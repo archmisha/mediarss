@@ -8,7 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.dao.SubtitlesDao;
+import rss.entities.Subtitles;
+import rss.services.EmailService;
 import rss.services.SettingsService;
+import rss.services.downloader.DownloadResult;
 import rss.services.downloader.SubtitlesDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.subtitles.SubtitlesRequest;
@@ -38,6 +41,9 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 
 	@Autowired
 	private SettingsService settingsService;
+
+	@Autowired
+	private EmailService emailService;
 
 //	@Override
 //	@Transactional(propagation = Propagation.REQUIRED)
@@ -117,7 +123,8 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 							for (SubtitlesRequest subtitlesRequest : subtitlesRequests) {
 								subtitlesRequest.getLanguages().addAll(subtitlesLanguages);
 							}*/
-							subtitlesDownloader.download(subtitlesRequests);
+							DownloadResult<Subtitles,SubtitlesRequest> downloadResult = subtitlesDownloader.download(subtitlesRequests);
+							emailService.notifyOfMissingSubtitles(downloadResult.getMissing());
 						}
 					});
 				} catch (Exception e) {

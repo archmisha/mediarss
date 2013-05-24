@@ -67,15 +67,28 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	private UserDao userDao;
 
 	@Override
+	protected boolean isSingleTransaction() {
+		return false;
+	}
+
+	@Override
 	protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
 		return episodeSearcher.search(episodeRequest);
 	}
 
 	@Override
-	protected void processMissingRequests(Collection<ShowRequest> missing) {
-		for (Episode episode : episodeDao.findByRequests(missing)) {
+	protected void processSingleMissingRequest(ShowRequest missing) {
+		for (Episode episode : episodeDao.find(missing)) {
 			episode.setScanDate(new Date());
 		}
+	}
+
+	@Override
+	protected void processMissingRequests(Collection<ShowRequest> missing) {
+		throw new UnsupportedOperationException();
+//		for (Episode episode : episodeDao.findByRequests(missing)) {
+//			episode.setScanDate(new Date());
+//		}
 	}
 
 	@Override
@@ -84,36 +97,42 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	}
 
 	@Override
-	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult>> results) {
-		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
-		List<Episode> res = new ArrayList<>();
-		for (Pair<ShowRequest, SearchResult> pair : results) {
-			SearchResult searchResult = pair.getValue();
-			ShowRequest showRequest = pair.getKey();
+	protected Collection<Episode> processSingleSearchResult(ShowRequest showRequest, SearchResult searchResult) {
+		// todo: assuming there is only one here. fix that
+		Torrent torrent = searchResult.<Torrent>getDownloadables().get(0);
 
-			// todo: assuming there is only one here. fix that
-			Torrent torrent = searchResult.<Torrent>getDownloadables().get(0);
+		List<Episode> persistedEpisodes = episodeDao.find(showRequest);
 
-			List<Episode> persistedEpisodes = episodeDao.find((EpisodeRequest) showRequest);
+		// sometimes the same torrent returned from search for different episodes
+		// it can happen when there are torrents like s01e01-e04 will be returned for s01e(-1) request also
+		Torrent persistedTorrent = torrentDao.findByHash(torrent.getHash());
+		if (persistedTorrent == null) {
+			torrentDao.persist(torrent);
+			persistedTorrent = torrent;
 
-			// sometimes the same torrent returned from search for different episodes
-			// it can happen when there are torrents like s01e01-e04 will be returned for s01e(-1) request also
-			Torrent persistedTorrent = torrentDao.findByHash(torrent.getHash());
-			if (persistedTorrent == null) {
-				torrentDao.persist(torrent);
-				persistedTorrent = torrent;
-
-				handleSubtitles(languagesPerShow, showRequest, torrent, persistedEpisodes);
-			}
-
-			for (Episode persistedEpisode : persistedEpisodes) {
-				persistedEpisode.getTorrentIds().add(persistedTorrent.getId());
-				persistedEpisode.setScanDate(new Date());
-			}
-
-			res.addAll(persistedEpisodes);
+			handleSubtitles(showRequest, torrent, persistedEpisodes);
 		}
-		return res;
+
+		for (Episode persistedEpisode : persistedEpisodes) {
+			persistedEpisode.getTorrentIds().add(persistedTorrent.getId());
+			persistedEpisode.setScanDate(new Date());
+		}
+
+		return persistedEpisodes;
+	}
+
+	@Override
+	protected List<Episode> processSearchResults(Collection<Pair<ShowRequest, SearchResult>> results) {
+		throw new UnsupportedOperationException();
+//		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
+//		List<Episode> res = new ArrayList<>();
+//		for (Pair<ShowRequest, SearchResult> pair : results) {
+//			SearchResult searchResult = pair.getValue();
+//			ShowRequest showRequest = pair.getKey();
+//
+//			res.addAll(persistedEpisodes);
+//		}
+//		return res;
 	}
 
 	@Override
@@ -256,6 +275,10 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 	private void deleteTorrents(Episode episode) {
 		showService.disconnectTorrentsFromEpisode(episode);
+
+		// also setting scanDate to null, cuz if we used forceDownload and removed the torrents and then the search died in the middle
+		// next time scanDate will think we still have the previous torrents and will skip downloading
+		episode.setScanDate(null);
 	}
 
 	private void skipScannedEpisodes(Set<ShowRequest> episodeRequests,
@@ -429,7 +452,8 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		}
 	}
 
-	private void handleSubtitles(Map<Show, List<SubtitleLanguage>> languagesPerShow, ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
+	private void handleSubtitles(ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
+		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
 		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow());
 		if (languages.isEmpty()) {
 			return;

@@ -18,7 +18,7 @@ import java.util.*;
 public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 
 	@Override
-	public List<Episode> find(EpisodeRequest episodeRequest) {
+	public List<Episode> find(ShowRequest episodeRequest) {
 		return findByRequests(Collections.<ShowRequest>singletonList(episodeRequest));
 	}
 

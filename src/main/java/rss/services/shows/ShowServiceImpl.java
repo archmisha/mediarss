@@ -192,7 +192,7 @@ public class ShowServiceImpl implements ShowService {
 							}
 						});
 					} catch (PageDownloadException e) {
-						logService.warn(aClass, String.format("Failed downloading info for show '%s' (Connection timed out)", downloadedShow.getName()));
+						logService.warn(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
 					} catch (Exception e) {
 						logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
 					}
