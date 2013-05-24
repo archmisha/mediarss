@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
+import rss.services.shows.ShowServiceImpl;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -37,7 +38,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
-	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam"};
+	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam", "ts"};
 
 
 	@Autowired
@@ -101,9 +102,9 @@ public class TorrentzParserImpl implements TorrentzParser {
 			}
 
 			if (!skip) {
-				String tmpName = name.toLowerCase();
+				String tmpName = ShowServiceImpl.normalize(name);
 				for (String keyword : KEYWORDS_TO_SKIP) {
-					if (tmpName.contains(keyword)) {
+					if (tmpName.contains(" " + keyword + " ")) {
 						logService.info(getClass(), "Skipping movie '" + name + "' due to keyword: '" + keyword + "'");
 						skip = true;
 					}
