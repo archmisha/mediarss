@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.PageDownloadException;
 import rss.services.log.LogService;
 import rss.services.requests.SearchRequest;
 import rss.services.searchers.Downloadable;
@@ -123,6 +124,8 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 							}
 							break;
 					}
+				} catch (PageDownloadException e) {
+					logService.error(aClass, String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
 				} catch (Exception e) {
 					logService.error(aClass, String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()), e);
 				}
