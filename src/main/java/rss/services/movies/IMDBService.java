@@ -1,7 +1,5 @@
 package rss.services.movies;
 
-import rss.entities.Movie;
-
 import java.io.InputStream;
 
 /**
@@ -16,5 +14,5 @@ public interface IMDBService {
 
 	InputStream getImage(String imageFileName);
 
-	 void downloadImages(String page, String imdbUrl);
+	void downloadImages(String page, String imdbUrl);
 }

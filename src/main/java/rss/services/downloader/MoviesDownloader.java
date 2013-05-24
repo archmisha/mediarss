@@ -4,13 +4,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
-import rss.dao.UserTorrentDao;
 import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
 import rss.services.requests.movies.MovieRequest;
-import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.searchers.SearchResult;
 import rss.util.CollectionUtils;
 
@@ -111,6 +109,9 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 			// if there is no IMDB ID in the original request (meaning it came from the movies job)
 			// download imdb page (for the first time)
 			IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(imdbId);
+			if (!imdbParseResult.isFound()) {
+				return null;
+			}
 
 			// ignore future movies which are not release yet
 			if (imdbParseResult.isComingSoon()) {
