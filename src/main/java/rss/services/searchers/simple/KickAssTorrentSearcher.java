@@ -10,7 +10,6 @@ import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.requests.MediaRequest;
 import rss.services.requests.episodes.DoubleEpisodeRequest;
-import rss.services.requests.episodes.EpisodeRequest;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
@@ -31,7 +30,7 @@ import java.util.regex.Pattern;
  * Time: 14:35
  */
 @Service("kickAssTorrentSearcher")
-public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
+public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "kat.ph";
 	private static final String ENTRY_URL = "http://" + NAME + "/";

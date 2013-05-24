@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * <span class="seed">982</span>
  */
 @Service("episodeSearcher1337x")
-public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
+public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
 
 	private static final String NAME = "1337x.org";
 	private static final String SEARCH_URL = "http://" + NAME + "/search/%s/0/";

@@ -1,15 +1,11 @@
 package rss.services.searchers.composite.torrentz;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import rss.entities.Media;
 import rss.services.PageDownloader;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.services.searchers.composite.AbstractCompositeSearcher;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -30,13 +26,13 @@ public abstract class TorrentzSearcher<T extends MediaRequest> extends AbstractC
 	protected PageDownloader pageDownloader;
 
 	@Override
-	protected SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T, Media> torrentSearcher) {
+	protected SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T> torrentSearcher) {
 		return torrentSearcher.searchById(mediaRequest);
 	}
 
 	protected void enrichRequestWithSearcherIds(T mediaRequest) {
 		String entryPage = pageDownloader.downloadPage(TorrentzParserImpl.TORRENTZ_ENTRY_URL + mediaRequest.getHash());
-		for (SimpleTorrentSearcher<T, Media> simpleTorrentSearcher : getTorrentSearchers()) {
+		for (SimpleTorrentSearcher<T> simpleTorrentSearcher : getTorrentSearchers()) {
 			mediaRequest.setSearcherId(simpleTorrentSearcher.getName(), simpleTorrentSearcher.parseId(mediaRequest, entryPage));
 		}
 	}

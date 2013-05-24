@@ -48,13 +48,13 @@ public class ShowServiceImplTest extends BaseTest {
 				"Pop Idol", "Super Idol", "World Idol", "NZ Idol"));
 
 		for (Map.Entry<String, Collection<String>> entry : names.entrySet()) {
-			Collection<Show> shows = showSearchService.statisticMatch(entry.getKey());
+			Collection<CachedShow> shows = showSearchService.statisticMatch(entry.getKey());
 			assertCollections(entry.getKey(), shows, entry.getValue());
 		}
 	}
 
-	private void assertCollections(String searchTerm, Collection<Show> actualList, Collection<String> expectedList) {
-		for (Show actual : actualList) {
+	private void assertCollections(String searchTerm, Collection<CachedShow> actualList, Collection<String> expectedList) {
+		for (CachedShow actual : actualList) {
 			Assert.assertTrue("Expected: [" + StringUtils.join(expectedList.toArray(), ",") + "] but got: [" +
 							  StringUtils.join(actualList.toArray(), ",") + "] for the search: " + searchTerm,
 					expectedList.contains(actual.getName()));

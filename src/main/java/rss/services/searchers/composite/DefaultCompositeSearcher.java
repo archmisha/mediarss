@@ -1,7 +1,6 @@
 package rss.services.searchers.composite;
 
 import org.springframework.stereotype.Service;
-import rss.entities.Media;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
@@ -14,7 +13,7 @@ import rss.services.searchers.SimpleTorrentSearcher;
 public class DefaultCompositeSearcher<T extends MediaRequest> extends AbstractCompositeSearcher<T> {
 
 	@Override
-	protected SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T, Media> torrentSearcher) {
+	protected SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T> torrentSearcher) {
 		return torrentSearcher.search(mediaRequest);
 	}
 }

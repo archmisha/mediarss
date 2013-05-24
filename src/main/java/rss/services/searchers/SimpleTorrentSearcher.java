@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  * Date: 24/11/12
  * Time: 19:31
  */
-public abstract class SimpleTorrentSearcher<T extends MediaRequest, S extends Media> implements Searcher<T> {
+public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements Searcher<T> {
 
 	private static final Pattern IMDB_URL_PATTERN = Pattern.compile("(www.imdb.com/title/\\w+)");
 

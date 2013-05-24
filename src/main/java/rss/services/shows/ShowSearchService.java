@@ -15,6 +15,5 @@ public interface ShowSearchService {
 
 	SearchResultVO search(ShowRequest episodeRequest, User user, boolean forceDownload);
 
-	Collection<Show> statisticMatch(String name);
-
+	Collection<CachedShow> statisticMatch(String name);
 }

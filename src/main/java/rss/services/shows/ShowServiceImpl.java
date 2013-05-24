@@ -3,6 +3,7 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -97,6 +98,7 @@ public class ShowServiceImpl implements ShowService {
 
 	@Autowired
 	protected UserTorrentDao userTorrentDao;
+	public static final Pattern RANGE_EPISODES_PATTERN = Pattern.compile("e\\d+");
 
 	@PostConstruct
 	private void postConstruct() {
@@ -630,8 +632,8 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	private boolean isShowNameMatch(String title, Show show) {
-		for (Show curShow : showSearchService.statisticMatch(title)) {
-			if (curShow.equals(show)) {
+		for (CachedShow curShow : showSearchService.statisticMatch(title)) {
+			if (curShow.getId() == show.getId()) {
 				return true;
 			}
 		}
@@ -643,12 +645,8 @@ public class ShowServiceImpl implements ShowService {
 		// take only when after season 1 there is text or number > 100 or  nothing
 		if (StringUtils.isBlank(titleSuffix) || Character.isLetter(titleSuffix.charAt(0))) {
 			// if it starts with e, then it might be something of the sort S08E01 E05 - then need to skip it
-			Pattern rangeEpisodesPattern = Pattern.compile("e\\d+");
-			Matcher matcher = rangeEpisodesPattern.matcher(titleSuffix);
-			if (matcher.find()) {
-				return false;
-			}
-			return true;
+			Matcher matcher = RANGE_EPISODES_PATTERN.matcher(titleSuffix);
+			return !matcher.find();
 		}
 
 		if (titleSuffix.length() >= 3) {

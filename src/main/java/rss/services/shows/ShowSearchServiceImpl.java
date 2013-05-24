@@ -180,14 +180,22 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		}
 	}
 
-	public Collection<Show> statisticMatch(String name) {
-		return statisticMatch(name, Integer.MAX_VALUE);
+	public Collection<CachedShow> statisticMatch(String name) {
+		return statisticMatchHelper(name, Integer.MAX_VALUE);
 	}
 
 	// Levenshtein distance (LD)
 	// Don't use threshold, cuz maybe our name is shorter than the actual name... like spartacus: ....
 	// and we search simply for spartacus
 	private Collection<Show> statisticMatch(String name, int maxResults) {
+		Collection<Show> result = new ArrayList<>();
+		for (CachedShow match : statisticMatchHelper(name, maxResults)) {
+			result.add(showDao.find(match.getId()));
+		}
+		return result;
+	}
+
+	private Collection<CachedShow> statisticMatchHelper(String name, int maxResults) {
 		name = ShowServiceImpl.normalize(name);
 		List<String> sortedNameSplit = Arrays.asList(name.split(" "));
 		final int nameWords = sortedNameSplit.size();
@@ -248,11 +256,8 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 				}
 			});
 		}
-		Collection<Show> result = new ArrayList<>();
-		for (CachedShow match : matchesList.subList(0, Math.min(matchesList.size(), maxResults))) {
-			result.add(showDao.find(match.getId()));
-		}
 
+		List<CachedShow> result = matchesList.subList(0, Math.min(matchesList.size(), maxResults));
 		logService.debug(getClass(), String.format("Show statistic match end for: %s found: %s", name, StringUtils.join(result.toArray(), ",")));
 		return result;
 	}

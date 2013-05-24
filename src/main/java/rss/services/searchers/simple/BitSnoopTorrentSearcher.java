@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * Date: 04/05/13 16:40
  */
 @Service("bitSnoopTorrentSearcher")
-public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
+public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "bitsnoop.com";
 	private static final String ENTRY_URL = "http://" + NAME + "/";

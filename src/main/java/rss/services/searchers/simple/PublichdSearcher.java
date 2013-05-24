@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * Time: 19:17
  */
 @Service("publichdSearcher")
-public class PublichdSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
+public class PublichdSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "publichd.se";
 	public static final String ENTRY_URL = "http://" + NAME + "/index.php?page=torrent-details&id=";

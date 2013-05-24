@@ -4,7 +4,6 @@ import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import rss.PageDownloadException;
-import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
@@ -37,7 +36,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 
 			SearchResult awaitingAgingSearchResult = null;
 
-			for (SimpleTorrentSearcher<T, Media> torrentSearcher : getTorrentSearchers()) {
+			for (SimpleTorrentSearcher<T> torrentSearcher : getTorrentSearchers()) {
 				try {
 					SearchResult searchResult = performSearch(mediaRequest, torrentSearcher);
 					setTorrentQuality(searchResult);
@@ -105,16 +104,16 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Collection<? extends SimpleTorrentSearcher<T, Media>> getTorrentSearchers() {
-		List<SimpleTorrentSearcher<T, Media>> searchers = new ArrayList<>();
+	protected Collection<? extends SimpleTorrentSearcher<T>> getTorrentSearchers() {
+		List<SimpleTorrentSearcher<T>> searchers = new ArrayList<>();
 		for (SimpleTorrentSearcher searcher : applicationContext.getBeansOfType(SimpleTorrentSearcher.class).values()) {
 			searchers.add(searcher);
 		}
 
 		// sort by preference (kat.ph is always better than 1337x.org)
-		Collections.sort(searchers, new Comparator<SimpleTorrentSearcher<T, Media>>() {
+		Collections.sort(searchers, new Comparator<SimpleTorrentSearcher<T>>() {
 			@Override
-			public int compare(SimpleTorrentSearcher<T, Media> o1, SimpleTorrentSearcher<T, Media> o2) {
+			public int compare(SimpleTorrentSearcher<T> o1, SimpleTorrentSearcher<T> o2) {
 				return Ints.compare(o1.getPriority(), o2.getPriority());
 			}
 		});
@@ -127,7 +126,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 		}
 	}
 
-	protected abstract SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T, Media> torrentSearcher);
+	protected abstract SearchResult performSearch(T mediaRequest, SimpleTorrentSearcher<T> torrentSearcher);
 
 	protected SearchResult.SearcherFailedReason onTorrentFound(SearchResult searchResult) {
 		return null;

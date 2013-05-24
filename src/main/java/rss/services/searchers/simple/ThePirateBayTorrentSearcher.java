@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * Time: 19:21
  */
 @Service("thePirateBayTorrentSearcher")
-public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T, S> {
+public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "thepiratebay.sx";
 	private static final String HOST_NAME_URL_PART = "http://" + NAME;
