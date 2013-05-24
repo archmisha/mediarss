@@ -5,9 +5,11 @@ import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
+import rss.entities.Torrent;
 import rss.services.matching.MatchCandidate;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.matching.MatcherVisitor;
+import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 
 import java.io.UnsupportedEncodingException;
@@ -55,9 +57,17 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 
 		mediaRequest.setHash(bestResult.getHash());
 		mediaRequest.setUploaders(bestResult.getUploaders());
+		mediaRequest.setSize(bestResult.getSize());
 
 		// parse single search result torrent entry
 		enrichRequestWithSearcherIds(mediaRequest);
+	}
+
+	@Override
+	protected void postSearch(ShowRequest mediaRequest, SearchResult searchResult) {
+		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
+			torrent.setSize(mediaRequest.getSize());
+		}
 	}
 
 	protected List<MatchCandidate> filterMatching(ShowRequest mediaRequest, Collection<TorrentzResult> mediaRequests) {

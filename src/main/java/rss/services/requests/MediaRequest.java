@@ -18,6 +18,7 @@ public abstract class MediaRequest implements SearchRequest {
 	private int uploaders;
 	private int resultsLimit;
 	private Map<String, String> searcherIds;
+	private int size;
 
 	protected MediaRequest(int resultsLimit) {
 		this.resultsLimit = resultsLimit;
@@ -109,4 +110,12 @@ public abstract class MediaRequest implements SearchRequest {
 	}
 
 	public abstract <S, T> T visit(MediaRequestVisitor<S, T> visitor, S config);
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public int getSize() {
+		return size;
+	}
 }

@@ -50,7 +50,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 							SearchResult.SearcherFailedReason msg = onTorrentFound(searchResult);
 							if (msg == null) {
 								searchResult.addFailedSearchers(failedSearchers);
-								postSearch(searchResult);
+								postSearch(mediaRequest, searchResult);
 								return searchResult;
 							}
 
@@ -71,7 +71,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 
 			if (awaitingAgingSearchResult != null) {
 				awaitingAgingSearchResult.addFailedSearchers(failedSearchers);
-				postSearch(awaitingAgingSearchResult);
+				postSearch(mediaRequest, awaitingAgingSearchResult);
 				return awaitingAgingSearchResult;
 			}
 		} catch (Exception e) {
@@ -79,7 +79,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 		}
 
 		SearchResult notFoundSearchResult = SearchResult.createNotFound(failedSearchers);
-		postSearch(notFoundSearchResult);
+		postSearch(mediaRequest, notFoundSearchResult);
 		return notFoundSearchResult;
 	}
 
@@ -100,7 +100,7 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	protected void preSearch(T mediaRequest) {
 	}
 
-	protected void postSearch(SearchResult searchResult) {
+	protected void postSearch(T mediaRequest, SearchResult searchResult) {
 	}
 
 	@SuppressWarnings("unchecked")
