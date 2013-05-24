@@ -107,19 +107,12 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest), forceDownload).getDownloaded();
 
-		Map<Torrent, Episode> episodeByTorrents = new HashMap<>();
+		Set<Long> torrentIds = new HashSet<>();
 		final Map<Long, Episode> episodeByTorrentsForComparator = new HashMap<>();
 		for (Episode episode : downloaded) {
 			for (Long torrentId : new ArrayList<>(episode.getTorrentIds())) {
-				Torrent torrent = torrentDao.find(torrentId);
-
-				// some weird bug
-				if (torrent == null) {
-					episode.getTorrentIds().remove(torrentId);
-				} else {
-					episodeByTorrents.put(torrent, episode);
-					episodeByTorrentsForComparator.put(torrent.getId(), episode);
-				}
+				torrentIds.add(torrentId);
+				episodeByTorrentsForComparator.put(torrentId, episode);
 			}
 		}
 
@@ -127,12 +120,12 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 		// add those containing user torrent
 		for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(user, downloaded)) {
-			episodeByTorrents.remove(userTorrent.getTorrent());
+			torrentIds.remove(userTorrent.getTorrent().getId());
 			result.add(UserTorrentVO.fromUserTorrent(userTorrent));
 		}
 
 		// add the rest of the episodes
-		for (Torrent torrent : episodeByTorrents.keySet()) {
+		for (Torrent torrent : torrentDao.find(torrentIds)) {
 			result.add(UserTorrentVO.fromTorrent(torrent));
 		}
 
