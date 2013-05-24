@@ -4,6 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import rss.EpisodesComparator;
 import rss.controllers.EntityConverter;
 import rss.controllers.vo.SearchResultVO;
@@ -20,6 +23,7 @@ import rss.util.DurationMeter;
 import rss.util.MultiThreadExecutor;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -59,6 +63,9 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 	@Autowired
 	private ShowsCacheService showsCacheService;
+
+	@Autowired
+	protected TransactionTemplate transactionTemplate;
 
 	@Override
 	public SearchResultVO search(ShowRequest episodeRequest, User user, boolean forceDownload) {
@@ -153,7 +160,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		return null;
 	}
 
-	private void downloadShowScheduleBeforeSearch(Show show) {
+	private void downloadShowScheduleBeforeSearch(final Show show) {
 		// download show episode schedule unless:
 		// - already downloaded schedule and show is ended
 		// - show is being tracked
@@ -176,7 +183,20 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			}
 		}
 		if (shouldDownloadSchedule) {
-			showService.downloadFullSchedule(show);
+			// need to d oit async, so the commit of the schedule download date will happen immidiately
+			ExecutorService executorService = Executors.newSingleThreadExecutor();
+			executorService.submit(new Runnable() {
+				@Override
+				public void run() {
+					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+						@Override
+						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+							showService.downloadFullSchedule(show);
+						}
+					});
+				}
+			});
+			executorService.shutdown();
 		}
 	}
 
