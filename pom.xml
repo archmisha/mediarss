@@ -42,6 +42,7 @@
         <gson.version>2.2.2</gson.version>
         <guava.version>14.0</guava.version>
         <combinatoricslib.version>2.0</combinatoricslib.version>
+        <c3p0.version>0.9.1.2</c3p0.version>
     </properties>
 
     <repositories>
@@ -55,6 +56,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>${c3p0.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.googlecode.combinatoricslib</groupId>
             <artifactId>combinatoricslib</artifactId>
