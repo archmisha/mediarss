@@ -9,7 +9,7 @@ import javax.persistence.*;
  * Date: 14/05/13 18:25
  */
 @Entity
-@Table(name = "view")
+@Table(name = "view", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "object_id"}))
 @org.hibernate.annotations.Table(appliesTo = "view",
 		indexes = {
 				@Index(name = "view_userId_objectId_idx", columnNames = {"user_id", "object_id"})
