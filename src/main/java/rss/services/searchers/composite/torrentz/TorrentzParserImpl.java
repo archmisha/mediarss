@@ -72,7 +72,11 @@ public class TorrentzParserImpl implements TorrentzParser {
 		Set<TorrentzResult> movies = new HashSet<>();
 
 		// cut out the sponsored links section before the results
-		page = page.substring(page.indexOf("<div class=\"results\""));
+		int idx = page.indexOf("<div class=\"results\"");
+		if (idx == -1) {
+			return movies;
+		}
+		page = page.substring(idx);
 
 		Matcher matcher = ENTRY_CONTENT_PATTERN.matcher(page);
 		while (matcher.find()) {
