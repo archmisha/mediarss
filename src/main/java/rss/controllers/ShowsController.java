@@ -9,9 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
 import rss.controllers.vo.SearchResultVO;
 import rss.controllers.vo.ShowVO;
+import rss.controllers.vo.ShowsScheduleVO;
 import rss.dao.ShowDao;
 import rss.dao.UserDao;
-import rss.entities.*;
+import rss.entities.MediaQuality;
+import rss.entities.Show;
+import rss.entities.User;
 import rss.services.SessionService;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.FullShowRequest;
@@ -57,9 +60,10 @@ public class ShowsController extends BaseController {
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", showService.getSchedule(user));
+		result.put("schedule", getCachedSchedule(user, true));
 		return result;
 	}
+
 
 	@RequestMapping(value = "/remove-tracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
@@ -70,7 +74,7 @@ public class ShowsController extends BaseController {
 		user.getShows().remove(show);
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", showService.getSchedule(user));
+		result.put("schedule", getCachedSchedule(user, true));
 		return result;
 	}
 
@@ -114,10 +118,10 @@ public class ShowsController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SearchResultVO search(@RequestParam("title") String title,
-									  @RequestParam(value = "season", required = false) Integer season,
-									  @RequestParam(value = "episode", required = false) Integer episode,
-									  @RequestParam(value = "showId", required = false) Long showId,
-									  @RequestParam(value = "forceDownload", required = false) boolean forceDownload) {
+								 @RequestParam(value = "season", required = false) Integer season,
+								 @RequestParam(value = "episode", required = false) Integer episode,
+								 @RequestParam(value = "showId", required = false) Long showId,
+								 @RequestParam(value = "forceDownload", required = false) boolean forceDownload) {
 		season = applyDefaultValue(season, -1);
 		episode = applyDefaultValue(episode, -1);
 		showId = applyDefaultValue(showId, -1l);
@@ -176,11 +180,20 @@ public class ShowsController extends BaseController {
 
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", showService.getSchedule(user));
+		result.put("schedule", getCachedSchedule(user, false));
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
 		logService.info(getClass(), "Schedule " + duration.getDuration() + " millis");
 
 		return result;
+	}
+
+	private ShowsScheduleVO getCachedSchedule(User user, boolean invalidate) {
+		ShowsScheduleVO schedule = sessionService.getSchedule();
+		if (schedule == null || invalidate) {
+			schedule = showService.getSchedule(user);
+			sessionService.setSchedule(schedule);
+		}
+		return schedule;
 	}
 }

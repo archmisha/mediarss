@@ -1,5 +1,6 @@
 package rss.services;
 
+import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.User;
 
 import java.util.Date;
@@ -20,4 +21,8 @@ public interface SessionService {
     void clearLoggedInUser();
 
 	boolean isUserLogged();
+
+	ShowsScheduleVO getSchedule();
+
+	void setSchedule(ShowsScheduleVO schedule);
 }
