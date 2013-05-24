@@ -57,13 +57,13 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 
 	@Override
 	public Collection<UserTorrent> findUserEpisodes(User user, Collection<Episode> episodes) {
-		if (episodes.isEmpty()) {
-			return Collections.emptyList();
-		}
-
 		Set<Long> ids = new HashSet<>();
 		for (Episode episode : episodes) {
 			ids.addAll(episode.getTorrentIds());
+		}
+
+		if (ids.isEmpty()) {
+			return Collections.emptyList();
 		}
 
 		Map<String, Object> params = new HashMap<>(2);
