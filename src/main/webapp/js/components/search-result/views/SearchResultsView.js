@@ -15,7 +15,6 @@ define([
 
 			ui: {
 				searchResultsRegion: '.search-results-list',
-				noResultsStatus: '.search-status-no-results',
 				resultsCount: '.search-results-header-count',
 				resultsHeader: '.search-results-header',
 				titleContainer: '.search-results-header-title-container',
@@ -40,12 +39,29 @@ define([
 			constructor: function(options) {
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+
+				this.searchResultsCollection = new UserTorrentCollection();
+				this.searchResultsCollection.bind('change:downloadStatus', this.setDownloadAllButtonState, this);
+				this.searchResultsCollectionView = new SearchResultsCollectionView({
+					collection: this.searchResultsCollection,
+					vent: this.vent
+				});
+				var that = this;
+				this.searchResultsCollectionView.on('render', function() {
+					// if there is scroll bar - move download all button more to the left
+					//if (that.searchResultsRegion.$el.get(0).scrollHeight > that.searchResultsRegion.$el.height()) {
+					if (that.searchResultsCollection.length > 8) {
+						that.ui.downloadAllButton.addClass('search-results-download-all-button-with-scroll');
+					} else {
+						that.ui.downloadAllButton.removeClass('search-results-download-all-button-with-scroll');
+					}
+				});
 			},
 
 			showDidYouMean: function(searchResult) {
 				var arr = [];
-				searchResult.didYouMean.forEach(function(show) {
-					arr.push('<span class=\'search-results-did-you-mean-item\' showid=\'' + show.id + '\'>' + show.name + '</span>');
+				searchResult.didYouMean.forEach(function(item) {
+					arr.push('<span class=\'search-results-did-you-mean-item\' item_id=\'' + item.id + '\'>' + item.name + '</span>');
 				});
 				this.ui.didYouMeanList.html(arr.join(', '));
 				this.ui.didYouMean.show();
@@ -54,7 +70,6 @@ define([
 			setSearchResults: function(searchResult) {
 				var that = this;
 
-				this.ui.noResultsStatus.fadeOut('slow');
 				this.ui.resultsHeader.hide();
 				this.ui.didYouMean.hide();
 				this.ui.titleContainer.hide();
@@ -75,8 +90,11 @@ define([
 						that.setVisibleShowingResultsFor(searchResult.actualSearchTerm,
 							searchResult.actualSearchTerm != null && searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
 					}
+
 					if (searchResult.actualSearchTerm != null) {
-						that.ui.noResultsStatus.fadeIn('slow');
+						this.searchResultsCollection.reset();
+						this.searchResultsRegion.show(this.searchResultsCollectionView);
+						this.ui.searchResultsRegion.slideDown('slow');
 					}
 				}
 			},
@@ -93,8 +111,6 @@ define([
 			},
 
 			onSearchResultsReceived: function(searchResult) {
-				var that = this;
-
 				this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
 				if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
 					this.showDidYouMean(searchResult);
@@ -102,36 +118,26 @@ define([
 
 				this.ui.resultsCount.html(searchResult.episodes.length);
 				this.ui.titleContainer.show();
-				this.searchResultsCollection = new UserTorrentCollection(searchResult.episodes);
-				this.searchResultsCollection.bind('change:downloadStatus', this.setDownloadAllButtonState, this);
-				var searchResultsCollectionView = new SearchResultsCollectionView({
-					collection: this.searchResultsCollection,
-					vent: this.vent
-				});
-				searchResultsCollectionView.on('render', function() {
-					// if there is scroll bar - move download all button more to the left
-					//if (that.searchResultsRegion.$el.get(0).scrollHeight > that.searchResultsRegion.$el.height()) {
-					if (searchResult.episodes.length > 8) {
-						that.ui.downloadAllButton.addClass('search-results-download-all-button-with-scroll');
-					} else {
-						that.ui.downloadAllButton.removeClass('search-results-download-all-button-with-scroll');
-					}
-				});
-				this.searchResultsRegion.show(searchResultsCollectionView);
+				this.searchResultsCollection.reset(searchResult.episodes);
+				this.searchResultsRegion.show(this.searchResultsCollectionView);
 				this.ui.searchResultsRegion.slideDown('slow');
 
+				this.setDownloadAllButtonState();
 				if (searchResult.episodes.length == 1) {
-					this.ui.downloadAllButton.hide();
 					this.ui.multipleResultsTitle.hide();
 					this.ui.singleResultTitle.show();
 				} else {
-					this.setDownloadAllButtonState();
 					this.ui.multipleResultsTitle.show();
 					this.ui.singleResultTitle.hide();
 				}
 			},
 
 			setDownloadAllButtonState: function() {
+				if (this.searchResultsCollection.length == 1) {
+					this.ui.downloadAllButton.hide();
+					return;
+				}
+
 				var isAllDownloaded = true;
 				this.searchResultsCollection.forEach(function(userTorrent) {
 					isAllDownloaded = isAllDownloaded && (userTorrent.get('downloadStatus') !== 'NONE');
@@ -144,7 +150,7 @@ define([
 			},
 
 			onDidYouMeanClick: function(event) {
-				var id = $(event.target).attr('showid');
+				var id = $(event.target).attr('item_id');
 				var name = $(event.target).html();
 				this.vent.trigger('did-you-mean-click', id, name);
 			},

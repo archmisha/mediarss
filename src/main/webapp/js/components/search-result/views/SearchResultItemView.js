@@ -14,7 +14,10 @@ define([
 				downloadedStatus: '.search-result-item-downloaded-image',
 				downloadButton: '.search-result-item-download-image',
 				scheduledStatus: '.search-result-item-scheduled-image',
-				title: '.search-result-item-title'
+				body: '.search-result-item-body',
+				size: '.search-result-item-size',
+				scheduledOn: '.search-result-item-scheduled-on',
+				scheduledOnDate: '.search-result-item-scheduled-on-date'
 			},
 
 			events: {
@@ -29,14 +32,38 @@ define([
 				this.model.on('change:downloadStatus', function() {
 					that.updateDownloadStatus();
 				});
+				this.model.on('change:scheduledDate', function(model, val) {
+					if (val) {
+						that.ui.scheduledOnDate.html(Moment(val).format('DD/MM/YYYY HH:mm'));
+						that.ui.scheduledOn.show();
+					} else {
+						that.ui.scheduledOn.hide();
+					}
+				});
 			},
 
 			onRender: function() {
 				this.updateDownloadStatus();
 
-				this.ui.title.qtip({
-					style: 'rssStyle'
-				});
+				if (!this.model.get('size')) {
+					this.ui.size.hide();
+				}
+				if (this.model.get('scheduledDate') == null) {
+					this.ui.scheduledOn.hide();
+				}
+
+				[this.ui.downloadButton, this.ui.scheduledStatus, this.ui.downloadedStatus, this.ui.body].forEach(
+					function(el) {
+						el.qtip({
+							style: 'rssStyle',
+							position: {
+								corner: {
+									target: 'bottomLeft',
+									tooltip: 'topLeft'
+								}
+							}
+						});
+					});
 			},
 
 			onDownloadButtonClick: function() {

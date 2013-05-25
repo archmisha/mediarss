@@ -12,4 +12,3 @@
     </div>
 </div>
 <div class='search-results-list'></div>
-<div class='search-status-no-results'>There are no results</div>

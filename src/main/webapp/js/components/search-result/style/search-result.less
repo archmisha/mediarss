@@ -28,8 +28,8 @@
   position: absolute;
   left: 2px;
   top: 0px;
-  height: 26px;
-  line-height: 26px;
+  height: 39px;
+  line-height: 39px;
 }
 
 .search-result-item-body {
@@ -37,7 +37,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  height: 26px;
+}
+
+.search-result-item-sub-title {
+  font-size: 11px;
+  color: #808080;
+  margin-top: -2px;
+  font-weight: normal; /* no bold of not-viewed */
 }
 
 .search-result-item-download-image {
@@ -61,12 +67,11 @@
   right: @search-results-download-all-button-right + 20;
 }
 
-.search-status-no-results {
-  color: black;
+.search-results-empty-view {
   font-style: italic;
-  display: none;
-  position: absolute;
-  bottom: -25px;
+  margin-top: 15px;
+  color: #808080;
+  font-size: 13px;
 }
 
 .search-results-header { //  display: none;
@@ -86,6 +91,7 @@
   width: 260px;
   float: left;
   margin-top: 5px;
+  display:none; /* starts with that */
 }
 
 .search-results-showing-results-for {
