@@ -60,7 +60,7 @@ define([
 				this.moviesSection = new SectionView({
 					title: 'Latest Movies',
 					description: 'Updated on: <span class=\'movies-updated-on\'></span>' +
-						'.<br/>Select movies to download. Here you can find newly available movies. You can use IMDB preview'
+						'<br/>Select movies to download. Here you can find newly available movies. You can use IMDB preview'
 				});
 
 				this.moviesSearchView = new MoviesSearchView({vent: this.vent});
