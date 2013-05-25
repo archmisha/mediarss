@@ -3,14 +3,14 @@ define([
 	'jquery',
 	'marionette',
 	'handlebars',
-	'features/tvShowsTab/views/TrackedShowsCollectionView',
-	'text!features/tvShowsTab/templates/tracked-shows-component.tpl',
-	'features/tvShowsTab/collections/ShowsCollection',
+	'features/showsTab/views/TrackedShowsCollectionView',
+	'text!features/showsTab/templates/tracked-shows-component.tpl',
+	'features/showsTab/collections/ShowsCollection',
 	'HttpUtils',
 	'select2',
 	'Spinner',
 	'utils/Utils',
-	'features/tvShowsTab/models/Show',
+	'features/showsTab/models/Show',
 	'MessageBox'
 ],
 	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, HttpUtils, select2, Spinner, Utils, Show, MessageBox) {

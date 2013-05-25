@@ -1,7 +1,7 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/tvShowsTab/templates/tracked-show.tpl'
+	'text!features/showsTab/templates/tracked-show.tpl'
 ],
 	function(Marionette, Handlebars, template) {
 		"use strict";

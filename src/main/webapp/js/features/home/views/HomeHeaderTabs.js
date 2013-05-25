@@ -13,7 +13,7 @@ define([
 
 			ui: {
 //				homeTab: '.home-home-tab',
-//				tvShowsTab: '.home-tvshows-tab',
+//				showsTab: '.home-tvshows-tab',
 //				moviesTab: '.home-movies-tab',
 				adminTab: '.home-admin-tab'
 			},

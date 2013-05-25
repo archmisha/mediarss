@@ -51,6 +51,9 @@ define([
 				if (this.model.get('scheduledDate') == null) {
 					this.ui.scheduledOn.hide();
 				}
+				if (!this.model.get('viewed')) {
+					this.$el.addClass('search-result-item-not-viewed');
+				}
 
 				[this.ui.downloadButton, this.ui.scheduledStatus, this.ui.downloadedStatus, this.ui.body].forEach(
 					function(el) {

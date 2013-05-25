@@ -8,13 +8,13 @@ define([
 	'features/register/views/RegisterView',
 	'features/home/views/HomeView',
 	'features/homeTab/views/HomeTabView',
-	'features/tvShowsTab/views/TVShowsTabView',
+	'features/showsTab/views/ShowsTabView',
 	'features/moviesTab/views/MoviesTabView',
 	'features/adminTab/views/AdminTabView',
 	'HttpUtils',
 	'MessageBox'
 ],
-	function(Marionette, StringUtils, RoutingPaths, LoginView, RegisterView, HomeView, HomeTabView, TVShowsTabView, MoviesTabView, AdminTabView, HttpUtils, MessageBox) {
+	function(Marionette, StringUtils, RoutingPaths, LoginView, RegisterView, HomeView, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, HttpUtils, MessageBox) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';
@@ -23,7 +23,7 @@ define([
 		var tabToSelect = null;
 		var tabToView = {};
 		tabToView[RoutingPaths.HOME] = HomeTabView;
-		tabToView[RoutingPaths.TVSHOWS] = TVShowsTabView;
+		tabToView[RoutingPaths.TVSHOWS] = ShowsTabView;
 		tabToView[RoutingPaths.MOVIES] = MoviesTabView;
 		tabToView[RoutingPaths.ADMIN] = AdminTabView;
 

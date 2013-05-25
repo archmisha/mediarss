@@ -1,6 +1,6 @@
 define([
 	'backbone',
-	'features/tvShowsTab/models/Show'
+	'features/showsTab/models/Show'
 ],
 	function(Backbone, Show) {
 		'use strict';

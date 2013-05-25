@@ -1,7 +1,7 @@
 define([
 	'marionette',
 	'handlebars',
-	'features/tvShowsTab/views/ShowsComboBoxItemView',
+	'features/showsTab/views/ShowsComboBoxItemView',
 	'chosen',
 	'utils/Utils'
 ],

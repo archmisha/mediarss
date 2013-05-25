@@ -1,8 +1,4 @@
-<div class='future-movies-section'></div>
-<div class='future-movies-content'>
-    IMDB ID: <input type="text" class='future-movies-imdb-id-input'/>
-    <button class='btn btn-small future-movies-add-button'>Add</button>
-</div>
+<div class='movies-search-section'></div>
 <div class='movies-section'></div>
 <div class='movies-wrapper'>
     <div class='movies-lists-container'>
@@ -15,7 +11,10 @@
         <div class='movies-torrents-list-wrapper'>
             <span class='movies-torrents-list-title'>Available torrents</span>
 
-            <div class='movies-torrents-list-container'></div>
+            <div class='movies-torrents-list-container'>
+                <div class='movies-torrents-list'></div>
+                <div class='movies-torrents-list-movie-not-selected'>Select a movie to view available torrents</div>
+            </div>
         </div>
     </div>
 </div>

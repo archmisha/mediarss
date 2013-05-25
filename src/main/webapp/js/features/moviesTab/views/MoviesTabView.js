@@ -5,8 +5,9 @@ define([
 	'handlebars',
 	'text!features/moviesTab/templates/movies-tab.tpl',
 	'features/moviesTab/views/MovieCollectionView',
+	'features/moviesTab/views/MoviesSearchView',
 	'features/moviesTab/collections/MoviesCollection',
-	'features/moviesTab/views/MovieTorrentCollectionView',
+	'components/search-result/views/SearchResultsCollectionView',
 	'features/collections/UserTorrentCollection',
 	'HttpUtils',
 	'components/section/views/SectionView',
@@ -14,46 +15,47 @@ define([
 	'fancybox',
 	'moment'
 ],
-	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesCollection, MovieTorrentCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment) {
+	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, SearchResultsCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment) {
 		"use strict";
 
 		var selectedMovie = null;
-		var SELECT_MOVIE_EMPTY_MSG = 'Select a movie to view available torrents';
-		var NO_TORRENTS_MSG = 'No available torrents yet';
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
 			className: 'movies-tab',
 
 			ui: {
-				imdbIdInput: '.future-movies-imdb-id-input',
-				moviesCounter: '.movies-counter',
-				futureMoviesCounter: '.future-movies-counter',
-				futureMoviesFilter: '.future-movies-filter',
-				moviesFilter: '.movies-filter'
+				availableMoviesCounter: '.movies-counter',
+				userMoviesCounter: '.future-movies-counter',
+				userMoviesFilter: '.future-movies-filter',
+				availableMoviesFilter: '.movies-filter',
+				noMovieSelected: '.movies-torrents-list-movie-not-selected'
 			},
 
 			events: {
-				'click .future-movies-add-button': 'onFutureMovieAddButtonClick',
 				'click .future-movies-filter': 'onFutureMoviesFilterClick',
 				'click .movies-filter': 'onMoviesFilterClick'
 			},
 
 			regions: {
+				moviesSearchRegin: '.movies-search-section',
 				moviesListRegion: '.movies-list-container',
-				movieTorrentListRegion: '.movies-torrents-list-container',
-				moviesSectionRegion: '.movies-section',
-				futureMoviesSectionRegion: '.future-movies-section'
+				movieTorrentListRegion: '.movies-torrents-list',
+				moviesSectionRegion: '.movies-section'
 			},
 
 			constructor: function(options) {
 				this.vent = new Marionette.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 
-				this.moviesCollection = new MoviesCollection(/*this.tabData.availableMovies*/);
+				this.moviesCollection = new MoviesCollection();
 				this.moviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.moviesCollection});
 
 				this.movieTorrentCollection = new UserTorrentCollection();
-				this.movieTorrentColletionView = new MovieTorrentCollectionView({vent: this.vent, collection: this.movieTorrentCollection});
+				this.movieTorrentColletionView = new SearchResultsCollectionView({
+					vent: this.vent,
+					collection: this.movieTorrentCollection,
+					emptyMessage: 'No available torrents yet'
+				});
 
 				this.moviesSection = new SectionView({
 					title: 'Latest Movies',
@@ -61,35 +63,23 @@ define([
 						'.<br/>Select movies to download. Here you can find newly available movies. You can use IMDB preview'
 				});
 
-				this.futureMoviesSection = new SectionView({
-					title: 'Search Movies',
-					description: 'Search for movies by IMDB ID.<br/>' +
-						'If the movie is already available for download it will be automatically added to your feed<br/>' +
-						'Otherwise it will be scheduled for download in the <b>future</b> once they will be available.'
-				});
+				this.moviesSearchView = new MoviesSearchView({vent: this.vent});
 
 				this.vent.on('movie-selected', this.onMovieSelected, this);
-				this.vent.on('future-movie-remove', this.onFutureMovieRemove, this);
-				this.vent.on('movie-torrent-download', this.onMovieTorrentDownload, this);
+				this.vent.on('future-movie-remove', this.onUserMovieRemove, this);
+				this.vent.on('search-result-item-download', this.onMovieTorrentDownload, this);
+				this.vent.on('movie-search-add', this.onFutureMovieAddButtonClick, this);
 			},
 
 			onRender: function() {
-				// must be first
-				this.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
-
 				this.moviesListRegion.show(this.moviesCollectionView);
-				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
 				this.moviesSectionRegion.show(this.moviesSection);
-				this.futureMoviesSectionRegion.show(this.futureMoviesSection);
+				this.moviesSearchRegin.show(this.moviesSearchView);
 
 				var that = this;
 				HttpUtils.get("rest/movies/initial-data", function(res) {
 					that._updateAvailableMovies(res.availableMovies);
-					that.ui.futureMoviesCounter.html(res.userMoviesCount);
-
-					// must be before reset
-					that.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
-					that.movieTorrentCollection.reset();
+					that.ui.userMoviesCounter.html(res.userMoviesCount);
 
 					$('.movies-updated-on').html(Moment(new Date(res.moviesLastUpdated)).format('DD/MM/YYYY HH:mm '));
 				}, false); // no need loading here
@@ -110,7 +100,7 @@ define([
 						that.moviesListRegion.$el.scrollTop(0);
 					} else {
 						that._updateAvailableMovies(res.movies);
-						that.ui.futureMoviesCounter.html(res.userMoviesCount);
+						that.ui.userMoviesCounter.html(res.userMoviesCount);
 					}
 					var movieModel = that.moviesCollection.get(userTorrent.get('movieId'));
 					that.onMovieSelected(movieModel);
@@ -141,39 +131,18 @@ define([
 					}, false);
 				}
 
-				// update movie torrents list
-				var that = this;
-				if (movieModel.get('torrents').length == 0) {
-					var msg;
-					if (that._isUserMoviesSelected) {
-						msg = NO_TORRENTS_MSG;
-					} else {
-						msg = SELECT_MOVIE_EMPTY_MSG;
-					}
-					this.movieTorrentColletionView.setEmptyMessage(msg);
-				}
-				// must be after the message is set
+				this.ui.noMovieSelected.hide();
 				this.movieTorrentCollection.reset(movieModel.get('torrents'));
+				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
 			},
 
-			onFutureMovieAddButtonClick: function() {
-				var imdbId = this.ui.imdbIdInput.val();
-
-				if (!imdbId || imdbId.trim().length == 0) {
-					return;
-				}
-
-				var that = this;
-				HttpUtils.post("rest/movies/future/add", {imdbId: imdbId}, function(res) {
-					that.ui.imdbIdInput.val('');
-					MessageBox.info(res.message);
-					that._switchToUserMovies(res.movies);
-					var movieModel = that.moviesCollection.get(res.movieId);
-					that.onMovieSelected(movieModel);
-				});
+			onFutureMovieAddButtonClick: function(res) {
+				this._switchToUserMovies(res.movies);
+				var movieModel = this.moviesCollection.get(res.movieId);
+				this.onMovieSelected(movieModel);
 			},
 
-			onFutureMovieRemove: function(movieModel) {
+			onUserMovieRemove: function(movieModel) {
 				var that = this;
 				HttpUtils.post("rest/movies/future/remove", {
 					movieId: movieModel.get('id')
@@ -181,31 +150,32 @@ define([
 					MessageBox.info(res.message);
 
 					that.moviesCollection.remove(movieModel.get('id'));
-					that.ui.futureMoviesCounter.html(that.moviesCollection.size());
+					that.ui.userMoviesCounter.html(that.moviesCollection.size());
 
-					// must be before reset
-					that.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
-					that.movieTorrentCollection.reset();
+					that.movieTorrentListRegion.close();
+					that.ui.noMovieSelected.show();
 				});
 			},
 
 			_isUserMoviesSelected: function() {
-				return this.ui.futureMoviesFilter.hasClass('filter-selected');
+				return this.ui.userMoviesFilter.hasClass('filter-selected');
 			},
 
 			_updateUserMovies: function(movies) {
-				this.ui.futureMoviesCounter.html(movies.length);
+				this.ui.userMoviesCounter.html(movies.length);
 				this.moviesCollection.reset(movies);
 			},
 
 			_updateAvailableMovies: function(movies) {
-				this.ui.moviesCounter.html(movies.length);
+				this.ui.availableMoviesCounter.html(movies.length);
 				this.moviesCollection.reset(movies);
 			},
 
 			_switchToUserMovies: function(movies) {
-				this.ui.moviesFilter.removeClass('filter-selected');
-				this.ui.futureMoviesFilter.addClass('filter-selected');
+				this.movieTorrentListRegion.close();
+				this.ui.noMovieSelected.show();
+				this.ui.availableMoviesFilter.removeClass('filter-selected');
+				this.ui.userMoviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.addClass('future-movies-list');
 				if (movies == null) {
 					this.moviesCollection.reset();
@@ -215,8 +185,10 @@ define([
 			},
 
 			_switchToAvailableMovies: function(movies) {
-				this.ui.futureMoviesFilter.removeClass('filter-selected');
-				this.ui.moviesFilter.addClass('filter-selected');
+				this.movieTorrentListRegion.close();
+				this.ui.noMovieSelected.show();
+				this.ui.userMoviesFilter.removeClass('filter-selected');
+				this.ui.availableMoviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.removeClass('future-movies-list');
 				if (movies == null) {
 					this.moviesCollection.reset();
@@ -234,9 +206,6 @@ define([
 				var that = this;
 				HttpUtils.get('rest/movies/user-movies', function(res) {
 					that._updateUserMovies(res.movies);
-					// must be before reset
-					that.movieTorrentColletionView.setEmptyMessage(NO_TORRENTS_MSG);
-					that.movieTorrentCollection.reset();
 				});
 			},
 
@@ -252,10 +221,6 @@ define([
 				var that = this;
 				HttpUtils.get('rest/movies/available-movies', function(res) {
 					that._updateAvailableMovies(res.movies);
-
-					// must be before reset
-					that.movieTorrentColletionView.setEmptyMessage(SELECT_MOVIE_EMPTY_MSG);
-					that.movieTorrentCollection.reset();
 				});
 			}
 		});

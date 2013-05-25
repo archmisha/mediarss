@@ -2,16 +2,16 @@
 define([
 	'marionette',
 	'handlebars',
-	'features/tvShowsTab/views/TrackedShowsComponentView',
-	'text!features/tvShowsTab/templates/tvshows-tab.tpl',
-	'features/tvShowsTab/collections/ShowsCollection',
+	'features/showsTab/views/TrackedShowsComponentView',
+	'text!features/showsTab/templates/tvshows-tab.tpl',
+	'features/showsTab/collections/ShowsCollection',
 	'components/section/views/SectionView',
-	'features/tvShowsTab/views/SearchShowsView',
+	'features/showsTab/views/ShowsSearchView',
 	'MessageBox',
-	'features/tvShowsTab/views/ShowsScheduleView',
+	'features/showsTab/views/ShowsScheduleView',
 	'HttpUtils'
 ],
-	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, SearchShowsView, MessageBox, ShowsScheduleView, HttpUtils) {
+	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, ShowsSearchView, MessageBox, ShowsScheduleView, HttpUtils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -39,7 +39,7 @@ define([
 					title: 'Search TV Shows',
 					description: 'Search for older episodes'
 				});
-				this.searchShowsView = new SearchShowsView();
+				this.showsSearchView = new ShowsSearchView();
 
 				this.trackedShowsView = new TrackedShowsComponentView({vent: this.vent});
 				this.trackedShowsSection = new SectionView({
@@ -57,7 +57,7 @@ define([
 
 			onRender: function() {
 				this.searchShowsSectionRegion.show(this.searchShowsSection);
-				this.searchShowsRegion.show(this.searchShowsView);
+				this.searchShowsRegion.show(this.showsSearchView);
 				this.trackedShowsSectionRegion.show(this.trackedShowsSection);
 				this.trackedShowsRegion.show(this.trackedShowsView);
 				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
@@ -66,11 +66,11 @@ define([
 				var that = this;
 				HttpUtils.get("rest/shows/tracked-shows", function(res) {
 					that.trackedShowsView.setTrackedShows(res.trackedShows);
-					that.searchShowsView.setAdmin(res.isAdmin);
+					that.showsSearchView.setAdmin(res.isAdmin);
 				}, false); // no need loading here
 				HttpUtils.get("rest/shows/schedule", function(res) {
 					that.showsScheduleView.setSchedule(res.schedule);
-					that.searchShowsView.setAdmin(res.isAdmin);
+					that.showsSearchView.setAdmin(res.isAdmin);
 				}, false); // no need loading here
 			}
 		});

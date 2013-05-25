@@ -1,8 +1,8 @@
 define([
 	'marionette',
 	'handlebars',
-	'features/tvShowsTab/views/TrackedShowItemView',
-	'features/tvShowsTab/views/TrackedShowsCollectionLoadingView'
+	'features/showsTab/views/TrackedShowItemView',
+	'features/showsTab/views/TrackedShowsCollectionLoadingView'
 ],
 	function(Marionette, Handlebars, TrackedShowItemView, TrackedShowsCollectionLoadingView) {
 		"use strict";

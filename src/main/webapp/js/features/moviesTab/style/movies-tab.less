@@ -55,7 +55,6 @@
 
 @movie-item-padding: 5px;
 @movie-item-padding-left: 5px;
-.movie-torrent-item,
 .movie-item {
   padding: @movie-item-padding;
   padding-left: @movie-item-padding-left;
@@ -66,15 +65,10 @@
   padding-right: 25px;
 }
 
-.movie-torrent-item-inner,
 .movie-item-inner {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.movie-torrent-item-inner {
-  margin-left: 30px;
 }
 
 .movie-item-icon-wrapper {
@@ -82,7 +76,6 @@
   top: 4px;
 }
 
-.movie-torrent-item:hover,
 .movie-item-selected,
 .movie-item:hover {
   padding: @movie-item-padding - 1; /* minus 1 for the border */
@@ -98,10 +91,6 @@
 
 .movie-item:hover {
   padding-right: 24px;
-}
-
-.movie-torrent-item:hover {
-  cursor: default;
 }
 
 .movie-item-selected,
@@ -133,29 +122,17 @@
   right: 9px;
 }
 
-.movie-torrent-item-not-viewed,
 .movie-item-not-viewed {
   font-weight: bold;
 }
 
-.movie-torrent-item-download-image {
-  vertical-align: top;
-  margin-right: 3px;
-}
-
-.movie-torrent-item-download-image:hover {
-  cursor: pointer;
-}
-
-.movie-item-scheduled-image,
-.movie-torrent-item-scheduled-image {
+.movie-item-scheduled-image {
   display: none;
   margin-right: 3px;
 }
 
 .movie-item-future-image,
-.movie-item-downloaded-image,
-.movie-torrent-item-downloaded-image {
+.movie-item-downloaded-image {
   display: none;
   margin-right: 7px; /* image is smaller by 4px - 16x16 */
 }
@@ -215,8 +192,8 @@
   display: none;
 }
 
-.movies-list-empty-label-container,
-.movies-torrent-list-empty-label-container {
+.movies-torrents-list-movie-not-selected,
+.movies-list-empty-label-container {
   color: #808080;
   font-size: 13px;
   font-style: italic;

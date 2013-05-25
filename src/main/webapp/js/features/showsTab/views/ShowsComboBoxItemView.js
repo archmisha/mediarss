@@ -1,7 +1,7 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/tvShowsTab/templates/shows-combobox-item.tpl'
+	'text!features/showsTab/templates/shows-combobox-item.tpl'
 ],
 	function(Marionette, Handlebars, template) {
 		"use strict";

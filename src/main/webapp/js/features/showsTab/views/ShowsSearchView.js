@@ -2,7 +2,7 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/tvShowsTab/templates/search-shows.tpl',
+	'text!features/showsTab/templates/shows-search.tpl',
 	'features/collections/UserTorrentCollection',
 	'components/search-result/views/SearchResultsCollectionView',
 	'HttpUtils',

@@ -1,8 +1,8 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/tvShowsTab/templates/shows-schedule.tpl',
-	'features/tvShowsTab/models/ShowsSchedule',
+	'text!features/showsTab/templates/shows-schedule.tpl',
+	'features/showsTab/models/ShowsSchedule',
 ],
 	function(Marionette, Handlebars, template, ShowsSchedule) {
 		"use strict";
