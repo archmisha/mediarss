@@ -51,7 +51,7 @@ define([
 				if (this.model.get('scheduledDate') == null) {
 					this.ui.scheduledOn.hide();
 				}
-				if (!this.model.get('viewed')) {
+				if (this.model.get('viewed') === false) {
 					this.$el.addClass('search-result-item-not-viewed');
 				}
 

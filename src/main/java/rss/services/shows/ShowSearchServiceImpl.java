@@ -184,7 +184,8 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 						@Override
 						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-							showService.downloadFullSchedule(show);
+							Show persistedShow = showDao.find(show.getId());
+							showService.downloadFullSchedule(persistedShow);
 						}
 					});
 				}

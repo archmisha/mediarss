@@ -48,7 +48,7 @@ public class UserTorrentVO {
 	}
 
 	public static UserTorrentVO fromTorrent(Torrent torrent) {
-		return populate(new UserMovieTorrentVO(), torrent);
+		return populate(new UserTorrentVO(), torrent);
 	}
 
 	protected static <T extends UserTorrentVO> T populate(T userTorrentVO, Torrent torrent) {
