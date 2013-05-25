@@ -88,6 +88,10 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 
 	@Override
 	public Collection<UserMovie> findUserMoviesByIMDBIds(User user, Collection<String> imdbIds) {
+		if (imdbIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
 		Map<String, Object> params = new HashMap<>(2);
 		params.put("userId", user.getId());
 		params.put("imdbIds", imdbIds);
