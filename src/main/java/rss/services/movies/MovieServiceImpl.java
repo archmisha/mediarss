@@ -394,6 +394,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public Collection<IMDBAutoCompleteItem> search(User user, String query) {
 		Collection<IMDBAutoCompleteItem> searchResults = imdbService.search(query);
 
