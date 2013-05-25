@@ -6,11 +6,7 @@ define([
 		'use strict';
 
 		return Backbone.Collection.extend({
-			model: Movie,
-
-			comparator: function(item) {
-				return item.get('name');
-			}
+			model: Movie
 		});
 	});
 
