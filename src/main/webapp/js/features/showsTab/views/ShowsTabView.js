@@ -1,5 +1,6 @@
 /*global define*/
 define([
+	'jquery',
 	'marionette',
 	'handlebars',
 	'features/showsTab/views/TrackedShowsComponentView',
@@ -11,7 +12,7 @@ define([
 	'features/showsTab/views/ShowsScheduleView',
 	'HttpUtils'
 ],
-	function(Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, ShowsSearchView, MessageBox, ShowsScheduleView, HttpUtils) {
+	function($, Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, ShowsSearchView, MessageBox, ShowsScheduleView, HttpUtils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -43,7 +44,7 @@ define([
 
 				this.trackedShowsView = new TrackedShowsComponentView({vent: this.vent});
 				this.trackedShowsSection = new SectionView({
-					title: 'Tracked TV Shows',
+					title: 'Tracked TV Shows <span class=\'tracked-shows-counter\'></span>',
 					description: 'Ended shows are not shown as there is no point tracking them',
 					vent: this.vent
 				});
@@ -67,6 +68,7 @@ define([
 				HttpUtils.get("rest/shows/tracked-shows", function(res) {
 					that.trackedShowsView.setTrackedShows(res.trackedShows);
 					that.showsSearchView.setAdmin(res.isAdmin);
+					$('.tracked-shows-counter').html('(' + res.trackedShows.length + ')');
 				}, false); // no need loading here
 				HttpUtils.get("rest/shows/schedule", function(res) {
 					that.showsScheduleView.setSchedule(res.schedule);
