@@ -3,12 +3,13 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movies-search.tpl',
-	'features/moviesTab/views/MoviesSearchView',
+	'features/moviesTab/views/MovieSearchResultsCollectionView',
 	'HttpUtils',
 	'components/section/views/SectionView',
-	'MessageBox'
+	'MessageBox',
+	'features/moviesTab/collections/MoviesCollection'
 ],
-	function(Marionette, Handlebars, template,  MoviesSearchView, HttpUtils, SectionView, MessageBox) {
+	function(Marionette, Handlebars, template, MovieSearchResultsCollectionView, HttpUtils, SectionView, MessageBox, MoviesCollection) {
 		"use strict";
 
 		var selectedMovie = null;
@@ -21,40 +22,65 @@ define([
 			},
 
 			events: {
-				'click .future-movies-add-button': 'onFutureMovieAddButtonClick'
+				'click .future-movies-add-button': 'onFutureMovieAddButtonClick',
+				'keypress .future-movies-imdb-id-input': 'onKeyPress'
 			},
 
 			regions: {
-				futureMoviesSectionRegion: '.future-movies-section'
+				moviesSearchHeaderRegion: '.movies-search-header',
+				moviesSearchResultsRegion: '.movies-search-results'
 			},
 
 			constructor: function(options) {
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 
-				this.futureMoviesSection = new SectionView({
+				this.moviesSearchHeader = new SectionView({
 					title: 'Search Movies',
-					description: 'Search for movies by IMDB ID.<br/>' +
+					description:
 						'If the movie is already available for download it will be automatically added to your feed<br/>' +
-						'Otherwise it will be scheduled for download in the <b>future</b> once they will be available.'
+						'Otherwise it will be scheduled for download in the <b>future</b> once it will be available.'
 				});
+
+				this.movieSearchResultsCollection = new MoviesCollection();
+				this.movieSearchResultsCollectionView = new MovieSearchResultsCollectionView({
+					collection: this.movieSearchResultsCollection,
+					vent: this.vent
+				});
+
+				this.vent.on('movie-search-result-item-add', this.onMovieSearchResultItemAdd, this);
 			},
 
 			onRender: function() {
-				this.futureMoviesSectionRegion.show(this.futureMoviesSection);
+				this.moviesSearchHeaderRegion.show(this.moviesSearchHeader);
+			},
+
+			onKeyPress: function(event) {
+				var ENTER_KEY = 13;
+				if (event.which === ENTER_KEY) {
+					this.onFutureMovieAddButtonClick();
+				}
 			},
 
 			onFutureMovieAddButtonClick: function() {
-				var imdbId = this.ui.imdbIdInput.val();
-
-				if (!imdbId || imdbId.trim().length == 0) {
+				var query = this.ui.imdbIdInput.val();
+				if (!query || query.trim().length == 0) {
 					return;
 				}
 
 				var that = this;
-				HttpUtils.post('rest/movies/future/add', {imdbId: imdbId}, function(res) {
+				HttpUtils.post('rest/movies/search', {query: query}, function(res) {
+					that.movieSearchResultsCollection.reset(res.searchResults);
+					that.moviesSearchResultsRegion.show(that.movieSearchResultsCollectionView);
+				});
+			},
+
+			onMovieSearchResultItemAdd: function(model) {
+				var that = this;
+				HttpUtils.post('rest/movies/future/add', {imdbId: model.get('id')}, function(res) {
 					that.ui.imdbIdInput.val('');
 					MessageBox.info(res.message);
+					model.set('added', true);
 					that.vent.trigger('movie-search-add', res);
 				});
 			}

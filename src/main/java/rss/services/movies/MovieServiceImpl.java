@@ -1,7 +1,12 @@
 package rss.services.movies;
 
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -18,6 +23,7 @@ import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.dao.ViewDao;
 import rss.entities.*;
+import rss.services.PageDownloader;
 import rss.services.SessionService;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.LatestMoviesDownloader;
@@ -32,6 +38,7 @@ import rss.services.searchers.composite.torrentz.TorrentzResult;
 import rss.services.subtitles.SubtitlesService;
 import rss.util.DateUtils;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -46,6 +53,7 @@ import java.util.concurrent.*;
 public class MovieServiceImpl implements MovieService {
 
 	private static final String IMDB_URL = "http://www.imdb.com/title/";
+
 	public static final int USER_MOVIES_DISPLAY_DAYS_HISTORY = 14;
 
 	@Autowired
@@ -383,5 +391,21 @@ public class MovieServiceImpl implements MovieService {
 		}
 
 		return latestMoviesDownloader.download(movieRequests);
+	}
+
+	@Override
+	public Collection<IMDBAutoCompleteItem> search(User user, String query) {
+		Collection<IMDBAutoCompleteItem> searchResults = imdbService.search(query);
+
+		Map<String, IMDBAutoCompleteItem> imdbIds = new HashMap<>();
+		for (IMDBAutoCompleteItem searchResult : searchResults) {
+			imdbIds.put(IMDB_URL + searchResult.getId(), searchResult);
+		}
+
+		for (UserMovie userMovie : movieDao.findUserMoviesByIMDBIds(user, imdbIds.keySet())) {
+			imdbIds.get(userMovie.getMovie().getImdbUrl()).setAdded(true);
+		}
+
+		return searchResults;
 	}
 }

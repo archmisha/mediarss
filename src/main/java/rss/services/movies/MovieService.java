@@ -8,6 +8,7 @@ import rss.services.downloader.DownloadResult;
 import rss.services.requests.movies.MovieRequest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * User: dikmanm
@@ -28,4 +29,6 @@ public interface MovieService {
 	void addMovieDownload(User user, long movieId, long torrentId);
 
 	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
+
+	Collection<IMDBAutoCompleteItem> search(User user, String query);
 }

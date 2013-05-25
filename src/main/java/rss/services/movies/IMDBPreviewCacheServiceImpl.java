@@ -27,8 +27,11 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 
 	public static final String IMDB_CSS_URL_PREFIX = "http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/";
 	public static final String IMDB_IMAGE_URL_PREFIX = "http://ia.media-imdb.com/images/M/";
-	public static final String REST_IMAGE_URL_PREFIX = "../../../rest/movies/imdb/image/";
+	public static final String REST_PERSON_IMAGE_URL_PREFIX = "../../../rest/movies/imdb/person-image/";
+	public static final String REST_MOVIE_IMAGE_URL_PREFIX = "../../../rest/movies/imdb/movie-image/";
 	public static final String IMDB_DEFAULT_PERSON_IMAGE = "../../images/imdb/person-no-image.png";
+	public static final String IMDB_AUTO_COMPLETE_DEFAULT_MOVIE_IMAGE = "../../images/imdb/film-40x54.png";
+
 
 	@Autowired
 	private LogService logService;
@@ -163,7 +166,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		photos.removeAttr("class");
 		for (Element photo : photos) {
 			// avoiding usage of regex of String.replace method
-			String src = StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, REST_IMAGE_URL_PREFIX);
+			String src = StringUtils.replace(photo.attr("loadlate"), IMDB_IMAGE_URL_PREFIX, REST_PERSON_IMAGE_URL_PREFIX);
 			if (StringUtils.isBlank(src)) {
 				src = IMDB_DEFAULT_PERSON_IMAGE;
 			}
@@ -173,7 +176,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		String html = doc.html();
 		// replace the url of the main image of the movie
 		// avoiding usage of regex of String.replace method
-		html = StringUtils.replace(html, IMDB_IMAGE_URL_PREFIX, REST_IMAGE_URL_PREFIX);
+		html = StringUtils.replace(html, IMDB_IMAGE_URL_PREFIX, REST_PERSON_IMAGE_URL_PREFIX);
 		html = StringUtils.replace(html, IMDB_CSS_URL_PREFIX, "../../../rest/movies/imdb/css/");
 		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
 		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");

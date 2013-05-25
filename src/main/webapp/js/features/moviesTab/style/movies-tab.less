@@ -138,14 +138,14 @@
   margin-top: 50px;
 }
 
-.future-movies-content {
+.movies-search-content {
   margin-top: 20px;
   margin-left: 25px;
   font-size: 13px;
 }
 
 .future-movies-imdb-id-input {
-  width: 100px;
+  width: 300px;
 }
 
 .movies-torrents-list-title {
@@ -194,4 +194,45 @@
   color: #808080;
   font-size: 13px;
   font-style: italic;
+}
+
+.movies-search-results {
+  margin-top: 30px;
+  width: 500px;
+}
+
+.movie-search-result-item {
+  font-size: 13px;
+  padding: 5px;
+  position: relative;
+
+  &:hover {
+    border: 1px solid #dcdcdc;
+    background-color: #f5f5f5;
+    padding: 4px;
+
+    .movies-search-result-item-status {
+      right: 4px;
+      top: 18px;
+    }
+  }
+}
+
+.movies-search-result-item-title {
+  margin-left: 10px;
+}
+
+.movies-search-result-item-add {
+
+}
+
+.movies-search-result-item-added {
+  margin-top: 6px;
+  margin-right: 5px;
+}
+
+.movies-search-result-item-status {
+  position: absolute;
+  right: 5px;
+  top: 19px;
 }

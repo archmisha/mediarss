@@ -1,6 +1,7 @@
 package rss.services.movies;
 
 import java.io.InputStream;
+import java.util.Collection;
 
 /**
  * User: dikmanm
@@ -12,7 +13,11 @@ public interface IMDBService {
 
 	IMDBParseResult downloadMovieFromIMDBAndImagesAsync(String imdbUrl);
 
-	InputStream getImage(String imageFileName);
+	InputStream getPersonImage(String imageFileName);
+
+	InputStream getMovieImage(String imageFileName);
 
 	void downloadImages(String page, String imdbUrl);
+
+	Collection<IMDBAutoCompleteItem> search(String query);
 }

@@ -22,6 +22,9 @@ import java.util.Set;
 		@NamedQuery(name = "UserMovie.findUserMovie",
 				query = "select t from UserMovie as t " +
 						"where t.user.id = :userId and t.movie.id = :movieId"),
+		@NamedQuery(name = "UserMovie.findUserMoviesByIMDBIds",
+				query = "select t from UserMovie as t " +
+						"where t.user.id = :userId and t.movie.imdbUrl in (:imdbIds)"),
 		@NamedQuery(name = "UserMovie.findUserMoviesByMovieId",
 				query = "select um from UserMovie as um join um.movie as m " +
 						"where m.id = :movieId"),

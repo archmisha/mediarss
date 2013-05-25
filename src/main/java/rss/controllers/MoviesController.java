@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
-import rss.dao.*;
+import rss.dao.JobStatusDao;
+import rss.dao.MovieDao;
+import rss.dao.UserDao;
+import rss.dao.UserTorrentDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.movies.IMDBPreviewCacheService;
@@ -69,14 +71,31 @@ public class MoviesController extends BaseController {
 		return imdbPreviewCacheService.getImdbCSS(cssFileName);
 	}
 
-	@RequestMapping(value = "/imdb/image/{imageFileName}", method = RequestMethod.GET)
+	@RequestMapping(value = "/imdb/person-image/{imageFileName}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void getImdbImage(@SuppressWarnings("ParameterCanBeLocal") @PathVariable String imageFileName, HttpServletRequest request, ServletResponse response) {
+	public void getImdbPersonImage(@SuppressWarnings("ParameterCanBeLocal") @PathVariable String imageFileName, HttpServletRequest request, ServletResponse response) {
 		// imageFileName can sometimes arrive without the suffix (like .jpg) for some reason
 		StringBuffer url = request.getRequestURL();
-		imageFileName = url.substring(url.indexOf("/imdb/image/") + "/imdb/image/".length());
-		InputStream imageInputStream = imdbService.getImage(imageFileName);
+		imageFileName = url.substring(url.indexOf("/imdb/person-image/") + "/imdb/person-image/".length());
+		InputStream imageInputStream = imdbService.getPersonImage(imageFileName);
+		try (OutputStream os = response.getOutputStream()) {
+			int bytes = IOUtils.copy(imageInputStream, os);
+			response.setContentLength(bytes);
+			os.flush();
+		} catch (Exception e) {
+			throw new MediaRSSException("Failed downloading IMDB image " + imageFileName + ": " + e.getMessage(), e);
+		}
+	}
+
+	@RequestMapping(value = "/imdb/movie-image/{imageFileName}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void getImdbMovieImage(@SuppressWarnings("ParameterCanBeLocal") @PathVariable String imageFileName, HttpServletRequest request, ServletResponse response) {
+		// imageFileName can sometimes arrive without the suffix (like .jpg) for some reason
+		StringBuffer url = request.getRequestURL();
+		imageFileName = url.substring(url.indexOf("/imdb/movie-image/") + "/imdb/movie-image/".length());
+		InputStream imageInputStream = imdbService.getMovieImage(imageFileName);
 		try (OutputStream os = response.getOutputStream()) {
 			int bytes = IOUtils.copy(imageInputStream, os);
 			response.setContentLength(bytes);
@@ -116,7 +135,7 @@ public class MoviesController extends BaseController {
 	@RequestMapping(value = "/future/add", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> addFutureMovie(@RequestParam("imdbId") String imdbId) {
+	public Map<String, Object> addMovieFromSearch(@RequestParam("imdbId") String imdbId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		Pair<Movie, Boolean> futureMovieResult = movieService.addFutureMovieDownload(user, imdbId);
 		if (futureMovieResult == null) {
@@ -140,6 +159,16 @@ public class MoviesController extends BaseController {
 		// must be after movieUserTorrent creation
 		result.put("movies", movieService.getUserMovies(user));
 		result.put("movieId", movie.getId());
+		return result;
+	}
+
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> search(@RequestParam("query") String query) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		Map<String, Object> result = new HashMap<>();
+		result.put("searchResults", movieService.search(user, query));
 		return result;
 	}
 

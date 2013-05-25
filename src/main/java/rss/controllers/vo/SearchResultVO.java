@@ -49,8 +49,8 @@ public class SearchResultVO {
 	}
 
 	public static SearchResultVO createWithResult(String originalSearchTerm, String actualSearchTerm,
-												  Collection<UserTorrentVO> episodes, Collection<ShowVO> shows) {
-		SearchResultVO esr = new SearchResultVO(originalSearchTerm, actualSearchTerm, episodes);
+												  Collection<UserTorrentVO> results, Collection<ShowVO> shows) {
+		SearchResultVO esr = new SearchResultVO(originalSearchTerm, actualSearchTerm, results);
 		esr.didYouMean.addAll(shows);
 		return esr;
 	}
