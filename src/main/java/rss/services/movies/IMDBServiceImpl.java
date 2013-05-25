@@ -21,7 +21,6 @@ import rss.services.PageDownloader;
 import rss.services.log.LogService;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -196,6 +195,7 @@ public class IMDBServiceImpl implements IMDBService {
 		// remove the imdb url prefix, if exists. and also the rest call prefix - depends on where the call came from we have different prefixes
 		String imdbImageUrl = StringUtils.replace(imageFileName, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, "");
 		imdbImageUrl = StringUtils.replace(imdbImageUrl, IMDBPreviewCacheServiceImpl.REST_PERSON_IMAGE_URL_PREFIX, "");
+		imdbImageUrl = StringUtils.replace(imdbImageUrl, IMDBPreviewCacheServiceImpl.REST_MOVIE_IMAGE_URL_PREFIX, "");
 		try {
 			InputStream imageInputStream;
 			try {
@@ -232,36 +232,51 @@ public class IMDBServiceImpl implements IMDBService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public Collection<IMDBAutoCompleteItem> search(String query) {
 		Collection<IMDBAutoCompleteItem> results = new ArrayList<>();
 
-		try {
-			query = StringUtils.replace(query.trim(), " ", "_");
-			String page = pageDownloader.downloadPage("http://sg.media-imdb.com/suggests/" + query.charAt(0) + "/" + query + ".json");
-			page = page.substring(page.indexOf("\"d\":") + "\"d\":".length(), page.length() - 2);
+		query = StringUtils.replace(query.trim(), " ", "_");
+		boolean retry = true;
+		while (retry) {
+			try {
+				String page = pageDownloader.downloadPage("http://sg.media-imdb.com/suggests/" + query.charAt(0) + "/" + query + ".json");
+				page = page.substring(page.indexOf("\"d\":") + "\"d\":".length(), page.length() - 2);
 
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			for (JsonNode jsonNode : IteratorUtils.toList(mapper.readTree(page).getElements())) {
-				String id = jsonNode.get("id").getTextValue();
-				// skip non movie results
-				if (!id.startsWith("tt")) {
-					continue;
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				for (JsonNode jsonNode : IteratorUtils.toList(mapper.readTree(page).getElements())) {
+					String id = jsonNode.get("id").getTextValue();
+					// skip non movie results
+					if (!id.startsWith("tt")) {
+						continue;
+					}
+					int year = jsonNode.get("y").getIntValue();
+					String name = jsonNode.get("l").getTextValue();
+					String image;
+					JsonNode imageNode = jsonNode.get("i");
+					if (imageNode != null) {
+						image = imageNode.get(0).getTextValue();
+						image = StringUtils.replace(image, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, IMDBPreviewCacheServiceImpl.REST_MOVIE_IMAGE_URL_PREFIX);
+						// pre-download images
+						// too slow...
+//						getMovieImage(image);
+					} else {
+						image = IMDBPreviewCacheServiceImpl.IMDB_AUTO_COMPLETE_DEFAULT_MOVIE_IMAGE;
+					}
+					results.add(new IMDBAutoCompleteItem(name, id, year, image));
+					retry = false;
 				}
-				int year = jsonNode.get("y").getIntValue();
-				String name = jsonNode.get("l").getTextValue();
-				String image;
-				JsonNode imageNode = jsonNode.get("i");
-				if (imageNode != null) {
-					image = imageNode.get(0).getTextValue();
-					image = StringUtils.replace(image, IMDBPreviewCacheServiceImpl.IMDB_IMAGE_URL_PREFIX, IMDBPreviewCacheServiceImpl.REST_MOVIE_IMAGE_URL_PREFIX);
+			} catch (Exception e) {
+				// imdb returns 403 when the search produces no results - then should retry with 1 character less
+				// if query length already 1 there is nothing to retry for
+				if (e.getMessage().contains("403 Forbidden") && query.length() > 1) {
+					query = query.substring(0, query.length() - 1);
 				} else {
-					image = IMDBPreviewCacheServiceImpl.IMDB_AUTO_COMPLETE_DEFAULT_MOVIE_IMAGE;
+					logService.error(getClass(), "Error searching for: " + query + ": " + e.getMessage(), e);
+					retry = false;
 				}
-				results.add(new IMDBAutoCompleteItem(name, id, year, image));
 			}
-		} catch (Exception e) {
-			logService.error(getClass(), "Error searching for: " + query + ": " + e.getMessage(), e);
 		}
 
 		return results;
