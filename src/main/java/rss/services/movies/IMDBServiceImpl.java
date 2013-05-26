@@ -236,7 +236,7 @@ public class IMDBServiceImpl implements IMDBService {
 	public Collection<IMDBAutoCompleteItem> search(String query) {
 		Collection<IMDBAutoCompleteItem> results = new ArrayList<>();
 
-		query = StringUtils.replace(query.trim(), " ", "_");
+		query = StringUtils.replace(query.trim().toLowerCase(), " ", "_");
 		boolean retry = true;
 		while (retry) {
 			try {
@@ -270,8 +270,11 @@ public class IMDBServiceImpl implements IMDBService {
 			} catch (Exception e) {
 				// imdb returns 403 when the search produces no results - then should retry with 1 character less
 				// if query length already 1 there is nothing to retry for
-				if (e.getMessage().contains("403 Forbidden") && query.length() > 1) {
-					query = query.substring(0, query.length() - 1);
+				if (e.getMessage().contains("403 Forbidden")) {
+					if (query.length() > 1) {
+						query = query.substring(0, query.length() - 1);
+					}
+					// don't log if the problem was 403 from IMDB
 				} else {
 					logService.error(getClass(), "Error searching for: " + query + ": " + e.getMessage(), e);
 					retry = false;
