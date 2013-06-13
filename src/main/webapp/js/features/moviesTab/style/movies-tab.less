@@ -202,9 +202,14 @@
 }
 
 .movie-search-result-item {
+  height: 60px;
   font-size: 13px;
   padding: 5px;
   position: relative;
+
+  img {
+    height: inherit; /* override default image height of bootstrap */
+  }
 
   &:hover {
     border: 1px solid #dcdcdc;
