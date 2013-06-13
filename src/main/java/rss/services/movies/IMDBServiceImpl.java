@@ -251,7 +251,10 @@ public class IMDBServiceImpl implements IMDBService {
 					if (!id.startsWith("tt")) {
 						continue;
 					}
-					int year = jsonNode.get("y").getIntValue();
+					int year = -1;
+					if (jsonNode.get("y") != null) {
+						year = jsonNode.get("y").getIntValue();
+					}
 					String name = jsonNode.get("l").getTextValue();
 					String image;
 					JsonNode imageNode = jsonNode.get("i");
@@ -270,7 +273,7 @@ public class IMDBServiceImpl implements IMDBService {
 			} catch (Exception e) {
 				// imdb returns 403 when the search produces no results - then should retry with 1 character less
 				// if query length already 1 there is nothing to retry for
-				if (e.getMessage().contains("403 Forbidden")) {
+				if (e.getMessage() != null && e.getMessage().contains("403 Forbidden")) {
 					if (query.length() > 1) {
 						query = query.substring(0, query.length() - 1);
 					}

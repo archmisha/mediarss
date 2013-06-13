@@ -13,7 +13,8 @@ define([
 
 			ui: {
 				addButton: '.movies-search-result-item-add',
-				addedStatus: '.movies-search-result-item-added'
+				addedStatus: '.movies-search-result-item-added',
+				movieYear: '.movie-search-result-item-year'
 			},
 
 			events: {
@@ -42,6 +43,9 @@ define([
 
 			onRender: function() {
 				this.setStatus();
+				if (this.model.get('year') === -1) {
+					this.ui.movieYear.hide();
+				}
 			},
 
 			onMovieSearchResultItemAddClick: function() {
