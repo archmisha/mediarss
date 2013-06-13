@@ -231,12 +231,18 @@ public class IMDBServiceImpl implements IMDBService {
 		return Integer.parseInt(matcher.group(1));
 	}
 
+	private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("[:\\.]");
+	private static final Pattern NORMALIZE_SPACES_PATTERN = Pattern.compile("\\s+");
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Collection<IMDBAutoCompleteItem> search(String query) {
 		Collection<IMDBAutoCompleteItem> results = new ArrayList<>();
 
-		query = StringUtils.replace(query.trim().toLowerCase(), " ", "_");
+		query = query.trim().toLowerCase();
+		query = NORMALIZE_TO_NOTHING_PATTERN.matcher(query).replaceAll("");
+		query = NORMALIZE_SPACES_PATTERN.matcher(query).replaceAll(" ");
+		query = StringUtils.replace(query, " ", "_");
 		boolean retry = true;
 		while (retry) {
 			try {
