@@ -3,8 +3,9 @@ define([
 	'handlebars',
 	'text!features/showsTab/templates/shows-schedule.tpl',
 	'features/showsTab/models/ShowsSchedule',
+	'HttpUtils'
 ],
-	function(Marionette, Handlebars, template, ShowsSchedule) {
+	function(Marionette, Handlebars, template, ShowsSchedule, HttpUtils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -20,7 +21,14 @@ define([
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.model = new ShowsSchedule();
-				this.vent.on('shows-schedule-update', this.setSchedule, this);
+				this.vent.on('shows-schedule-update', this._onScheduleUpdate, this);
+			},
+
+			_onScheduleUpdate: function() {
+				var that = this;
+				HttpUtils.get("rest/shows/schedule", function(res) {
+					that.setSchedule(res.schedule);
+				}, false); // no need loading here
 			},
 
 			setSchedule: function(schedule) {

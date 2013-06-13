@@ -54,6 +54,12 @@ define([
 					description: 'View past and future episode air dates<br/>of your tracked shows'
 				});
 				this.showsScheduleView = new ShowsScheduleView({vent: this.vent});
+
+				this.vent.on('shows-schedule-update', this._onScheduleUpdate, this);
+			},
+
+			_onScheduleUpdate: function() {
+				$('.tracked-shows-counter').html('(' + this.trackedShowsView.getTrackedShowsCount() + ')');
 			},
 
 			onRender: function() {

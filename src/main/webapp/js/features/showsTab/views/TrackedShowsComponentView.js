@@ -59,6 +59,10 @@ define([
 				}
 			},
 
+			getTrackedShowsCount: function() {
+				return this.trackedShowsCollection.length;
+			},
+
 			_onAddTrackedShow: function() {
 				var comboShow = this.ui.showsComboBox.select2('data');
 				var showId = comboShow.id;
@@ -77,7 +81,7 @@ define([
 						that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
 						that.ui.showsComboBox.select2('data', '');
 						MessageBox.info('Show \'' + comboShow.text + '\' is being tracked');
-						that.vent.trigger('shows-schedule-update', res.schedule);
+						that.vent.trigger('shows-schedule-update');
 					}, false);
 				}, 150);
 			},
@@ -94,7 +98,7 @@ define([
 							that.ui.trackedShowsList.removeClass('tracked-shows-list-non-empty');
 						}
 						MessageBox.info('Show \'' + showModel.get('name') + '\' is no more tracked');
-						that.vent.trigger('shows-schedule-update', res.schedule);
+						that.vent.trigger('shows-schedule-update');
 					}, false);
 				}, 150);
 			},

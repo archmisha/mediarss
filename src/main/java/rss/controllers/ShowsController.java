@@ -59,8 +59,10 @@ public class ShowsController extends BaseController {
 			showService.downloadFullScheduleWithTorrents(show, true);
 		}
 
+		// invalidate schedule to be regenerated next request
+		sessionService.setSchedule(null);
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", getCachedSchedule(user, true));
+		result.put("success", true);
 		return result;
 	}
 
@@ -73,8 +75,10 @@ public class ShowsController extends BaseController {
 		Show show = showDao.find(showId);
 		user.getShows().remove(show);
 
+		// invalidate schedule to be regenerated next request
+		sessionService.setSchedule(null);
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", getCachedSchedule(user, true));
+		result.put("success", true);
 		return result;
 	}
 
@@ -179,21 +183,18 @@ public class ShowsController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 
 		DurationMeter duration = new DurationMeter();
+		ShowsScheduleVO schedule = sessionService.getSchedule();
+		if (schedule == null) {
+			schedule = showService.getSchedule(user);
+			sessionService.setSchedule(schedule);
+		}
+
 		Map<String, Object> result = new HashMap<>();
-		result.put("schedule", getCachedSchedule(user, false));
+		result.put("schedule", schedule);
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
 		logService.info(getClass(), "Schedule " + duration.getDuration() + " millis");
 
 		return result;
-	}
-
-	private ShowsScheduleVO getCachedSchedule(User user, boolean invalidate) {
-		ShowsScheduleVO schedule = sessionService.getSchedule();
-		if (schedule == null || invalidate) {
-			schedule = showService.getSchedule(user);
-			sessionService.setSchedule(schedule);
-		}
-		return schedule;
 	}
 }
