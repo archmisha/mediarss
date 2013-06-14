@@ -32,12 +32,12 @@ import java.util.regex.Pattern;
 @Service("kickAssTorrentSearcher")
 public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "kat.ph";
+	public static final String NAME = "kickass.to";//"kat.ph";
 	private static final String ENTRY_URL = "http://" + NAME + "/";
 	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
 
 	private static final Pattern KICK_ASS_TORRENTS_ID = Pattern.compile("http://www.kickasstorrents.com/([^\"/]+)");
-	private static final Pattern KAT_PH_ID = Pattern.compile("http://kat.ph/([^\"/]+)");
+	private static final Pattern KAT_PH_ID = Pattern.compile("http://" + NAME + "/([^\"/]+)");
 
 	@Override
 	public String getName() {
