@@ -24,6 +24,13 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 		return super.findByNamedQueryAndNamedParams("Movie.findByDateUploaded", params);
 	}
 
+	@Override
+	public int findUploadedSinceCount(Date uploadedDate) {
+		Map<String, Object> params = new HashMap<>(1);
+		params.put("dateUploaded", uploadedDate);
+		return super.<Movie>findByNamedQueryAndNamedParams("Movie.findByDateUploadedCount", params).size();
+	}
+
 	/*@Override
 	public Movie findByName(String name) {
 		Map<String, Object> params = new HashMap<>(1);

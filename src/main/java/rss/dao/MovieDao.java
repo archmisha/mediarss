@@ -18,6 +18,8 @@ public interface MovieDao extends Dao<Movie> {
 
 	Collection<Movie> findUploadedSince(Date uploadedDate);
 
+	int findUploadedSinceCount(Date uploadedDate);
+
 //    Movie findByName(String name);
 
 	Movie find(Torrent torrent);

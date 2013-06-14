@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import rss.entities.Movie;
-import rss.services.EmailService;
 import rss.services.JobRunner;
 import rss.services.downloader.DownloadResult;
 import rss.services.requests.movies.MovieRequest;
@@ -20,8 +19,8 @@ import rss.util.QuartzJob;
 @QuartzJob(name = "MoviesScrabbler", cronExp = "0 0 0/6 * * ?")
 public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 
-	@Autowired
-	private EmailService emailService;
+//	@Autowired
+//	private EmailService emailService;
 
 
 	@Autowired

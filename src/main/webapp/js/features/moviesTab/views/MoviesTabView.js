@@ -13,9 +13,11 @@ define([
 	'components/section/views/SectionView',
 	'MessageBox',
 	'fancybox',
-	'moment'
+	'moment',
+	'StringUtils',
+	'routers/RoutingPaths'
 ],
-	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, SearchResultsCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment) {
+	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, SearchResultsCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment, StringUtils, RoutingPaths) {
 		"use strict";
 
 		var selectedMovie = null;
@@ -76,10 +78,17 @@ define([
 				this.moviesSectionRegion.show(this.moviesSection);
 				this.moviesSearchRegin.show(this.moviesSearchView);
 
+				var isAvailableMovies = window.location.href.indexOf('userMovies') === -1;
 				var that = this;
-				HttpUtils.get("rest/movies/initial-data", function(res) {
-					that._updateAvailableMovies(res.availableMovies);
-					that.ui.userMoviesCounter.html(res.userMoviesCount);
+				HttpUtils.get("rest/movies/initial-data/" + (isAvailableMovies ? 'availableMovies' : 'userMovies'), function(res) {
+					if (isAvailableMovies) {
+						that._updateAvailableMovies(res.availableMovies);
+						that.ui.userMoviesCounter.html(res.userMoviesCount);
+					} else {
+						that._switchToUserMovies(res.userMovies);
+//						that._updateUserMovies(res.userMovies);
+						that.ui.availableMoviesCounter.html(res.availableMoviesCount);
+					}
 
 					$('.movies-updated-on').html(Moment(new Date(res.moviesLastUpdated)).format('DD/MM/YYYY HH:mm '));
 				}, false); // no need loading here
@@ -134,6 +143,12 @@ define([
 				this.ui.noMovieSelected.hide();
 				this.movieTorrentCollection.reset(movieModel.get('torrents'));
 				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
+
+				if (movieModel.get('downloadStatus') === 'OLD') {
+					this.movieTorrentColletionView.setEmptyMessage('No available torrents');
+				} else {
+					this.movieTorrentColletionView.setEmptyMessage('No available torrents yet');
+				}
 			},
 
 			onFutureMovieAddButtonClick: function(res) {
@@ -172,6 +187,8 @@ define([
 			},
 
 			_switchToUserMovies: function(movies) {
+				Backbone.history.navigate(StringUtils.formatRoute(RoutingPaths.MOVIES, 'userMovies'), {trigger: false});
+
 				this.movieTorrentListRegion.close();
 				this.ui.noMovieSelected.show();
 				this.ui.availableMoviesFilter.removeClass('filter-selected');
@@ -185,6 +202,8 @@ define([
 			},
 
 			_switchToAvailableMovies: function(movies) {
+				Backbone.history.navigate(StringUtils.formatRoute(RoutingPaths.MOVIES, 'availableMovies'), {trigger: false});
+
 				this.movieTorrentListRegion.close();
 				this.ui.noMovieSelected.show();
 				this.ui.userMoviesFilter.removeClass('filter-selected');
@@ -213,6 +232,7 @@ define([
 				if (!this._isUserMoviesSelected()) {
 					return;
 				}
+
 				this._showAvailableMovies();
 			},
 

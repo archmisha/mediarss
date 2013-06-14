@@ -18,6 +18,8 @@ public interface MovieService {
 
 	int getUserMoviesCount(User user);
 
+	int getAvailableMoviesCount(User user);
+
 	ArrayList<UserMovieVO> getUserMovies(User user);
 
 	ArrayList<UserMovieVO> getAvailableMovies(User loggedInUser);

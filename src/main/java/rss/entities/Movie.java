@@ -2,8 +2,6 @@ package rss.entities;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -15,6 +13,9 @@ import java.util.Set;
 @NamedQueries({
 		@NamedQuery(name = "Movie.findByDateUploaded",
 				query = "select m from Movie as m join m.torrentIds as tid " +
+						"where tid in (select t.id from Torrent as t where t.dateUploaded > :dateUploaded)"),
+		@NamedQuery(name = "Movie.findByDateUploadedCount",
+				query = "select distinct m.id from Movie as m join m.torrentIds as tid " +
 						"where tid in (select t.id from Torrent as t where t.dateUploaded > :dateUploaded)"),
 		@NamedQuery(name = "Movie.findByTorrent",
 				query = "select m from Movie as m join m.torrentIds as tid " +

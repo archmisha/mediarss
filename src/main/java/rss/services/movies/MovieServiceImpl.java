@@ -1,12 +1,7 @@
 package rss.services.movies;
 
-import org.apache.commons.collections.IteratorUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -23,7 +18,6 @@ import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
 import rss.dao.ViewDao;
 import rss.entities.*;
-import rss.services.PageDownloader;
 import rss.services.SessionService;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.LatestMoviesDownloader;
@@ -38,7 +32,6 @@ import rss.services.searchers.composite.torrentz.TorrentzResult;
 import rss.services.subtitles.SubtitlesService;
 import rss.util.DateUtils;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -97,6 +90,11 @@ public class MovieServiceImpl implements MovieService {
 		return movieDao.findUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY);
 	}
 
+	@Override
+	public int getAvailableMoviesCount(User user) {
+		return movieDao.findUploadedSinceCount(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7));
+	}
+
 	@Transactional(propagation = Propagation.REQUIRED)
 	public ArrayList<UserMovieVO> getUserMovies(User user) {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
@@ -108,9 +106,15 @@ public class MovieServiceImpl implements MovieService {
 			userMovieVO.withScheduledOn(userMovie.getUpdated());
 			userMovieVO.withAdded(userMovie.getUpdated());
 			userMovieVO.setViewed(true);
-			// if there are not torrents at all yet, it is a future movie
+			// if there are not torrents at all yet, it is a future movie or being searched right now or an old movie without torrents
 			if (userMovie.getMovie().getTorrentIds().isEmpty()) {
-				userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
+				if (false) {
+					userMovieVO.setDownloadStatus(DownloadStatus.BEING_SEARCHED);
+				} else if (isOldMovie(userMovie.getMovie())) {
+					userMovieVO.setDownloadStatus(DownloadStatus.OLD);
+				} else {
+					userMovieVO.setDownloadStatus(DownloadStatus.FUTURE);
+				}
 			}
 			movies.put(userMovie.getMovie().getId(), userMovie.getMovie());
 		}
@@ -132,7 +136,7 @@ public class MovieServiceImpl implements MovieService {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 
-		Set<Movie> latestMovies = getLatestMovies();
+		Collection<Movie> latestMovies = getLatestMovies();
 		ArrayList<UserMovieVO> result = populateUserMovieTorrents(user, torrentsByIds, latestMovies, userMoviesVOContainer);
 
 		Collections.sort(result, new Comparator<UserMovieVO>() {
@@ -176,8 +180,8 @@ public class MovieServiceImpl implements MovieService {
 		return result;
 	}
 
-	private Set<Movie> getLatestMovies() {
-		return new HashSet<>(movieDao.findUploadedSince(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7)));
+	private Collection<Movie> getLatestMovies() {
+		return movieDao.findUploadedSince(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7));
 	}
 
 	private void enrichWithNonUserTorrents(User user, Collection<Movie> movies, UserMoviesVOContainer userMoviesVOContainer, Map<Long, Torrent> torrentsByIds) {
@@ -289,7 +293,7 @@ public class MovieServiceImpl implements MovieService {
 					return null;
 				}
 
-				// persisting the movie in a separate transaction cuz need the movie to be present then the downloader runs
+				// persisting the movie in a separate transaction cuz need the movie to be present when the downloader runs
 				// in order to have a separate transaction, needed a new thread here
 				FutureTask<Movie> futureTask = new FutureTask<>(new Callable<Movie>() {
 					@Override
@@ -311,19 +315,26 @@ public class MovieServiceImpl implements MovieService {
 			}
 
 			if (movie.getTorrentIds().isEmpty()) {
-				MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
-				movieRequest.setImdbId(imdbUrl);
-				movieTorrentsDownloader.download(Collections.singleton(movieRequest));
+				ExecutorService executorService = Executors.newSingleThreadExecutor();
+				final Movie finalMovie = movie;
+				executorService.submit(new Runnable() {
+					@Override
+					public void run() {
+						MovieRequest movieRequest = new MovieRequest(finalMovie.getName(), null);
+						movieRequest.setImdbId(imdbUrl);
+						movieTorrentsDownloader.download(Collections.singleton(movieRequest));
+					}
+				});
+				executorService.shutdown();
 
 				// re-fetch the movie in this transaction after it got torrents
-				movie = movieDao.find(movie.getId());
+//				movie = movieDao.find(movie.getId());
 			}
 
 			// if movie is too old and there are no torrents now - then there won't be any. no point adding it to user as scheduled
-			Calendar c = Calendar.getInstance();
-			if (movie.getYear() < c.get(Calendar.YEAR) - 1 && movie.getTorrentIds().isEmpty()) {
-				throw new MediaRSSException("Movie is old, was unable to find torrents for movie '" + movie.getName() + "'").doNotLog();
-			}
+//			if (isOldMovie(movie) && movie.getTorrentIds().isEmpty()) {
+//				throw new MediaRSSException("Movie is old, was unable to find torrents for movie '" + movie.getName() + "'").doNotLog();
+//			}
 
 			boolean isExists = true;
 			UserMovie userMovie = movieDao.findUserMovie(user, movie.getId());
@@ -331,7 +342,7 @@ public class MovieServiceImpl implements MovieService {
 				createUserMovie(user, movie);
 				isExists = false;
 			} else {
-				// update userMovie date so it will show in mmy movies list on top for sure
+				// update userMovie date so it will show in my movies list on top for sure
 				userMovie.setUpdated(new Date());
 			}
 
@@ -339,6 +350,11 @@ public class MovieServiceImpl implements MovieService {
 		} catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}
+	}
+
+	private boolean isOldMovie(Movie movie) {
+		Calendar c = Calendar.getInstance();
+		return movie.getYear() < c.get(Calendar.YEAR) - 1;
 	}
 
 	private UserMovie createUserMovie(User user, Movie movie) {

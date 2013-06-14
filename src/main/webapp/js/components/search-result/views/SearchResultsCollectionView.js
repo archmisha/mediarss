@@ -20,6 +20,11 @@ define([
 			},
 
 			onRender: function() {
+				this.setEmptyMessage(this.emptyMessage);
+			},
+
+			setEmptyMessage: function(msg) {
+				this.emptyMessage = msg;
 				this.$el.find('.search-results-empty-view').html(this.emptyMessage);
 			}
 		});

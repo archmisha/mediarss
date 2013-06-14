@@ -150,7 +150,7 @@ public class MoviesController extends BaseController {
 			if (!movie.getTorrentIds().isEmpty()) {
 				result.put("message", "Movie '" + movie.getName() + "' was added to your movies and already available for download");
 			} else {
-				result.put("message", "Movie '" + movie.getName() + "' was added but is not yet available for download");
+				result.put("message", "Movie '" + movie.getName() + "' is being searched for torrents");//was added but is not yet available for download");
 			}
 		}
 
@@ -178,7 +178,7 @@ public class MoviesController extends BaseController {
 	public Map<String, Object> removeFutureMovie(@RequestParam("movieId") long movieId) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		UserMovie userMovie = movieDao.findUserMovie(user, movieId);
-		// now idea how can happen, dima had it
+		// no idea how can happen, dima had it
 		if (userMovie != null) {
 			for (UserMovieTorrent userMovieTorrent : userMovie.getUserMovieTorrents()) {
 				userTorrentDao.delete(userMovieTorrent);
@@ -187,7 +187,7 @@ public class MoviesController extends BaseController {
 		}
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("message", "Movie '" + userMovie.getMovie().getName() + "' was removed from schedule for download");
+		result.put("message", "Movie " + (userMovie == null ? "" : "'" + userMovie.getMovie().getName() + "'") + " was removed from your movies");
 		return result;
 	}
 
@@ -219,16 +219,21 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
-	@RequestMapping(value = "/initial-data", method = RequestMethod.GET)
+	@RequestMapping(value = "/initial-data/{category}", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> initialData() {
+	public Map<String, Object> initialData(@PathVariable(value = "category") String category) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();
-		result.put("availableMovies", movieService.getAvailableMovies(user));
-		result.put("userMoviesCount", movieService.getUserMoviesCount(user));
+		if (category.equals("availableMovies")) {
+			result.put("availableMovies", movieService.getAvailableMovies(user));
+			result.put("userMoviesCount", movieService.getUserMoviesCount(user));
+		} else {
+			result.put("userMovies", movieService.getUserMovies(user));
+			result.put("availableMoviesCount", movieService.getAvailableMoviesCount(user));
+		}
 		result.put("moviesLastUpdated", getMoviesLastUpdated());
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();

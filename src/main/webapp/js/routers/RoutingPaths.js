@@ -1,13 +1,13 @@
 define([],
-    function() {
-        "use strict";
-        return {
+	function() {
+		"use strict";
+		return {
 			ROOT: '',
-            HOME: 'home',
+			HOME: 'home',
 			REGISTER: 'register',
 			TVSHOWS: 'home/tvshows',
-			MOVIES: 'home/movies',
+			MOVIES: 'home/movies/:category',
 			ADMIN: 'home/admin',
 			LOGOUT: 'logout'
-        };
-    });
+		};
+	});

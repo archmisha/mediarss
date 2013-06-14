@@ -14,6 +14,7 @@ define([
 			ui: {
 				scheduledImage: '.movie-item-scheduled-image',
 				downloadedImage: '.movie-item-downloaded-image',
+				searchingImage: '.movie-item-searching-image',
 				movieTitle: '.movie-item-title',
 				futureImage: '.movie-item-future-image',
 				subTitle: '.movie-sub-title',
@@ -49,7 +50,7 @@ define([
 
 				this.updateDownloadStatus();
 
-				[this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage].forEach(
+				[this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage, this.ui.searchingImage].forEach(
 					function(el) {
 						el.qtip({
 							style: 'rssStyle'
@@ -91,11 +92,14 @@ define([
 				this.ui.scheduledImage.hide();
 				this.ui.downloadedImage.hide();
 				this.ui.futureImage.hide();
+				this.ui.searchingImage.hide();
 
 				if (this.model.get('downloadStatus') == 'SCHEDULED') {
 					this.ui.scheduledImage.show();
 				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
 					this.ui.downloadedImage.show();
+				} else if (this.model.get('downloadStatus') == 'BEING_SEARCHED') {
+					this.ui.searchingImage.show();
 				} else if (this.model.get('downloadStatus') == 'FUTURE') {
 					this.ui.futureImage.show();
 					this.ui.scheduledOn.show();

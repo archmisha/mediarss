@@ -6,5 +6,5 @@ package rss.controllers.vo;
  * Time: 14:16
  */
 public enum DownloadStatus {
-    NONE, SCHEDULED, DOWNLOADED, FUTURE
+	NONE, SCHEDULED, DOWNLOADED, FUTURE, BEING_SEARCHED, OLD
 }

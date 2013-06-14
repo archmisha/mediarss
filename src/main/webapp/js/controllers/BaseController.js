@@ -20,6 +20,7 @@ define([
 		var BASE_TITLE = 'Personalized Media RSS';
 		var mainRegion = null;
 
+		var tabParams = [];
 		var tabToSelect = null;
 		var tabToView = {};
 		tabToView[RoutingPaths.HOME] = HomeTabView;
@@ -53,8 +54,9 @@ define([
 				this._preLoginWrapper();
 			},
 
-			showMovies: function() {
+			showMovies: function(category) {
 				tabToSelect = RoutingPaths.MOVIES;
+				tabParams = [category];
 				this._preLoginWrapper();
 			},
 
@@ -101,7 +103,7 @@ define([
 					tabToSelect = RoutingPaths.HOME;
 				}
 
-				Backbone.history.navigate(StringUtils.formatRoute(tabToSelect), {trigger: false});
+				Backbone.history.navigate(StringUtils.formatRoute(tabToSelect, tabParams), {trigger: false});
 				document.title = tabToTitle[tabToSelect];
 				if (homeView != null) {
 					homeView.changeTab(tabToSelect, tabToView[tabToSelect]);
