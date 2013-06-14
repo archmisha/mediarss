@@ -52,6 +52,9 @@ public class PageDownloaderImpl implements PageDownloader {
 	@Autowired
 	private LogService log;
 
+	@Autowired
+	private SettingsService settingsService;
+
 	@Override
 	public String downloadPageUntilFound(String url, final Pattern pattern) {
 		// download 1000 chars first and then advance by 50
@@ -183,7 +186,7 @@ public class PageDownloaderImpl implements PageDownloader {
 		try {
 			coolDownStatus.authorizeAccess(url); // blocks until authorized
 
-			if ("true".equalsIgnoreCase(System.getProperty("webproxy"))) {
+			if ("true".equalsIgnoreCase(System.getProperty("webproxy")) || settingsService.useWebProxy()) {
 				if (url.contains(TorrentzParserImpl.NAME)) {
 					httpRequest.setURI(new URL("http://anonymouse.org/cgi-bin/anon-www.cgi/" + url).toURI());
 				}
