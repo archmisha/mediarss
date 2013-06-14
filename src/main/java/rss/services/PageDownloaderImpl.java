@@ -98,12 +98,26 @@ public class PageDownloaderImpl implements PageDownloader {
 	}
 
 	public String downloadPage(String url, Map<String, String> headers) {
-		return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
-			@Override
-			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
-				return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
+		int retry = 3;
+		MediaRSSException ex = null;
+		while (retry > 0) {
+			try {
+				return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
+					@Override
+					public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
+						return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
+					}
+				});
+			} catch (PageDownloadException e) {
+				if (e.getMessage().contains("Truncated chunk")) {
+					ex = e;
+					retry--;
+				} else {
+					throw e;
+				}
 			}
-		});
+		}
+		throw ex;
 	}
 
 	public Pair<String, String> downloadPageWithRedirect(String url) {
@@ -209,6 +223,8 @@ public class PageDownloaderImpl implements PageDownloader {
 			}
 
 			return streamExtractor.extractResponseStream(httpClient, httpResponse, context);
+		} catch (TruncatedChunkException e) {
+			throw new PageDownloadException("Truncated chunk for url: " + url + ". " + e.getMessage());
 		} catch (Exception e) {
 			if (Utils.isRootCauseMessageContains(e, "timed out")) {
 				throw new PageDownloadException("Connection timed out for url: " + url);
