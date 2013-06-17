@@ -3,7 +3,6 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -662,10 +661,14 @@ public class ShowServiceImpl implements ShowService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void downloadEpisode(User user, long torrentId) {
 		Torrent torrent = torrentDao.find(torrentId);
-		UserTorrent userTorrent = new UserEpisodeTorrent();
-		userTorrent.setUser(user);
+		UserTorrent userTorrent = userTorrentDao.findUserEpisodeTorrent(user, torrentId);
+		// handling case of re-downloading here
+		if (userTorrent == null) {
+			userTorrent = new UserEpisodeTorrent();
+			userTorrent.setUser(user);
+			userTorrent.setTorrent(torrent);
+			userTorrentDao.persist(userTorrent);
+		}
 		userTorrent.setAdded(new Date());
-		userTorrent.setTorrent(torrent);
-		userTorrentDao.persist(userTorrent);
 	}
 }

@@ -37,6 +37,18 @@
   line-height: 39px;
 }
 
+.search-result-item-status:hover {
+  .search-result-item-download-image {
+    display: inline !important;
+  }
+  .search-result-item-scheduled-image {
+    display: none !important;
+  }
+  .search-result-item-downloaded-image {
+    display: none !important;
+  }
+}
+
 .search-result-item-body {
   margin-left: @search-result-item-status-width;
   overflow: hidden;
@@ -96,7 +108,7 @@
   width: 260px;
   float: left;
   margin-top: 5px;
-  display:none; /* starts with that */
+  display: none; /* starts with that */
 }
 
 .search-results-showing-results-for {
