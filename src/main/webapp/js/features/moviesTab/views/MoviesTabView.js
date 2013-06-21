@@ -179,6 +179,21 @@ define([
 			_updateUserMovies: function(movies) {
 				this.ui.userMoviesCounter.html(movies.length);
 				this.moviesCollection.reset(movies);
+
+				var moviesBeingSearched = this._getMoviesBeingSearched();
+				if (moviesBeingSearched.length > 0) {
+					this._startPollingThread(moviesBeingSearched);
+				}
+			},
+
+			_getMoviesBeingSearched: function() {
+				var moviesBeingSearched = [];
+				this.moviesCollection.forEach(function(movieModel) {
+					if (movieModel.get('downloadStatus') === 'BEING_SEARCHED') {
+						moviesBeingSearched.push(movieModel.get('id'));
+					}
+				});
+				return    moviesBeingSearched;
 			},
 
 			_updateAvailableMovies: function(movies) {
@@ -221,6 +236,7 @@ define([
 					return;
 				}
 
+				this._stopPollingThread();
 				this._switchToUserMovies(null);
 				var that = this;
 				HttpUtils.get('rest/movies/user-movies', function(res) {
@@ -237,11 +253,58 @@ define([
 			},
 
 			_showAvailableMovies: function() {
+				this._stopPollingThread();
 				this._switchToAvailableMovies(null);
 				var that = this;
 				HttpUtils.get('rest/movies/available-movies', function(res) {
 					that._updateAvailableMovies(res.movies);
 				});
+			},
+
+			onClose: function() {
+				// when leaving the view stop polling the server for job updates
+				this._stopPollingThread();
+			},
+
+			_startPollingThread: function(moviesBeingSearched) {
+				var that = this;
+				var f = function() {
+					if (!that.timer) {
+						return;
+					}
+
+					$.post("rest/movies/check-movies-being-searched", {
+						ids: moviesBeingSearched
+					}).success(function(res) {
+							if (that.timer !== null) {
+								for (var i = 0; i < res.completed.length; ++i) {
+									var el = res.completed[i];
+									var movieModel = that.moviesCollection.get(el.id);
+									movieModel.set('torrents', el.torrents);
+									movieModel.set('downloadStatus', el.downloadStatus);
+								}
+								if (selectedMovie == movieModel) {
+									selectedMovie = null;
+									that.onMovieSelected(movieModel);
+								}
+
+								if (res.completed.length === moviesBeingSearched.length) {
+									that._stopPollingThread();
+								}
+							}
+						}).error(function(res) {
+							console.log('error. data: ' + res);
+							that._stopPollingThread();
+						});
+
+					that.timer = setTimeout(f, 5000);
+				};
+				that.timer = setTimeout(f, 5000);
+			},
+
+			_stopPollingThread: function() {
+				clearTimeout(this.timer);
+				this.timer = null;
 			}
 		});
 	});

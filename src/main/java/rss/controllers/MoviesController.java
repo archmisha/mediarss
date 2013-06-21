@@ -191,6 +191,15 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
+	@RequestMapping(value = "check-movies-being-searched", method = RequestMethod.POST)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> checkMoviesBeingSearched(@RequestParam("ids[]") long[] ids) {
+		Map<String, Object> map = new HashMap<>();
+		map.put("completed", movieService.getSearchCompletedMovies(ids));
+		return map;
+	}
+
 	@RequestMapping(value = "/user-movies", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)

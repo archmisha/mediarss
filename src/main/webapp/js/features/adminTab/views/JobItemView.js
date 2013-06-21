@@ -2,9 +2,10 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/adminTab/templates/job-item.tpl',
-	'moment'
+	'moment',
+	'HttpUtils'
 ],
-	function(Marionette, Handlebars, template, Moment) {
+	function(Marionette, Handlebars, template, Moment, HttpUtils) {
 		"use strict";
 
 		var JOB_MAX_HOURS = 2;
@@ -85,7 +86,7 @@ define([
 				that.ui.neverRunStatus.hide();
 				that.ui.errorStatus.hide();
 				that.ui.startingStatus.show();
-				$.post("rest/jobs/start", {
+				HttpUtils.post("rest/jobs/start", {
 					name: this.model.get('name')
 				}).success(function(jobStatus) {
 						that.model.clear().set(jobStatus);

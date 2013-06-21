@@ -231,7 +231,7 @@ public class IMDBServiceImpl implements IMDBService {
 		return Integer.parseInt(matcher.group(1));
 	}
 
-	private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("[:\\.]");
+	private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("[:\\.']");
 	private static final Pattern NORMALIZE_SPACES_PATTERN = Pattern.compile("\\s+");
 
 	@Override

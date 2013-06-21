@@ -16,6 +16,8 @@ import java.util.Collection;
  */
 public interface MovieService {
 
+	ArrayList<UserMovieVO> getSearchCompletedMovies(long[] ids);
+
 	int getUserMoviesCount(User user);
 
 	int getAvailableMoviesCount(User user);

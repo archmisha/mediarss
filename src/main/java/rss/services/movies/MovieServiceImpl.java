@@ -85,6 +85,33 @@ public class MovieServiceImpl implements MovieService {
 	@Autowired
 	private SubtitlesService subtitlesService;
 
+	private ConcurrentMap<Movie, Movie> moviesBeingSearched = new ConcurrentHashMap<>();
+
+	public ArrayList<UserMovieVO> getSearchCompletedMovies(long[] ids) {
+		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
+		Map<Long, Torrent> torrentsByIds = new HashMap<>();
+
+		for (long id : ids) {
+			Movie movie = movieDao.find(id);
+			if (!moviesBeingSearched.containsKey(movie)) {
+				UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
+				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
+					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(false), torrent.getDateUploaded());
+					torrentsByIds.put(torrent.getId(), torrent);
+				}
+			}
+		}
+
+		ArrayList<UserMovieVO> result = new ArrayList<>(userMoviesVOContainer.getUserMovies());
+
+		UserMovieStatusComparator comparator = new UserMovieStatusComparator(torrentsByIds);
+		for (UserMovieVO userMovieVO : result) {
+			Collections.sort(userMovieVO.getTorrents(), comparator);
+		}
+
+		return result;
+	}
+
 	@Transactional(propagation = Propagation.REQUIRED)
 	public int getUserMoviesCount(User user) {
 		return movieDao.findUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY);
@@ -108,7 +135,7 @@ public class MovieServiceImpl implements MovieService {
 			userMovieVO.setViewed(true);
 			// if there are not torrents at all yet, it is a future movie or being searched right now or an old movie without torrents
 			if (userMovie.getMovie().getTorrentIds().isEmpty()) {
-				if (false) {
+				if (moviesBeingSearched.containsKey(userMovie.getMovie())) {
 					userMovieVO.setDownloadStatus(DownloadStatus.BEING_SEARCHED);
 				} else if (isOldMovie(userMovie.getMovie())) {
 					userMovieVO.setDownloadStatus(DownloadStatus.OLD);
@@ -317,12 +344,14 @@ public class MovieServiceImpl implements MovieService {
 			if (movie.getTorrentIds().isEmpty()) {
 				ExecutorService executorService = Executors.newSingleThreadExecutor();
 				final Movie finalMovie = movie;
+				moviesBeingSearched.put(movie, movie);
 				executorService.submit(new Runnable() {
 					@Override
 					public void run() {
 						MovieRequest movieRequest = new MovieRequest(finalMovie.getName(), null);
 						movieRequest.setImdbId(imdbUrl);
 						movieTorrentsDownloader.download(Collections.singleton(movieRequest));
+						moviesBeingSearched.remove(finalMovie);
 					}
 				});
 				executorService.shutdown();
