@@ -28,11 +28,10 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 	@Autowired
 	private ShowService showService;
 
-	@SuppressWarnings("MalformedFormatString")
 	@Override
 	protected String getSearchUrl(ShowRequest mediaRequest) {
 		try {
-			return String.format(TorrentzParserImpl.TORRENTZ_EPISODE_SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
+			return TorrentzParserImpl.TORRENTZ_EPISODE_SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new MediaRSSException("Failed encoding " + mediaRequest.toQueryString() + ": " + e.getMessage(), e);
 		}
