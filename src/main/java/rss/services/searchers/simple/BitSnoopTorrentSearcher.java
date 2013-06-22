@@ -4,13 +4,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
-import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * Date: 04/05/13 16:40
  */
 @Service("bitSnoopTorrentSearcher")
-public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
+public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "bitsnoop.com";
 	private static final String ENTRY_URL = "http://" + NAME + "/";
@@ -39,12 +39,12 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest, S extends Media> ex
 	}
 
 	@Override
-	protected String getEntryUrl() {
-		return ENTRY_URL;
+	protected Collection<String> getEntryUrl() {
+		return Collections.singletonList(ENTRY_URL);
 	}
 
 	@Override
-	protected String getSearchUrl(T mediaRequest) {
+	protected Collection<String> getSearchUrl(T mediaRequest) {
 		// todo: currently not handling search
 		throw new UnsupportedOperationException();
 	}

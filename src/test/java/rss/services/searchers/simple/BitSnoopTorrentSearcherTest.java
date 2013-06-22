@@ -9,7 +9,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import rss.BaseTest;
-import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.Torrent;
@@ -45,7 +44,7 @@ public class BitSnoopTorrentSearcherTest extends BaseTest {
 	protected TorrentzParser torrentzParser;
 
 	@InjectMocks
-	private BitSnoopTorrentSearcher<ShowRequest, Episode> bitSnoopTorrentSearcher = new BitSnoopTorrentSearcher<>();
+	private BitSnoopTorrentSearcher<ShowRequest> bitSnoopTorrentSearcher = new BitSnoopTorrentSearcher<>();
 
 	@Test
 	@SuppressWarnings("unchecked")

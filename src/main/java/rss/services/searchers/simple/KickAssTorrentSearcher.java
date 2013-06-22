@@ -6,7 +6,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
-import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.requests.MediaRequest;
 import rss.services.requests.episodes.DoubleEpisodeRequest;
@@ -30,14 +29,12 @@ import java.util.regex.Pattern;
  * Time: 14:35
  */
 @Service("kickAssTorrentSearcher")
-public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
+public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "kickass.to";//"kat.ph";
+	public static final String NAME = "kickasstorrents";
 	private static final String ENTRY_URL = "http://" + NAME + "/";
-	private static final String SEARCH_URL = "http://" + NAME + "/usearch/";
 
-	private static final Pattern KICK_ASS_TORRENTS_ID = Pattern.compile("http://www.kickasstorrents.com/([^\"/]+)");
-	private static final Pattern KAT_PH_ID = Pattern.compile("http://" + NAME + "/([^\"/]+)");
+	private static final String[] DOMAINS = new String[]{"kickass.to", "www.kickasstorrents.com", "kat.ph"};
 
 	@Override
 	public String getName() {
@@ -50,24 +47,27 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 	}
 
 	@Override
-	protected String getEntryUrl() {
-		return ENTRY_URL;
+	protected Collection<String> getEntryUrl() {
+		Collection<String> res = new ArrayList<>();
+		for (String domain : DOMAINS) {
+			res.add("http://" + domain + "/");
+		}
+		return res;
 	}
 
 	@Override
-	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
+	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
 		return mediaRequest.visit(new SearchURLVisitor(), null);
 	}
 
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
-		Matcher matcher = KICK_ASS_TORRENTS_ID.matcher(page);
-		if (matcher.find()) {
-			return matcher.group(1);
-		}
-		matcher = KAT_PH_ID.matcher(page);
-		if (matcher.find()) {
-			return matcher.group(1);
+		for (String domain : DOMAINS) {
+			Pattern pattern = Pattern.compile("http://" + domain + "/([^\"/]+)");
+			Matcher matcher = pattern.matcher(page);
+			if (matcher.find()) {
+				return matcher.group(1);
+			}
 		}
 		return null;
 	}
@@ -136,48 +136,69 @@ public class KickAssTorrentSearcher<T extends MediaRequest, S extends Media> ext
 		}
 	}
 
-	private class SearchURLVisitor implements MediaRequestVisitor<Object, String> {
+	private class SearchURLVisitor implements MediaRequestVisitor<Object, Collection<String>> {
 
 		@Override
-		public String visit(SingleEpisodeRequest episodeRequest, Object config) {
+		public Collection<String> visit(SingleEpisodeRequest episodeRequest, Object config) {
 			try {
 				StringBuilder sb = new StringBuilder();
 				sb.append("season:").append(episodeRequest.getSeason());
 				sb.append(" episode:").append(episodeRequest.getEpisode());
 				//"greys anatomy category:tv season:1 episode:1"
-				return SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+
+				Collection<String> res = new ArrayList<>();
+				for (String domain : DOMAINS) {
+					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8"));
+				}
+				return res;
+
 			} catch (UnsupportedEncodingException e) {
 				throw new MediaRSSException(e.getMessage(), e);
 			}
 		}
 
 		@Override
-		public String visit(DoubleEpisodeRequest episodeRequest, Object config) {
+		public Collection<String> visit(DoubleEpisodeRequest episodeRequest, Object config) {
 			try {
 				StringBuilder sb = new StringBuilder();
 				sb.append("season:").append(episodeRequest.getSeason());
-				return SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+
+				Collection<String> res = new ArrayList<>();
+				for (String domain : DOMAINS) {
+					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8"));
+				}
+				return res;
+
 			} catch (UnsupportedEncodingException e) {
 				throw new MediaRSSException(e.getMessage(), e);
 			}
 		}
 
 		@Override
-		public String visit(FullSeasonRequest episodeRequest, Object config) {
+		public Collection<String> visit(FullSeasonRequest episodeRequest, Object config) {
 			try {
 				StringBuilder sb = new StringBuilder();
 				sb.append("season:").append(episodeRequest.getSeason());
-				return SEARCH_URL + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
+
+				Collection<String> res = new ArrayList<>();
+				for (String domain : DOMAINS) {
+					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8"));
+				}
+				return res;
 			} catch (UnsupportedEncodingException e) {
 				throw new MediaRSSException(e.getMessage(), e);
 			}
 		}
 
 		@Override
-		public String visit(MovieRequest movieRequest, Object config) {
+		public Collection<String> visit(MovieRequest movieRequest, Object config) {
 			try {
 				// http://kat.ph/usearch/iron%20man%20category:movies/
-				return SEARCH_URL + URLEncoder.encode(movieRequest.toQueryString() + " category:movies", "UTF-8");
+				Collection<String> res = new ArrayList<>();
+				for (String domain : DOMAINS) {
+					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(movieRequest.toQueryString() + " category:movies", "UTF-8"));
+				}
+				return res;
 			} catch (UnsupportedEncodingException e) {
 				throw new MediaRSSException(e.getMessage(), e);
 			}

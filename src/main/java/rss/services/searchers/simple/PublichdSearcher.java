@@ -3,7 +3,6 @@ package rss.services.searchers.simple;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.log.LogService;
 import rss.services.requests.MediaRequest;
@@ -12,9 +11,7 @@ import rss.services.searchers.SimpleTorrentSearcher;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,10 +21,11 @@ import java.util.regex.Pattern;
  * Time: 19:17
  */
 @Service("publichdSearcher")
-public class PublichdSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
+public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "publichd.se";
-	public static final String ENTRY_URL = "http://" + NAME + "/index.php?page=torrent-details&id=";
+	public static final String NAME = "publichd";
+
+	public static final String[] DOMAINS = new String[]{"publichd.eu", "publichd.se"};
 	public static final Pattern PATTERN = Pattern.compile("<tag:torrents\\[\\].download /><a href=\".*?\">(.*?)<a href=(.*?)>.*AddDate</b></td>.*?>(.*?)</td>.*?seeds: (\\d+)", Pattern.DOTALL);
 
 	@Autowired
@@ -44,12 +42,16 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 	}
 
 	@Override
-	protected String getEntryUrl() {
-		return ENTRY_URL;
+	protected Collection<String> getEntryUrl() {
+		Collection<String> res = new ArrayList<>();
+		for (String domain : DOMAINS) {
+			res.add("http://" + domain + "/index.php?page=torrent-details&id=");
+		}
+		return res;
 	}
 
 	@Override
-	protected String getSearchUrl(T mediaRequest) {
+	protected Collection<String> getSearchUrl(T mediaRequest) {
 		// todo: currently not handling search
 		throw new UnsupportedOperationException();
 	}
@@ -60,14 +62,14 @@ public class PublichdSearcher<T extends MediaRequest, S extends Media> extends S
 		return SearchResult.createNotFound();
 	}
 
-	@Override
-	protected String getSearchByIdUrl(T mediaRequest) {
-		// no need to encode the hash
-		if (mediaRequest.getHash() != null) {
-			return ENTRY_URL + mediaRequest.getHash();
-		}
-		return null;
-	}
+//	@Override
+//	protected String getSearchByIdUrl(T mediaRequest) {
+//		// no need to encode the hash
+//		if (mediaRequest.getHash() != null) {
+//			return ENTRY_URL + mediaRequest.getHash();
+//		}
+//		return null;
+//	}
 
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {

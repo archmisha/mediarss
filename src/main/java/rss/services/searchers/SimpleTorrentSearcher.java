@@ -2,7 +2,7 @@ package rss.services.searchers;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.beans.factory.annotation.Autowired;
-import rss.entities.Media;
+import rss.PageDownloadException;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
@@ -37,71 +37,80 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 
 	@Override
 	public SearchResult search(T mediaRequest) {
-		String url = null;
+		Collection<String> searchUrl;
 		try {
-			url = getSearchUrl(mediaRequest);
+			searchUrl = getSearchUrl(mediaRequest);
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed encoding: " + url + " error: " + e.getMessage(), e);
+			logService.error(getClass(), "Failed searching for: " + mediaRequest + ". Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
 
-		String page;
-		try {
-			page = pageDownloader.downloadPage(url);
-		} catch (Exception e) {
-			if (Utils.isRootCauseMessageContains(e, "404 Not Found")) {
-				logService.debug(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage());
-			} else {
-				logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
+		for (String url : searchUrl) {
+			try {
+				String page = pageDownloader.downloadPage(url);
+
+				SearchResult searchResult = parseSearchResults(mediaRequest, page);
+				if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
+					return searchResult;
+				}
+
+				// check aging
+				// if all torrents are awaiting aging then leave them, but if there is at least one that is not then return it
+				Calendar now = Calendar.getInstance();
+				now.setTime(new Date());
+				now.add(Calendar.HOUR_OF_DAY, -4);
+
+				List<Torrent> readyTorrents = new ArrayList<>();
+				for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
+					if (!torrent.getDateUploaded().after(now.getTime())) {
+						readyTorrents.add(torrent);
+					}
+				}
+
+				if (!readyTorrents.isEmpty()) {
+					searchResult.getDownloadables().clear();
+					searchResult.getDownloadables().addAll(readyTorrents);
+					searchResult.setSearchStatus(SearchResult.SearchStatus.FOUND);
+					return searchResult;
+				}
+
+				searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
+				return searchResult;
+			} catch (Exception e) {
+				if (Utils.isRootCauseMessageContains(e, "404 Not Found")) {
+					logService.debug(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage());
+				} else {
+					logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
+				}
 			}
-			return SearchResult.createNotFound();
 		}
 
-		SearchResult searchResult = parseSearchResults(mediaRequest, page);
-		if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
-			return searchResult;
-		}
-
-		// check aging
-		// if all torrents are awaiting aging then leave them, but if there is at least one that is not then return it
-		Calendar now = Calendar.getInstance();
-		now.setTime(new Date());
-		now.add(Calendar.HOUR_OF_DAY, -4);
-
-		List<Torrent> readyTorrents = new ArrayList<>();
-		for (Torrent torrent : searchResult.<Torrent>getDownloadables()) {
-			if (!torrent.getDateUploaded().after(now.getTime())) {
-				readyTorrents.add(torrent);
-			}
-		}
-
-		if (!readyTorrents.isEmpty()) {
-			searchResult.getDownloadables().clear();
-			searchResult.getDownloadables().addAll(readyTorrents);
-			searchResult.setSearchStatus(SearchResult.SearchStatus.FOUND);
-			return searchResult;
-		}
-
-		searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
-		return searchResult;
+		return SearchResult.createNotFound();
 	}
 
 	// no need to validate results in here, cuz arrive directly by url, thus no need in a common method in the upper level
 	public SearchResult searchById(T mediaRequest) {
-		String url = this.getSearchByIdUrl(mediaRequest);
-		if (url == null) {
+		String searcherId = mediaRequest.getSearcherId(getName());
+		if (searcherId == null) {
 			return SearchResult.createNotFound();
 		}
 
-		String page = pageDownloader.downloadPage(url);
-		Torrent torrent = parseTorrentPage(mediaRequest, page);
-		if (torrent == null) {
-			return SearchResult.createNotFound();
+		for (String entryUrl : this.getEntryUrl()) {
+			try {
+				String url = entryUrl + searcherId;
+				String page = pageDownloader.downloadPage(url);
+				Torrent torrent = parseTorrentPage(mediaRequest, page);
+				if (torrent != null) {
+					SearchResult searchResult = new SearchResult(getName());
+					searchResult.addDownloadable(torrent);
+					return searchResult;
+				}
+			} catch (PageDownloadException e) {
+				logService.error(getClass(), e.getMessage());
+			}
 		}
 
-		SearchResult searchResult = new SearchResult(getName());
-		searchResult.addDownloadable(torrent);
-		return searchResult;
+		return SearchResult.createNotFound();
 	}
 
 	private SearchResult parseSearchResults(T mediaRequest, String page) {
@@ -131,21 +140,13 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 		return searchResult;
 	}
 
-	protected abstract String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
-
-	protected String getSearchByIdUrl(T mediaRequest) {
-		String searcherId = mediaRequest.getSearcherId(getName());
-		if (searcherId != null) {
-			return getEntryUrl() + searcherId;
-		}
-		return null;
-	}
+	protected abstract Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException;
 
 	public int getPriority() {
 		return 10;
 	}
 
-	protected abstract String getEntryUrl();
+	protected abstract Collection<String> getEntryUrl();
 
 	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);
 

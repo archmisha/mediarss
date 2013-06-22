@@ -7,7 +7,6 @@ import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.PageDownloadException;
-import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.requests.MediaRequest;
@@ -16,10 +15,7 @@ import rss.util.StringUtils2;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +32,7 @@ import java.util.regex.Pattern;
  * <span class="seed">982</span>
  */
 @Service("episodeSearcher1337x")
-public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
+public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
 	private static final String NAME = "1337x.org";
 	private static final String SEARCH_URL = "http://" + NAME + "/search/%s/0/";
@@ -47,11 +43,11 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	@Autowired
 	private PageDownloader pageDownloader;
 
-	@Override
-	protected String getSearchByIdUrl(T mediaRequest) {
-		// todo: handle that case
-		return null;
-	}
+//	@Override
+//	protected String getSearchByIdUrl(T mediaRequest) {
+//		// todo: handle that case
+//		return null;
+//	}
 
 	@Override
 	public String getName() {
@@ -59,8 +55,8 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	}
 
 	@Override
-	protected String getEntryUrl() {
-		return ENTRY_URL;
+	protected Collection<String> getEntryUrl() {
+		return Collections.singletonList(ENTRY_URL);
 	}
 
 	@Override
@@ -73,8 +69,8 @@ public class TorrentSearcher1337x<T extends MediaRequest, S extends Media> exten
 	}
 
 	@Override
-	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
+	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
+		return Collections.singletonList(String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
 	}
 
 	@Override

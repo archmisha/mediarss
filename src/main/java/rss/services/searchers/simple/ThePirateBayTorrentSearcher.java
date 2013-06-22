@@ -3,7 +3,6 @@ package rss.services.searchers.simple;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.entities.Media;
 import rss.entities.Torrent;
 import rss.services.log.LogService;
 import rss.services.matching.MatchCandidate;
@@ -23,7 +22,7 @@ import java.util.regex.Pattern;
  * Time: 19:21
  */
 @Service("thePirateBayTorrentSearcher")
-public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media> extends SimpleTorrentSearcher<T> {
+public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "thepiratebay.sx";
 	private static final String HOST_NAME_URL_PART = "http://" + NAME;
@@ -47,13 +46,13 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest, S extends Media
 	}
 
 	@Override
-	protected String getEntryUrl() {
-		return ENTRY_URL;
+	protected Collection<String> getEntryUrl() {
+		return Collections.singletonList(ENTRY_URL);
 	}
 
 	@Override
-	protected String getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		return String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
+	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
+		return Collections.singletonList(String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
 	}
 
 	@Override
