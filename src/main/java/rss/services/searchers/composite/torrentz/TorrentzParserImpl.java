@@ -30,11 +30,13 @@ public class TorrentzParserImpl implements TorrentzParser {
 	// size>2000m - filters dvdscr
 	public static final String MOVIES_FILTERS = "+-shows+-porn+-brrip+-episodes+-music+size%3E2000m";
 
+	public static final String EPISODE_FILTERS = "+size%3E150m";
+
 	public static final String TORRENTZ_ENTRY_URL = HOST_NAME;
 	public static final String TORRENTZ_LATEST_MOVIES_URL = HOST_NAME + "search?f=movies+hd+video" + MOVIES_FILTERS + "+added%3A";
 	// +hd was ruining the "2 fast 2 furious" movie search - maybe in older movies there is no such filter yet
 	public static final String TORRENTZ_MOVIE_SEARCH_URL = HOST_NAME + "search?f=movies+video" + MOVIES_FILTERS + "+";
-	public static final String TORRENTZ_EPISODE_SEARCH_URL = HOST_NAME + "verifiedP?f=";
+	public static final String TORRENTZ_EPISODE_SEARCH_URL = HOST_NAME + "verifiedP?f=%s" + EPISODE_FILTERS;
 
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};

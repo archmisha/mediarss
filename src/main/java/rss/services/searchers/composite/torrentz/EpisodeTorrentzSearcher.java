@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.entities.Torrent;
 import rss.services.matching.MatchCandidate;
-import rss.services.requests.episodes.ShowRequest;
 import rss.services.matching.MatcherVisitor;
+import rss.services.requests.episodes.ShowRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
 
@@ -17,7 +17,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * User: dikmanm
@@ -29,12 +28,13 @@ public class EpisodeTorrentzSearcher extends TorrentzSearcher<ShowRequest> {
 	@Autowired
 	private ShowService showService;
 
+	@SuppressWarnings("MalformedFormatString")
 	@Override
 	protected String getSearchUrl(ShowRequest mediaRequest) {
 		try {
-			return TorrentzParserImpl.TORRENTZ_EPISODE_SEARCH_URL + URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8");
+			return String.format(TorrentzParserImpl.TORRENTZ_EPISODE_SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			throw new MediaRSSException("Failed encoding "+ mediaRequest.toQueryString() + ": " + e.getMessage(), e);
+			throw new MediaRSSException("Failed encoding " + mediaRequest.toQueryString() + ": " + e.getMessage(), e);
 		}
 	}
 
