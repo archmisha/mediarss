@@ -178,7 +178,7 @@ public class SettingsServiceImpl implements SettingsService {
 
 	@Override
 	public boolean useWebProxy() {
-		return getWebHostName().equals("webproxy");
+		return "true".equals(prop.getProperty("webproxy"));
 	}
 
 	@Override

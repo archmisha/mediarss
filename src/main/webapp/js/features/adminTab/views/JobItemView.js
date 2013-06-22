@@ -86,7 +86,7 @@ define([
 				that.ui.neverRunStatus.hide();
 				that.ui.errorStatus.hide();
 				that.ui.startingStatus.show();
-				HttpUtils.post("rest/jobs/start", {
+				$.post("rest/jobs/start", {
 					name: this.model.get('name')
 				}).success(function(jobStatus) {
 						that.model.clear().set(jobStatus);
