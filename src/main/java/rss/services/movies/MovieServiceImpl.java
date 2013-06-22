@@ -454,4 +454,16 @@ public class MovieServiceImpl implements MovieService {
 
 		return searchResults;
 	}
+
+	@Override
+	public void downloadUserMovies() {
+		List<Movie> movies = movieDao.findAllUserMovies(MovieServiceImpl.USER_MOVIES_DISPLAY_DAYS_HISTORY);
+		List<MovieRequest> movieRequests = new ArrayList<>();
+		for (Movie movie : movies) {
+			MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
+			movieRequest.setImdbId(movie.getImdbUrl());
+			movieRequests.add(movieRequest);
+		}
+		movieTorrentsDownloader.download(movieRequests);
+	}
 }

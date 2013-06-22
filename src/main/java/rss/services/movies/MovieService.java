@@ -35,4 +35,6 @@ public interface MovieService {
 	DownloadResult<Movie, MovieRequest> downloadLatestMovies();
 
 	Collection<IMDBAutoCompleteItem> search(User user, String query);
+
+	void downloadUserMovies();
 }

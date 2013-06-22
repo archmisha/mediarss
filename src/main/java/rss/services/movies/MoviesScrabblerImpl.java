@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
+import rss.dao.MovieDao;
 import rss.entities.Movie;
 import rss.services.JobRunner;
 import rss.services.downloader.DownloadResult;
@@ -26,6 +27,9 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 	@Autowired
 	private MovieService movieService;
 
+	@Autowired
+	private MovieDao movieDao;
+
 	public MoviesScrabblerImpl() {
 		super(JOB_NAME);
 	}
@@ -40,6 +44,8 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 				// no need to send emails here, we didn't search by name for something specific
 				// if one of the movies in the latest list is not found, it means maybe was no IMDB ID on the page
 //				emailService.notifyOfMissingMovies(downloadResult.getMissing());
+
+				movieService.downloadUserMovies();
 
 				return null;
 			}
