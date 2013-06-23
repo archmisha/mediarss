@@ -282,7 +282,9 @@ public class DateUtils {
 
 	public static Date getPastDate(Date date, int backlogDays) {
 		Calendar c = Calendar.getInstance();
-		c.setTime(date);
+		if (date != null) {
+			c.setTime(date);
+		}
 		c.add(Calendar.DAY_OF_MONTH, -backlogDays);
 		return c.getTime();
 	}
