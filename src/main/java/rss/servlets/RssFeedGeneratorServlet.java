@@ -1,7 +1,5 @@
 package rss.servlets;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -12,8 +10,9 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.feed.RssFeedGenerator;
 import rss.services.UrlService;
+import rss.services.feed.RssFeedGenerator;
+import rss.services.log.LogService;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -32,7 +31,6 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 339778056686808601L;
 
-	private static Log log = LogFactory.getLog(RssFeedGeneratorServlet.class);
 
 	@Autowired
 	@Qualifier("tVShowsRssFeedGeneratorImpl")
@@ -44,6 +42,9 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private LogService logService;
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
@@ -69,7 +70,7 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 			type = request.getParameter(UrlService.MEDIA_TYPE_URL_PARAMETER);
 			feedHash = request.getParameter(UrlService.USER_FEED_HASH_PARAMETER);
 		} catch (NumberFormatException e) {
-			log.error("Invalid user parameter: " + e.getMessage(), e);
+			logService.error(getClass(), "Invalid user parameter: " + e.getMessage(), e);
 			out.println("Invalid url. Please contact support for assistance");
 			return;
 		}
@@ -80,19 +81,19 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 				protected void doInTransactionWithoutResult(TransactionStatus arg0) {
 					User user = userDao.find(userId);
 					if (user == null) {
-						log.error("Invalid user parameter: " + userId);
+						logService.error(getClass(), "Invalid user parameter: " + userId);
 						out.println("Failed generating feed. Please contact support for assistance");
 						return;
 					}
 
 					if (type == null) {
-						log.error("Missing type parameter for user: " + user.getEmail() + " (" + userId + ")");
+						logService.error(getClass(), "Missing type parameter for user: " + user.getEmail() + " (" + userId + ")");
 						out.println("Failed generating feed. Please contact support for assistance");
 						return;
 					}
 
 					if (!user.getFeedHash().equalsIgnoreCase(feedHash)) {
-						log.error("Feed hash does not match for user " + user.getEmail() + " (" + userId + "): " + feedHash);
+						logService.error(getClass(), "Feed hash does not match for user " + user.getEmail() + " (" + userId + "): " + feedHash);
 						out.println("Failed generating feed. Please contact support for assistance");
 						return;
 					}
@@ -111,14 +112,14 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 							break;
 						}
 						default:
-							log.error("Invalid type parameter: " + type);
+							logService.error(getClass(), "Invalid type parameter: " + type);
 							out.println("Invalid url. Please contact support for assistance");
 							break;
 					}
 				}
 			});
 		} catch (Exception e) {
-			log.error("Invalid feed request (maybe user parameter is invalid=" + userId + "): " + e.getMessage(), e);
+			logService.error(getClass(), "Invalid feed request (maybe user parameter is invalid=" + userId + "): " + e.getMessage(), e);
 			out.println("Failed generating feed. Please contact support for assistance");
 		}
 	}
