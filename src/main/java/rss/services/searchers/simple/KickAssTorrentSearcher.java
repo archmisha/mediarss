@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
 public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "kickasstorrents";
-	private static final String ENTRY_URL = "http://" + NAME + "/";
 
 	private static final String[] DOMAINS = new String[]{"kickass.to", "www.kickasstorrents.com", "kat.ph"};
 
@@ -73,7 +72,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 	}
 
 	@Override
-	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+	protected List<Torrent> parseSearchResultsPage(String url, T mediaRequest, String page) {
 		List<Torrent> results = new ArrayList<>();
 		try {
 			Document doc = Jsoup.parse(page);
@@ -87,7 +86,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 				String age = element.select("td.center").get(2).html().replaceAll("&nbsp;", " ");
 				int seeders = Integer.parseInt(element.select("td.green.center").text());
 
-				Torrent torrent = new Torrent(title, magnetLink, StringUtils2.parseDateUploaded(age), seeders, ENTRY_URL + kickAssTorrentsId);
+				Torrent torrent = new Torrent(title, magnetLink, StringUtils2.parseDateUploaded(age), seeders, url + kickAssTorrentsId);
 				results.add(torrent);
 			}
 		} catch (Exception e) {

@@ -75,7 +75,7 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 
 	@Override
 	// 1337x search results page lacks magnet links and age, so must download the torrent entry page always
-	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+	protected List<Torrent> parseSearchResultsPage(String url, T mediaRequest, String page) {
 		List<Torrent> results = new ArrayList<>();
 		try {
 			Document doc = Jsoup.parse(page);

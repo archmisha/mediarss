@@ -77,7 +77,7 @@ public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearc
 	}
 
 	@Override
-	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+	protected List<Torrent> parseSearchResultsPage(String url, T mediaRequest, String page) {
 		return Collections.emptyList();
 	}
 

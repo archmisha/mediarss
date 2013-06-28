@@ -108,7 +108,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 		}
 	}
 
-	protected List<Torrent> parseSearchResultsPage(MediaRequest mediaRequest, String page) {
+	protected List<Torrent> parseSearchResultsPage(String url, MediaRequest mediaRequest, String page) {
 		List<Torrent> results = new ArrayList<>();
 		try {
 			int idx = page.indexOf("<td class=\"vertTh\">");

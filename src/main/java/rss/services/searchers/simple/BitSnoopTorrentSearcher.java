@@ -56,7 +56,7 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorre
 	}
 
 	@Override
-	protected List<Torrent> parseSearchResultsPage(T mediaRequest, String page) {
+	protected List<Torrent> parseSearchResultsPage(String url, T mediaRequest, String page) {
 		return Collections.emptyList();
 	}
 

@@ -49,7 +49,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 			try {
 				String page = pageDownloader.downloadPage(url);
 
-				SearchResult searchResult = parseSearchResults(mediaRequest, page);
+				SearchResult searchResult = parseSearchResults(url, mediaRequest, page);
 				if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
 					return searchResult;
 				}
@@ -113,8 +113,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 		return SearchResult.createNotFound();
 	}
 
-	private SearchResult parseSearchResults(T mediaRequest, String page) {
-		List<Torrent> torrents = parseSearchResultsPage(mediaRequest, page);
+	private SearchResult parseSearchResults(String url, T mediaRequest, String page) {
+		List<Torrent> torrents = parseSearchResultsPage(url, mediaRequest, page);
 		if (torrents.isEmpty()) {
 			return SearchResult.createNotFound();
 		}
@@ -148,7 +148,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 
 	protected abstract Collection<String> getEntryUrl();
 
-	protected abstract List<Torrent> parseSearchResultsPage(T mediaRequest, String page);
+	protected abstract List<Torrent> parseSearchResultsPage(String url, T mediaRequest, String page);
 
 	protected abstract Torrent parseTorrentPage(T mediaRequest, String page);
 
