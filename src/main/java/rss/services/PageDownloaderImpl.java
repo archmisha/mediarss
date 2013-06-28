@@ -10,10 +10,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.AutoRetryHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
+import org.apache.http.impl.client.*;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.BasicHttpContext;
@@ -212,6 +209,7 @@ public class PageDownloaderImpl implements PageDownloader {
 				}
 			});
 
+			httpClient.setRedirectStrategy(new LaxRedirectStrategy());
 
 			HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 30 * 1000); // 130 secs
 			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 30 secs
@@ -221,7 +219,8 @@ public class PageDownloaderImpl implements PageDownloader {
 			HttpResponse httpResponse = retryClient.execute(httpRequest, context);
 
 			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK &&
-				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY ||
+				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_PERMANENTLY) {
 				throw new RuntimeException("Url " + url + ": " + httpResponse.getStatusLine());
 			}
 
