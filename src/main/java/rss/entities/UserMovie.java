@@ -33,7 +33,7 @@ import java.util.Set;
 						"where um.user.id = :userId and (um.userMovieTorrents.size = 0 or (um.userMovieTorrents.size > 0 and um.updated > :downloadDate))"),
 		@NamedQuery(name = "UserMovie.findAllUserMovies",
 				query = "select distinct(um.movie) from UserMovie as um " +
-						"where um.userMovieTorrents.size = 0 or (um.userMovieTorrents.size > 0 and um.updated > :downloadDate) "),
+						"where um.userMovieTorrents.size = 0 or (um.userMovieTorrents.size > 0 and um.updated > :downloadDate)"),
 		@NamedQuery(name = "UserMovie.findUserMoviesCount",
 				query = "select distinct count(um) from UserMovie as um " +
 						"where um.user.id = :userId and (um.userMovieTorrents.size = 0 or (um.userMovieTorrents.size > 0 and um.updated > :downloadDate))"),

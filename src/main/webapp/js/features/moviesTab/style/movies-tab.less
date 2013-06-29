@@ -71,6 +71,8 @@
 .movie-item-icon-wrapper {
   position: absolute;
   top: 4px;
+  height: 24px;
+  width: 24px;
 }
 
 .movie-item-selected,
@@ -90,19 +92,16 @@
   padding-right: 24px;
 }
 
-.movie-item-selected,
-.movie-item:hover {
-  cursor: pointer;
-}
-
 .future-movies-list .movie-item:hover {
-  padding-right: 42px;
   .future-movie-item-remove-image {
-    display: inline;
+    display: inline !important;
   }
 
-  .movie-show-preview-image {
-    right: 25px;
+  .movie-item-scheduled-image,
+  .movie-item-searching-image,
+  .movie-item-downloaded-image,
+  .movie-item-future-image {
+    display: none !important;
   }
 }
 
@@ -115,7 +114,7 @@
 .future-movie-item-remove-image {
   display: none;
   position: absolute;
-  top: 8px;
+  top: 5px;
   right: 9px;
 }
 

@@ -297,6 +297,7 @@ public class MovieServiceImpl implements MovieService {
 
 		userMovie.getUserMovieTorrents().add(userTorrent);
 		userTorrent.setUserMovie(userMovie);
+		userMovie.setUpdated(new Date()); // update user movie so it keeps being in the user movies list
 
 		if (user.getSubtitles() != null) {
 			SubtitlesMovieRequest smr = new SubtitlesMovieRequest(torrent, movie, Collections.singletonList(user.getSubtitles()));
