@@ -167,8 +167,11 @@ define([
 					that.moviesCollection.remove(movieModel.get('id'));
 					that.ui.userMoviesCounter.html(that.moviesCollection.size());
 
-					that.movieTorrentListRegion.close();
-					that.ui.noMovieSelected.show();
+					// only if the removed movie is the selected movie then clear the torrents list
+					if (selectedMovie == movieModel) {
+						that.movieTorrentListRegion.close();
+						that.ui.noMovieSelected.show();
+					}
 				});
 			},
 
