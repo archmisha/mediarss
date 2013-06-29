@@ -457,6 +457,7 @@ public class MovieServiceImpl implements MovieService {
 
 	@Override
 	public void downloadUserMovies() {
+		logService.info(getClass(), "Downloading user movies");
 		List<Movie> movies = movieDao.findAllUserMovies(MovieServiceImpl.USER_MOVIES_DISPLAY_DAYS_HISTORY);
 		List<MovieRequest> movieRequests = new ArrayList<>();
 		for (Movie movie : movies) {
