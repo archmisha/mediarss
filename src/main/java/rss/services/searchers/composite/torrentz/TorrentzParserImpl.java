@@ -93,7 +93,11 @@ public class TorrentzParserImpl implements TorrentzParser {
 			name = StringEscapeUtils.unescapeHtml4(name);
 			type = stripTags(type).toLowerCase();
 			uploaders = uploaders.replaceAll(",", "");
-			int size = Integer.parseInt(sizeStr.split(" ")[0]);
+			String[] sizeSplit = sizeStr.split(" ");
+			int size = Integer.parseInt(sizeSplit[0]);
+			if (sizeSplit[1].trim().equals("GB")) {
+				size *= 1024;
+			}
 
 			boolean skip = false;
 			for (String keyword : TYPES_TO_SKIP) {
