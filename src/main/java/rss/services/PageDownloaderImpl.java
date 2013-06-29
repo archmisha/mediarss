@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.*;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 /**
  * User: dikmanm
@@ -132,10 +132,10 @@ public class PageDownloaderImpl implements PageDownloader {
 
 	private InputStream extractInputStreamFromResponse(HttpResponse httpResponse) throws IOException {
 		InputStream is = httpResponse.getEntity().getContent();
-		Header contentEncoding = httpResponse.getEntity().getContentEncoding();
-		if (contentEncoding != null && contentEncoding.toString().contains("gzip")) {
-			is = new GZIPInputStream(is);
-		}
+//		Header contentEncoding = httpResponse.getEntity().getContentEncoding();
+//		if (contentEncoding != null && contentEncoding.toString().contains("gzip")) {
+//			is = new GZIPInputStream(is);
+//		}
 		return is;
 	}
 
@@ -178,7 +178,7 @@ public class PageDownloaderImpl implements PageDownloader {
 
 	private <T> T sendRequest(HttpRequestBase httpRequest, ResponseStreamExtractor<T> streamExtractor) {
 		long from = System.currentTimeMillis();
-		AbstractHttpClient httpClient = null;
+		HttpClient httpClient = null;
 		String url = httpRequest.getURI().toString();
 		try {
 			coolDownStatus.authorizeAccess(url); // blocks until authorized
@@ -189,7 +189,8 @@ public class PageDownloaderImpl implements PageDownloader {
 				}
 			}
 
-			httpClient = new DefaultHttpClient();
+			DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
+			httpClient = new DecompressingHttpClient(defaultHttpClient); // ContentEncodingHttpClient
 
 			// inverted for easy null handling
 			if ("true".equalsIgnoreCase(System.getProperty("proxy"))) {
@@ -197,7 +198,7 @@ public class PageDownloaderImpl implements PageDownloader {
 				httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 			}
 
-			httpClient.addResponseInterceptor(new HttpResponseInterceptor() {
+			defaultHttpClient.addResponseInterceptor(new HttpResponseInterceptor() {
 				@Override
 				public void process(HttpResponse response, HttpContext context)
 						throws HttpException, IOException {
@@ -209,7 +210,28 @@ public class PageDownloaderImpl implements PageDownloader {
 				}
 			});
 
-			httpClient.setRedirectStrategy(new LaxRedirectStrategy());
+			defaultHttpClient.setRedirectStrategy(new LaxRedirectStrategy()/* {
+				protected URI createLocationURI(final String location) throws ProtocolException {
+					try {
+						return new URI(location).normalize();
+					} catch (URISyntaxException ex) {
+						log.info(getClass(), "orig: " + location);
+						try {
+							try {
+								log.info(getClass(), "encoded: " + URLEncoder.encode(location, "UTF-8"));
+							} catch (UnsupportedEncodingException e) {
+								e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+							}
+
+							return new URI(URLEncoder.encode(location, "UTF-8")).normalize();
+						} catch (URISyntaxException | UnsupportedEncodingException ex2) {
+
+
+							throw new ProtocolException("Invalid redirect URI: " + location, ex2);
+						}
+					}
+				}
+			}*/);
 
 			HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 30 * 1000); // 130 secs
 			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 30 secs
@@ -218,13 +240,13 @@ public class PageDownloaderImpl implements PageDownloader {
 			HttpContext context = new BasicHttpContext();
 			HttpResponse httpResponse = retryClient.execute(httpRequest, context);
 
-			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK &&
-				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY ||
-				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_PERMANENTLY) {
+			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK /*&&
+				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY &&
+				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_PERMANENTLY*/) {
 				throw new RuntimeException("Url " + url + ": " + httpResponse.getStatusLine());
 			}
 
-			return streamExtractor.extractResponseStream(httpClient, httpResponse, context);
+			return streamExtractor.extractResponseStream(defaultHttpClient, httpResponse, context);
 		} catch (TruncatedChunkException e) {
 			throw new PageDownloadException("Truncated chunk for url: " + url + ". " + e.getMessage());
 		} catch (Exception e) {
@@ -232,6 +254,8 @@ public class PageDownloaderImpl implements PageDownloader {
 				throw new PageDownloadException("Connection timed out for url: " + url);
 			} else if (Utils.isCauseMessageContains(e, "Invalid redirect URI")) {
 				throw new PageDownloadException("Invalid redirect URI: " + url);
+			} else if (Utils.isCauseMessageContains(e, "Circular redirect")) {
+				throw new PageDownloadException("Circular redirect URI: " + url);
 			}
 			String errorMessagePrefix = "Failed searching for: " + url + " with error:";
 			throw new MediaRSSException(errorMessagePrefix + " " + e.getMessage(), e);

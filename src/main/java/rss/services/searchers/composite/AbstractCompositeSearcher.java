@@ -107,7 +107,9 @@ public abstract class AbstractCompositeSearcher<T extends MediaRequest> {
 	protected Collection<? extends SimpleTorrentSearcher<T>> getTorrentSearchers() {
 		List<SimpleTorrentSearcher<T>> searchers = new ArrayList<>();
 		for (SimpleTorrentSearcher searcher : applicationContext.getBeansOfType(SimpleTorrentSearcher.class).values()) {
-			searchers.add(searcher);
+			if (searcher.getPriority() != -1) {
+				searchers.add(searcher);
+			}
 		}
 
 		// sort by preference (kat.ph is always better than 1337x.org)

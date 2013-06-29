@@ -76,6 +76,8 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 
 				searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
 				return searchResult;
+			} catch (PageDownloadException e) {
+				logService.error(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
 			} catch (Exception e) {
 				if (Utils.isRootCauseMessageContains(e, "404 Not Found")) {
 					logService.debug(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage());

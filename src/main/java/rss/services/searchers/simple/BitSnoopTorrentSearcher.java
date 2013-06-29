@@ -35,7 +35,7 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorre
 
 	@Override
 	public int getPriority() {
-		return 3;
+		return -1;
 	}
 
 	@Override
