@@ -1,25 +1,40 @@
 .header-container {
-//  margin-top: 20px;
   margin-top: 54px;
+  margin-left: 10px;
   height: 120px;
 }
 
 .header-image {
-  float:left;
-  margin-left: -52px;
-  margin-right: 20px;
+  //  float:left;
+  //  margin-left: -52px;
+  position: absolute;
+  //  margin-right: 20px;
   margin-top: -25px;
 }
 
 .header-title-container {
-  float:left;
-  width: @tab-width + 54px;
+  //  float: left;
+  margin-left: 90px;
+  width: 911px; /*@tab-width + 54px;*/
+}
+
+/* for shows tab */
+@media screen and (max-width: 1039px) and (min-width:970px) {
+  .header-title-container {
+    width: 862px;
+  }
+}
+
+@media screen and (max-width: 969px) and (min-width:0px) {
+  .header-title-container {
+    width: 545px;
+  }
 }
 
 .header-title {
   font-family: headerFont;
   font-size: 25pt;
-//  font-weight: bold;
+  //  font-weight: bold;
 }
 
 .header-description {

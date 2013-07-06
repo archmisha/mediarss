@@ -2,8 +2,9 @@
 @shows-schedules-width: 240px;
 
 .tvshows-tab {
-  width: @shows-tab-width;
+  //  width: @shows-tab-width;
   position: relative;
+  margin-left: 142px;
 }
 
 .search-shows-container,
@@ -175,6 +176,20 @@
 .shows-schedule-container {
   width: @shows-schedules-width;
   margin-left: @shows-tab-width - @shows-schedules-width;
+}
+
+@media screen and (max-width: 970px) and (min-width:0px) {
+  .shows-schedule-container {
+    margin-left: 0px;
+  }
+
+  .search-shows-section {
+    margin-top: 50px;
+  }
+
+  .shows-left-side {
+    position: inherit;
+  }
 }
 
 .shows-schedule-today {

@@ -8,10 +8,17 @@
 
 .movies-tab {
   //  width: @tab-width;
+  margin-left: 142px;
+}
+
+@media screen and (max-width: 1145px) and (min-width:0px) {
+  .movies-tab {
+    margin-left: 10px;
+  }
 }
 
 .my-movies-body {
-  width: 920px;
+  //  width: 920px;
   margin-top: 20px;
   height: @list-height + 2  * @list-padding + 2 * @list-border + @filters-height;
   min-height: @list-height + 2 * @list-padding + 2 * @list-border + @filters-height;
@@ -19,10 +26,10 @@
 
 .movies-list-wrapper {
   float: left;
+  width: @movies-list-width + 2*@list-padding;
 }
 
 .movies-list-container {
-  width: @movies-list-width;
   height: @list-height;
   min-height: @list-height;
   overflow: auto;
@@ -34,16 +41,26 @@
 
 .movies-torrents-list-wrapper {
   float: left;
+  width: @total-width - @movies-list-width - @space-between-lists - 4 * @list-padding - 50 + 2*@list-padding;
 }
 
 .movies-torrents-list-container { // 4 cuz left and right of each list
-  width: @total-width - @movies-list-width - @space-between-lists - 4 * @list-padding;
   height: @list-height;
   min-height: @list-height;
   border: @list-border solid #CCCCCC;
   border-radius: 5px;
   padding: @list-padding;
   overflow-y: auto;
+}
+
+@media screen and (max-width: 860px) and (min-width:0px) {
+  .movies-torrents-list-wrapper {
+    width: 50%;
+  }
+
+  .movies-list-wrapper {
+    width: 50%;
+  }
 }
 
 .movies-list {

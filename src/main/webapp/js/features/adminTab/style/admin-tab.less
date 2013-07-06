@@ -2,7 +2,14 @@
 @job-label-width: 200px;
 
 .admin-tab {
-  width: @tab-width;
+  //  width: @tab-width;
+  margin-left: 142px;
+}
+
+@media screen and (max-width: 1145px) and (min-width:0px) {
+  .admin-tab {
+    margin-left: 10px;
+  }
 }
 
 .access-stats-list-container,
@@ -75,7 +82,7 @@
 }
 
 .admin-access-stats {
-  width: 680px;
+  //  width: 680px;
 }
 
 .admin-notifications {
@@ -97,7 +104,7 @@
 }
 
 .notifications-textarea {
-  width: 100%;
+  width: 99%; /* due to the thick border */
   min-height: 150px;
   min-width: 500px;
   padding: 0px;
@@ -172,16 +179,15 @@
 
 .admin-delete-movie,
 .admin-delete-show,
-.admin-download-show-schedule
-{
+.admin-download-show-schedule {
   margin-top: 20px;
   margin-left: 25px;
-  width: 700px;
+  //  width: 700px;
   font-size: @job-font-size;
 }
 
 .admin-download-show-schedule {
-   height: 28px;
+  height: 28px;
 
   .chzn-container, .select2-container {
     float: left;
@@ -224,3 +230,12 @@
   display: block;
 }
 
+.notifications {
+  position: relative;
+}
+
+@media screen and (max-width: 680px) and (min-width:0px) {
+  .access-stats-name-column-header, .username-column {
+    width: 220px;
+  }
+}
