@@ -5,16 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.ShowDao;
 import rss.dao.SubtitlesDao;
-import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.entities.SubtitlesScanHistory;
-import rss.services.EmailService;
-import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.subtitles.SubtitlesEpisodeRequest;
 import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SubCenterSubtitlesSearcher;
+import rss.services.shows.CachedShow;
+import rss.services.shows.ShowSearchService;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.services.subtitles.SubtitlesTrackerService;
 import rss.util.DateUtils;
@@ -111,16 +110,18 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 		}
 	}
 
+	@Autowired
+	private ShowSearchService showSearchService;
+
 	private Set<Subtitles> skipCachedSubtitles(Set<SubtitlesRequest> requests) {
 		Set<Subtitles> result = new HashSet<>();
 		for (SubtitlesRequest request : new ArrayList<>(requests)) {
-			for (SubtitleLanguage subtitleLanguage : new ArrayList<>(request.getLanguages())) {
-				Subtitles subtitles = subtitlesDao.find(request, subtitleLanguage);
-				if (subtitles != null) {
-					result.add(subtitles);
-					request.getLanguages().remove(subtitleLanguage);
-					logService.info(getClass(), "Found subtitles in cache: " + subtitles + " for torrent: " + request.getTorrent());
-				}
+			Subtitles subtitles = findSubtitles(request);
+			if (subtitles != null) {
+				result.add(subtitles);
+				request.getLanguages().remove(subtitles.getLanguage());
+				logService.info(getClass(), "Found subtitles in cache: " + subtitles + " for torrent: " + request.getTorrent());
+				break;
 			}
 
 			if (request.getLanguages().isEmpty()) {
@@ -128,6 +129,20 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 			}
 		}
 		return result;
+	}
+
+	private Subtitles findSubtitles(SubtitlesRequest request) {
+		for (SubtitleLanguage subtitleLanguage : new ArrayList<>(request.getLanguages())) {
+			for (Subtitles subtitles : subtitlesDao.find(request, subtitleLanguage)) {
+				for (CachedShow curShow : showSearchService.statisticMatch(subtitles.getName())) {
+					if (request.getName().equals(curShow.getName())) {
+						return subtitles;
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -138,7 +153,7 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	@Override
 	protected Collection<Subtitles> processSingleSearchResult(SubtitlesRequest subtitlesRequest, SearchResult searchResult) {
 		for (Subtitles subtitles : searchResult.<Subtitles>getDownloadables()) {
-			Subtitles persistedSubtitles = subtitlesDao.find(subtitlesRequest, subtitles.getLanguage());
+			Subtitles persistedSubtitles = findSubtitles(subtitlesRequest);
 			if (persistedSubtitles == null) {
 				persistedSubtitles = subtitlesDao.findByName(subtitles.getName());
 			}

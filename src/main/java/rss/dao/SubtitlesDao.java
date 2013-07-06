@@ -3,9 +3,9 @@ package rss.dao;
 import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.entities.SubtitlesScanHistory;
+import rss.entities.Torrent;
 import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.subtitles.SubtitleLanguage;
-import rss.entities.Torrent;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Set;
  */
 public interface SubtitlesDao extends Dao<Subtitles> {
 
-	Subtitles find(SubtitlesRequest subtitlesRequest, SubtitleLanguage language);
+	List<Subtitles> find(SubtitlesRequest subtitlesRequest, SubtitleLanguage language);
 
 	Collection<Subtitles> find(Set<Torrent> torrents, SubtitleLanguage subtitleLanguage);
 

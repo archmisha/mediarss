@@ -22,20 +22,20 @@ import java.util.*;
 public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements SubtitlesDao {
 
 	@Override
-	public Subtitles find(SubtitlesRequest subtitlesRequest, SubtitleLanguage language) {
+	public List<Subtitles> find(SubtitlesRequest subtitlesRequest, SubtitleLanguage language) {
 		if (subtitlesRequest instanceof SubtitlesMovieRequest) {
 			Map<String, Object> params = new HashMap<>(2);
 			params.put("torrentId", subtitlesRequest.getTorrent().getId());
 			params.put("language", language);
-			return uniqueResult(super.<Subtitles>findByNamedQueryAndNamedParams("Subtitles.find", params));
+			return super.findByNamedQueryAndNamedParams("Subtitles.find", params);
 		} else if (subtitlesRequest instanceof SubtitlesSingleEpisodeRequest) {
 			SubtitlesSingleEpisodeRequest sser = (SubtitlesSingleEpisodeRequest) subtitlesRequest;
 			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2 and t.episode2 is null";
-			return uniqueResult(super.<Subtitles>find(query, language, sser.getSeason(), sser.getEpisode()));
+			return super.find(query, language, sser.getSeason(), sser.getEpisode());
 		} else if (subtitlesRequest instanceof SubtitlesDoubleEpisodeRequest) {
 			SubtitlesDoubleEpisodeRequest sder = (SubtitlesDoubleEpisodeRequest) subtitlesRequest;
 			String query = "select t from Subtitles as t where t.language = :p0 and t.season = :p1 and t.episode = :p2 and t.episode2 = :p3";
-			return uniqueResult(super.<Subtitles>find(query, language, sder.getSeason(), sder.getEpisode1(), sder.getEpisode2()));
+			return super.find(query, language, sder.getSeason(), sder.getEpisode1(), sder.getEpisode2());
 		} else {
 			throw new IllegalArgumentException("Cannot search for requests of type: " + subtitlesRequest.getClass());
 		}
