@@ -1,4 +1,4 @@
-@job-font-size: 15px;
+//@job-font-size: 15px;
 @job-label-width: 200px;
 
 .admin-tab {
@@ -17,8 +17,8 @@
 }
 
 .access-stats-list-container {
-  font-size: 13px;
-  margin-top: 20px;
+  //  font-size: @font-size-body;
+  //  margin-top: 20px;
 }
 
 .admin-job {
@@ -37,28 +37,28 @@
 }
 
 .job {
-  font-size: @job-font-size;
+  //  font-size: @job-font-size;
   width: @job-label-width;
 }
 
 .job-running {
   display: none;
-  font-size: 13px;
+  //  font-size: @font-size-body;
 }
 
 .job-not-running {
   display: none;
-  font-size: 13px;
+  //  font-size: @font-size-body;
 }
 
 .job-starting {
   display: none;
-  font-size: 13px;
+  //  font-size: @font-size-body;
 }
 
 .job-never-run {
   display: none;
-  font-size: 13px;
+  //  font-size: @font-size-body;
 }
 
 .job-start {
@@ -182,7 +182,7 @@
   margin-top: 20px;
   margin-left: 25px;
   //  width: 700px;
-  font-size: @job-font-size;
+  //  font-size: @job-font-size;
 }
 
 .admin-download-show-schedule {
@@ -222,7 +222,7 @@
 }
 
 .select2-no-results {
-  font-size: 13px;
+  //  font-size: @font-size-body;
 }
 
 .select2-drop .select2-results li:first-child {
@@ -233,8 +233,22 @@
   position: relative;
 }
 
-@media screen and (max-width: 680px) and (min-width:0px) {
-  .access-stats-name-column-header, .username-column {
-    width: 220px;
+@media screen and (max-width: 1080px) and (min-width:0px) {
+  .access-stats-name-column-header,
+  .username-column {
+    width: 200px;
+  }
+
+  .last-login-column,
+  .last-shows-feed-access-column,
+  .last-movies-feed-access-column,
+  .access-stats-last-login-column-header,
+  .access-stats-last-shows-feed-access-column-header,
+  .access-stats-last-movies-feed-access-column-header {
+    width: 128px;
+  }
+
+  .admin-delete-show-title {
+    width: 325px;
   }
 }

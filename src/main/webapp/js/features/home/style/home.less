@@ -2,6 +2,7 @@
   margin-top: 40px;
   border-bottom: 2px solid @theme-color;
   height: 28px;
+  font-size: 18px;
 }
 
 body:not(:-moz-handler-blocked) .home-header-tabs {
@@ -15,6 +16,18 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   padding-bottom: 7px;
   padding-left: 20px;
   padding-right: 20px;
+}
+
+@media screen and (max-width: 1080px) and (min-width: 0px) {
+  .home-header-tabs {
+    font-size: 22px;
+    height: 36px;
+  }
+
+  .home-header-tabs a {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 }
 
 // the hover overrides unselected hover styling
@@ -46,7 +59,7 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 
 .masthead {
   height: 20px; /* needed for responsive, so won't break line */
-  font-size: 10pt;
+  //  font-size: 10pt;
 }
 
 .masthead-username {
@@ -84,13 +97,19 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 }
 
 .masthead-support-box-content {
-  font-size: 13px;
+  //  font-size: @font-size-body;
   display: none;
 }
 
 .masthead-support-title {
   font-size: 18px;
   color: @theme-color;
+}
+
+@media screen and (max-width: 1080px) and (min-width: 0px) {
+  .masthead-support-title {
+    font-size: 20px;
+  }
 }
 
 .masthead-support-subtitle {

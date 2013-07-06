@@ -5,12 +5,27 @@
 .section-header-inner {
   height: 17px;
 }
+
 .section-title {
   float: left;
   background-color: #ffffff;
   padding-right: 10px;
   font-size: 18px;
   color: @theme-color;
+}
+
+@media screen and (max-width: 1080px) and (min-width: 0px) {
+  .section-title {
+    font-size: 22px;
+  }
+
+  .section-header-inner {
+    height: 22px;
+  }
+
+  .section-header {
+    height: 30px;
+  }
 }
 
 .section-line {
@@ -21,5 +36,5 @@
 
 .section-description {
   color: #808080;
-  font-size: 13px;
+  //  font-size: @font-size-body;
 }

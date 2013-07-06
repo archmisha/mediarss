@@ -3,7 +3,7 @@
 }
 
 .rss-feeds-list {
-  font-size: 13px;
+  //  font-size: @font-size-body;
   margin-top: 20px;
 }
 
@@ -47,6 +47,17 @@
 
 .rss-feed {
   height: 20px;
+  margin-top: 2px;
+}
+
+@media screen and (max-width: 1080px) and (min-width: 0px) {
+  .rss-feed {
+    height: 23px;
+  }
+
+  .rss-feed-title {
+    width: 195px;
+  }
 }
 
 .rss-feed-copy-link {
@@ -64,7 +75,7 @@
 }
 
 .subtitles-settings-label {
-  font-size: 13px;
+  //  font-size: @font-size-body;
   margin-left: 25px;
   margin-top: 13px;
   float: left;
@@ -77,6 +88,6 @@
   padding: 0 4px;
   display: none;
   margin-left: 20px;
-  font-size: 13px;
+  //  font-size: @font-size-body;
   color: white;
 }
