@@ -85,14 +85,14 @@ public class ShowsController extends BaseController {
 	@RequestMapping(value = "/tracked/autocomplete", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void autoCompleteTracked(HttpServletRequest request, HttpServletResponse response) {
+	public Map<String, Object> autoCompleteTracked(HttpServletRequest request, HttpServletResponse response) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		final Set<Long> trackedShowsIds = new HashSet<>();
 		for (Show show : user.getShows()) {
 			trackedShowsIds.add(show.getId());
 		}
 
-		autoCompleteShowNames(request, response, false, new Predicate<AutoCompleteItem>() {
+		return autoCompleteShowNames(request, response, false, new Predicate<AutoCompleteItem>() {
 			@Override
 			public boolean apply(rss.services.shows.AutoCompleteItem autoCompleteItem) {
 				return !trackedShowsIds.contains(autoCompleteItem.getId());

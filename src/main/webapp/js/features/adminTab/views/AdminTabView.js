@@ -93,6 +93,9 @@ define([
 					ajax: {
 						url: 'rest/admin/shows/autocomplete',
 						dataType: 'jsonp',
+						transport: function(queryParams) {
+							return HttpUtils.get(queryParams.url + '?term=' + queryParams.data.term, queryParams.success, false);
+						},
 						data: function(term, page) {
 							return {
 								term: term

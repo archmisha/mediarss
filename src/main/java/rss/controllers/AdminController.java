@@ -17,10 +17,7 @@ import rss.services.SessionService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -103,10 +100,10 @@ public class AdminController extends BaseController {
 
 	@RequestMapping(value = "/shows/autocomplete", method = RequestMethod.GET)
 	@ResponseBody
-	public void autoCompleteShows(HttpServletRequest request, HttpServletResponse response) {
+	public Map<String, Object> autoCompleteShows(HttpServletRequest request, HttpServletResponse response) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
-		autoCompleteShowNames(request, response, true, null);
+		return autoCompleteShowNames(request, response, true, null);
 	}
 
 	@RequestMapping(value = "/shows/delete/{showId}", method = RequestMethod.GET)
