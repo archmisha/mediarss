@@ -43,7 +43,7 @@ public class KickAssTorrentSearcherTest extends BaseTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testParseSearchResults_singleEpisode() {
-		SingleEpisodeRequest episodeRequest = new SingleEpisodeRequest("greys anatomy", new Show(), MediaQuality.HD720P, 1, 1);
+		SingleEpisodeRequest episodeRequest = new SingleEpisodeRequest(null, "greys anatomy", new Show(), MediaQuality.HD720P, 1, 1);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("kickass-torrents-search-results-single-episode"));
 		Mockito.doAnswer(new Answer<List<MatchCandidate>>() {
