@@ -51,7 +51,7 @@ define([
 
 				this.showsScheduleSection = new SectionView({
 					title: 'Schedule',
-					description: 'View past and future episode air dates<br/>of your tracked shows'
+					description: 'View past and future episode air dates of your tracked shows'
 				});
 				this.showsScheduleView = new ShowsScheduleView({vent: this.vent});
 
