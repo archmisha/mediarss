@@ -103,13 +103,14 @@ define([
 					tabToSelect = RoutingPaths.HOME;
 				}
 
-				Backbone.history.navigate(StringUtils.formatRoute(tabToSelect, tabParams), {trigger: false});
+				var route = StringUtils.formatRoute(tabToSelect, tabParams);
+				Backbone.history.navigate(route, {trigger: false});
 				document.title = tabToTitle[tabToSelect];
 				if (homeView != null) {
-					homeView.changeTab(tabToSelect, tabToView[tabToSelect]);
+					homeView.changeTab(route, tabToView[tabToSelect]);
 				} else {
 					homeView = new HomeView({
-						selectedTab: tabToSelect,
+						selectedTab: route,
 						contentViewDef: tabToView[tabToSelect],
 						tabData: tabData
 					});

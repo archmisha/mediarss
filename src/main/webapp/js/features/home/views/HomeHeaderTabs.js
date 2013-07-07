@@ -35,7 +35,6 @@ define([
 
 			selectTab: function(tabToSelect) {
 				this.$el.find('a').removeClass('home-selected-tab');
-
 				var selector = "a[href$='" + tabToSelect + "']";
 				this.$el.find(selector).addClass('home-selected-tab');
 			}
