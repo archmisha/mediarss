@@ -2,6 +2,7 @@ package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.entities.User;
 import rss.services.searchers.MediaRequestVisitor;
 
 /**
@@ -11,8 +12,8 @@ import rss.services.searchers.MediaRequestVisitor;
  */
 public class FullSeasonRequest extends EpisodeRequest {
 
-	public FullSeasonRequest(String title, Show show, MediaQuality quality, int season) {
-		super(title, show, quality, season);
+	public FullSeasonRequest(User user, String title, Show show, MediaQuality quality, int season) {
+		super(user, title, show, quality, season);
 	}
 
 	public String getSeasonEpisode() {
@@ -21,7 +22,7 @@ public class FullSeasonRequest extends EpisodeRequest {
 
 	@Override
 	public EpisodeRequest copy() {
-		return new FullSeasonRequest(getTitle(), getShow(), getQuality(), getSeason());
+		return new FullSeasonRequest(getUser(), getTitle(), getShow(), getQuality(), getSeason());
 	}
 
 	@Override

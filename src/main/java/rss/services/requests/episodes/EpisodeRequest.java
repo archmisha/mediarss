@@ -2,7 +2,7 @@ package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.services.searchers.MediaRequestVisitor;
+import rss.entities.User;
 import rss.services.shows.ShowServiceImpl;
 
 /**
@@ -14,8 +14,8 @@ public abstract class EpisodeRequest extends ShowRequest {
 
 	private int season;
 
-	public EpisodeRequest(String title, Show show, MediaQuality quality, int season) {
-		super(title, show, quality);
+	public EpisodeRequest(User user, String title, Show show, MediaQuality quality, int season) {
+		super(user, title, show, quality);
 		this.season = season;
 	}
 

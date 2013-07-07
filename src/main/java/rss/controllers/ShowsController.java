@@ -140,11 +140,11 @@ public class ShowsController extends BaseController {
 			Show show = showDao.find(showId);
 			ShowRequest episodeRequest;
 			if (season == -1) {
-				episodeRequest = new FullShowRequest(title, show, MediaQuality.HD720P);
+				episodeRequest = new FullShowRequest(user, title, show, MediaQuality.HD720P);
 			} else if (episode == -1) {
-				episodeRequest = new FullSeasonRequest(title, show, MediaQuality.HD720P, season);
+				episodeRequest = new FullSeasonRequest(user, title, show, MediaQuality.HD720P, season);
 			} else {
-				episodeRequest = new SingleEpisodeRequest(title, show, MediaQuality.HD720P, season, episode);
+				episodeRequest = new SingleEpisodeRequest(user, title, show, MediaQuality.HD720P, season, episode);
 			}
 			return showSearchService.search(episodeRequest, user, forceDownload);
 		} catch (ShowNotFoundException e) {

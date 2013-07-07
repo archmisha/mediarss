@@ -1,10 +1,12 @@
 package com.turn.ttorrent.tracker;
 
 import com.turn.ttorrent.common.Torrent;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.services.SettingsService;
 import rss.services.UrlService;
 
 import javax.annotation.PostConstruct;
@@ -69,6 +71,9 @@ public class EmbeddedTracker {
 	@Autowired
 	private UrlService urlService;
 
+	@Autowired
+	private SettingsService settingsService;
+
 	private final TrackerService trackerService;
 
 	/**
@@ -104,7 +109,14 @@ public class EmbeddedTracker {
 	 */
 	public URL getAnnounceUrl() {
 		try {
-			return new URI(urlService.getApplicationUrl() + ANNOUNCE_URL).toURL();
+			String trackerUrl = settingsService.getTrackerUrl();
+			if (StringUtils.isBlank(trackerUrl)) {
+				trackerUrl = urlService.getApplicationUrl();
+			}
+			if (!trackerUrl.endsWith("/")) {
+				trackerUrl += "/";
+			}
+			return new URI(trackerUrl + ANNOUNCE_URL).toURL();
 		} catch (MalformedURLException | URISyntaxException mue) {
 			logger.error("Could not build tracker URL: {}!", mue, mue);
 		}

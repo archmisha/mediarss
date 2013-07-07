@@ -3,6 +3,7 @@ package rss.services.requests.episodes;
 import org.apache.commons.lang3.StringUtils;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
+import rss.entities.User;
 import rss.services.searchers.MediaRequestVisitor;
 
 /**
@@ -14,8 +15,8 @@ public class SingleEpisodeRequest extends EpisodeRequest {
 
 	private int episode;
 
-	public SingleEpisodeRequest(String title, Show show, MediaQuality quality, int season, int episode) {
-		super(title, show, quality, season);
+	public SingleEpisodeRequest(User user, String title, Show show, MediaQuality quality, int season, int episode) {
+		super(user, title, show, quality, season);
 		this.episode = episode;
 	}
 
@@ -26,7 +27,7 @@ public class SingleEpisodeRequest extends EpisodeRequest {
 
 	@Override
 	public EpisodeRequest copy() {
-		return new SingleEpisodeRequest(getTitle(), getShow(), getQuality(), getSeason(), getEpisode());
+		return new SingleEpisodeRequest(getUser(), getTitle(), getShow(), getQuality(), getSeason(), getEpisode());
 	}
 
 	public int getEpisode() {

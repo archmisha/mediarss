@@ -46,7 +46,7 @@ public class TorrentSearcher1337xTest extends BaseTest {
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("suits-s01e01-search-results")).thenReturn(loadPage("suits-s01e01"));
 		mockFilterReturnAll();
 
-		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest(null, "suits", new Show(), MediaQuality.HD720P, 1, 1));
 
 		Calendar supposedTobe = Calendar.getInstance();
 		supposedTobe.add(Calendar.YEAR, -1);
@@ -64,7 +64,7 @@ public class TorrentSearcher1337xTest extends BaseTest {
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-taken2-search-results")).thenReturn(loadPage("1337x-taken2"));
 		mockFilterReturnAll();
 
-		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest(null, "suits", new Show(), MediaQuality.HD720P, 1, 1));
 
 //		assertEquals("http://www.imdb.com/title/tt1397280", searchResult.getImdbId());
 	}
@@ -74,7 +74,7 @@ public class TorrentSearcher1337xTest extends BaseTest {
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-rise-of-the-guardians-search-results")).thenReturn(loadPage("1337x-rise-of-the-guardians"));
 		mockFilterReturnAll();
 
-		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest(null, "suits", new Show(), MediaQuality.HD720P, 1, 1));
 
 //		assertEquals("http://www.imdb.com/title/tt1446192", searchResult.getImdbId());
 	}
@@ -83,7 +83,7 @@ public class TorrentSearcher1337xTest extends BaseTest {
 	public void testNoResults() {
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-no-results"));
 
-		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest("suits", new Show(), MediaQuality.HD720P, 1, 1));
+		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest(null, "suits", new Show(), MediaQuality.HD720P, 1, 1));
 		mockFilterReturnAll();
 
 		assertEquals(SearchResult.SearchStatus.NOT_FOUND, searchResult.getSearchStatus());

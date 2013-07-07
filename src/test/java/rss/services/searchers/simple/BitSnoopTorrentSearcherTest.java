@@ -49,7 +49,7 @@ public class BitSnoopTorrentSearcherTest extends BaseTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testParseSearchResults_singleEpisode() {
-		FullSeasonRequest episodeRequest = new FullSeasonRequest("Survivor", new Show(), MediaQuality.HD720P, 5);
+		FullSeasonRequest episodeRequest = new FullSeasonRequest(null, "Survivor", new Show(), MediaQuality.HD720P, 5);
 
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("bitsnoop-survivor-s05-entry"));
 		Mockito.doAnswer(new Answer<List<MatchCandidate>>() {

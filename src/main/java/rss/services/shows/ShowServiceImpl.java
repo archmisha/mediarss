@@ -257,9 +257,9 @@ public class ShowServiceImpl implements ShowService {
 		for (Episode episode : downloadScheduleResult.getNewEpisodes()) {
 			Show show = episode.getShow();
 			if (episode.getEpisode() == -1) {
-				episodesToDownload.add(new FullSeasonRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason()));
+				episodesToDownload.add(new FullSeasonRequest(null, show.getName(), show, MediaQuality.HD720P, episode.getSeason()));
 			} else {
-				episodesToDownload.add(new SingleEpisodeRequest(show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
+				episodesToDownload.add(new SingleEpisodeRequest(null, show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
 			}
 			logService.debug(getClass(), "Will try to download torrents of " + episode);
 		}

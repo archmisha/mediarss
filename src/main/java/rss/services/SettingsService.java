@@ -54,6 +54,8 @@ public interface SettingsService {
 
 	void removeUpdateListener(SettingsUpdateListener listener);
 
+	String getTrackerUrl();
+
 	public interface SettingsUpdateListener {
 		void onSettingsUpdated();
 	}

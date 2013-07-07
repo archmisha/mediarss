@@ -53,7 +53,7 @@ public class TVShowsTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 		torrentDao.persist(torrent);
 		episodeDao.persist(episode);
 
-		ShowRequest episodeRequest = new SingleEpisodeRequest("how i met your mother", new Show(), MediaQuality.HD720P, 8, 1);
+		ShowRequest episodeRequest = new SingleEpisodeRequest(null, "how i met your mother", new Show(), MediaQuality.HD720P, 8, 1);
 		Set<ShowRequest> episodeRequests = Collections.singleton(episodeRequest);
 		ExecutorService executor = Mockito.mock(ExecutorService.class);
 

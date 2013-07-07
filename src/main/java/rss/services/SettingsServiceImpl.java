@@ -205,6 +205,11 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
+	public String getTrackerUrl() {
+		return prop.getProperty("tracker.url");
+	}
+
+	@Override
 	public boolean isLogMemory() {
 		return "true".equals(prop.getProperty("log.memory"));
 	}

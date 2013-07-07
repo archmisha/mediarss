@@ -10,14 +10,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 import rss.BaseTest;
 import rss.dao.EpisodeDao;
 import rss.dao.TorrentDao;
-import rss.services.*;
+import rss.entities.Episode;
+import rss.entities.MediaQuality;
+import rss.entities.Show;
+import rss.services.EmailService;
+import rss.services.PageDownloader;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowsProvider;
-import rss.entities.Episode;
-import rss.entities.MediaQuality;
-import rss.entities.Show;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +63,7 @@ public class EpisodeTorrentsDownloaderTest extends BaseTest {
 	@Test
 	public void testEpisodeFoundInCacheButNotTorrents() {
 		Show show = new Show();
-		ShowRequest episodeRequest = new SingleEpisodeRequest("name", show, MediaQuality.HD720P, 2, 1);
+		ShowRequest episodeRequest = new SingleEpisodeRequest(null, "name", show, MediaQuality.HD720P, 2, 1);
 		Set<ShowRequest> episodeRequests = Collections.singleton(episodeRequest);
 		Episode episode = new Episode(2, 1);
 
