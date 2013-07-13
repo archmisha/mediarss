@@ -38,7 +38,7 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 	private static final String SEARCH_URL = "http://" + NAME + "/search/%s/0/";
 	private static final String ENTRY_URL = "http://" + NAME + "/";
 
-	private static final Pattern BITSNOOP_TORRENTS_ID = Pattern.compile("http://1337x.org/([^\"/]+)");
+	private static final Pattern BITSNOOP_TORRENTS_ID = Pattern.compile("http://1337x.org/([^\"]+)");
 
 	@Autowired
 	private PageDownloader pageDownloader;
@@ -63,7 +63,11 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 	public String parseId(MediaRequest mediaRequest, String page) {
 		Matcher matcher = BITSNOOP_TORRENTS_ID.matcher(page);
 		if (matcher.find()) {
-			return matcher.group(1);
+			String group = matcher.group(1);
+			if (group.equals("torrent")) {
+				System.out.println("ds");
+			}
+			return group;
 		}
 		return null;
 	}
