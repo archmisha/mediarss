@@ -13,11 +13,10 @@ define(['MessageBox', 'Spinner'],
 				}
 
 				var that = this;
-				return $.post(url, params)
-					.success(function(res) {
-						that._handleSuccess(res, success, mask);
-					}).error(function(res) {
-						that._handleError(res, mask);
+				return $.post(url, params,function(data, textStatus, jqXHR) {
+					that._handleSuccess(data, success, mask);
+				}).fail(function(jqXHR, textStatus, errorThrown) {
+						that._handleError(textStatus, errorThrown, mask);
 					});
 			},
 
@@ -27,25 +26,24 @@ define(['MessageBox', 'Spinner'],
 				}
 
 				var that = this;
-				return $.get(url)
-					.success(function(res) {
-						that._handleSuccess(res, success, mask);
-					}).error(function(res) {
-						that._handleError(res, mask);
+				return $.get(url,function(data, textStatus, jqXHR) {
+					that._handleSuccess(data, success, mask);
+				}).fail(function(jqXHR, textStatus, errorThrown) {
+						that._handleError(textStatus, errorThrown, mask);
 					});
 			},
 
-			_handleError: function(res, mask) {
+			_handleError: function(textStatus, errorThrown, mask) {
 				if (mask === undefined || mask === true) {
 					Spinner.unmask();
 				}
 
-				if (res.readyState === 0 && res.status === 0) {
-					MessageBox.error('Unable to communicate with the server');
-				} else if (res.status === 503) {
+				if (textStatus === "abort") {
+					return;
+				} else if (textStatus === "timeout") {
 					MessageBox.error('Server is not responding for too long');
-				} else {
-					MessageBox.error(res);
+				} else { //"parsererror", "error"
+					MessageBox.error(errorThrown);
 				}
 			},
 
