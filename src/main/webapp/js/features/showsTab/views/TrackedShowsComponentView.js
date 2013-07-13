@@ -115,7 +115,7 @@ define([
 						url: 'rest/shows/tracked/autocomplete',
 						dataType: 'jsonp',
 						transport: function(queryParams) {
-							return HttpUtils.get(queryParams.url + '?term=' + queryParams.data.term, queryParams.success, false);
+							return HttpUtils.get(queryParams.url + '?term=' + encodeURIComponent(queryParams.data.term), queryParams.success, false);
 						},
 						data: function(term, page) {
 							return {
