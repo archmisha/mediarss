@@ -9,15 +9,12 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.dao.EpisodeDao;
-import rss.entities.Episode;
 import rss.services.OOTBContentLoader;
 import rss.services.SettingsService;
 import rss.services.log.LogService;
@@ -37,7 +34,10 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,15 +73,15 @@ public class AppConfigListener implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		String base = ".";
-		if (System.getProperty("catalina.base") != null) {
-			base = System.getProperty("catalina.base");
-		} else if (System.getProperty("jetty.home") != null) {
-			base = System.getProperty("jetty.home");
-		}
-		String logsFolder = base + File.separator + "logs";
-		System.setProperty("rssFeed.logs_folder", logsFolder);
-		System.out.println("setting up logs folder to: " + logsFolder);
+//		String base = ".";
+//		if (System.getProperty("catalina.base") != null) {
+//			base = System.getProperty("catalina.base");
+//		} else if (System.getProperty("jetty.home") != null) {
+//			base = System.getProperty("jetty.home");
+//		}
+//		String logsFolder = base + File.separator + "logs";
+//		System.setProperty("rssFeed.logs_folder", logsFolder);
+//		System.out.println("setting up logs folder to: " + logsFolder);
 
 		final Log log = LogFactory.getLog(AppConfigListener.class);
 		try {
