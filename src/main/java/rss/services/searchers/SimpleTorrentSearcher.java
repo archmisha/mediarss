@@ -54,6 +54,14 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 					return searchResult;
 				}
 
+				// verify torrent name
+				for (Torrent torrent : new ArrayList<>(searchResult.<Torrent>getDownloadables())) {
+					if (torrent.getTitle().contains(".exe")) {
+						logService.info(getClass(), "== Removing torrent because title contains '.exe' !!! (" + torrent + "'");
+						searchResult.getDownloadables().remove(torrent);
+					}
+				}
+
 				// check aging
 				// if all torrents are awaiting aging then leave them, but if there is at least one that is not then return it
 				Calendar now = Calendar.getInstance();
