@@ -24,7 +24,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 	// need to skip entries like /z/...
 //	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\"/(\\w+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
 	// adjusting to proxy, url wont start with relative path like that: /<hash> but will have <proxy url>/http://torrentz.eu/<hash>
-	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\".*?([^/\"]+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
+	public static final Pattern ENTRY_CONTENT_PATTERN = Pattern.compile("<dl><dt><a href=\".*?([^/\"]+)\">(.*?)</a> &#187; (.*?)</dt>.*?<span class=\"v\".*?>(.*?)</span>.*?<span class=\"s\">(.*?)</span>.*?<span class=\"u\">(.*?)</span>.*?</dl>");
 
 	// removed filters: highres
 	// size>2000m - filters dvdscr
@@ -41,6 +41,8 @@ public class TorrentzParserImpl implements TorrentzParser {
 	// no need in that already doing it in the search url
 	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip"};
 	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam", "ts"};
+
+	private static final Pattern VERIFY_PATTERN = Pattern.compile("(\\d+)");
 
 
 	@Autowired
@@ -86,8 +88,9 @@ public class TorrentzParserImpl implements TorrentzParser {
 			String hash = matcher.group(1);
 			String name = matcher.group(2);
 			String type = matcher.group(3);
-			String sizeStr = matcher.group(4);
-			String uploaders = matcher.group(5);
+			String verifyStr = matcher.group(4);
+			String sizeStr = matcher.group(5);
+			String uploaders = matcher.group(6);
 
 			name = stripTags(name);
 			name = StringEscapeUtils.unescapeHtml4(name);
@@ -102,7 +105,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 			boolean skip = false;
 			for (String keyword : TYPES_TO_SKIP) {
 				if (type.contains(keyword)) {
-					logService.info(getClass(), "Skipping movie '" + name + "' due to type: '" + keyword + "'");
+					logService.info(getClass(), "Skipping torrent '" + name + "' due to type: '" + keyword + "'");
 					skip = true;
 				}
 			}
@@ -111,9 +114,19 @@ public class TorrentzParserImpl implements TorrentzParser {
 				String tmpName = ShowServiceImpl.normalize(name);
 				for (String keyword : KEYWORDS_TO_SKIP) {
 					if (tmpName.contains(" " + keyword + " ")) {
-						logService.info(getClass(), "Skipping movie '" + name + "' due to keyword: '" + keyword + "'");
+						logService.info(getClass(), "Skipping torrent '" + name + "' due to keyword: '" + keyword + "'");
 						skip = true;
 					}
+				}
+			}
+
+			if (!skip) {
+				Matcher matcher1 = VERIFY_PATTERN.matcher(verifyStr);
+				if (!matcher1.find()) {
+					logService.info(getClass(), "Skipping torrent '" + name + "' due to verification failure");
+					skip = true;
+				} else {
+					logService.debug(getClass(), "Not skipping torrent '" + name + "' due to verification success: " + matcher1.group(1));
 				}
 			}
 
