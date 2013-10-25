@@ -1,1 +1,1 @@
-{{name}}<img src='images/remove.png' class='tracked-show-image'/>
+{{name}}<span class='tracked-show-ended'> - Ended</span><img src='images/remove.png' class='tracked-show-image'/>

@@ -10,6 +10,10 @@ define([
 			template: Handlebars.compile(template),
 			className: 'tracked-show',
 
+			ui: {
+				ended: '.tracked-show-ended'
+			},
+
 			events: {
 				'click .tracked-show-image': 'onTrackedShowRemove'
 			},
@@ -21,6 +25,12 @@ define([
 
 			onTrackedShowRemove: function() {
 				this.vent.trigger('tracked-show-remove', this.model);
+			},
+
+			onRender: function() {
+				if (this.model.get('ended')) {
+					this.ui.ended.show();
+				}
 			}
 		});
 	});

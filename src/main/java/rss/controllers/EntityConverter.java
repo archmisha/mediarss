@@ -2,11 +2,8 @@ package rss.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.controllers.vo.DownloadStatus;
 import rss.controllers.vo.ShowVO;
-import rss.controllers.vo.UserMovieVO;
 import rss.controllers.vo.UserVO;
-import rss.entities.Movie;
 import rss.entities.Show;
 import rss.entities.User;
 import rss.services.SettingsService;
@@ -28,7 +25,7 @@ public class EntityConverter {
 	public List<ShowVO> toThinShows(Collection<Show> shows) {
 		ArrayList<ShowVO> result = new ArrayList<>();
 		for (Show show : shows) {
-			result.add(new ShowVO().withId(show.getId()).withName(show.getName()));
+			result.add(new ShowVO().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()));
 		}
 		return result;
 	}

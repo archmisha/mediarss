@@ -92,7 +92,7 @@ public class ShowsController extends BaseController {
 			trackedShowsIds.add(show.getId());
 		}
 
-		return autoCompleteShowNames(request, response, false, new Predicate<AutoCompleteItem>() {
+		return autoCompleteShowNames(request, response, true, new Predicate<AutoCompleteItem>() {
 			@Override
 			public boolean apply(rss.services.shows.AutoCompleteItem autoCompleteItem) {
 				return !trackedShowsIds.contains(autoCompleteItem.getId());

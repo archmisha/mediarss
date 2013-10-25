@@ -8,6 +8,7 @@ public class ShowVO {
 
 	private long id;
 	private String name;
+	private boolean ended;
 
 	public long getId() {
 		return id;
@@ -25,5 +26,14 @@ public class ShowVO {
 	public ShowVO withId(long id) {
 		this.id = id;
 		return this;
+	}
+
+	public ShowVO withEnded(boolean ended) {
+		this.ended = ended;
+		return this;
+	}
+
+	public boolean isEnded() {
+		return ended;
 	}
 }

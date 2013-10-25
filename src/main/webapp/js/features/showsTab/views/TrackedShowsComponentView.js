@@ -24,7 +24,8 @@ define([
 
 			ui: {
 				trackedShowsList: '.tracked-shows-list',
-				showsComboBox: SHOWS_COMBO_BOX_SELECTOR
+				showsComboBox: SHOWS_COMBO_BOX_SELECTOR,
+				endedNote: '.tracked-shows-ended-note'
 			},
 
 			events: {
@@ -36,9 +37,25 @@ define([
 			},
 
 			constructor: function(options) {
+				var that = this;
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.trackedShowsCollection = new ShowsCollection();
+				this.trackedShowsCollection.on('change reset add remove', function() {
+					console.log('a');
+					var hasEnded = false;
+					that.trackedShowsCollection.forEach(function(trackedShow) {
+						console.log('ab');
+						if (trackedShow.get('ended')) {
+							hasEnded = true;
+						}
+					});
+					if (hasEnded) {
+						that.ui.endedNote.show();
+					} else {
+						that.ui.endedNote.hide();
+					}
+				}, this);
 
 				this.trackedShowsView = new TrackedShowsCollectionView({
 					collection: this.trackedShowsCollection,
