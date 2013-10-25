@@ -129,24 +129,24 @@ public class ShowsController extends BaseController {
 		season = applyDefaultValue(season, -1);
 		episode = applyDefaultValue(episode, -1);
 		showId = applyDefaultValue(showId, -1l);
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		Long userId = sessionService.getLoggedInUserId();
 
 		// only admin is allowed to use forceDownload option
 		if (forceDownload) {
-			verifyAdminPermissions(user);
+			verifyAdminPermissions(userDao.find(userId));
 		}
 
 		try {
 			Show show = showDao.find(showId);
-			ShowRequest episodeRequest;
+			ShowRequest showRequest;
 			if (season == -1) {
-				episodeRequest = new FullShowRequest(user, title, show, MediaQuality.HD720P);
+				showRequest = new FullShowRequest(userId, title, show, MediaQuality.HD720P);
 			} else if (episode == -1) {
-				episodeRequest = new FullSeasonRequest(user, title, show, MediaQuality.HD720P, season);
+				showRequest = new FullSeasonRequest(userId, title, show, MediaQuality.HD720P, season);
 			} else {
-				episodeRequest = new SingleEpisodeRequest(user, title, show, MediaQuality.HD720P, season, episode);
+				showRequest = new SingleEpisodeRequest(userId, title, show, MediaQuality.HD720P, season, episode);
 			}
-			return showSearchService.search(episodeRequest, user, forceDownload);
+			return showSearchService.search(showRequest, sessionService.getLoggedInUserId(), forceDownload);
 		} catch (ShowNotFoundException e) {
 			return SearchResultVO.createNoResults(title);
 		}

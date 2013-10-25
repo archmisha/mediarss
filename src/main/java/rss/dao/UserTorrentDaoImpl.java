@@ -65,7 +65,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 	}
 
 	@Override
-	public Collection<UserTorrent> findUserEpisodes(User user, Collection<Episode> episodes) {
+	public Collection<UserTorrent> findUserEpisodes(long userId, Collection<Episode> episodes) {
 		Set<Long> ids = new HashSet<>();
 		for (Episode episode : episodes) {
 			ids.addAll(episode.getTorrentIds());
@@ -76,7 +76,7 @@ public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserT
 		}
 
 		Map<String, Object> params = new HashMap<>(2);
-		params.put("userId", user.getId());
+		params.put("userId", userId);
 		params.put("torrentIds", ids);
 		return super.findByNamedQueryAndNamedParams("UserEpisodeTorrent.findUserEpisodeTorrents", params);
 	}

@@ -2,7 +2,6 @@ package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.entities.User;
 import rss.services.shows.ShowServiceImpl;
 
 /**
@@ -14,8 +13,8 @@ public abstract class EpisodeRequest extends ShowRequest {
 
 	private int season;
 
-	public EpisodeRequest(User user, String title, Show show, MediaQuality quality, int season) {
-		super(user, title, show, quality);
+	public EpisodeRequest(Long userId, String title, Show show, MediaQuality quality, int season) {
+		super(userId, title, show, quality);
 		this.season = season;
 	}
 
@@ -31,7 +30,7 @@ public abstract class EpisodeRequest extends ShowRequest {
 
 	@Override
 	public String toQueryString() {
-		// must use a different normalization method that the one used in comapring shows
+		// must use a different normalization method that the one used in comparing shows
 		// because when searching we don't want to remove 'and', '&' and others
 		// brothers and sisters vs brothers sisters give different results
 		StringBuilder sb = new StringBuilder().append(ShowServiceImpl.normalizeForQueryString(getTitle()));

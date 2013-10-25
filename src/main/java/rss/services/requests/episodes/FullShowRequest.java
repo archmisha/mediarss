@@ -2,7 +2,6 @@ package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.entities.User;
 
 /**
  * User: Michael Dikman
@@ -13,8 +12,8 @@ public class FullShowRequest extends ShowRequest {
 
 	private static final long serialVersionUID = -6622950945609852366L;
 
-	public FullShowRequest(User user, String title, Show show, MediaQuality quality) {
-		super(user, title, show, quality);
+	public FullShowRequest(Long userId, String title, Show show, MediaQuality quality) {
+		super(userId, title, show, quality);
 	}
 
 	@Override

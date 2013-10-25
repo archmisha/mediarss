@@ -10,7 +10,10 @@ import rss.EpisodesComparator;
 import rss.MediaRSSException;
 import rss.ShowNotFoundException;
 import rss.dao.*;
-import rss.entities.*;
+import rss.entities.Episode;
+import rss.entities.MediaQuality;
+import rss.entities.Show;
+import rss.entities.Torrent;
 import rss.services.SessionService;
 import rss.services.requests.episodes.*;
 import rss.services.requests.subtitles.SubtitlesDoubleEpisodeRequest;
@@ -135,13 +138,13 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	@Override
 	// persisting new shows here - must be persisted before the new transaction opens for each download
 	protected Collection<Episode> preDownloadPhase(Set<ShowRequest> episodeRequests, boolean forceDownload) {
-		User user = null;
+		Long userId = null;
 
 		// substitute show name with alias and seasons if needed
 		for (ShowRequest episodeRequest : new HashSet<>(episodeRequests)) {
 			showService.transformEpisodeRequest(episodeRequest);
-			if (user == null) {
-				user = episodeRequest.getUser();
+			if (userId == null) {
+				userId = episodeRequest.getUserId();
 			}
 		}
 
@@ -175,7 +178,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		}
 
 		// for cached episodes, check if need to search for any subtitles
-		handleSubtitles(cachedEpisodes, user);
+		handleSubtitles(cachedEpisodes, userId);
 
 		return cachedEpisodes;
 	}
@@ -206,8 +209,8 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 			for (Episode episode : showService.findMissingFullSeasonEpisodes(show)) {
 				// only if this full season episode was requested in the first place
 				if (episodesMap.containsKey(episode)) {
-					User user = episodesMap.get(episode).iterator().next().getUser();
-					EpisodeRequest episodeRequest = new FullSeasonRequest(user, show.getName(), show, MediaQuality.HD720P, episode.getSeason());
+					Long userId = episodesMap.get(episode).iterator().next().getUserId();
+					EpisodeRequest episodeRequest = new FullSeasonRequest(userId, show.getName(), show, MediaQuality.HD720P, episode.getSeason());
 					episodeRequests.add(episodeRequest);
 					CollectionUtils.safeSetPut(episodesMap, episode, episodeRequest);
 				}
@@ -366,7 +369,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 						if ((episodesMap.containsKey(ep1) || episodesMap.containsKey(ep2)) &&
 							ep1.getAirDate() != null && ep2.getAirDate() != null && ep1.getAirDate().equals(ep2.getAirDate()) &&
 							(ep1.getTorrentIds().isEmpty() || ep2.getTorrentIds().isEmpty())) {
-							DoubleEpisodeRequest doubleEpisodeRequest = new DoubleEpisodeRequest(request.getUser(), showName, ep1.getShow(), quality, season,
+							DoubleEpisodeRequest doubleEpisodeRequest = new DoubleEpisodeRequest(request.getUserId(), showName, ep1.getShow(), quality, season,
 									ep1.getEpisode(), ep2.getEpisode());
 							logService.info(getClass(), "Adding a double episode request: " + doubleEpisodeRequest.toString());
 							episodeRequests.add(doubleEpisodeRequest);
@@ -424,7 +427,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 				Map<Integer, Pair<TreeSet<Episode>, Boolean>> map = eps.get(show.getName());
 				episodeRequests.remove(episodeRequest);
 				for (Map.Entry<Integer, Pair<TreeSet<Episode>, Boolean>> entry : map.entrySet()) {
-					episodeRequests.add(new FullSeasonRequest(episodeRequest.getUser(), show.getName(), show, episodeRequest.getQuality(), entry.getKey()));
+					episodeRequests.add(new FullSeasonRequest(episodeRequest.getUserId(), show.getName(), show, episodeRequest.getQuality(), entry.getKey()));
 				}
 			}
 		}
@@ -448,7 +451,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 					for (Episode episode : pair.getKey()) {
 						// skip full season episodes
 						if (episode.getEpisode() > -1) {
-							episodeRequests.add(new SingleEpisodeRequest(showRequest.getUser(), show.getName(), show, showRequest.getQuality(), season, episode.getEpisode()));
+							episodeRequests.add(new SingleEpisodeRequest(showRequest.getUserId(), show.getName(), show, showRequest.getQuality(), season, episode.getEpisode()));
 						}
 					}
 				}
@@ -458,7 +461,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 	private void handleSubtitles(ShowRequest showRequest, Torrent torrent, List<Episode> persistedEpisodes) {
 		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
-		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow(), showRequest.getUser());
+		List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, showRequest.getShow(), showRequest.getUserId());
 		if (languages.isEmpty()) {
 			return;
 		}
@@ -490,7 +493,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	// for full season episode expand to single episodes and create subtitles requests for them
 	// the rest group by torrents, if single episode per torrent - create single request
 	// if 2 episodes per torrent - its a double request
-	private void handleSubtitles(Set<Episode> episodes, User user) {
+	private void handleSubtitles(Set<Episode> episodes, Long userId) {
 		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
 		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
 		Map<Torrent, List<Episode>> map = new HashMap<>();
@@ -505,7 +508,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 							continue;
 						}
 						Show show = curEpisode.getShow();
-						List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show, user);
+						List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show, userId);
 						if (!languages.isEmpty()) {
 							subtitlesRequests.add(new SubtitlesSingleEpisodeRequest(torrent, show, curEpisode.getSeason(), curEpisode.getEpisode(), languages, curEpisode.getAirDate()));
 						}
@@ -519,7 +522,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		for (Map.Entry<Torrent, List<Episode>> entry : map.entrySet()) {
 			Torrent torrent = entry.getKey();
 			Show show = entry.getValue().get(0).getShow();
-			List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show, user);
+			List<SubtitleLanguage> languages = getSubtitleLanguagesForShow(languagesPerShow, show, userId);
 			if (!languages.isEmpty()) {
 				if (entry.getValue().size() == 1) {
 					Episode episode = entry.getValue().get(0);
@@ -540,7 +543,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 		}
 	}
 
-	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show, User user) {
+	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show, Long userId) {
 		if (!languagesPerShow.containsKey(show)) {
 			try {
 				if (sessionService.isUserLogged()) {
@@ -550,8 +553,8 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 				}
 			} catch (BeansException e) {
 				// if user is not logged in and we don't have a session, we will have an exception here
-				if (user != null) {
-					getSubtitleLanguagesForShowHelper(user.getId(), languagesPerShow, show);
+				if (userId != null) {
+					getSubtitleLanguagesForShowHelper(userId, languagesPerShow, show);
 				} else {
 					languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
 				}

@@ -2,7 +2,6 @@ package rss.services.requests.episodes;
 
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.entities.User;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.MediaRequestVisitor;
 
@@ -14,13 +13,13 @@ public abstract class ShowRequest extends MediaRequest {
 
 	private MediaQuality quality;
 	private Show show;
-	private User user;
+	private Long userId;
 
-	public ShowRequest(User user, String title, Show show, MediaQuality quality) {
+	public ShowRequest(Long userId, String title, Show show, MediaQuality quality) {
 		super(title, 1);
 		this.quality = quality;
 		this.show = show;
-		this.user = user;
+		this.userId = userId;
 	}
 
 	public void setQuality(MediaQuality quality) {
@@ -47,7 +46,7 @@ public abstract class ShowRequest extends MediaRequest {
 		throw new UnsupportedOperationException();
 	}
 
-	public User getUser() {
-		return user;
+	public Long getUserId() {
+		return userId;
 	}
 }

@@ -15,7 +15,10 @@ import rss.dao.ShowDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
-import rss.entities.*;
+import rss.entities.Episode;
+import rss.entities.Show;
+import rss.entities.Torrent;
+import rss.entities.UserTorrent;
 import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.episodes.ShowRequest;
@@ -68,7 +71,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 	protected TransactionTemplate transactionTemplate;
 
 	@Override
-	public SearchResultVO search(ShowRequest episodeRequest, User user, boolean forceDownload) {
+	public SearchResultVO search(ShowRequest episodeRequest, long userId, boolean forceDownload) {
 		// saving original search term - it might change during the search
 		String originalSearchTerm = episodeRequest.getTitle();
 		String actualSearchTerm;
@@ -119,7 +122,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		ArrayList<UserTorrentVO> result = new ArrayList<>();
 
 		// add those containing user torrent
-		for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(user, downloaded)) {
+		for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(userId, downloaded)) {
 			torrentIds.remove(userTorrent.getTorrent().getId());
 			result.add(UserTorrentVO.fromUserTorrent(userTorrent));
 		}
