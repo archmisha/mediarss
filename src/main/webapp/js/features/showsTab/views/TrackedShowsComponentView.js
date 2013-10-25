@@ -42,7 +42,6 @@ define([
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.trackedShowsCollection = new ShowsCollection();
 				this.trackedShowsCollection.on('change reset add remove', function() {
-					console.log('a');
 					var hasEnded = false;
 					that.trackedShowsCollection.forEach(function(trackedShow) {
 						console.log('ab');
@@ -93,7 +92,7 @@ define([
 				setTimeout(function() {
 					HttpUtils.post("rest/shows/add-tracked/" + showId, {}, function(res) {
 						Spinner.unmask();
-						that.trackedShowsCollection.add(new Show({id: comboShow.id, name: comboShow.text}));
+						that.trackedShowsCollection.add(new Show({id: comboShow.id, name: comboShow.text, ended: comboShow.ended}));
 						that.trackedShowsCollection.sort();
 						that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
 						that.ui.showsComboBox.select2('data', '');

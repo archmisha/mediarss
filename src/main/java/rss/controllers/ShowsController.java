@@ -20,7 +20,7 @@ import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.FullShowRequest;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
-import rss.services.shows.AutoCompleteItem;
+import rss.services.shows.ShowAutoCompleteItem;
 import rss.services.shows.ShowSearchService;
 import rss.util.DurationMeter;
 
@@ -92,10 +92,10 @@ public class ShowsController extends BaseController {
 			trackedShowsIds.add(show.getId());
 		}
 
-		return autoCompleteShowNames(request, response, true, new Predicate<AutoCompleteItem>() {
+		return autoCompleteShowNames(request, response, false, new Predicate<ShowAutoCompleteItem>() {
 			@Override
-			public boolean apply(rss.services.shows.AutoCompleteItem autoCompleteItem) {
-				return !trackedShowsIds.contains(autoCompleteItem.getId());
+			public boolean apply(ShowAutoCompleteItem showAutoCompleteItem) {
+				return !trackedShowsIds.contains(showAutoCompleteItem.getId());
 			}
 		});
 	}

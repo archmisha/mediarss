@@ -278,7 +278,7 @@ public class ShowServiceImpl implements ShowService {
 			protected void doInTransactionWithoutResult(TransactionStatus arg0) {
 				// if missing episode is released today (no matter the hour) then don't email it
 				for (ShowRequest episodeRequest : new ArrayList<>(missing)) {
-					for (Episode episode : episodeDao.find((EpisodeRequest) episodeRequest)) {
+					for (Episode episode : episodeDao.find(episodeRequest)) {
 						// might be null cuz maybe there is no such episode at all - who knows what they search for
 						if (/*episode != null &&*/ episode.getAirDate() != null && DateUtils.isToday(episode.getAirDate())) {
 							missing.remove(episodeRequest);
@@ -291,13 +291,14 @@ public class ShowServiceImpl implements ShowService {
 	}
 
 	@Override
-	public List<AutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super AutoCompleteItem> predicate) {
+	public List<ShowAutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super ShowAutoCompleteItem> predicate) {
 		term = term.toLowerCase().trim();
-		List<AutoCompleteItem> result = new ArrayList<>();
+		List<ShowAutoCompleteItem> result = new ArrayList<>();
 		for (CachedShow cachedShow : showsCacheService.getAll()) {
-			if ((includeEnded || !cachedShow.isEnded()) &&
-				(cachedShow.getName().toLowerCase().contains(term))) {
-				result.add(new AutoCompleteItem(cachedShow.getId(), cachedShow.getName()));
+			if ((includeEnded || !cachedShow.isEnded()) && cachedShow.getName().toLowerCase().contains(term)) {
+				ShowAutoCompleteItem showAutoCompleteItem = new ShowAutoCompleteItem(cachedShow.getId(), cachedShow.getName());
+				showAutoCompleteItem.setEnded(cachedShow.isEnded());
+				result.add(showAutoCompleteItem);
 			}
 		}
 		if (predicate != null) {

@@ -11,7 +11,7 @@ import rss.UserNotLoggedInException;
 import rss.entities.User;
 import rss.services.SettingsService;
 import rss.services.log.LogService;
-import rss.services.shows.AutoCompleteItem;
+import rss.services.shows.ShowAutoCompleteItem;
 import rss.services.shows.ShowService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -138,15 +138,15 @@ public class BaseController {
 	}
 
 	protected Map<String, Object> autoCompleteShowNames(HttpServletRequest request, HttpServletResponse response, boolean includeEnded,
-														Predicate<? super AutoCompleteItem> predicate) {
+														Predicate<? super ShowAutoCompleteItem> predicate) {
 //		try {
 		String term = extractString(request, "term", true).trim();
 //			String callback = extractString(request, "callback", true);
 
-		List<AutoCompleteItem> result = showService.autoCompleteShowNames(term, includeEnded, predicate);
-		Collections.sort(result, new Comparator<AutoCompleteItem>() {
+		List<ShowAutoCompleteItem> result = showService.autoCompleteShowNames(term, includeEnded, predicate);
+		Collections.sort(result, new Comparator<ShowAutoCompleteItem>() {
 			@Override
-			public int compare(AutoCompleteItem o1, AutoCompleteItem o2) {
+			public int compare(ShowAutoCompleteItem o1, ShowAutoCompleteItem o2) {
 				return o1.getText().compareToIgnoreCase(o2.getText());
 			}
 		});

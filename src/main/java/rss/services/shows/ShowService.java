@@ -3,15 +3,14 @@ package rss.services.shows;
 import com.google.common.base.Predicate;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
+import rss.entities.Show;
 import rss.entities.User;
 import rss.services.matching.MatchCandidate;
 import rss.services.requests.episodes.EpisodeRequest;
-import rss.entities.Show;
 import rss.services.requests.episodes.ShowRequest;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * User: dikmanm
@@ -31,7 +30,7 @@ public interface ShowService {
 
 	DownloadScheduleResult downloadFullSchedule(final Show show);
 
-	List<AutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super AutoCompleteItem> predicate);
+	List<ShowAutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super ShowAutoCompleteItem> predicate);
 
 	ShowsScheduleVO getSchedule(User user);
 
