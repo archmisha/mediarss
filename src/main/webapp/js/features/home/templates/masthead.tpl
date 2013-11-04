@@ -2,7 +2,7 @@ Welcome <span class='masthead-username'>{{username}}</span>
 <span class='masthead-separator'>|</span>
 <span class='masthead-support'>Support</span>
 <span class='masthead-separator'>|</span>
-<span class='masthead-updated-on'>Version updated on {{dateFormat updated-on format="DD/MM/YYYY"}}</span>
+<span class='masthead-updated-on'><span class='masthead-updated-on-prefix'>Version updated on </span>{{dateFormat updated-on format="DD/MM/YYYY"}}</span>
 <span class='masthead-separator'>|</span>
 <a href="#logout" class='masthead-logout'>Logout</a>
 

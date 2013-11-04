@@ -17,7 +17,10 @@ import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,35 +41,49 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 	private TransactionTemplate transactionTemplate;
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public DownloadResult<T, S> download(Collection<S> mediaRequests) {
-		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_REQUESTS), false);
+	public DownloadResult<T, S> download(Set<S> mediaRequests, DownloadConfig downloadConfig) {
+		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_REQUESTS), downloadConfig);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public DownloadResult<T, S> download(Collection<S> mediaRequests, boolean forceDownload) {
-		return download(mediaRequests, Executors.newFixedThreadPool(MAX_CONCURRENT_REQUESTS), forceDownload);
-	}
-
-	@Transactional(propagation = Propagation.REQUIRED)
-	public DownloadResult<T, S> download(Collection<S> mediaRequests, ExecutorService executorService, boolean forceDownload) {
-		// copying to avoid UnsupportedOperationException if immutable collections is given
-		final Set<S> mediaRequestsCopy = new HashSet<>(mediaRequests);
-
-		final ConcurrentLinkedQueue<Pair<S, SearchResult>> notProcessedResults = new ConcurrentLinkedQueue<>();
-		final ConcurrentLinkedQueue<T> processedResults = new ConcurrentLinkedQueue<>();
-		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
-		final Class aClass = getClass();
-
+	public DownloadResult<T, S> download(final Set<S> mediaRequests,
+										 final ExecutorService executorService,
+										 DownloadConfig downloadConfig) {
 		// enriching the set before the cache query - maybe expanding full season request into parts
 		// modifying and enriching the set inside the method
 		// first query the cache and those that are not found in cache divide between the threads
-		Collection<T> cachedTorrentEntries;
+		final Collection<T> cachedTorrentEntries;
 		try {
-			cachedTorrentEntries = preDownloadPhase(mediaRequestsCopy, forceDownload);
+			cachedTorrentEntries = preDownloadPhase(mediaRequests, downloadConfig.isForceDownload());
 		} catch (Exception e) {
 			executorService.shutdown();
 			throw e;
 		}
+
+		if (downloadConfig.isAsyncHeavy()) {
+			final DownloadResult<T, S> downloadResult = DownloadResult.createHeavyDownloadResult();
+			ExecutorService es = Executors.newSingleThreadExecutor();
+			es.submit(new Runnable() {
+				@Override
+				public void run() {
+					downloadHelper(executorService, mediaRequests, cachedTorrentEntries, downloadResult);
+				}
+			});
+			es.shutdown();
+			return downloadResult;
+		} else {
+			return downloadHelper(executorService, mediaRequests, cachedTorrentEntries, DownloadResult.<T, S>createLightDownloadResult());
+		}
+	}
+
+	private DownloadResult<T, S> downloadHelper(ExecutorService executorService,
+												Set<S> mediaRequestsCopy,
+												Collection<T> cachedTorrentEntries,
+												DownloadResult<T, S> downloadResult) {
+		final Class aClass = getClass();
+		final ConcurrentLinkedQueue<Pair<S, SearchResult>> notProcessedResults = new ConcurrentLinkedQueue<>();
+		final ConcurrentLinkedQueue<T> processedResults = new ConcurrentLinkedQueue<>();
+		final ConcurrentLinkedQueue<S> missing = new ConcurrentLinkedQueue<>();
 
 		MultiThreadExecutor.execute(executorService, mediaRequestsCopy, new MultiThreadExecutor.MultiThreadExecutorTask<S>() {
 			@Override
@@ -145,7 +162,9 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 			processMissingRequests(missing);
 		}
 
-		return new DownloadResult<>(result, missing);
+		downloadResult.setDownloaded(result);
+		downloadResult.setMissing(missing);
+		return downloadResult;
 	}
 
 	protected abstract boolean isSingleTransaction();

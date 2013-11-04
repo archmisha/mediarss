@@ -25,6 +25,7 @@ import rss.entities.*;
 import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.SettingsService;
+import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
@@ -268,7 +269,7 @@ public class ShowServiceImpl implements ShowService {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-				DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(episodesToDownload);
+				DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(episodesToDownload, new DownloadConfig());
 				missing.addAll(downloadResult.getMissing());
 			}
 		});

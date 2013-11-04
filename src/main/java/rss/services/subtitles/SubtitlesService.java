@@ -2,7 +2,7 @@ package rss.services.subtitles;
 
 import rss.services.requests.subtitles.SubtitlesRequest;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * User: dikmanm
@@ -10,9 +10,7 @@ import java.util.List;
  */
 public interface SubtitlesService {
 
-
-
 	void downloadMissingSubtitles();
 
-	void downloadSubtitlesAsync(List<SubtitlesRequest> subtitlesRequests);
+	void downloadSubtitlesAsync(Set<SubtitlesRequest> subtitlesRequests);
 }

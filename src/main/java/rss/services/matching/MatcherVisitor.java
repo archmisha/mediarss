@@ -7,6 +7,7 @@ import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.MediaRequestVisitor;
+import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.shows.ShowService;
 import rss.util.CollectionUtils;
 
@@ -49,11 +50,14 @@ public class MatcherVisitor implements MediaRequestVisitor<List<MatchCandidate>,
 		for (MatchCandidate searchResult : matchCandidates) {
 			String cur = searchResult.getText().toLowerCase();
 			// filter out low quality
-			if (cur.contains("brrip") || cur.contains("dvdscr")) {
-				continue;
+			boolean skip = false;
+			for (String type : TorrentzParserImpl.TYPES_TO_SKIP) {
+				if (cur.contains(type)) {
+					skip = true;
+				}
 			}
 
-			if (cur.contains(movieRequest.getTitle().toLowerCase())) {
+			if (!skip && cur.contains(movieRequest.getTitle().toLowerCase())) {
 				results.add(searchResult);
 			}
 		}

@@ -1,6 +1,5 @@
 package rss.services.downloader;
 
-import rss.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,16 +9,17 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.BaseTest;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
+import rss.entities.Movie;
+import rss.entities.Torrent;
 import rss.services.EmailService;
 import rss.services.PageDownloader;
 import rss.services.PageDownloaderImpl;
-import rss.services.searchers.SearchResult;
 import rss.services.requests.movies.MovieRequest;
+import rss.services.searchers.SearchResult;
 import rss.services.searchers.composite.MoviesCompositeSearcher;
-import rss.entities.Movie;
-import rss.entities.Torrent;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -71,7 +71,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(SearchResult.createNotFound());
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(1, downloadResult.getMissing().size());
@@ -90,7 +92,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -107,7 +111,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 		searchResult.addDownloadable(torrent);
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(1, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -130,7 +136,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -153,7 +161,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -179,7 +189,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(1, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -209,7 +221,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(1, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -235,7 +249,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());
@@ -261,7 +277,9 @@ public class MovieTorrentsDownloaderTest extends BaseTest {
 //		when(torrentDao.find(any(Set.class))).thenReturn(Collections.<Torrent>emptyList());
 		when(compositeMoviesSearcher.search(movieRequest)).thenReturn(searchResult);
 
-		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, false);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(false);
+		DownloadResult<Movie, MovieRequest> downloadResult = downloader.download(movieRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(0, downloadResult.getMissing().size());

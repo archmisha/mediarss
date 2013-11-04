@@ -466,7 +466,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 			return;
 		}
 
-		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+		Set<SubtitlesRequest> subtitlesRequests = new HashSet<>();
 		if (showRequest instanceof SingleEpisodeRequest) {
 			Episode episode = persistedEpisodes.get(0);
 			if (episode.getEpisode() != -1) {
@@ -495,7 +495,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	// if 2 episodes per torrent - its a double request
 	private void handleSubtitles(Set<Episode> episodes, Long userId) {
 		Map<Show, List<SubtitleLanguage>> languagesPerShow = new HashMap<>();
-		List<SubtitlesRequest> subtitlesRequests = new ArrayList<>();
+		Set<SubtitlesRequest> subtitlesRequests = new HashSet<>();
 		Map<Torrent, List<Episode>> map = new HashMap<>();
 		for (Episode episode : episodes) {
 			for (Torrent torrent : torrentDao.find(episode.getTorrentIds())) {

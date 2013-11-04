@@ -39,7 +39,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 	public static final String TORRENTZ_EPISODE_SEARCH_URL = HOST_NAME + "verifiedP?f=" + EPISODE_FILTERS;
 
 	// no need in that already doing it in the search url
-	private static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip", "webrip", "hdrip"};
+	public static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn", "brrip", "webrip", "hdrip"};
 	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam", "ts"};
 
 	private static final Pattern VERIFY_PATTERN = Pattern.compile("(\\d+)");

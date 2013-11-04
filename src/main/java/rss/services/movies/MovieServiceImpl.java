@@ -19,6 +19,7 @@ import rss.dao.UserTorrentDao;
 import rss.dao.ViewDao;
 import rss.entities.*;
 import rss.services.SessionService;
+import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.LatestMoviesDownloader;
 import rss.services.downloader.MovieTorrentsDownloader;
@@ -301,7 +302,7 @@ public class MovieServiceImpl implements MovieService {
 
 		if (user.getSubtitles() != null) {
 			SubtitlesMovieRequest smr = new SubtitlesMovieRequest(torrent, movie, Collections.singletonList(user.getSubtitles()));
-			subtitlesService.downloadSubtitlesAsync(Collections.<SubtitlesRequest>singletonList(smr));
+			subtitlesService.downloadSubtitlesAsync(new HashSet<>(Arrays.<SubtitlesRequest>asList(smr)));
 		}
 
 		logService.info(getClass(), "User " + user + " downloads '" + userMovie.getMovie() + "'");
@@ -351,7 +352,10 @@ public class MovieServiceImpl implements MovieService {
 					public void run() {
 						MovieRequest movieRequest = new MovieRequest(finalMovie.getName(), null);
 						movieRequest.setImdbId(imdbUrl);
-						movieTorrentsDownloader.download(Collections.singleton(movieRequest));
+						DownloadConfig downloadConfig = new DownloadConfig();
+						downloadConfig.setAsyncHeavy(false);
+						downloadConfig.setForceDownload(false);
+						movieTorrentsDownloader.download(new HashSet<>(Arrays.asList(movieRequest)), downloadConfig);
 						moviesBeingSearched.remove(finalMovie);
 					}
 				});
@@ -420,7 +424,7 @@ public class MovieServiceImpl implements MovieService {
 			torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "7d");
 		}
 
-		List<MovieRequest> movieRequests = new ArrayList<>();
+		Set<MovieRequest> movieRequests = new HashSet<>();
 		// filter out old year movies
 		int curYear = Calendar.getInstance().get(Calendar.YEAR);
 		int prevYear = curYear - 1;
@@ -436,7 +440,7 @@ public class MovieServiceImpl implements MovieService {
 			}
 		}
 
-		return latestMoviesDownloader.download(movieRequests);
+		return latestMoviesDownloader.download(movieRequests, new DownloadConfig());
 	}
 
 	@Override
@@ -460,12 +464,12 @@ public class MovieServiceImpl implements MovieService {
 	public void downloadUserMovies() {
 		logService.info(getClass(), "Downloading user movies");
 		List<Movie> movies = movieDao.findAllUserMovies(MovieServiceImpl.USER_MOVIES_DISPLAY_DAYS_HISTORY);
-		List<MovieRequest> movieRequests = new ArrayList<>();
+		Set<MovieRequest> movieRequests = new HashSet<>();
 		for (Movie movie : movies) {
 			MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
 			movieRequest.setImdbId(movie.getImdbUrl());
 			movieRequests.add(movieRequest);
 		}
-		movieTorrentsDownloader.download(movieRequests);
+		movieTorrentsDownloader.download(movieRequests, new DownloadConfig());
 	}
 }

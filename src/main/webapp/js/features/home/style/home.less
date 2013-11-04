@@ -18,18 +18,6 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   padding-right: 20px;
 }
 
-@media screen and (max-width: 1090px) and (min-width: 0px) {
-  .home-header-tabs {
-    font-size: 22px;
-    height: 36px;
-  }
-
-  .home-header-tabs a {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-}
-
 // the hover overrides unselected hover styling
 .home-header-tabs .home-selected-tab,
 .home-header-tabs .home-selected-tab:hover {
@@ -42,14 +30,7 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 
 .home-content {
   margin-top: 30px;
-  //  margin-left: 142px;
 }
-
-//@media screen and (max-width: 666px) and (min-width:0px) {
-//  .home-content {
-//    margin-left: 10px;
-//  }
-//}
 
 .home-masthead {
   float: right;
@@ -106,12 +87,6 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   color: @theme-color;
 }
 
-@media screen and (max-width: 1090px) and (min-width: 0px) {
-  .masthead-support-title {
-    font-size: 20px;
-  }
-}
-
 .masthead-support-subtitle {
   color: #808080;
 }
@@ -148,4 +123,55 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   margin-bottom: 2px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+}
+
+@media screen and (max-width: 1090px) {
+  .masthead-support-title {
+    font-size: 20px;
+  }
+
+  .home-header-tabs {
+    font-size: 22px;
+    height: 36px;
+  }
+
+  .home-header-tabs a {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .home-masthead {
+    //    float: none;
+    margin-top: 3px;
+    margin-right: 5px;
+    margin-left: 5px;
+  }
+
+  .home-content {
+    margin-top: 20px;
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
+  .home-header-tabs {
+    font-size: 14px;
+    height: 26px;
+    margin-top: 30px;
+  }
+
+  .home-header-tabs a {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .masthead-separator {
+    margin-left: 3px;
+    margin-right: 3px;
+  }
+
+  .masthead-updated-on-prefix {
+    display: none;
+  }
 }

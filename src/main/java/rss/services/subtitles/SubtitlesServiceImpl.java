@@ -7,16 +7,16 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.dao.SubtitlesDao;
 import rss.entities.Subtitles;
 import rss.services.EmailService;
 import rss.services.SettingsService;
+import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.SubtitlesDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.subtitles.SubtitlesRequest;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -26,9 +26,6 @@ import java.util.concurrent.Executors;
  */
 @Service
 public class SubtitlesServiceImpl implements SubtitlesService {
-
-	@Autowired
-	private SubtitlesDao subtitlesDao;
 
 	@Autowired
 	private LogService logService;
@@ -102,7 +99,7 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 
 	@Override
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void downloadSubtitlesAsync(final List<SubtitlesRequest> subtitlesRequests) {
+	public void downloadSubtitlesAsync(final Set<SubtitlesRequest> subtitlesRequests) {
 		if (!settingsService.areSubtitlesEnabled()) {
 			return;
 		}
@@ -123,7 +120,7 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 							for (SubtitlesRequest subtitlesRequest : subtitlesRequests) {
 								subtitlesRequest.getLanguages().addAll(subtitlesLanguages);
 							}*/
-							DownloadResult<Subtitles,SubtitlesRequest> downloadResult = subtitlesDownloader.download(subtitlesRequests);
+							DownloadResult<Subtitles, SubtitlesRequest> downloadResult = subtitlesDownloader.download(subtitlesRequests, new DownloadConfig());
 							emailService.notifyOfMissingSubtitles(downloadResult.getMissing());
 						}
 					});

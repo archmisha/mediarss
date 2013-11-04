@@ -19,6 +19,8 @@ import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.entities.UserTorrent;
+import rss.services.downloader.DownloadConfig;
+import rss.services.downloader.DownloadResult;
 import rss.services.downloader.EpisodeTorrentsDownloader;
 import rss.services.log.LogService;
 import rss.services.requests.episodes.ShowRequest;
@@ -107,9 +109,17 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		}
 
 		downloadShowScheduleBeforeSearch(episodeRequest.getShow());
+//dsdsdsds
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(forceDownload);
+		downloadConfig.setAsyncHeavy(true);
+		DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Arrays.asList(episodeRequest)), downloadConfig);
 
-		Collection<Episode> downloaded = torrentEntriesDownloader.download(Collections.singleton(episodeRequest), forceDownload).getDownloaded();
+		return downloadResultToSearchResultVO(userId, originalSearchTerm, actualSearchTerm, didYouMeanShows, downloadResult);
+	}
 
+	private SearchResultVO downloadResultToSearchResultVO(long userId, String originalSearchTerm, String actualSearchTerm, Collection<Show> didYouMeanShows, DownloadResult<Episode, ShowRequest> downloadResult) {
+		Collection<Episode> downloaded = downloadResult.getDownloaded();
 		Set<Long> torrentIds = new HashSet<>();
 		final Map<Long, Episode> episodeByTorrentsForComparator = new HashMap<>();
 		for (Episode episode : downloaded) {
@@ -141,7 +151,6 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 				return episodesComparator.compare(episode1, episode2);
 			}
 		});
-
 
 		return SearchResultVO.createWithResult(originalSearchTerm, actualSearchTerm, result, entityConverter.toThinShows(didYouMeanShows));
 	}
@@ -178,8 +187,9 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 				}
 			}
 		}
+
 		if (shouldDownloadSchedule) {
-			// need to d oit async, so the commit of the schedule download date will happen immidiately
+			// need to do it async, so the commit of the schedule download date will happen immidiately
 			ExecutorService executorService = Executors.newSingleThreadExecutor();
 			executorService.submit(new Runnable() {
 				@Override

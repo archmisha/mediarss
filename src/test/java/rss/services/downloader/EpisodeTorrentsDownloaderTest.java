@@ -71,7 +71,9 @@ public class EpisodeTorrentsDownloaderTest extends BaseTest {
 //		when(showService.findShow(any(String.class))).thenReturn(Collections.singletonList(show));
 //		when(tvComService.getEpisodesCount(show, 2)).thenReturn(5);
 
-		DownloadResult<Episode, ShowRequest> downloadResult = downloader.download(episodeRequests, executor, true);
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(true);
+		DownloadResult<Episode, ShowRequest> downloadResult = downloader.download(episodeRequests, executor, downloadConfig);
 
 		assertEquals(0, downloadResult.getDownloaded().size());
 		assertEquals(1, downloadResult.getMissing().size());

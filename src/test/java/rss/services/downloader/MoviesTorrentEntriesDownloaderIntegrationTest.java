@@ -15,12 +15,15 @@ import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.services.requests.movies.MovieRequest;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:testContext.xml"})
@@ -53,7 +56,9 @@ public class MoviesTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 		Set<MovieRequest> movieRequests = Collections.singleton(movieRequest);
 		ExecutorService executor = Mockito.mock(ExecutorService.class);
 
-		Collection<Movie> download = downloader.download(movieRequests, executor, true).getDownloaded();
+		DownloadConfig downloadConfig = new DownloadConfig();
+		downloadConfig.setForceDownload(true);
+		Collection<Movie> download = downloader.download(movieRequests, executor, downloadConfig).getDownloaded();
 
 		verify(executor, Mockito.times(0)).submit(any(Runnable.class));
 		assertEquals(1, download.size());
