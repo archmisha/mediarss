@@ -191,21 +191,6 @@
   margin-left: @shows-tab-width - @shows-schedules-width;
 }
 
-@media screen and (max-width: 970px) and (min-width:0px) {
-  .shows-schedule-container {
-    width: 503px;
-    margin-left: 0px;
-  }
-
-  .search-shows-section {
-    margin-top: 50px;
-  }
-
-  .shows-left-side {
-    position: inherit;
-  }
-}
-
 .shows-schedule-today {
   font-weight: bold;
 }
@@ -243,4 +228,70 @@
   color: #808080;
   //  font-size: @font-size-body;
   font-style: italic;
+}
+
+@media screen and (max-width: 970px) {
+  .shows-schedule-container {
+    width: 503px;
+    margin-left: 0px;
+  }
+
+  .search-shows-section {
+    margin-top: 50px;
+  }
+
+  .shows-left-side {
+    position: inherit;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .tvshows-tab {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
+  .shows-schedule-container {
+    width: auto;
+    margin-left: 0px;
+  }
+
+  .search-shows {
+    margin-left: 0px;
+  }
+
+  .tracked-shows {
+    margin-left: 0px;
+  }
+
+  .search-shows-section {
+    margin-top: 20px;
+  }
+
+  .tracked-shows-section {
+    margin-top: 20px;
+  }
+
+  .shows-search-title {
+    width: auto;
+  }
+
+  .search-shows-container,
+  .tracked-shows-container,
+  .search-shows-section,
+  .tracked-shows-section {
+    width: auto;
+  }
+
+  .admin-all-shows-combo, .select2-container {
+    width: 225px;
+  }
+
+  .tracked-shows-list {
+    width: auto;
+  }
+
+  .select2-drop {
+    font-size: 13px;
+  }
 }

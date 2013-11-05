@@ -5,12 +5,6 @@
   margin-left: 142px;
 }
 
-@media screen and (max-width: 791px) and (min-width:0px) {
-  .admin-tab {
-    margin-left: 10px;
-  }
-}
-
 .access-stats-list-container,
 .jobs-list {
   margin-left: 25px;
@@ -105,7 +99,7 @@
 .notifications-textarea {
   width: 99%; /* due to the thick border */
   min-height: 150px;
-  min-width: 500px;
+  //  min-width: 500px;
   padding: 0px;
 }
 
@@ -233,7 +227,7 @@
   position: relative;
 }
 
-@media screen and (max-width: 1090px) and (min-width:0px) {
+@media screen and (max-width: 1090px) {
   .access-stats-name-column-header,
   .username-column {
     width: 200px;
@@ -254,5 +248,30 @@
 
   .access-stats-item {
     height: 22px;
+  }
+}
+
+@media screen and (max-width: 791px) {
+  .admin-tab {
+    margin-left: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .admin-tab {
+    margin-left: 0px;
+  }
+
+  .access-stats-list-container,
+  .jobs-list {
+    margin-left: 0px;
+  }
+
+  .admin-delete-movie, .admin-delete-show, .admin-download-show-schedule {
+    margin-left: 0px;
+  }
+
+  .admin-notifications {
+    margin-left: 0px;
   }
 }
