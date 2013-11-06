@@ -14,9 +14,7 @@ import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.util.DurationMeter;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -61,10 +59,10 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String getImdbPreviewPage(Movie movie) {
 		String page = moviePreviewPages.get(movie.getId());
-		if (page != null) {
-			logService.debug(getClass(), String.format("IMDB page for movie %s was found in cache", movie.getName()));
-			return page;
-		}
+//		if (page != null) {
+//			logService.debug(getClass(), String.format("IMDB page for movie %s was found in cache", movie.getName()));
+//			return page;
+//		}
 
 		try {
 			DurationMeter durationMeter = new DurationMeter();
@@ -126,34 +124,58 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	public String cleanImdbPage(String name, String page) {
 		DurationMeter durationMeter = new DurationMeter();
 		Document doc = Jsoup.parse(page);
-		doc.select("#maindetails_sidebar_bottom").remove();
-		doc.select("#nb20").remove();
-		doc.select("#titleRecs").remove();
-		doc.select("#titleBoardsTeaser").remove();
-		doc.select("div.article.contribute").remove();
-		doc.select("div.watch-bar").remove();
-		doc.select("#title_footer_links").remove();
-		doc.select("div.message_box").remove();
-		doc.select("#titleDidYouKnow").remove();
-		doc.select("#titleAwardsRanks").remove();
-		doc.select("#footer").remove();
+
+		String[] elementsToRemove = new String[]{"#maindetails_sidebar_bottom", "#nb20", "#titleRecs",
+												 "#titleBoardsTeaser", "div.article.contribute", "div.watch-bar",
+												 "#title_footer_links", "div.message_box", "#titleDidYouKnow",
+												 "#titleAwardsRanks", "#footer", "#titleMediaStrip", "iframe",
+												 "link[type!=text/css", "#bottom_ad_wrapper", ".rightcornerlink",
+												 "br.clear", "#titleFAQ", "#bottom_ad_wrapper", "#top_ad_wrapper",
+												 "script", "noscript", "#boardsTeaser", "#prometer_container",
+												 "div[itemprop=keywords]", "#titleCast .see-more", "#titleStoryLine .see-more",
+												 "#overview-bottom", "#maindetails_sidebar_top", ".yn"};
+
+		for (String selector : elementsToRemove) {
+			for (Element element : doc.select(selector)) {
+				removeSiblingHR(element);
+				element.remove();
+			}
+		}
+
 		doc.select("#root").removeAttr("id");
-		doc.select("#titleMediaStrip").remove();
-		doc.select("iframe").remove();
-		doc.select("link[type!=text/css").remove();
-		doc.select("#bottom_ad_wrapper").remove();
 		doc.select("#pagecontent").removeAttr("id"); // got the style of the top line
-		doc.select(".rightcornerlink").remove();
 		doc.select("div#content-2-wide").removeAttr("id");
 		doc.select("body").removeAttr("id");
-		doc.select("br.clear").remove();
-		doc.select("#titleFAQ").remove();
 		doc.select("#content-1").removeAttr("id");
-		doc.select("#bottom_ad_wrapper").remove();
-		doc.select("#top_ad_wrapper").remove();
-		doc.select("script").remove();
-		doc.select("iframe ").remove();
-		doc.select("noscript").remove();
+
+		// remove stuff inside the details section
+		Set<String> detailsHeaderToRemove = new HashSet<>(Arrays.asList("Box Office", "Company Credits", "Production Co:"));
+		boolean deleting = false;
+		for (Element cur : doc.select("#titleDetails").iterator().next().children()) {
+			String tag = cur.tag().getName();
+			if (tag.startsWith("h") && !tag.equals("hr")) {
+				if (setStartsWith(detailsHeaderToRemove, cur.text())) {
+					cur.remove();
+					deleting = true;
+				} else {
+					deleting = false;
+				}
+			} else if (deleting) {
+				cur.remove();
+			}
+		}
+
+		// smart text-block removal
+		Set<String> txtBlocksToRemove = new HashSet<>(Arrays.asList("Taglines:", "Motion Picture Rating", "Parents Guide:", "Certificate:"));
+		for (Element element : doc.select(".txt-block")) {
+			if (!element.children().isEmpty()) {
+				if (setStartsWith(txtBlocksToRemove, element.children().get(0).text().trim())) {
+					removeSiblingHR(element);
+					element.remove();
+				}
+			}
+		}
+
 
 		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
 
@@ -185,5 +207,27 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		durationMeter.stop();
 		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
 		return html;
+	}
+
+	private void removeSiblingHR(Element element) {
+		// need to remove hr before or after if exists
+		Element sibling = element.nextElementSibling();
+		if (sibling != null && sibling.tag().getName().equals("hr")) {
+			sibling.remove();
+		} else {
+			sibling = element.previousElementSibling();
+			if (sibling != null && sibling.tag().getName().equals("hr")) {
+				sibling.remove();
+			}
+		}
+	}
+
+	private static boolean setStartsWith(Set<String> set, String query) {
+		for (String s : set) {
+			if (query.startsWith(s)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
