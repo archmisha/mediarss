@@ -1,6 +1,6 @@
 <div class='shows-schedule-container'>
     <div class='shows-schedule-section'></div>
-    <div class='shows-schedule-list-container'></div>
+    <!--<div class='shows-schedule-list-container'></div>-->
 </div>
 <div class='shows-left-side'>
     <div class='search-shows-section'></div>

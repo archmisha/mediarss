@@ -29,7 +29,7 @@ define([
 				trackedShowsSectionRegion: '.tracked-shows-section',
 				trackedShowsRegion: '.tracked-shows-container',
 				showsScheduleSectionRegion: '.shows-schedule-section',
-				showsScheduleRegion: '.shows-schedule-list-container'
+//				showsScheduleRegion: '.shows-schedule-list-container'
 			},
 
 			constructor: function(options) {
@@ -49,11 +49,14 @@ define([
 					vent: this.vent
 				});
 
+				this.showsScheduleView = new ShowsScheduleView({vent: this.vent});
 				this.showsScheduleSection = new SectionView({
 					title: 'Schedule',
-					description: 'View past and future episode air dates of your tracked shows'
+					description: 'View past and future episode air dates of your tracked shows',
+					content: this.showsScheduleView,
+					collapsed: true,
+					collapsible: true
 				});
-				this.showsScheduleView = new ShowsScheduleView({vent: this.vent});
 
 				this.vent.on('shows-schedule-update', this._onScheduleUpdate, this);
 			},
@@ -68,7 +71,7 @@ define([
 				this.trackedShowsSectionRegion.show(this.trackedShowsSection);
 				this.trackedShowsRegion.show(this.trackedShowsView);
 				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
-				this.showsScheduleRegion.show(this.showsScheduleView);
+//				this.showsScheduleRegion.show(this.showsScheduleView);
 
 				var that = this;
 				HttpUtils.get("rest/shows/tracked-shows", function(res) {

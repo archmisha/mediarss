@@ -2,7 +2,6 @@
 @shows-schedules-width: 240px;
 
 .tvshows-tab {
-  //  width: @shows-tab-width;
   position: relative;
   margin-left: 142px;
 }
@@ -230,6 +229,14 @@
   font-style: italic;
 }
 
+.shows-schedule-section .section-header:hover {
+  cursor: default;
+}
+
+.shows-schedule-section .section-collapse-icons {
+  display: none;
+}
+
 @media screen and (max-width: 970px) {
   .shows-schedule-container {
     width: 503px;
@@ -293,5 +300,13 @@
 
   .select2-drop {
     font-size: 13px;
+  }
+
+  .shows-schedule-section .section-header:hover {
+    cursor: pointer;
+  }
+
+  .shows-schedule-section .section-collapse-icons {
+    display: block;
   }
 }
