@@ -33,7 +33,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 	public static final String NAME = "kickasstorrents";
 
-	private static final String[] DOMAINS = new String[]{"kickass.to", "www.kickasstorrents.com", "kat.ph"};
+	private static final String[] DOMAINS = new String[]{"kickass.to", "kickasstorrents.eu", "kat.ph"};
 
 	@Override
 	public String getName() {
