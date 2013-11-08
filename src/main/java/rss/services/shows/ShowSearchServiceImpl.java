@@ -19,6 +19,7 @@ import rss.entities.Episode;
 import rss.entities.Show;
 import rss.entities.Torrent;
 import rss.entities.UserTorrent;
+import rss.services.SessionService;
 import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.EpisodeTorrentsDownloader;
@@ -38,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Date: 16/04/13 17:14
  */
 @Service
-public class ShowSearchServiceImpl implements ShowSearchService {
+public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationListener<HttpSessionDestroyedEvent>*/ {
 
 	private static final int MAX_DID_YOU_MEAN = 20;
 
@@ -71,6 +72,9 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 
 	@Autowired
 	protected TransactionTemplate transactionTemplate;
+
+	@Autowired
+	private SessionService sessionService;
 
 	@Override
 	public SearchResultVO search(ShowRequest episodeRequest, long userId, boolean forceDownload) {
@@ -109,16 +113,34 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		}
 
 		downloadShowScheduleBeforeSearch(episodeRequest.getShow());
-//dsdsdsds
+
 		DownloadConfig downloadConfig = new DownloadConfig();
 		downloadConfig.setForceDownload(forceDownload);
 		downloadConfig.setAsyncHeavy(true);
 		DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Arrays.asList(episodeRequest)), downloadConfig);
 
-		return downloadResultToSearchResultVO(userId, originalSearchTerm, actualSearchTerm, didYouMeanShows, downloadResult);
+		SearchResultVO searchResultVO = SearchResultVO.createWithResult(originalSearchTerm, actualSearchTerm, entityConverter.toThinShows(didYouMeanShows));
+		if (downloadResult.getCompleteDate() != null) {
+			downloadResultToSearchResultVO(userId, downloadResult, searchResultVO);
+//			searchResultVO.setEpisodes(downloadResultToResults(userId, downloadResult));
+//			searchResultVO.setEnd(downloadResult.getCompleteDate());
+		} else {
+			sessionService.getUsersSearchesCache().addSearch(new UserActiveSearch(searchResultVO, downloadResult));
+		}
+		return searchResultVO;
+
+//		return downloadResultToSearchResultVO(userId, originalSearchTerm, actualSearchTerm, didYouMeanShows, downloadResult);
 	}
 
-	private SearchResultVO downloadResultToSearchResultVO(long userId, String originalSearchTerm, String actualSearchTerm, Collection<Show> didYouMeanShows, DownloadResult<Episode, ShowRequest> downloadResult) {
+	@Override
+	public void downloadResultToSearchResultVO(long userId, DownloadResult<Episode, ShowRequest> downloadResult, SearchResultVO searchResultVO) {
+		if (downloadResult.getCompleteDate() != null) {
+			searchResultVO.setEpisodes(downloadResultToResults(userId, downloadResult));
+			searchResultVO.setEnd(downloadResult.getCompleteDate());
+		}
+	}
+
+	private ArrayList<UserTorrentVO> downloadResultToResults(long userId, DownloadResult<Episode, ShowRequest> downloadResult) {
 		Collection<Episode> downloaded = downloadResult.getDownloaded();
 		Set<Long> torrentIds = new HashSet<>();
 		final Map<Long, Episode> episodeByTorrentsForComparator = new HashMap<>();
@@ -152,7 +174,7 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 			}
 		});
 
-		return SearchResultVO.createWithResult(originalSearchTerm, actualSearchTerm, result, entityConverter.toThinShows(didYouMeanShows));
+		return result;
 	}
 
 	private Show findShowByName(String name) {
@@ -288,4 +310,9 @@ public class ShowSearchServiceImpl implements ShowSearchService {
 		logService.debug(getClass(), String.format("Show statistic match end for: %s found: %s", name, StringUtils.join(result.toArray(), ",")));
 		return result;
 	}
+
+//	@Override
+//	public void onApplicationEvent(HttpSessionDestroyedEvent httpSessionDestroyedEvent) {
+//		httpSessionDestroyedEvent.
+//	}
 }

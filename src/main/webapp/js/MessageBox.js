@@ -28,6 +28,17 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 				});
 			},
 
+			infoModal: function(title, message) {
+				$.msgBox({
+					title: title,
+					content: message,
+					type: "info",
+					buttons: [
+						{ value: "OK" }
+					]
+				});
+			},
+
 			sessionTimeout: function() {
 				$.msgBox({
 					title: 'Authentication Timeout',

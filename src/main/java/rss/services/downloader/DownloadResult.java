@@ -1,6 +1,7 @@
 package rss.services.downloader;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * User: dikmanm
@@ -10,6 +11,11 @@ public class DownloadResult<T, S> {
 	private Collection<T> downloaded;
 	private Collection<S> missing;
 	private boolean heavy;
+	private Date completeDate;
+
+	public DownloadResult() {
+		this.completeDate = null;
+	}
 
 	public static <T, S> DownloadResult<T, S> createHeavyDownloadResult() {
 		return new DownloadResult<T, S>().withHeavy(true);
@@ -42,5 +48,13 @@ public class DownloadResult<T, S> {
 	public DownloadResult<T, S> withHeavy(boolean heavy) {
 		this.heavy = heavy;
 		return this;
+	}
+
+	public Date getCompleteDate() {
+		return completeDate;
+	}
+
+	public void setCompleteDate(Date completeDate) {
+		this.completeDate = completeDate;
 	}
 }

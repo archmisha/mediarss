@@ -6,10 +6,9 @@ import org.springframework.stereotype.Component;
 import rss.UserNotLoggedInException;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.User;
+import rss.services.shows.UsersSearchesCache;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * User: Michael Dikman
@@ -23,12 +22,13 @@ public class SessionServiceImpl implements SessionService {
 	// not holding the actual user, cuz then need to make him be in sync with the database all the time
 	private Long loggedInUserId;
 	private Date prevLoginDate;
-
+	private UsersSearchesCache usersSearchesCache;
 	private ShowsScheduleVO schedule;
 
 	public void setLoggedInUser(User user) {
 		this.loggedInUserId = user.getId();
 		prevLoginDate = user.getLastLogin();
+		usersSearchesCache = new UsersSearchesCache();
 		if (prevLoginDate == null) {
 			prevLoginDate = new Date();
 		}
@@ -62,10 +62,15 @@ public class SessionServiceImpl implements SessionService {
 		loggedInUserId = null;
 		prevLoginDate = null;
 		schedule = null;
+		usersSearchesCache = null;
 	}
 
 	@Override
 	public Date getPrevLoginDate() {
 		return prevLoginDate;
+	}
+
+	public UsersSearchesCache getUsersSearchesCache() {
+		return usersSearchesCache;
 	}
 }

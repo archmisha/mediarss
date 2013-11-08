@@ -6,9 +6,13 @@ define([
 	'features/collections/UserTorrentCollection',
 	'components/search-result/views/SearchResultsCollectionView',
 	'HttpUtils',
-	'components/search-result/views/SearchResultsView'
+	'components/search-result/views/SearchResultsView',
+	'MessageBox',
+	'features/showsTab/views/ActiveSearchCollectionView',
+	'features/showsTab/collections/ActiveSearchCollection',
+	'components/search-result/models/SearchResult'
 ],
-	function(Marionette, Handlebars, template, UserTorrentCollection, SearchResultsCollectionView, HttpUtils, SearchResultsView) {
+	function(Marionette, Handlebars, template, UserTorrentCollection, SearchResultsCollectionView, HttpUtils, SearchResultsView, MessageBox, ActiveSearchCollectionView, ActiveSearchCollection, SearchResult) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -21,7 +25,8 @@ define([
 				seasonInput: '.shows-search-season',
 				episodeInput: '.shows-search-episode',
 				adminForceDownload: '.shows-search-admin-force-download',
-				adminForceDownloadCheckbox: '.shows-search-admin-force-download-checkbox'
+				adminForceDownloadCheckbox: '.shows-search-admin-force-download-checkbox',
+				activeSearchesContainer: '.shows-search-active-searches'
 			},
 
 			events: {
@@ -34,7 +39,8 @@ define([
 			},
 
 			regions: {
-				searchResultsRegion: '.shows-search-results'
+				searchResultsRegion: '.shows-search-results',
+				activeSearchesListRegion: '.shows-search-active-searches-list'
 			},
 
 			constructor: function(options) {
@@ -43,14 +49,37 @@ define([
 				this.vent.on('search-result-item-download', this.onEpisodeDownload, this);
 				this.vent.on('did-you-mean-click', this.onDidYouMeanClick, this);
 				this.vent.on('search-result-download-all', this.onDownloadAllClick, this);
+				this.vent.on('active-search-remove', this.onActiveSearchRemove, this);
+				this.vent.on('active-search-view', this.onActiveSearchView, this);
 
 				this.searchResultsView = new SearchResultsView({vent: this.vent});
+				this.activeSearchesCollection = new ActiveSearchCollection();
+				this.activeSearchCollectionView = new ActiveSearchCollectionView({
+					vent: this.vent,
+					collection: this.activeSearchesCollection
+				});
+
+				var that = this;
+				this.activeSearchesCollection.on('change reset add remove', function() {
+					if (that.activeSearchesCollection.length === 0) {
+						that.ui.activeSearchesContainer.hide();
+					} else {
+						that.ui.activeSearchesContainer.show();
+					}
+				});
 			},
 
 			onRender: function() {
 				this.ui.seasonInput.prop('disabled', true);
 				this.ui.episodeInput.prop('disabled', true);
 				this.searchResultsRegion.show(this.searchResultsView);
+				this.activeSearchesListRegion.show(this.activeSearchCollectionView);
+				this.ui.activeSearchesContainer.hide();
+				this._startPollingThread();
+			},
+
+			onClose: function() {
+				this._stopPollingThread();
 			},
 
 			onDidYouMeanClick: function(showId, showName) {
@@ -98,7 +127,18 @@ define([
 					showId: didYouMeanShowId,
 					forceDownload: forceDownload
 				}, function(searchResult) {
-					that.searchResultsView.setSearchResults(searchResult);
+					if (searchResult.end == null) {
+						that.searchResultsView.$el.slideUp('slow', function() {
+							that.searchResultsView.$el.hide();
+						});
+						MessageBox.infoModal('The search is going to take a while',
+							'You can track it in the active searches section.');
+						that.activeSearchesCollection.add(searchResult);
+						that._startPollingThread();
+					} else {
+						that.searchResultsView.$el.slideDown('slow');
+						that.searchResultsView.setSearchResults(new SearchResult(searchResult));
+					}
 				});
 			},
 
@@ -110,7 +150,6 @@ define([
 					}
 				});
 
-				var that = this;
 				HttpUtils.post('rest/shows/episode/download-all', {
 					torrentIds: torrentIds
 				}, function(res) {
@@ -141,6 +180,65 @@ define([
 				} else {
 					this.ui.episodeInput.prop('disabled', false);
 				}
+			},
+
+			_startPollingThread: function() {
+				if (this.timer) {
+					return;
+				}
+
+				var that = this;
+				var f = function() {
+					if (!that.timer) {
+						return;
+					}
+
+//					that.ui.progressDuration.html(Moment.duration((new Date()).getTime() - that.model.get('start')).humanize());
+
+					$.get("rest/shows/search/status")
+						.success(function(res) {
+							that.activeSearchesCollection.reset(res.activeSearches);
+							// if all jobs have stopped
+							var allComplete = true;
+							res.activeSearches.forEach(function(el) {
+								if (el.end == null) {
+									allComplete = false;
+								}
+							});
+							if (allComplete) {
+								that._stopPollingThread();
+							}
+						}).error(function(res) {
+							console.log('error. data: ' + res);
+							that._stopPollingThread();
+						});
+
+					that.timer = setTimeout(f, 1000);
+				};
+				that.timer = setTimeout(f, 1000);
+			},
+
+			_stopPollingThread: function() {
+				clearTimeout(this.timer);
+				this.timer = null;
+//				this.ui.notRunningStatus.show();
+//				this.ui.lastRunAt.html(this._formatDate(this.model.get('start')));
+//				this.ui.runningStatus.hide();
+//				if (this.model.get('errorMessage') != null) {
+//					this.ui.errorStatus.show();
+//				}
+			},
+
+			onActiveSearchRemove: function(activeSearchModel) {
+				var that = this;
+				HttpUtils.get('rest/shows/search/remove/' + activeSearchModel.id,
+					function(res) {
+						that.activeSearchesCollection.remove(activeSearchModel);
+					});
+			},
+
+			onActiveSearchView: function(activeSearchModel) {
+				this.searchResultsView.setSearchResults(activeSearchModel);
 			}
 		});
 	});

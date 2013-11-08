@@ -28,8 +28,7 @@ define([
 				searchShowsRegion: '.search-shows-container',
 				trackedShowsSectionRegion: '.tracked-shows-section',
 				trackedShowsRegion: '.tracked-shows-container',
-				showsScheduleSectionRegion: '.shows-schedule-section',
-//				showsScheduleRegion: '.shows-schedule-list-container'
+				showsScheduleSectionRegion: '.shows-schedule-section'
 			},
 
 			constructor: function(options) {
@@ -40,6 +39,7 @@ define([
 					title: 'Search TV Shows',
 					description: 'Search for older episodes'
 				});
+
 				this.showsSearchView = new ShowsSearchView();
 
 				this.trackedShowsView = new TrackedShowsComponentView({vent: this.vent});
@@ -71,7 +71,6 @@ define([
 				this.trackedShowsSectionRegion.show(this.trackedShowsSection);
 				this.trackedShowsRegion.show(this.trackedShowsView);
 				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
-//				this.showsScheduleRegion.show(this.showsScheduleView);
 
 				var that = this;
 				HttpUtils.get("rest/shows/tracked-shows", function(res) {

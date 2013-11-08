@@ -1,8 +1,6 @@
 package rss.controllers.vo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -10,7 +8,10 @@ import java.util.Collections;
  */
 public class SearchResultVO {
 
+	private String id;
 	private Collection<UserTorrentVO> episodes;
+	private Date start;
+	private Date end;
 	private String originalSearchTerm;
 	private String actualSearchTerm;
 	private Collection<ShowVO> didYouMean;
@@ -20,6 +21,13 @@ public class SearchResultVO {
 		this.originalSearchTerm = originalSearchTerm;
 		this.actualSearchTerm = actualSearchTerm;
 		this.didYouMean = new ArrayList<>();
+		this.start = new Date();
+		this.end = new Date();
+		this.id = UUID.randomUUID().toString();
+	}
+
+	public SearchResultVO(String originalSearchTerm, String actualSearchTerm) {
+		this(originalSearchTerm, actualSearchTerm, new ArrayList<UserTorrentVO>());
 	}
 
 	public Collection<UserTorrentVO> getEpisodes() {
@@ -38,6 +46,26 @@ public class SearchResultVO {
 		return didYouMean;
 	}
 
+	public Date getStart() {
+		return start;
+	}
+
+	public void setEnd(Date end) {
+		this.end = end;
+	}
+
+	public Date getEnd() {
+		return end;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setEpisodes(Collection<UserTorrentVO> episodes) {
+		this.episodes = episodes;
+	}
+
 	public static SearchResultVO createNoResults(String searchTerm) {
 		return new SearchResultVO(searchTerm, searchTerm, Collections.<UserTorrentVO>emptyList());
 	}
@@ -52,6 +80,14 @@ public class SearchResultVO {
 												  Collection<UserTorrentVO> results, Collection<ShowVO> shows) {
 		SearchResultVO esr = new SearchResultVO(originalSearchTerm, actualSearchTerm, results);
 		esr.didYouMean.addAll(shows);
+		return esr;
+	}
+
+	public static SearchResultVO createWithResult(String originalSearchTerm, String actualSearchTerm,
+												  Collection<ShowVO> shows) {
+		SearchResultVO esr = new SearchResultVO(originalSearchTerm, actualSearchTerm);
+		esr.didYouMean.addAll(shows);
+		esr.setEnd(null); // in progress
 		return esr;
 	}
 }

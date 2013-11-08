@@ -60,7 +60,7 @@ define([
 
 			showDidYouMean: function(searchResult) {
 				var arr = [];
-				searchResult.didYouMean.forEach(function(item) {
+				searchResult.get('didYouMean').forEach(function(item) {
 					arr.push('<span class=\'search-results-did-you-mean-item\' item_id=\'' + item.id + '\'>' + item.name + '</span>');
 				});
 				this.ui.didYouMeanList.html(arr.join(', '));
@@ -80,18 +80,21 @@ define([
 					});
 				}
 
-				if (searchResult.episodes.length > 0) {
+				if (searchResult.get('episodes').length > 0) {
 					that.ui.resultsHeader.show();
 					that.onSearchResultsReceived(searchResult);
 				} else {
-					if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
+					var didYouMean = searchResult.get('didYouMean');
+					var actualSearchTerm = searchResult.get('actualSearchTerm');
+					var originalSearchTerm = searchResult.get('originalSearchTerm');
+
+					if (didYouMean !== undefined && didYouMean.length > 0) {
 						that.ui.resultsHeader.show();
 						that.showDidYouMean(searchResult);
-						that.setVisibleShowingResultsFor(searchResult.actualSearchTerm,
-							searchResult.actualSearchTerm != null && searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
+						that.setVisibleShowingResultsFor(actualSearchTerm, actualSearchTerm != null && actualSearchTerm !== originalSearchTerm);
 					}
 
-					if (searchResult.actualSearchTerm != null) {
+					if (actualSearchTerm != null) {
 						this.searchResultsCollection.reset();
 						this.searchResultsRegion.show(this.searchResultsCollectionView);
 						this.ui.searchResultsRegion.slideDown('slow');
@@ -111,19 +114,24 @@ define([
 			},
 
 			onSearchResultsReceived: function(searchResult) {
-				this.setVisibleShowingResultsFor(searchResult.actualSearchTerm, searchResult.actualSearchTerm !== searchResult.originalSearchTerm);
-				if (searchResult.didYouMean !== undefined && searchResult.didYouMean.length > 0) {
+				var episodes = searchResult.get('episodes');
+				var actualSearchTerm = searchResult.get('actualSearchTerm');
+				var originalSearchTerm = searchResult.get('originalSearchTerm');
+				var didYouMean = searchResult.get('didYouMean');
+
+				this.setVisibleShowingResultsFor(actualSearchTerm, actualSearchTerm !== originalSearchTerm);
+				if (didYouMean !== undefined && didYouMean.length > 0) {
 					this.showDidYouMean(searchResult);
 				}
 
-				this.ui.resultsCount.html(searchResult.episodes.length);
+				this.ui.resultsCount.html(episodes.length);
 				this.ui.titleContainer.show();
-				this.searchResultsCollection.reset(searchResult.episodes);
+				this.searchResultsCollection.reset(episodes);
 				this.searchResultsRegion.show(this.searchResultsCollectionView);
 				this.ui.searchResultsRegion.slideDown('slow');
 
 				this.setDownloadAllButtonState();
-				if (searchResult.episodes.length == 1) {
+				if (episodes.length === 1) {
 					this.ui.multipleResultsTitle.hide();
 					this.ui.singleResultTitle.show();
 				} else {

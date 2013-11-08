@@ -23,6 +23,8 @@
         <product.version>1</product.version>
         <junit.version>4.8.1</junit.version>
         <spring.version>3.2.1.RELEASE</spring.version>
+        <spring-security.version>3.1.0.RELEASE</spring-security.version>
+        <spring-security-web.version>3.1.4.RELEASE</spring-security-web.version>
         <tomcat.version>7.0.22</tomcat.version>
         <uum.version>3.1.1</uum.version>
         <cglib.version>2.2</cglib.version>
@@ -264,6 +266,16 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-aspects</artifactId>
             <version>2.5.4</version>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.springframework.security</groupId>-->
+        <!--<artifactId>spring-security-core</artifactId>-->
+        <!--<version>${spring-security.version}</version>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${spring-security-web.version}</version>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>

@@ -17,10 +17,7 @@ import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,7 +57,8 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 			throw e;
 		}
 
-		if (downloadConfig.isAsyncHeavy()) {
+		// if this is might be a heavy download and we Don't have everything in cache - make it async
+		if (downloadConfig.isAsyncHeavy() && !mediaRequests.isEmpty()) {
 			final DownloadResult<T, S> downloadResult = DownloadResult.createHeavyDownloadResult();
 			ExecutorService es = Executors.newSingleThreadExecutor();
 			es.submit(new Runnable() {
@@ -164,6 +162,7 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 
 		downloadResult.setDownloaded(result);
 		downloadResult.setMissing(missing);
+		downloadResult.setCompleteDate(new Date());
 		return downloadResult;
 	}
 

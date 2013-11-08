@@ -22,6 +22,7 @@ import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.shows.ShowAutoCompleteItem;
 import rss.services.shows.ShowSearchService;
+import rss.services.shows.UserActiveSearch;
 import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -195,6 +196,33 @@ public class ShowsController extends BaseController {
 		duration.stop();
 		logService.info(getClass(), "Schedule " + duration.getDuration() + " millis");
 
+		return result;
+	}
+
+	@RequestMapping(value = "/search/status", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> getSearchStatus() {
+		Map<String, Object> result = new HashMap<>();
+		List<UserActiveSearch> searches = sessionService.getUsersSearchesCache().getSearches();
+		List<SearchResultVO> searchResults = new ArrayList<>();
+		for (UserActiveSearch search : searches) {
+			showSearchService.downloadResultToSearchResultVO(sessionService.getLoggedInUserId(),
+					search.getDownloadResult(), search.getSearchResultVO());
+			searchResults.add(search.getSearchResultVO());
+		}
+		result.put("activeSearches", searchResults);
+		return result;
+	}
+
+	@RequestMapping(value = "/search/remove/{searchId}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> removeActiveSearch(@PathVariable String searchId) {
+		sessionService.getUsersSearchesCache().removeSearch(searchId);
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("status", "success");
 		return result;
 	}
 }

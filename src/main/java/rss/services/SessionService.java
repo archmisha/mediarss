@@ -2,6 +2,7 @@ package rss.services;
 
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.User;
+import rss.services.shows.UsersSearchesCache;
 
 import java.util.Date;
 
@@ -12,17 +13,19 @@ import java.util.Date;
  */
 public interface SessionService {
 
-    void setLoggedInUser(User user);
+	void setLoggedInUser(User user);
 
-    Long getLoggedInUserId();
+	Long getLoggedInUserId();
 
-    Date getPrevLoginDate();
+	Date getPrevLoginDate();
 
-    void clearLoggedInUser();
+	void clearLoggedInUser();
 
 	boolean isUserLogged();
 
 	ShowsScheduleVO getSchedule();
 
 	void setSchedule(ShowsScheduleVO schedule);
+
+	UsersSearchesCache getUsersSearchesCache();
 }
