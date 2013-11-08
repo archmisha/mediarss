@@ -59,10 +59,10 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String getImdbPreviewPage(Movie movie) {
 		String page = moviePreviewPages.get(movie.getId());
-//		if (page != null) {
-//			logService.debug(getClass(), String.format("IMDB page for movie %s was found in cache", movie.getName()));
-//			return page;
-//		}
+		if (page != null) {
+			logService.debug(getClass(), String.format("IMDB page for movie %s was found in cache", movie.getName()));
+			return page;
+		}
 
 		try {
 			DurationMeter durationMeter = new DurationMeter();
@@ -132,8 +132,8 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 												 "link[type!=text/css", "#bottom_ad_wrapper", ".rightcornerlink",
 												 "br.clear", "#titleFAQ", "#bottom_ad_wrapper", "#top_ad_wrapper",
 												 "script", "noscript", "#boardsTeaser", "#prometer_container",
-												 "div[itemprop=keywords]", "#titleCast .see-more", "#titleStoryLine .see-more",
-												 "#overview-bottom", "#maindetails_sidebar_top", ".yn"};
+												 "div[itemprop=keywords]", /*"#titleCast .see-more",*/ /*"#titleStoryLine .see-more",*/
+												 "#overview-bottom", "#maindetails_sidebar_top", ".yn", /*".user-comments .see-more",*/ ".see-more"};
 
 		for (String selector : elementsToRemove) {
 			for (Element element : doc.select(selector)) {
@@ -142,6 +142,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 			}
 		}
 
+		// remove ids to prevent styles from being applied
 		doc.select("#root").removeAttr("id");
 		doc.select("#pagecontent").removeAttr("id"); // got the style of the top line
 		doc.select("div#content-2-wide").removeAttr("id");
@@ -203,6 +204,10 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/32x44/name-2138558783._V397576332_.png", "../../images/imdb/name-2138558783._V397576332_.png");
 		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/unknown-1394846836._V394978422_.png", "../../images/imdb/unknown-1394846836._V394978422_.png");
 		html = StringUtils.replace(html, "http://ia.media-imdb.com/images/G/01/imdb/images/nopicture/small/no-video-slate-856072904._V396341087_.png", "../../images/imdb/no-video-slate-856072904._V396341087_.png");
+
+		// replace all the links
+		html = StringUtils.replace(html, "<a ", "<span ");
+		html = StringUtils.replace(html, "</a>", "</span>");
 
 		durationMeter.stop();
 		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
