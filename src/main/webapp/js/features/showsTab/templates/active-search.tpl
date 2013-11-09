@@ -1,3 +1,10 @@
-{{dateFormat start format="DD/MM/YYYY HH:mm" default='never'}} {{originalSearchTerm}} <span
-        class='active-search-status'>running</span> <span class='active-search-view'>view</span> <span
-        class='active-search-remove'>remove</span>
+<div class='active-search-date'>{{dateFormat start format="DD/MM/YYYY HH:mm" default='never'}}</div>
+<div class='active-search-data'>
+    <span class='active-search-searching'>Searching for </span>
+    <span class='active-search-name'>{{originalSearchTerm}}</span>
+    <span class='active-search-view'><span class='active-search-view-link'>view</span> | </span>
+    <span class='active-search-no-results'>No results</span>
+    <span class='active-search-remove'>remove</span>
+
+    <div class='active-search-status'></div>
+</div>

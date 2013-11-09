@@ -12,8 +12,10 @@ define([
 //			className: 'tracked-show',
 
 			ui: {
+				runningStatus: '.active-search-searching',
 				status: '.active-search-status',
-				viewLink: '.active-search-view'
+				viewLink: '.active-search-view',
+				noResultsStatus: '.active-search-no-results'
 			},
 
 			events: {
@@ -26,16 +28,29 @@ define([
 				this.vent = options.vent;
 			},
 
-//			onTrackedShowRemove: function() {
-//				this.vent.trigger('tracked-show-remove', this.model);
-//			},
-
 			onRender: function() {
 				var results = this.model.get('episodes').length;
 				if (this.model.get('end')) {
-					this.ui.status.html('took ' + Moment.duration(this.model.get('end') - this.model.get('start')).humanize() + ' ' + results + ' results');
+					this.ui.runningStatus.hide();
+					if (results === 0) {
+						this.ui.noResultsStatus.show();
+						this.ui.status.hide();
+					} else {
+						this.ui.noResultsStatus.hide();
+						this.ui.status.show();
+						var resultsPart;
+						if (results === 1) {
+							resultsPart = '1 result';
+						} else {
+							resultsPart = results + ' result';
+						}
+						this.ui.status.html(resultsPart + ', completed in ' + Moment.duration(this.model.get('end') - this.model.get('start')).humanize());
+					}
 				} else {
-					this.ui.status.html('running');
+					// still running
+					this.ui.runningStatus.show();
+					this.ui.status.hide();
+					this.ui.noResultsStatus.hide();
 				}
 
 				if (results === 0) {
