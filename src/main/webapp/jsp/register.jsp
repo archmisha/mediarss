@@ -1,7 +1,11 @@
-<div class='register-header'>
-</div>
+<%@ include file="prefix.jsp" %>
+<script src="../js/register.js"></script>
 
 <div class='register-container'>
+    <div class="register-header-subtitle">
+        Create an account
+    </div>
+
     <div class='register-form-row'>
         <label for="register-username" id="register-firstname-label" class='register-form-label'>First Name</label>
         <input type="text" tabindex="0" name="firstName" id="register-firstname" class='register-form-input'/>
@@ -21,3 +25,5 @@
     <button class='btn register-btn'>Proceed</button>
     <div class='register-status'></div>
 </div>
+
+<%@ include file="suffix.jsp" %>

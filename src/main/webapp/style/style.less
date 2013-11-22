@@ -1,13 +1,13 @@
-@import 'bootstrap.lite.less';
+@import '3rd-party/bootstrap.lite.less';
 
 @font-face {
   font-family: headerFont;
-  src: url('JandaManateeSolid.ttf');
+  src: url('fonts/JandaManateeSolid.ttf');
 }
 
 @font-face {
   font-family: bodyFont;
-  src: url('Robot.woff') format('woff');
+  src: url('fonts/Robot.woff') format('woff');
 }
 
 body {
@@ -124,16 +124,16 @@ textarea {
   margin-right: 15px;
 }
 
-@import 'jquery.fancybox.less';
-@import 'chosen.less';
-@import 'spinner.less';
-@import 'select2.less';
-@import 'msgBoxLight.less';
+@import '3rd-party/jquery.fancybox.less';
+@import '3rd-party/chosen.less';
+@import '3rd-party/spinner.less';
+@import '3rd-party/select2.less';
+@import '3rd-party/msgBoxLight.less';
 @import '../js/components/header/style/header.less';
 @import '../js/components/section/style/section.less';
 @import '../js/components/search-result/style/search-result.less';
-@import '../js/features/login/style/login.less';
-@import '../js/features/register/style/register.less';
+@import 'login.less';
+@import 'register.less';
 @import '../js/features/homeTab/style/home-tab.less';
 @import '../js/features/adminTab/style/admin-tab.less';
 @import '../js/features/showsTab/style/tvshows-tab.less';

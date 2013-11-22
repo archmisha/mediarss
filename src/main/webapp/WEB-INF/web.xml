@@ -54,6 +54,24 @@
         <url-pattern>/register/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>CreateAccountServlet</servlet-name>
+        <jsp-file>/jsp/register.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CreateAccountServlet</servlet-name>
+        <url-pattern>/create-account/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>MainServlet</servlet-name>
+        <jsp-file>/jsp/main.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MainServlet</servlet-name>
+        <url-pattern>/main/*</url-pattern>
+    </servlet-mapping>
+
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
@@ -70,7 +88,7 @@
 
     <!-- Default page to serve -->
     <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>jsp/login.jsp</welcome-file>
     </welcome-file-list>
 
     <error-page>

@@ -437,8 +437,12 @@
                                 <configuration>
                                     <target>
                                         <mkdir dir="${webappDirectory}/style"/>
-                                        <copy file="${basedir}/src/main/webapp/index_prod.jsp"
-                                              tofile="${webappDirectory}/index.jsp"/>
+                                        <copy file="${basedir}/src/main/webapp/jsp/prefix_prod.jsp"
+                                              tofile="${webappDirectory}/jsp/prefix.jsp"/>
+                                        <copy file="${basedir}/src/main/webapp/jsp/suffix_prod.jsp"
+                                              tofile="${webappDirectory}/jsp/suffix.jsp"/>
+                                        <copy file="${basedir}/src/main/webapp/jsp/main_prod.jsp"
+                                              tofile="${webappDirectory}/jsp/main.jsp"/>
                                         <copy file="${basedir}/src/main/webapp/js/lib/require.js"
                                               tofile="${webappDirectory}/require.js"/>
                                         <copy file="${project.build.directory}/require-web-1.0/scripts/js/main.js"
@@ -510,7 +514,7 @@
                                 </manifestEntries>
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
-                            <warSourceExcludes>js/**,style/*.less,index_*.jsp</warSourceExcludes>
+                            <warSourceExcludes>js/**,style/*.less,*_*.jsp</warSourceExcludes>
                             <!-- only leaving ttorent in the folder, cuz using its stuff with package permissions -->
                             <packagingExcludes>%regex[WEB-INF/lib/(?!ttorrent).*.jar]</packagingExcludes>
                         </configuration>
@@ -604,8 +608,12 @@
                                 <phase>compile</phase>
                                 <configuration>
                                     <target>
-                                        <copy file="${basedir}/src/main/webapp/index_dev.jsp"
-                                              tofile="${webappDirectory}/index.jsp"/>
+                                        <copy file="${basedir}/src/main/webapp/jsp/prefix_dev.jsp"
+                                              tofile="${webappDirectory}/jsp/prefix.jsp"/>
+                                        <copy file="${basedir}/src/main/webapp/jsp/suffix_dev.jsp"
+                                              tofile="${webappDirectory}/jsp/suffix.jsp"/>
+                                        <copy file="${basedir}/src/main/webapp/jsp/main_dev.jsp"
+                                              tofile="${webappDirectory}/jsp/main.jsp"/>
                                     </target>
                                 </configuration>
                                 <goals>

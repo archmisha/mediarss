@@ -11,10 +11,9 @@ define([
 	'features/showsTab/views/ShowsTabView',
 	'features/moviesTab/views/MoviesTabView',
 	'features/adminTab/views/AdminTabView',
-	'HttpUtils',
-	'MessageBox'
+	'HttpUtils'
 ],
-	function(Marionette, StringUtils, RoutingPaths, LoginView, RegisterView, HomeView, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, HttpUtils, MessageBox) {
+	function(Marionette, StringUtils, RoutingPaths, LoginView, RegisterView, HomeView, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, HttpUtils) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';
@@ -117,32 +116,6 @@ define([
 					mainRegion.show(homeView);
 				}
 				tabToSelect = null;
-			},
-
-			_showLogin: function(tab) {
-				var that = this;
-				var login = new LoginView();
-				login.on('login', function(options) {
-					HttpUtils.post("rest/user/login", {
-						username: options.username,
-						password: options.password,
-						tab: tab
-					}, function(res) {
-						if (res.success === undefined) {
-							that._showHome(res);
-						} else {
-							login.showStatusMessage(res.message);
-						}
-					}, false);
-				});
-				login.on('forgot-password', function(options) {
-					HttpUtils.post("rest/user/forgot-password", {
-						email: options.email
-					}, function(res) {
-						login.showStatusMessage(res.message);
-					}, false);
-				});
-				mainRegion.show(login);
 			},
 
 			register: function() {
