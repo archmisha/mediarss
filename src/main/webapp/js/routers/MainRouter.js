@@ -12,9 +12,8 @@ define([
 				routes[RoutingPaths.TVSHOWS] = 'showTVShows';
 				routes[RoutingPaths.MOVIES] = 'showMovies';
 				routes[RoutingPaths.ADMIN] = 'showAdmin';
-				routes[RoutingPaths.REGISTER] = 'register';
 				routes[RoutingPaths.LOGOUT] = 'logout';
-				routes['*path'] = 'showRoot';
+				routes['*path'] = 'showHomePage';
 				return routes;
 			}()
 		});

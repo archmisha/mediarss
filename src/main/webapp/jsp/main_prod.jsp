@@ -11,18 +11,12 @@
 
     <title>Personalized Media RSS</title>
 
-    <link rel="stylesheet/less" type="text/css" href="../style/style.less"/>
-    <script src="../js/lib/jquery-1.8.2.min.js"></script>
-    <script src="../js/lib/jquery.ba-bbq.min.js"></script>
-    <script src="../js/index.js"></script>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
 </head>
 
 <body>
-<div id="main">
-    <%@ include file="header.jsp" %>
-    <%@ include file="login.jsp" %>
-</div>
-
-<script src="../js/lib/less.js"></script>
+<div id="main"></div>
+<script data-main="js/main.js" src="../js/lib/require.js"></script>
 </body>
 </html>
+

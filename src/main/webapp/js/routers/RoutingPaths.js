@@ -2,12 +2,11 @@ define([],
 	function() {
 		"use strict";
 		return {
-			ROOT: '',
+//			ROOT: '',
 			HOME: 'home',
-			REGISTER: 'register',
-			TVSHOWS: 'home/tvshows',
-			MOVIES: 'home/movies/:category',
-			ADMIN: 'home/admin',
+			TVSHOWS: 'tvshows',
+			MOVIES: 'movies/:category',
+			ADMIN: 'admin',
 			LOGOUT: 'logout'
 		};
 	});
