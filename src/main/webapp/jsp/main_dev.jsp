@@ -11,7 +11,7 @@
 
     <title>Personalized Media RSS</title>
 
-    <link rel="stylesheet/less" type="text/css" href="../style/style.less"/>
+    <link rel="stylesheet/less" type="text/css" href="../style/main-manifest.less"/>
 </head>
 
 <body>

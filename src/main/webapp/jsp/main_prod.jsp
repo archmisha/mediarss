@@ -11,12 +11,12 @@
 
     <title>Personalized Media RSS</title>
 
-    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+    <link rel="stylesheet" type="text/css" href="style/main.css"/>
 </head>
 
 <body>
 <div id="main"></div>
-<script data-main="js/main.js" src="../js/lib/require.js"></script>
+<script data-main="main.js" src="../js/lib/require.js"></script>
 </body>
 </html>
 

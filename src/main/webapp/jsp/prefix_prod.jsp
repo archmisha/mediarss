@@ -11,7 +11,7 @@
 
     <title>Personalized Media RSS</title>
 
-    <link rel="stylesheet/less" type="text/css" href="../style/login-manifest.less"/>
+    <link rel="stylesheet" type="text/css" href="style/login.css"/>
     <script src="../js/lib/jquery-1.8.2.min.js"></script>
     <script src="../js/lib/jquery.ba-bbq.min.js"></script>
 </head>

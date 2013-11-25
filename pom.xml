@@ -475,6 +475,7 @@
                         <version>1.2.1</version>
                         <executions>
                             <execution>
+                                <id>compile-login-less</id>
                                 <phase>compile</phase>
                                 <goals>
                                     <goal>exec</goal>
@@ -486,8 +487,28 @@
                                         <!-- automatically creates the classpath using all project dependencies, also adding the project build directory -->
                                         <classpath/>
                                         <argument>com.asual.lesscss.LessEngineCli</argument>
-                                        <argument>${project.basedir}/src/main/webapp/style/style.less</argument>
-                                        <argument>${webappDirectory}/style/style.css</argument>
+                                        <argument>${project.basedir}/src/main/webapp/style/login-manifest.less
+                                        </argument>
+                                        <argument>${webappDirectory}/style/login.css</argument>
+                                        <argument>-compress</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>compile-main-less</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <!-- automatically creates the classpath using all project dependencies, also adding the project build directory -->
+                                        <classpath/>
+                                        <argument>com.asual.lesscss.LessEngineCli</argument>
+                                        <argument>${project.basedir}/src/main/webapp/style/main-manifest.less</argument>
+                                        <argument>${webappDirectory}/style/main.css</argument>
                                         <argument>-compress</argument>
                                     </arguments>
                                 </configuration>
@@ -514,7 +535,9 @@
                                 </manifestEntries>
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
-                            <warSourceExcludes>js/**,style/*.less,*_*.jsp</warSourceExcludes>
+                            <warSourceExcludes>
+                                js/components/**,js/controllers/**,js/features/**,js/routers/**,js/utils/**,style/*.less,*_*.jsp
+                            </warSourceExcludes>
                             <!-- only leaving ttorent in the folder, cuz using its stuff with package permissions -->
                             <packagingExcludes>%regex[WEB-INF/lib/(?!ttorrent).*.jar]</packagingExcludes>
                         </configuration>
