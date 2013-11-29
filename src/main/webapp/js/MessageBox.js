@@ -50,7 +50,7 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 					success: function(result) {
 						if (result == "Proceed") {
 							var url = window.parent.location.href;
-							url = url.substring(0, url.indexOf('#'));
+							url = url.substring(0, url.lastIndexOf('/'));
 							window.parent.location = url;
 						}
 					}
