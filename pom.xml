@@ -567,7 +567,7 @@
                                 <configuration>
                                     <resources>
                                         <resource>
-                                            <targetPath>scp://root:ASDqwe123@208.115.203.158:/root</targetPath>
+                                            <targetPath>scp://root:ASDqwe123@192.227.233.46:/root</targetPath>
                                             <file>${project.build.directory}/${rss-feed-war}.war</file>
                                         </resource>
                                     </resources>
@@ -587,7 +587,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <location>scp://root:ASDqwe123@208.115.203.158:/root</location>
+                                    <location>scp://root:ASDqwe123@192.227.233.46:/root</location>
                                     <!-- backup existing war -->
                                     <!-- set maintenance mode on -->
                                     <!-- stop tomcat -->
