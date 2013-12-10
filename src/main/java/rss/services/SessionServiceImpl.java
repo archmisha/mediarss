@@ -62,7 +62,7 @@ public class SessionServiceImpl implements SessionService {
 		loggedInUserId = null;
 		prevLoginDate = null;
 		schedule = null;
-		usersSearchesCache = null;
+		usersSearchesCache = new UsersSearchesCache();
 	}
 
 	@Override
