@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
-import rss.services.SettingsService;
-import rss.services.subtitles.SubtitlesService;
 import rss.services.subtitles.SubtitlesTrackerService;
 
 import java.io.UnsupportedEncodingException;
@@ -97,9 +95,14 @@ public class RssFeedBuilderImpl implements RssFeedBuilder {
 		String url = torrent.getUrl();
 
 		// some movies don't contain display name in the url for some reason
+		// todo: check why not just append at the end, why in the middle
 		if (!url.contains("&dn=")) {
 			int idx = url.indexOf("&tr=");
-			url = url.substring(0, idx) + "&dn=" + URLEncoder.encode(torrent.getTitle(), "UTF-8") + url.substring(idx, url.length());
+			if (idx > -1) {
+				url = url.substring(0, idx) + "&dn=" + URLEncoder.encode(torrent.getTitle(), "UTF-8") + url.substring(idx, url.length());
+			} else {
+				url = url + "&dn=" + URLEncoder.encode(torrent.getTitle(), "UTF-8");
+			}
 		}
 
 		return url;
