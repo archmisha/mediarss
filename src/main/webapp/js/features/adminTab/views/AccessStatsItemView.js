@@ -2,9 +2,10 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/adminTab/templates/access-stats-item.tpl',
-	'qtip'
+	'qtip',
+	'HttpUtils'
 ],
-	function(Marionette, Handlebars, template, qtip) {
+	function(Marionette, Handlebars, template, qtip, HttpUtils) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -12,10 +13,12 @@ define([
 			className: 'access-stats-item',
 
 			ui: {
-				userName: '.username-column'
+				userName: '.username-column',
+				impersonateButton: '.impersonate-button'
 			},
 
 			events: {
+				'click .impersonate-button': '_onImpersonateButtonClick'
 			},
 
 			constructor: function(options) {
@@ -26,6 +29,9 @@ define([
 				this.ui.userName.qtip({
 					style: 'rssStyle'
 				});
+				if (this.model.get('loggedIn')) {
+					this.ui.impersonateButton.hide();
+				}
 			},
 
 			templateHelpers: function() {
@@ -34,6 +40,13 @@ define([
 					'lastShowsFeedGeneratedFormatted': this.model.get('lastShowsFeedGenerated'),
 					'lastMoviesFeedGeneratedFormatted': this.model.get('lastMoviesFeedGenerated')
 				};
+			},
+
+			_onImpersonateButtonClick: function() {
+				console.log('impersonating: ' + this.model.id);
+				HttpUtils.get("rest/admin/impersonate/" + this.model.id, function(res) {
+					window.parent.location.reload();
+				});
 			}
 		});
 	});

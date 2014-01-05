@@ -165,4 +165,14 @@ public class AdminController extends BaseController {
 
 		return "Movie '" + movie.getName() + "' (id=" + movie.getId() + ") was deleted";
 	}
+
+	@RequestMapping(value = "/impersonate/{userId}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void impersonate(@PathVariable Long userId) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		sessionService.impersonate(userId);
+	}
 }

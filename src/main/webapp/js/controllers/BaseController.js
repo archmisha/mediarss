@@ -56,10 +56,6 @@ define([
 				this._show(RoutingPaths.ADMIN);
 			},
 
-//			showRoot: function() {
-//				this._show(RoutingPaths.HOME);
-//			},
-
 			logout: function() {
 				// it is host:port/#logout here
 				var url = window.parent.location.href;
@@ -68,35 +64,37 @@ define([
 			},
 
 			_show: function(tabToSelect) {
-//				if (tabToSelect == null) {
-//					tabToSelect = RoutingPaths.HOME;
-//				}
-
-//				if (isLoggedIn) {
-//					this._showHome(null);
-//					return;
-//				}
-				var route = StringUtils.formatRoute(tabToSelect, tabParams);
-				Backbone.history.navigate(route, {trigger: false});
-				document.title = tabToTitle[tabToSelect];
-
 				if (homeView != null) {
+					if (!homeView.isAdmin() && tabToSelect === RoutingPaths.ADMIN) {
+						tabToSelect = RoutingPaths.HOME;
+					}
+					var route = StringUtils.formatRoute(tabToSelect, tabParams);
 					homeView.changeTab(route, tabToView[tabToSelect]);
+					Backbone.history.navigate(route, {trigger: false});
+					document.title = tabToTitle[tabToSelect];
 				} else {
 //					var tab = tabToSelect.substring(tabToSelect.lastIndexOf("/") + 1);
 					HttpUtils.get("rest/user/pre-login", function(res) {
+						if (!res.isLoggedIn) {
+							var url = window.parent.location.href;
+							url = url.substring(0, url.lastIndexOf('/'));
+							window.parent.location = url;
+							return;
+						}
+
+						if (!res.isAdmin) {
+							tabToSelect = RoutingPaths.HOME;
+						}
+						var route = StringUtils.formatRoute(tabToSelect, tabParams);
+						Backbone.history.navigate(route, {trigger: false});
+						document.title = tabToTitle[tabToSelect];
+
 						homeView = new HomeView({
 							selectedTab: route,
 							contentViewDef: tabToView[tabToSelect],
 							tabData: res
 						});
 						mainRegion.show(homeView);
-
-//					if (res.isLoggedIn) {
-//						that._showHome(res);
-//					} else {
-//						that._showLogin(tab);
-//					}
 					}, false);
 				}
 			}

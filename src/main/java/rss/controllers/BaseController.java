@@ -9,6 +9,7 @@ import rss.MediaRSSException;
 import rss.NoPermissionsException;
 import rss.UserNotLoggedInException;
 import rss.entities.User;
+import rss.services.SessionService;
 import rss.services.SettingsService;
 import rss.services.log.LogService;
 import rss.services.shows.ShowAutoCompleteItem;
@@ -42,6 +43,9 @@ public class BaseController {
 
 	@Autowired
 	protected ShowService showService;
+
+	@Autowired
+	protected SessionService sessionService;
 
 	protected <T> T applyDefaultValue(T value, T defaultValue) {
 		return value == null ? defaultValue : value;
@@ -103,7 +107,7 @@ public class BaseController {
 	}
 
 	protected boolean isAdmin(User user) {
-		return settingsService.getAdministratorEmails().contains(user.getEmail());
+		return settingsService.getAdministratorEmails().contains(user.getEmail()) || sessionService.getImpersonatedUserId() != null;
 	}
 
 	// note: getters, setters and empty ctor are needed for spring to json serialization

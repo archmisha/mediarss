@@ -23,9 +23,13 @@ public interface SessionService {
 
 	boolean isUserLogged();
 
+	public Long getImpersonatedUserId();
+
 	ShowsScheduleVO getSchedule();
 
 	void setSchedule(ShowsScheduleVO schedule);
 
 	UsersSearchesCache getUsersSearchesCache();
+
+	void impersonate(Long userId);
 }

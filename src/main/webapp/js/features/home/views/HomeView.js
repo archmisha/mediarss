@@ -51,6 +51,10 @@ define([
 				this.contentView = new contentViewDef();
 				this.contentRegion.show(this.contentView);
 				this.homeHeaderTabs.selectTab(tabToSelect);
+			},
+
+			isAdmin: function() {
+				return this.tabData.isAdmin;
 			}
 		});
 	});

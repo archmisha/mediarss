@@ -12,7 +12,10 @@ import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.*;
+import rss.services.EmailService;
+import rss.services.SettingsService;
+import rss.services.UserService;
+import rss.services.UserServiceImpl;
 import rss.services.log.LogService;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.util.DurationMeter;
@@ -34,9 +37,6 @@ public class UserController extends BaseController {
 
 	@Autowired
 	private EmailService emailService;
-
-	@Autowired
-	private SessionService sessionService;
 
 	@Autowired
 	private SettingsService settingsService;

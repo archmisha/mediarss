@@ -8,6 +8,8 @@ import java.util.Date;
  */
 public class UserVO {
 
+	private long id;
+	private boolean isLoggedIn;
 	private String email;
 	private String firstName;
 	private String lastName;
@@ -43,6 +45,32 @@ public class UserVO {
 
 	public void setSubtitles(String subtitles) {
 		this.subtitles = subtitles;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public boolean isLoggedIn() {
+		return isLoggedIn;
+	}
+
+	public void setLoggedIn(boolean isLoggedIn) {
+		this.isLoggedIn = isLoggedIn;
+	}
+
+	public UserVO withLoggedIn(boolean isLoggedIn) {
+		this.isLoggedIn = isLoggedIn;
+		return this;
+	}
+
+	public UserVO withId(long id) {
+		this.id = id;
+		return this;
 	}
 
 	public UserVO withEmail(String email) {

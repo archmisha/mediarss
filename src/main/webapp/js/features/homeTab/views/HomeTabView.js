@@ -9,9 +9,10 @@ define([
 	'chosen',
 	'MessageBox',
 	'utils/Utils',
-	'HttpUtils'
+	'HttpUtils',
+	'components/traktTvImport/views/TraktTvImportView'
 ],
-	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils) {
+	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView) {
 		"use strict";
 
 		var SUBTITLES_NONE = 'None';
@@ -31,7 +32,8 @@ define([
 
 			regions: {
 				rssFeedsSectionRegion: '.rss-feeds-section',
-				subtitlesSectionRegion: '.subtitles-section'
+				subtitlesSectionRegion: '.subtitles-section',
+				traktTvRegion: '.trakt-tv-import-container'
 			},
 
 			constructor: function(options) {
@@ -45,6 +47,7 @@ define([
 					title: 'Subtitles',
 					description: 'Subtitles could be added to your rss feeds (both movies and tv shows)'
 				});
+				this.traktTvImport = new TraktTvImportView();
 			},
 
 			onRender: function() {
@@ -60,6 +63,7 @@ define([
 
 					that.rssFeedsSectionRegion.show(that.rssFeedsSection);
 					that.subtitlesSectionRegion.show(that.subtitlesSection);
+					that.traktTvRegion.show(that.traktTvImport);
 
 					// register copy to clipboard
 					that.setCopyToClipboard();

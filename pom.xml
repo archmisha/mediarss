@@ -12,6 +12,9 @@
 
     <properties>
         <prod.server>192.227.233.46</prod.server>
+        <prod.username>root</prod.username>
+        <prod.password>ASDqwe123</prod.password>
+
         <!--macros-->
         <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
         <rss-feed-war>media-rss</rss-feed-war>
@@ -568,7 +571,8 @@
                                 <configuration>
                                     <resources>
                                         <resource>
-                                            <targetPath>scp://root:ASDqwe123@${prod.server}:/root</targetPath>
+                                            <targetPath>scp://${prod.username}:${prod.password}@${prod.server}:/root
+                                            </targetPath>
                                             <file>${project.build.directory}/${rss-feed-war}.war</file>
                                         </resource>
                                     </resources>
@@ -588,7 +592,7 @@
                                     <goal>sshexec</goal>
                                 </goals>
                                 <configuration>
-                                    <location>scp://root:ASDqwe123@${prod.server}:/root</location>
+                                    <location>scp://${prod.username}:${prod.password}@${prod.server}:/root</location>
                                     <!-- backup existing war -->
                                     <!-- set maintenance mode on -->
                                     <!-- stop tomcat -->
@@ -601,6 +605,9 @@
                                         ./tomcat stop;sleep 10;rm -rf webapps/media-rss*;cp media-rss.war webapps/;
                                         ./t.sh;sleep 200;./maintenance.sh stop
                                     </command>
+                                    <echoCommands>true</echoCommands>
+                                    <verbose>true</verbose>
+                                    <echoPwd>true</echoPwd>
                                 </configuration>
                             </execution>
                         </executions>

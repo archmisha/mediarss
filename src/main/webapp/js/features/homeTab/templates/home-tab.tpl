@@ -32,3 +32,4 @@
         </select>
     </div>
 </div>
+<div class='trakt-tv-import-container'></div>

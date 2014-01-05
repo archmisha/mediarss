@@ -6,6 +6,7 @@ import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.UserVO;
 import rss.entities.Show;
 import rss.entities.User;
+import rss.services.SessionService;
 import rss.services.SettingsService;
 
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ public class EntityConverter {
 
 	@Autowired
 	private SettingsService settingsService;
+
+	@Autowired
+	private SessionService sessionService;
 
 	public List<ShowVO> toThinShows(Collection<Show> shows) {
 		ArrayList<ShowVO> result = new ArrayList<>();
@@ -40,6 +44,8 @@ public class EntityConverter {
 
 	public UserVO toThinUser(User user) {
 		UserVO userVO = new UserVO()
+				.withId(user.getId())
+				.withLoggedIn(sessionService.getLoggedInUserId() == user.getId())
 				.withEmail(user.getEmail())
 				.withFirstName(user.getFirstName())
 				.withLastName(user.getLastName())
