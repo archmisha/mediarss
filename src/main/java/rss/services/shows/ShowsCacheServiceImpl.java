@@ -96,7 +96,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 			readOnlyShowSubsets = new ArrayList<>(showNameSubsets.values());
 
 			duration.stop();
-			logService.info(getClass(), String.format("Loaded shows cache (%d millis)", duration.getDuration()));
+			logService.info(getClass(), String.format("Loaded shows cache (%d ms)", duration.getDuration()));
 		} finally {
 			lock.unlock();
 		}

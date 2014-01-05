@@ -170,7 +170,7 @@ public class UserController extends BaseController {
 		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
 		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
 		duration.stop();
-		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
+		logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
 
 		return result;
 	}

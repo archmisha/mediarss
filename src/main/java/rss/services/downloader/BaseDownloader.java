@@ -91,7 +91,7 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 					final SearchResult searchResult = downloadTorrent(mediaRequest);
 					switch (searchResult.getSearchStatus()) {
 						case NOT_FOUND:
-							logService.info(aClass, String.format("Downloading \"%s\" took %d millis. %s",
+							logService.info(aClass, String.format("Downloading \"%s\" took %d ms. %s",
 									mediaRequest.toString(), // searchResultTorrent and media doesn't have torrentEntry in that case
 									System.currentTimeMillis() - from,
 									getFoundInPart(searchResult)));
@@ -112,7 +112,7 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 							// should be only one of those here
 							final Downloadable searchResultTorrent = searchResult.getDownloadables().get(0);
 							final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-							logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d millis.",
+							logService.info(aClass, String.format("Torrent \"%s\" is not yet passed aging, uploaded on %s. Took %d ms.",
 									searchResultTorrent.getName(),
 									DATE_FORMAT.format(searchResultTorrent.getDateUploaded()),
 									System.currentTimeMillis() - from));
@@ -121,7 +121,7 @@ public abstract class BaseDownloader<S extends SearchRequest, T> {
 						case FOUND:
 							if (validateSearchResult(mediaRequest, searchResult)) {
 								// printing the returned torrent and not the original , as it might undergone some transformations
-								logService.info(aClass, String.format("Downloading \"%s\" took %d millis. %s",
+								logService.info(aClass, String.format("Downloading \"%s\" took %d ms. %s",
 										searchResult.getDownloadablesDisplayString(),
 										System.currentTimeMillis() - from,
 										getFoundInPart(searchResult)));

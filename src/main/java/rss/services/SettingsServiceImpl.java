@@ -138,7 +138,7 @@ public class SettingsServiceImpl implements SettingsService {
 
 				// print it out
 //				System.out.println(kind + ": " + filename);
-				// prevent firing events when occur in less than 5 millis apart from each other - due to some bug of events fired twice
+				// prevent firing events when occur in less than 5 ms apart from each other - due to some bug of events fired twice
 				long now = System.currentTimeMillis();
 				if (filename.endsWith(watchedFileName) && (now - lastFileChange) > 5) {
 					lastFileChange = now;

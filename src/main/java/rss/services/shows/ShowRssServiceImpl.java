@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.services.PageDownloader;
 import rss.services.requests.episodes.EpisodeRequest;
-import rss.util.DurationMeter;
 import rss.util.CollectionUtils;
+import rss.util.DurationMeter;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -62,7 +62,7 @@ public class ShowRssServiceImpl implements ShowRssService {
 			shows.add(matcher.group(1));
 		}
 
-		log.info(String.format("Retrieving Show list from " + SHOWRSS_HOSTNAME + " took %d millis", durationMeter.getDuration()));
+		log.info(String.format("Retrieving Show list from " + SHOWRSS_HOSTNAME + " took %d ms", durationMeter.getDuration()));
 		return shows;
 	}
 
@@ -113,7 +113,7 @@ public class ShowRssServiceImpl implements ShowRssService {
 			idx = page.indexOf("<div class=\"showentry\">", idx);
 		}
 
-		log.info(String.format("Retrieving TV Shows from " + SHOWRSS_HOSTNAME + " took %d millis", durationMeter.getDuration()));
+		log.info(String.format("Retrieving TV Shows from " + SHOWRSS_HOSTNAME + " took %d ms", durationMeter.getDuration()));
 		return tvShowEpisodes;
 	}*/
 

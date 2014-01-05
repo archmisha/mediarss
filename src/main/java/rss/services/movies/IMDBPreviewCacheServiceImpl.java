@@ -69,7 +69,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 			page = pageDownloader.downloadPage(movie.getImdbUrl());
 			page = cleanImdbPage(movie.getName(), page);
 			durationMeter.stop();
-			logService.debug(getClass(), String.format("IMDB page download for movie %s took %d millis", movie.getName(), durationMeter.getDuration()));
+			logService.debug(getClass(), String.format("IMDB page download for movie %s took %d ms", movie.getName(), durationMeter.getDuration()));
 		} catch (Exception e) {
 			page = null;
 			logService.error(getClass(), e.getMessage(), e);
@@ -95,7 +95,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 			css = pageDownloader.downloadPage(IMDB_CSS_URL_PREFIX + cssFileName);
 			css = cleanCSSFile(cssFileName, css);
 			durationMeter.stop();
-			logService.debug(getClass(), String.format("IMDB CSS file '%s' download took %d millis", cssFileName, durationMeter.getDuration()));
+			logService.debug(getClass(), String.format("IMDB CSS file '%s' download took %d ms", cssFileName, durationMeter.getDuration()));
 		} catch (Exception e) {
 			css = null;
 			logService.error(getClass(), e.getMessage(), e);
@@ -117,7 +117,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		css = StringUtils.replace(css, "images/G/01/imdb/images/tn15/starstiny-3317719365._V_.png", "../../../../../../images/imdb/starstiny-3317719365._V_.png");
 
 		durationMeter.stop();
-		logService.debug(getClass(), "Cleaning IMDB css file '" + cssFileName + "' took " + durationMeter.getDuration() + " millis");
+		logService.debug(getClass(), "Cleaning IMDB css file '" + cssFileName + "' took " + durationMeter.getDuration() + " ms");
 		return css;
 	}
 
@@ -210,7 +210,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		html = StringUtils.replace(html, "</a>", "</span>");
 
 		durationMeter.stop();
-		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " millis");
+		logService.debug(getClass(), "Cleaning IMDB page for movie " + name + " took " + durationMeter.getDuration() + " ms");
 		return html;
 	}
 

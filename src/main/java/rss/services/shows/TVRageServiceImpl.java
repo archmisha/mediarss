@@ -113,7 +113,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 		DurationMeter duration = new DurationMeter();
 		String page = pageDownloader.downloadPage(SHOW_LIST_URL);
 		duration.stop();
-		logService.info(getClass(), "Downloading the show list from tvrage.com took " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Downloading the show list from tvrage.com took " + duration.getDuration() + " ms");
 
 		XStream xstream = new XStream();
 		xstream.alias("shows", List.class);

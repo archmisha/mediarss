@@ -98,7 +98,7 @@ public abstract class JobRunner extends QuartzJobBean {
 				Date end = durationMeter.getEndTime();
 				updateJobFinished(end, statusMessage);
 
-				logService.info(aClass, String.format("Job " + JobRunner.this.name + " completed. Time took %d millis.", durationMeter.getDuration()));
+				logService.info(aClass, String.format("Job " + JobRunner.this.name + " completed. Time took %d ms.", durationMeter.getDuration()));
 				running = false;
 			}
 		});

@@ -106,13 +106,13 @@ public class OOTBContentLoader {
 						@Override
 						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
 //							showService.saveNewShow(show);
-								// had to copy paste from ShowServiceImpl in order to override the pageDownloader instance
-								showDao.persist(show);
-								showsCacheService.put(show);
-								Collection<Episode> episodes = tvRageService.downloadSchedule(show);
-								for (Episode episode : episodes) {
-									showService.persistEpisodeToShow(show, episode);
-								}
+							// had to copy paste from ShowServiceImpl in order to override the pageDownloader instance
+							showDao.persist(show);
+							showsCacheService.put(show);
+							Collection<Episode> episodes = tvRageService.downloadSchedule(show);
+							for (Episode episode : episodes) {
+								showService.persistEpisodeToShow(show, episode);
+							}
 						}
 					});
 					counter++;
@@ -143,7 +143,7 @@ public class OOTBContentLoader {
 		});
 
 		durationMeter.stop();
-		logService.info(getClass(), "Loaded " + counter + " ended-shows from TVRage. Time took: " + durationMeter.getDuration() + " millis");
+		logService.info(getClass(), "Loaded " + counter + " ended-shows from TVRage. Time took: " + durationMeter.getDuration() + " ms");
 	}
 
 	private class ResourcesPageDownloader implements PageDownloader {

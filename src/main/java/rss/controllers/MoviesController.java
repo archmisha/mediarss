@@ -210,7 +210,7 @@ public class MoviesController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("movies", movieService.getUserMovies(user));
 		duration.stop();
-		logService.info(getClass(), "User movies " + duration.getDuration() + " millis");
+		logService.info(getClass(), "User movies " + duration.getDuration() + " ms");
 		return result;
 	}
 
@@ -224,7 +224,7 @@ public class MoviesController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("movies", movieService.getAvailableMovies(user));
 		duration.stop();
-		logService.info(getClass(), "Available movies " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Available movies " + duration.getDuration() + " ms");
 		return result;
 	}
 
@@ -246,7 +246,7 @@ public class MoviesController extends BaseController {
 		result.put("moviesLastUpdated", getMoviesLastUpdated());
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
-		logService.info(getClass(), "initialData " + duration.getDuration() + " millis");
+		logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
 
 		return result;
 	}

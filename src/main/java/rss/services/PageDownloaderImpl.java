@@ -266,7 +266,7 @@ public class PageDownloaderImpl implements PageDownloader {
 			if (httpClient != null) {
 				httpClient.getConnectionManager().shutdown();
 			}
-			log.debug(getClass(), String.format("Download page %s took %d millis", url, System.currentTimeMillis() - from));
+			log.debug(getClass(), String.format("Download page %s took %d ms", url, System.currentTimeMillis() - from));
 		}
 	}
 

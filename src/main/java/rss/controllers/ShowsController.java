@@ -172,7 +172,7 @@ public class ShowsController extends BaseController {
 		result.put("trackedShows", shows);
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
-		logService.info(getClass(), "Tracked shows " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Tracked shows " + duration.getDuration() + " ms");
 
 		return result;
 	}
@@ -194,7 +194,7 @@ public class ShowsController extends BaseController {
 		result.put("schedule", schedule);
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
-		logService.info(getClass(), "Schedule " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Schedule " + duration.getDuration() + " ms");
 
 		return result;
 	}

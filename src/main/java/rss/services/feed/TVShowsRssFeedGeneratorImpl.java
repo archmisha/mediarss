@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.services.subtitles.SubtitleLanguage;
 import rss.dao.SubtitlesDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
@@ -88,7 +87,7 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		user.setLastShowsFeedGenerated(downloadDate);
 		userDao.merge(user);
 
-		logService.info(getClass(), String.format("Generated shows feed for %s (%d millis)", user, System.currentTimeMillis() - from));
+		logService.info(getClass(), String.format("Generated shows feed for %s (%d ms)", user, System.currentTimeMillis() - from));
 		return rssFeed;
 	}
 }

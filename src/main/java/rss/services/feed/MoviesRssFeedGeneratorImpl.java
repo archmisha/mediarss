@@ -1,8 +1,6 @@
 package rss.services.feed;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,7 +14,10 @@ import rss.entities.UserTorrent;
 import rss.services.log.LogService;
 import rss.util.DateUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 
 /**
  * User: Michael Dikman
@@ -26,11 +27,11 @@ import java.util.*;
 @Service("moviesRssFeedGeneratorImpl")
 public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
-    @Autowired
-    private UserDao userDao;
+	@Autowired
+	private UserDao userDao;
 
-    @Autowired
-    private RssFeedBuilder rssFeedBuilder;
+	@Autowired
+	private RssFeedBuilder rssFeedBuilder;
 
 	@Autowired
 	private UserTorrentDao userTorrentDao;
@@ -38,28 +39,28 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 	@Autowired
 	private LogService logService;
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public String generateFeed(User user) {
-        long from = System.currentTimeMillis();
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public String generateFeed(User user) {
+		long from = System.currentTimeMillis();
 
-        Date downloadDate = new Date();
-        user.setLastMoviesFeedGenerated(downloadDate);
-        userDao.merge(user);
+		Date downloadDate = new Date();
+		user.setLastMoviesFeedGenerated(downloadDate);
+		userDao.merge(user);
 
-        Collection<Torrent> torrentEntries = new ArrayList<>();
-        int backlogDays = 7;
-        for (UserTorrent userTorrent : userTorrentDao.findUserMoviesForUserFeed(DateUtils.getPastDate(backlogDays), user)) {
-            userTorrent.setDownloadDate(downloadDate);
-            torrentEntries.add(userTorrent.getTorrent());
-        }
+		Collection<Torrent> torrentEntries = new ArrayList<>();
+		int backlogDays = 7;
+		for (UserTorrent userTorrent : userTorrentDao.findUserMoviesForUserFeed(DateUtils.getPastDate(backlogDays), user)) {
+			userTorrent.setDownloadDate(downloadDate);
+			torrentEntries.add(userTorrent.getTorrent());
+		}
 
-        String rssFeed = rssFeedBuilder.build("Movies RSS personalized feed",
-                "RSS feed of movies selected by the user in the past " + backlogDays + " days", torrentEntries, Collections.<Subtitles>emptyList());
+		String rssFeed = rssFeedBuilder.build("Movies RSS personalized feed",
+				"RSS feed of movies selected by the user in the past " + backlogDays + " days", torrentEntries, Collections.<Subtitles>emptyList());
 
-		logService.info(getClass(), String.format("Generated movies feed for %s (%d millis)", user, System.currentTimeMillis() - from));
-        return rssFeed;
-    }
+		logService.info(getClass(), String.format("Generated movies feed for %s (%d ms)", user, System.currentTimeMillis() - from));
+		return rssFeed;
+	}
 
 
 }

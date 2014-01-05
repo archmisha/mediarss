@@ -1,11 +1,13 @@
 define([
 	'backbone'
-], function(Backbone){
+], function(Backbone) {
 	'use strict';
 
 	return Backbone.Model.extend({
 
-		defaults : {
+		defaults: {
+			id: -1,
+			loggedIn: false,
 			email: '',
 			firstName: '',
 			lastName: '',

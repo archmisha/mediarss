@@ -85,7 +85,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
 		DurationMeter duration = new DurationMeter();
 		Collection<Show> didYouMeanShows = statisticMatch(originalSearchTerm, MAX_DID_YOU_MEAN);
 		duration.stop();
-		logService.info(getClass(), "Did you mean time - " + duration.getDuration() + " millis");
+		logService.info(getClass(), "Did you mean time - " + duration.getDuration() + " ms");
 
 		// first check which show we need
 		Show show = findShowByName(originalSearchTerm);

@@ -96,7 +96,7 @@ public class IMDBServiceImpl implements IMDBService {
 			String name = oldYearMatcher.group(1);
 			name = StringEscapeUtils.unescapeHtml4(name);
 
-			logService.debug(getClass(), String.format("Downloading title for movie '%s' took %d millis", name, (System.currentTimeMillis() - from)));
+			logService.debug(getClass(), String.format("Downloading title for movie '%s' took %d ms", name, (System.currentTimeMillis() - from)));
 
 			Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(partialPage);
 			boolean isComingSoon = comingSoonMatcher.find();
