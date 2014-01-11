@@ -43,7 +43,7 @@ public class IMDBServiceImpl implements IMDBService {
 	public static final Pattern NOT_YET_RELEASED_PATTERN = Pattern.compile("<div class=\"rating-ineligible\">.*?Not yet released.*?</div>.*?itemprop=\"description\"", Pattern.MULTILINE | Pattern.DOTALL);
 	public static final Pattern VIEWERS_PATTERN = Pattern.compile("<span itemprop=\"ratingCount\">([^<]*)</span>");
 	public static final Pattern OLD_YEAR_PATTERN = Pattern.compile("<meta name=\"title\" content=\"(.*?) - IMDb\" />");
-	public static final Pattern STORY_LINE_PATTERN = Pattern.compile("id=\"titleStoryLine\"");
+	//	public static final Pattern STORY_LINE_PATTERN = Pattern.compile("id=\"titleStoryLine\"");
 	public static final Pattern PEOPLE_IMAGES_PATTERN = Pattern.compile("<td class=\"primary_photo\">.*?loadlate=\"([^\"]+)\"", Pattern.MULTILINE | Pattern.DOTALL);
 	public static final Pattern MAIN_IMAGE_PATTERN = Pattern.compile("id=\"img_primary\".*?src=\"([^\"]+)\"", Pattern.MULTILINE | Pattern.DOTALL);
 
@@ -79,7 +79,8 @@ public class IMDBServiceImpl implements IMDBService {
 		String partialPage;
 		try {
 			// imdb pages are large, downloading until a regular expression is satisfied and that chunk is returned
-			partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, STORY_LINE_PATTERN);
+//			partialPage = pageDownloader.downloadPageUntilFound(imdbUrl, STORY_LINE_PATTERN);
+			partialPage = pageDownloader.downloadPage(imdbUrl);
 		} catch (Exception e) {
 			// usually it is HTTP/1.1 404 Not Found
 			if (!e.getMessage().contains("404 Not Found")) {

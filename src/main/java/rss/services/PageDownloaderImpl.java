@@ -24,6 +24,7 @@ import rss.services.log.LogService;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.util.Utils;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -59,8 +60,9 @@ public class PageDownloaderImpl implements PageDownloader {
 			@Override
 			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
 				InputStream is = extractInputStreamFromResponse(httpResponse);
+				BufferedInputStream bis = new BufferedInputStream(is);
 				byte[] arr = new byte[1000];
-				int read = is.read(arr);
+				int read = bis.read(arr);
 				String str = new String(arr, "UTF-8");
 				Matcher matcher = pattern.matcher(str);
 				if (matcher.find()) {
@@ -69,7 +71,7 @@ public class PageDownloaderImpl implements PageDownloader {
 
 				StringBuilder sb = new StringBuilder(str);
 				while (read > -1 && !matcher.find()) {
-					read = is.read(arr, 0, 50);
+					read = bis.read(arr, 0, 100);
 					if (read == -1) {
 						break;
 					}
