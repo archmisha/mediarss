@@ -1,6 +1,7 @@
 package rss.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,12 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
+import rss.dao.SubtitlesDao;
 import rss.dao.UserDao;
+import rss.entities.Subtitles;
+import rss.entities.Torrent;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SettingsService;
 import rss.services.UserService;
 import rss.services.UserServiceImpl;
+import rss.services.feed.RssFeedGenerator;
 import rss.services.log.LogService;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.util.DurationMeter;
@@ -24,9 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.security.InvalidParameterException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/user")
@@ -49,6 +52,13 @@ public class UserController extends BaseController {
 
 	@Autowired
 	private HttpSession session;
+
+	@Autowired
+	private SubtitlesDao subtitlesDao;
+
+	@Autowired
+	@Qualifier("tVShowsRssFeedGeneratorImpl")
+	private RssFeedGenerator tvShowsRssFeedGenerator;
 
 	@RequestMapping(value = "/pre-login", method = RequestMethod.GET)
 	@ResponseBody
@@ -169,6 +179,11 @@ public class UserController extends BaseController {
 		result.put("userSubtitles", user.getSubtitles() == null ? null : user.getSubtitles().toString());
 		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
 		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
+
+		Set<Torrent> torrents = tvShowsRssFeedGenerator.getFeedTorrents(user);
+		Collection<Subtitles> subtitles = subtitlesDao.find(torrents, user.getSubtitles());
+		result.put("recentSubtitles", entityConverter.toThinSubtitles(subtitles, torrents));
+
 		duration.stop();
 		logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
 

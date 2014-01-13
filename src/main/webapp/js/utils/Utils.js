@@ -20,13 +20,7 @@ define([],
 				};
 
 //				console.log('Starting to wait for element');
-				if ($(selector).length == 0) {
-//					console.log('element not present yet');
-					setTimeout(f, 50);
-				} else {
-					// element already present, no need timeouts
-					callback(selector);
-				}
+				f();
 			}
 		};
 	});
