@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.requests.movies.MovieRequest;
 import rss.services.requests.episodes.ShowRequest;
+import rss.services.requests.movies.MovieRequest;
 import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.util.GoogleMail;
 
@@ -191,8 +191,8 @@ public class EmailServiceImpl implements EmailService {
 		sendEmail(Collections.singletonList(recipient), title, message);
 	}
 
-	// "gabayshiran", "ahri24986"
+	// "gabayshiran", "ahri24986", lan4ear, 84ad17ad!
 	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException, UnsupportedEncodingException {
-		GoogleMail.Send(new InternetAddress(MEDIA_RSS_GROUP_EMAIL, "Media-RSS Team"), "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
+		GoogleMail.Send(new InternetAddress("personal.media.rss@gmail.com", "Media-RSS Team"), "personal.media.rss", "83md16md", null, StringUtils.join(recipients, " "), title, message);
 	}
 }
