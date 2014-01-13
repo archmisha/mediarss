@@ -3,15 +3,16 @@ package rss.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.controllers.vo.ShowVO;
+import rss.controllers.vo.SubtitlesVO;
 import rss.controllers.vo.UserVO;
 import rss.entities.Show;
+import rss.entities.Subtitles;
+import rss.entities.Torrent;
 import rss.entities.User;
 import rss.services.SessionService;
 import rss.services.SettingsService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -59,5 +60,27 @@ public class EntityConverter {
 			userVO.setSubtitles(user.getSubtitles().toString());
 		}
 		return userVO;
+	}
+
+	public List<SubtitlesVO> toThinSubtitles(Collection<Subtitles> subtitles, Collection<Torrent> torrents) {
+		Map<Long, Torrent> torrentsByIds = new HashMap<>();
+		for (Torrent torrent : torrents) {
+			torrentsByIds.put(torrent.getId(), torrent);
+		}
+
+		ArrayList<SubtitlesVO> result = new ArrayList<>();
+		for (Subtitles subtitle : subtitles) {
+			for (Long torrentId : subtitle.getTorrentIds()) {
+				SubtitlesVO subtitlesVO = new SubtitlesVO();
+				subtitlesVO.setType("shows");
+				Torrent torrent = torrentsByIds.get(torrentId);
+				subtitlesVO.setName(torrent.getTitle());
+				subtitlesVO.setLanguage(subtitle.getLanguage().toString());
+				subtitlesVO.setId(subtitle.getId());
+				result.add(subtitlesVO);
+			}
+		}
+
+		return result;
 	}
 }

@@ -25,11 +25,18 @@
 </ul>
 <div class='subtitles-section'></div>
 <div class='subtitle-settings'>
-    <span class='subtitles-settings-label'>Language</span>
+    <div class="subtitles-settings-container">
+        <span class='subtitles-settings-label'>Language</span>
 
-    <div class='subtitles-settings-combobox-container'>
-        <select class='subtitles-settings-combobox'>
-        </select>
+        <div class='subtitles-settings-combobox-container'>
+            <select class='subtitles-settings-combobox'>
+            </select>
+        </div>
+    </div>
+
+    <div class="recent-subtitles-container">
+        Recent subtitles:
+        <div class='recent-subtitles-list'></div>
     </div>
 </div>
 <div class='trakt-tv-import-container'></div>

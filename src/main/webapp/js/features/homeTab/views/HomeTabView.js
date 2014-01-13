@@ -10,9 +10,11 @@ define([
 	'MessageBox',
 	'utils/Utils',
 	'HttpUtils',
-	'components/traktTvImport/views/TraktTvImportView'
+	'components/traktTvImport/views/TraktTvImportView',
+	'features/homeTab/views/SubtitlesCollectionView',
+	'features/homeTab/collections/SubtitlesCollection'
 ],
-	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView) {
+	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView, SubtitlesCollectionView, SubtitlesCollection) {
 		"use strict";
 
 		var SUBTITLES_NONE = 'None';
@@ -23,7 +25,8 @@ define([
 			ui: {
 				subtitlesCombobox: '.subtitles-settings-combobox',
 				tvShowsCopyLinkNotification: '.tvshows-feed-copy-link-notification',
-				moviesCopyLinkNotification: '.movies-feed-copy-link-notification'
+				moviesCopyLinkNotification: '.movies-feed-copy-link-notification',
+				recentSubtitlesListContainer: '.recent-subtitles-container'
 			},
 
 			events: {
@@ -33,7 +36,8 @@ define([
 			regions: {
 				rssFeedsSectionRegion: '.rss-feeds-section',
 				subtitlesSectionRegion: '.subtitles-section',
-				traktTvRegion: '.trakt-tv-import-container'
+				traktTvRegion: '.trakt-tv-import-container',
+				recentSubtitlesRegion: '.recent-subtitles-list'
 			},
 
 			constructor: function(options) {
@@ -48,6 +52,9 @@ define([
 					description: 'Subtitles could be added to your rss feeds (both movies and tv shows)'
 				});
 				this.traktTvImport = new TraktTvImportView();
+
+				this.recentSubtitlesCollection = new SubtitlesCollection();
+				this.recentSubtitlesView = new SubtitlesCollectionView({collection: this.recentSubtitlesCollection});
 			},
 
 			onRender: function() {
@@ -71,6 +78,12 @@ define([
 					Utils.waitForDisplayAndCreate('.subtitles-settings-combobox', function(selector) {
 						that.createChosen(selector);
 					});
+
+					that.recentSubtitlesRegion.show(that.recentSubtitlesView);
+					that.recentSubtitlesCollection.reset(that.tabData.recentSubtitles);
+					if (that.tabData.recentSubtitles.length === 0) {
+						that.ui.recentSubtitlesListContainer.hide();
+					}
 				}, false);
 			},
 
