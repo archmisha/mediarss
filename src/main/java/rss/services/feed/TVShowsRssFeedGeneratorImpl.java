@@ -48,7 +48,32 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		long from = System.currentTimeMillis();
 
 		final Date downloadDate = new Date();
+		Set<Torrent> torrentEntries = getFeedTorrents(user, 7, downloadDate);
 
+		// add subtitles
+		Collection<Subtitles> subtitles;
+//		if (user.getSubtitles() != null) {
+//			subtitles = subtitlesDao.find(torrentEntries, user.getSubtitles());
+//		} else {
+		subtitles = Collections.emptyList();
+//		}
+
+		String rssFeed = rssFeedBuilder.build("TV Shows RSS personalized feed", "TV Shows RSS feed of the shows selected by the user", torrentEntries, subtitles);
+
+		user.setLastShowsFeedGenerated(downloadDate);
+		userDao.merge(user);
+
+		logService.info(getClass(), String.format("Generated shows feed for %s (%d ms)", user, System.currentTimeMillis() - from));
+		return rssFeed;
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Set<Torrent> getFeedTorrents(User user) {
+		return getFeedTorrents(user, 7, null);
+	}
+
+	private Set<Torrent> getFeedTorrents(User user, int backlogDays, Date downloadDate) {
 		// extract torrent entries - take best by quality
 		Set<Torrent> torrentEntries = new HashSet<>();
 		for (Episode episode : userDao.getEpisodesToDownload(user)) {
@@ -67,27 +92,14 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		}
 
 		// also add user episodes
-		// add everything added since last feed generated with 7 days buffer
-		int backlogDays = 7;
+		// add everything added since last feed generated with 'backlogDays' days buffer
 		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(user, DateUtils.getPastDate(user.getLastShowsFeedGenerated(), backlogDays))) {
-			userTorrent.setDownloadDate(downloadDate);
+			if (downloadDate != null) {
+				userTorrent.setDownloadDate(downloadDate);
+			}
 			torrentEntries.add(userTorrent.getTorrent());
 		}
 
-		// add subtitles
-		Collection<Subtitles> subtitles;
-		if (user.getSubtitles() != null) {
-			subtitles = subtitlesDao.find(torrentEntries, user.getSubtitles());
-		} else {
-			subtitles = Collections.emptyList();
-		}
-
-		String rssFeed = rssFeedBuilder.build("TV Shows RSS personalized feed", "TV Shows RSS feed of the shows selected by the user", torrentEntries, subtitles);
-
-		user.setLastShowsFeedGenerated(downloadDate);
-		userDao.merge(user);
-
-		logService.info(getClass(), String.format("Generated shows feed for %s (%d ms)", user, System.currentTimeMillis() - from));
-		return rssFeed;
+		return torrentEntries;
 	}
 }
