@@ -15,7 +15,10 @@ import rss.util.StringUtils2;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,11 +37,10 @@ import java.util.regex.Pattern;
 @Service("episodeSearcher1337x")
 public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	private static final String NAME = "1337x.org";
-	private static final String SEARCH_URL = "http://" + NAME + "/search/%s/0/";
-	private static final String ENTRY_URL = "http://" + NAME + "/";
+	private static final String NAME = "1337x"; // 1337x.org
+	private static final String SEARCH_URL_SUFFIX = /*"http://" + NAME +*/ "/search/%s/0/";
 
-	private static final Pattern BITSNOOP_TORRENTS_ID = Pattern.compile("http://1337x.org/([^\"]+)");
+	private static final Pattern TORRENTS_ID_PATTERN = Pattern.compile("http://1337x[^/]+/([^\"]+)");
 
 	@Autowired
 	private PageDownloader pageDownloader;
@@ -56,12 +58,16 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 
 	@Override
 	protected Collection<String> getEntryUrl() {
-		return Collections.singletonList(ENTRY_URL);
+		Collection<String> res = new ArrayList<>();
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+			res.add("http://" + domain + "/");
+		}
+		return res;
 	}
 
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
-		Matcher matcher = BITSNOOP_TORRENTS_ID.matcher(page);
+		Matcher matcher = TORRENTS_ID_PATTERN.matcher(page);
 		if (matcher.find()) {
 			String group = matcher.group(1);
 			if (group.equals("torrent")) {
@@ -74,31 +80,40 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 
 	@Override
 	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		return Collections.singletonList(String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+		Collection<String> res = new ArrayList<>();
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+			res.add(String.format("http://" + domain + SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+		}
+		return res;
+
+//		return Collections.singletonList(String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
 	}
 
 	@Override
 	// 1337x search results page lacks magnet links and age, so must download the torrent entry page always
 	protected List<Torrent> parseSearchResultsPage(String url, T mediaRequest, String page) {
 		List<Torrent> results = new ArrayList<>();
-		try {
-			Document doc = Jsoup.parse(page);
-			for (Element element : doc.select(".torrentName")) {
-				// take second a tag
-				Element a = element.select("a.org").get(0);
-				String searcherTorrentsId = a.attr("href");
-				mediaRequest.setSearcherId(NAME, ENTRY_URL + searcherTorrentsId);
-				String entryPage = pageDownloader.downloadPage(ENTRY_URL + searcherTorrentsId);
-				Torrent torrent = parseTorrentPage(mediaRequest, entryPage);
-				results.add(torrent);
+		Document doc = Jsoup.parse(page);
+		for (Element element : doc.select(".torrentName")) {
+			for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+				try {
+					// take second a tag
+					Element a = element.select("a.org").get(0);
+					String searcherTorrentsId = a.attr("href");
+					String torrentUrl = "http://" + domain + searcherTorrentsId;
+					mediaRequest.setSearcherId(NAME, torrentUrl);
+					String entryPage = pageDownloader.downloadPage(torrentUrl);
+					Torrent torrent = parseTorrentPage(mediaRequest, entryPage);
+					results.add(torrent);
+					// if any of the domains worked no point continuing
+					break;
+				} catch (PageDownloadException e) {
+					logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage());
+				} catch (Exception e) {
+					// in case of an error in parsing, printing the page so be able to reproduce
+					logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
+				}
 			}
-		} catch (PageDownloadException e) {
-			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage());
-			return Collections.emptyList();
-		} catch (Exception e) {
-			// in case of an error in parsing, printing the page so be able to reproduce
-			logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage(), e);
-			return Collections.emptyList(); // could maybe return the partial results collected up until now
 		}
 		return results;
 	}

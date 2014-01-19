@@ -17,5 +17,6 @@
 </div>
 <div class='admin-access-stats-section'></div>
 <div class='admin-access-stats'></div>
+<div class='admin-searcher-configurations-section'></div>
 <div class='admin-notifications-section'></div>
 <div class='admin-notifications'></div>

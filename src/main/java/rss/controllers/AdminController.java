@@ -14,6 +14,7 @@ import rss.dao.*;
 import rss.entities.*;
 import rss.services.EmailService;
 import rss.services.SessionService;
+import rss.services.searchers.SearcherConfigurationService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,6 +54,9 @@ public class AdminController extends BaseController {
 
 	@Autowired
 	private SubtitlesDao subtitlesDao;
+
+	@Autowired
+	private SearcherConfigurationService searcherConfigurationService;
 
 	@RequestMapping(value = "/notification", method = RequestMethod.POST)
 	@ResponseBody
@@ -174,5 +178,34 @@ public class AdminController extends BaseController {
 		verifyAdminPermissions(user);
 
 		sessionService.impersonate(userId);
+	}
+
+	@RequestMapping(value = "/searcher-configurations", method = RequestMethod.GET)
+	@ResponseBody
+	public Collection<SearcherConfiguration> getSearcherConfigurations() {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		return searcherConfigurationService.getSearcherConfigurations();
+	}
+
+	@RequestMapping(value = "/searcher-configuration/{name}/domain/add/{domain}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void addDomainToSearcherConfiguration(@PathVariable String name, @PathVariable String domain) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		searcherConfigurationService.addDomain(name, domain);
+	}
+
+	@RequestMapping(value = "/searcher-configuration/{name}/domain/remove/{domain}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void removeDomainToSearcherConfiguration(@PathVariable String name, @PathVariable String domain) {
+		User user = userDao.find(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		searcherConfigurationService.removeDomain(name, domain);
 	}
 }

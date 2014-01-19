@@ -31,7 +31,6 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 339778056686808601L;
 
-
 	@Autowired
 	@Qualifier("tVShowsRssFeedGeneratorImpl")
 	private RssFeedGenerator tvShowsRssFeedGenerator;

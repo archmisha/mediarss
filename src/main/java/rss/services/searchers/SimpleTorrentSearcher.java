@@ -35,6 +35,9 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 	@Autowired
 	private ShowService showService;
 
+	@Autowired
+	protected SearcherConfigurationService searcherConfigurationService;
+
 	@Override
 	public SearchResult search(T mediaRequest) {
 		Collection<String> searchUrl;

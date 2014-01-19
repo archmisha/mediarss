@@ -33,7 +33,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 	public static final String NAME = "kickasstorrents";
 
-	private static final String[] DOMAINS = new String[]{"kickass.to", "kickasstorrents.eu", "kat.ph"};
+//	private static final String[] DOMAINS = new String[]{"kickass.to", "kickasstorrents.eu", "kat.ph"};
 
 	@Override
 	public String getName() {
@@ -48,7 +48,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 	@Override
 	protected Collection<String> getEntryUrl() {
 		Collection<String> res = new ArrayList<>();
-		for (String domain : DOMAINS) {
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
 			res.add("http://" + domain + "/");
 		}
 		return res;
@@ -61,7 +61,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
-		for (String domain : DOMAINS) {
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
 			Pattern pattern = Pattern.compile("http://" + domain + "/([^\"/]+)");
 			Matcher matcher = pattern.matcher(page);
 			if (matcher.find()) {
@@ -144,10 +144,11 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 				sb.append("season:").append(episodeRequest.getSeason());
 				sb.append(" episode:").append(episodeRequest.getEpisode());
 				//"greys anatomy category:tv season:1 episode:1"
+				String queryPart = URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8");
 
 				Collection<String> res = new ArrayList<>();
-				for (String domain : DOMAINS) {
-					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8"));
+				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+					res.add("http://" + domain + "/usearch/" + queryPart);
 				}
 				return res;
 
@@ -159,12 +160,11 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 		@Override
 		public Collection<String> visit(DoubleEpisodeRequest episodeRequest, Object config) {
 			try {
-				StringBuilder sb = new StringBuilder();
-				sb.append("season:").append(episodeRequest.getSeason());
+				String queryPart = URLEncoder.encode(episodeRequest.toQueryString() + " category:tv season:" + episodeRequest.getSeason(), "UTF-8");
 
 				Collection<String> res = new ArrayList<>();
-				for (String domain : DOMAINS) {
-					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8"));
+				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+					res.add("http://" + domain + "/usearch/" + queryPart);
 				}
 				return res;
 
@@ -176,12 +176,11 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 		@Override
 		public Collection<String> visit(FullSeasonRequest episodeRequest, Object config) {
 			try {
-				StringBuilder sb = new StringBuilder();
-				sb.append("season:").append(episodeRequest.getSeason());
+				String queryPArt = URLEncoder.encode(episodeRequest.toQueryString() + " category:tv season:" + episodeRequest.getSeason(), "UTF-8");
 
 				Collection<String> res = new ArrayList<>();
-				for (String domain : DOMAINS) {
-					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(episodeRequest.toQueryString() + " category:tv " + sb.toString(), "UTF-8"));
+				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+					res.add("http://" + domain + "/usearch/" + queryPArt);
 				}
 				return res;
 			} catch (UnsupportedEncodingException e) {
@@ -193,9 +192,11 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 		public Collection<String> visit(MovieRequest movieRequest, Object config) {
 			try {
 				// http://kat.ph/usearch/iron%20man%20category:movies/
+				String queryPart = URLEncoder.encode(movieRequest.toQueryString() + " category:movies", "UTF-8");
+
 				Collection<String> res = new ArrayList<>();
-				for (String domain : DOMAINS) {
-					res.add("http://" + domain + "/usearch/" + URLEncoder.encode(movieRequest.toQueryString() + " category:movies", "UTF-8"));
+				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+					res.add("http://" + domain + "/usearch/" + queryPart);
 				}
 				return res;
 			} catch (UnsupportedEncodingException e) {

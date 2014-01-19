@@ -12,9 +12,11 @@ define([
 	'HttpUtils',
 	'MessageBox',
 	'select2',
-	'utils/Utils'
+	'utils/Utils',
+	'features/adminTab/views/SearcherConfigurationsCollectionView',
+	'features/adminTab/collections/SearcherConfigurationsCollection'
 ],
-	function(Marionette, Handlebars, template, JobsCollectionView, JobsCollection, SectionView, NotificationsView, UsersCollection, AccessStatsCompositeView, HttpUtils, MessageBox, select2, Utils) {
+	function(Marionette, Handlebars, template, JobsCollectionView, JobsCollection, SectionView, NotificationsView, UsersCollection, AccessStatsCompositeView, HttpUtils, MessageBox, select2, Utils, SearcherConfigurationsCollectionView, SearcherConfigurationsCollection) {
 		"use strict";
 
 		var SHOWS_COMBO_BOX_SELECTOR = '.admin-all-shows-combo';
@@ -29,7 +31,8 @@ define([
 				accessStatsSectionRegion: '.admin-access-stats-section',
 				accessStatsRegion: '.admin-access-stats',
 				notificationsSectionRegion: '.admin-notifications-section',
-				notificationsRegion: '.admin-notifications'
+				notificationsRegion: '.admin-notifications',
+				searcherConfigurationsSectionRegion: '.admin-searcher-configurations-section'
 			},
 
 			ui: {
@@ -71,6 +74,15 @@ define([
 					title: 'Access Statistics',
 					description: ''
 				});
+
+				this.searcherConfigurationsCollection = new SearcherConfigurationsCollection();
+				this.searcherConfigurationsCollectionView = new SearcherConfigurationsCollectionView({collection: this.searcherConfigurationsCollection});
+				this.searcherConfigurationsSection = new SectionView({
+					title: 'Searchers configuration',
+					description: '',
+					content: this.searcherConfigurationsCollectionView
+				});
+				this.searcherConfigurationsCollection.fetch();
 			},
 
 			onRender: function() {
@@ -80,6 +92,7 @@ define([
 				this.notificationsRegion.show(this.notificationsView);
 				this.accessStatsSectionRegion.show(this.accessStatsSection);
 				this.accessStatsRegion.show(this.accessStatsView);
+				this.searcherConfigurationsSectionRegion.show(this.searcherConfigurationsSection);
 			},
 
 			onShow: function() {

@@ -12,7 +12,6 @@ define([
 	function(Marionette, Handlebars, template, MovieSearchResultsCollectionView, HttpUtils, SectionView, MessageBox, MoviesCollection) {
 		"use strict";
 
-		var selectedMovie = null;
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
 //			className: 'movies-tab',
@@ -37,8 +36,7 @@ define([
 
 				this.moviesSearchHeader = new SectionView({
 					title: 'Search Movies',
-					description:
-						'If the movie is already available for download it will be automatically added to your feed<br/>' +
+					description: 'If the movie is already available for download it will be automatically added to your feed<br/>' +
 						'Otherwise it will be scheduled for download in the <b>future</b> once it will be available.'
 				});
 

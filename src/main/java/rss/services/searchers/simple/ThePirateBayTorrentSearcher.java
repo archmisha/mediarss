@@ -24,11 +24,10 @@ import java.util.regex.Pattern;
 @Service("thePirateBayTorrentSearcher")
 public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "thepiratebay.sx";
-	private static final String HOST_NAME_URL_PART = "http://" + NAME;
+	public static final String NAME = "thepiratebay"; // http://pirateproxy.net/ thepiratebay.sx
+
 	// 0/7/0 orders by seeders - this solves multiple pages problem, what is important will be on the first page
-	private static final String SEARCH_URL = HOST_NAME_URL_PART + "/search/%s/0/7/0";
-	private static final String ENTRY_URL = HOST_NAME_URL_PART + "/torrent/";
+	private static final String SEARCH_URL_SUFFIX = "/search/%s/0/7/0";
 
 	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
 
@@ -47,12 +46,22 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 
 	@Override
 	protected Collection<String> getEntryUrl() {
-		return Collections.singletonList(ENTRY_URL);
+		Collection<String> res = new ArrayList<>();
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+			res.add("http://" + domain + "/torrent/");
+		}
+		return res;
 	}
 
 	@Override
 	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		return Collections.singletonList(String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+		Collection<String> res = new ArrayList<>();
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+			res.add(String.format("http://" + domain + SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+		}
+		return res;
+
+//		return Collections.singletonList(String.format(SEARCH_URL, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
 	}
 
 	@Override
@@ -116,7 +125,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 				idx = page.indexOf("<div class=\"detName\">", idx);
 				String urlPrefix = "<a href=\"";
 				idx = page.indexOf(urlPrefix, idx) + urlPrefix.length();
-				String sourcePageUrl = HOST_NAME_URL_PART + page.substring(idx, page.indexOf("\"", idx));
+				String sourcePageUrl = url.substring(url.indexOf('/')) + page.substring(idx, page.indexOf("\"", idx));
 				int i = sourcePageUrl.lastIndexOf("/") + 1;
 				sourcePageUrl = sourcePageUrl.substring(0, i) + URLEncoder.encode(sourcePageUrl.substring(i), "UTF-8");
 

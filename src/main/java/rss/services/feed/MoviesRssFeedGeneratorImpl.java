@@ -14,10 +14,7 @@ import rss.entities.UserTorrent;
 import rss.services.log.LogService;
 import rss.util.DateUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
+import java.util.*;
 
 /**
  * User: Michael Dikman
@@ -62,5 +59,8 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 		return rssFeed;
 	}
 
-
+	@Override
+	public Set<Torrent> getFeedTorrents(User user) {
+		return Collections.emptySet();
+	}
 }

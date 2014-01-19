@@ -197,14 +197,18 @@ define([
 
 					$.get("rest/shows/search/status")
 						.success(function(res) {
-							that.activeSearchesCollection.reset(res.activeSearches);
 							// if all jobs have stopped
 							var allComplete = true;
-							res.activeSearches.forEach(function(el) {
-								if (el.end == null) {
-									allComplete = false;
-								}
-							});
+
+							// not defined if session timeout
+							if (res.activeSearches) {
+								that.activeSearchesCollection.reset(res.activeSearches);
+								res.activeSearches.forEach(function(el) {
+									if (el.end == null) {
+										allComplete = false;
+									}
+								});
+							}
 							if (allComplete) {
 								that._stopPollingThread();
 							}

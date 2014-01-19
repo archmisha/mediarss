@@ -25,7 +25,7 @@ public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearc
 
 	public static final String NAME = "publichd";
 
-	public static final String[] DOMAINS = new String[]{"publichd.eu", "publichd.se"};
+	//	public static final String[] DOMAINS = new String[]{"publichd.eu", "publichd.se"};
 	public static final Pattern PATTERN = Pattern.compile("<tag:torrents\\[\\].download /><a href=\".*?\">(.*?)<a href=(.*?)>.*AddDate</b></td>.*?>(.*?)</td>.*?seeds: (\\d+)", Pattern.DOTALL);
 
 	@Autowired
@@ -44,7 +44,7 @@ public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearc
 	@Override
 	protected Collection<String> getEntryUrl() {
 		Collection<String> res = new ArrayList<>();
-		for (String domain : DOMAINS) {
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
 			res.add("http://" + domain + "/index.php?page=torrent-details&id=");
 		}
 		return res;

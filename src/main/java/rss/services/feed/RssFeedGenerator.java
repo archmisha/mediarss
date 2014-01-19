@@ -1,6 +1,9 @@
 package rss.services.feed;
 
+import rss.entities.Torrent;
 import rss.entities.User;
+
+import java.util.Set;
 
 /**
  * User: Michael Dikman
@@ -10,4 +13,6 @@ import rss.entities.User;
 public interface RssFeedGenerator {
 
 	String generateFeed(User user);
+
+	Set<Torrent> getFeedTorrents(User user);
 }

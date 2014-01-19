@@ -10,6 +10,7 @@ import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,10 +24,9 @@ import java.util.regex.Pattern;
 @Service("bitSnoopTorrentSearcher")
 public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "bitsnoop.com";
-	private static final String ENTRY_URL = "http://" + NAME + "/";
+	public static final String NAME = "bitsnoop"; //.com
 
-	private static final Pattern BITSNOOP_TORRENTS_ID = Pattern.compile("http://bitsnoop.com/([^\"/]+)");
+	private static final Pattern TORRENTS_ID_PATTERN = Pattern.compile("http://bitsnoop[^/]+/([^\"/]+)");
 
 	@Override
 	public String getName() {
@@ -40,7 +40,11 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorre
 
 	@Override
 	protected Collection<String> getEntryUrl() {
-		return Collections.singletonList(ENTRY_URL);
+		Collection<String> res = new ArrayList<>();
+		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
+			res.add("http://" + domain + "/");
+		}
+		return res;
 	}
 
 	@Override
@@ -62,7 +66,7 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorre
 
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
-		Matcher matcher = BITSNOOP_TORRENTS_ID.matcher(page);
+		Matcher matcher = TORRENTS_ID_PATTERN.matcher(page);
 		if (matcher.find()) {
 			return matcher.group(1);
 		}
