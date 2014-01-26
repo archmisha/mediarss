@@ -167,9 +167,9 @@ public class EmailServiceImpl implements EmailService {
 
 	private void notifyToAdmins(String titleSuffix, String msg, String errorMsg) {
 		// don't send admins notifications from dev env
-		if (settingsService.isDevEnvironment()) {
-			return;
-		}
+//		if (settingsService.isDevEnvironment()) {
+//			return;
+//		}
 
 		try {
 			sendEmail(MEDIA_RSS_GROUP_EMAIL, APP_NAME + titleSuffix,
@@ -191,8 +191,8 @@ public class EmailServiceImpl implements EmailService {
 		sendEmail(Collections.singletonList(recipient), title, message);
 	}
 
-	// "gabayshiran", "ahri24986", lan4ear, 84ad17ad!
+	// "gabayshiran", "ahri24986", lan4ear, 84ad17ad!, personal.media.rss, 83md16md
 	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException, UnsupportedEncodingException {
-		GoogleMail.Send(new InternetAddress("personal.media.rss@gmail.com", "Media-RSS Team"), "personal.media.rss", "83md16md", null, StringUtils.join(recipients, " "), title, message);
+		GoogleMail.Send(new InternetAddress("personal.media.rss@gmail.com", "Media-RSS Team"), "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
 	}
 }

@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
 import rss.controllers.vo.UserVO;
 import rss.dao.*;
@@ -189,10 +186,10 @@ public class AdminController extends BaseController {
 		return searcherConfigurationService.getSearcherConfigurations();
 	}
 
-	@RequestMapping(value = "/searcher-configuration/{name}/domain/add/{domain}", method = RequestMethod.GET)
+	@RequestMapping(value = "/searcher-configuration/{name}/domain/add", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public void addDomainToSearcherConfiguration(@PathVariable String name, @PathVariable String domain) {
+	public void addDomainToSearcherConfiguration(@PathVariable String name, @RequestParam("domain") String domain) {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 

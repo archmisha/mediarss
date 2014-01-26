@@ -24,8 +24,6 @@ import java.util.regex.Pattern;
 public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
 	public static final String NAME = "publichd";
-
-	//	public static final String[] DOMAINS = new String[]{"publichd.eu", "publichd.se"};
 	public static final Pattern PATTERN = Pattern.compile("<tag:torrents\\[\\].download /><a href=\".*?\">(.*?)<a href=(.*?)>.*AddDate</b></td>.*?>(.*?)</td>.*?seeds: (\\d+)", Pattern.DOTALL);
 
 	@Autowired

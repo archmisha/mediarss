@@ -43,11 +43,13 @@ define([
 			_onAddButtonClick: function() {
 				var domain = this.ui.domainInput.val();
 				var that = this;
-				HttpUtils.get('rest/admin/searcher-configuration/' + this.model.get('name') + '/domain/add/' + domain, function(res) {
-					that._addDomainToList(domain);
-					that.ui.domainInput.val('');
-					that.ui.domainList.show();
-				});
+				HttpUtils.post('rest/admin/searcher-configuration/' + this.model.get('name') + '/domain/add',
+					{domain: domain},
+					function(res) {
+						that._addDomainToList(domain);
+						that.ui.domainInput.val('');
+						that.ui.domainList.show();
+					});
 			},
 
 			_addDomainToList: function(domain) {

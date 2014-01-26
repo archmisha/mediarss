@@ -24,8 +24,7 @@ import java.util.regex.Pattern;
 @Service("bitSnoopTorrentSearcher")
 public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "bitsnoop"; //.com
-
+	public static final String NAME = "bitsnoop";
 	private static final Pattern TORRENTS_ID_PATTERN = Pattern.compile("http://bitsnoop[^/]+/([^\"/]+)");
 
 	@Override

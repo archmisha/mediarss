@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 @Service("episodeSearcher1337x")
 public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	private static final String NAME = "1337x"; // 1337x.org
+	private static final String NAME = "1337x";
 	private static final String SEARCH_URL_SUFFIX = /*"http://" + NAME +*/ "/search/%s/0/";
 
 	private static final Pattern TORRENTS_ID_PATTERN = Pattern.compile("http://1337x[^/]+/([^\"]+)");

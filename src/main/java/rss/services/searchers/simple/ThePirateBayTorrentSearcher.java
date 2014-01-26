@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 @Service("thePirateBayTorrentSearcher")
 public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
-	public static final String NAME = "thepiratebay"; // http://pirateproxy.net/ thepiratebay.sx
+	public static final String NAME = "thepiratebay";
 
 	// 0/7/0 orders by seeders - this solves multiple pages problem, what is important will be on the first page
 	private static final String SEARCH_URL_SUFFIX = "/search/%s/0/7/0";
@@ -57,7 +57,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
 		Collection<String> res = new ArrayList<>();
 		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			res.add(String.format("http://" + domain + SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+			res.add("http://" + domain + String.format(SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
 		}
 		return res;
 
