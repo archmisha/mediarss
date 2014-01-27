@@ -45,7 +45,7 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.vent = new Marionette.EventAggregator();
+				this.vent = new Backbone.Wreqr.EventAggregator();
 				this.vent.on('search-result-item-download', this.onEpisodeDownload, this);
 				this.vent.on('did-you-mean-click', this.onDidYouMeanClick, this);
 				this.vent.on('search-result-download-all', this.onDownloadAllClick, this);

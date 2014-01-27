@@ -46,7 +46,7 @@ define([
 			},
 
 			constructor: function(options) {
-				this.vent = new Marionette.EventAggregator();
+				this.vent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 
 				this.moviesCollection = new MoviesCollection();
