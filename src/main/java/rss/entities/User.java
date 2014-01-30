@@ -55,6 +55,12 @@ public class User extends BaseEntity {
 	@Column(name = "last_movies_feed_generated")
 	private Date lastMoviesFeedGenerated;
 
+	@Column(name = "login_token")
+	private String loginToken;
+
+	@Column(name = "login_series")
+	private String loginSeries;
+
 	@Column(name = "last_login")
 	private Date lastLogin;
 
@@ -163,5 +169,21 @@ public class User extends BaseEntity {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getLoginToken() {
+		return loginToken;
+	}
+
+	public void setLoginToken(String loginToken) {
+		this.loginToken = loginToken;
+	}
+
+	public String getLoginSeries() {
+		return loginSeries;
+	}
+
+	public void setLoginSeries(String loginSeries) {
+		this.loginSeries = loginSeries;
 	}
 }

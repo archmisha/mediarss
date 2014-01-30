@@ -9,14 +9,11 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.EmailAlreadyRegisteredException;
-import rss.controllers.EntityConverter;
-import rss.controllers.vo.ShowVO;
 import rss.dao.UserDao;
 import rss.entities.User;
+import rss.util.StringUtils2;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
 
 /**
  * User: Michael Dikman
@@ -41,9 +38,6 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
-
-	@Autowired
-	private EntityConverter entityConverter;
 
 	// no need for a transaction here, but inside creating a new transaction
 	@Override
@@ -78,9 +72,8 @@ public class UserServiceImpl implements UserService {
 				user.setLastShowsFeedGenerated(null);
 				user.setLastMoviesFeedGenerated(null);
 				user.setSubtitles(null);
-				SecureRandom random = new SecureRandom();
-				user.setValidationHash(new BigInteger(130, random).toString(32));
-				user.setFeedHash(new BigInteger(130, random).toString(32));
+				user.setValidationHash(StringUtils2.generateUniqueHash());
+				user.setFeedHash(StringUtils2.generateUniqueHash());
 				userDao.persist(user);
 				return user;
 			}

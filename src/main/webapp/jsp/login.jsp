@@ -10,7 +10,13 @@
         </div>
         <div class='login-form-row'>
             <label for="login-password" id="login-password-label" class='login-form-label'>Password</label>
-            <input type="password" tabindex="0" name="password" id="login-password" class='login-form-input'/></div>
+            <input type="password" tabindex="0" name="password" id="login-password" class='login-form-input'/>
+        </div>
+        <div class='login-form-row'>
+            <input type="checkbox" tabindex="0" name="rememberMe" id="login-remember-me"
+                   class='login-remember-me-input'/>
+            <label for="login-remember-me" id="login-remember-me-label" class=''>Remember me</label>
+        </div>
         <div class='login-buttons-container'>
             <input id="login-submit" type="submit" class='btn login-btn' value='Login'/>
             <a href="/create-account" class='login-register-link'>Create an account</a>

@@ -2,6 +2,7 @@ $(function() {
 	var status = $('.login-status');
 	var usernameInput = $('input[name=username]');
 	var passwordInput = $('input[name=password]');
+	var rememberMeInput = $('input[name=rememberMe]');
 	var passwordRecoveryEmailField = $('.login-forgot-password-email-input');
 	var passwordRecoverySubmitButton = $('.login-forgot-password-btn');
 
@@ -19,6 +20,7 @@ $(function() {
 		hideStatusMessage();
 		var username = usernameInput.val();
 		var password = passwordInput.val();
+		var rememberMe = rememberMeInput.is(':checked');
 
 		if (!username || username.trim().length == 0 || !password || password.trim().length == 0) {
 			showStatusMessage('Invalid email or password');
@@ -35,7 +37,7 @@ $(function() {
 		$.post("rest/user/login", {
 			username: username,
 			password: password,
-			tab: hash
+			rememberMe: rememberMe
 		}, function(res) {
 			if (res.success === undefined) {
 				var str = window.location.href;

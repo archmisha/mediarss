@@ -87,6 +87,54 @@
   color: white;
 }
 
+.subtitles-item {
+  position: relative;
+  margin-top: 7px;
+}
+
+@recent-subtitles-item-badge-width: 50px;
+@recent-subtitles-item-language-width: 45px;
+@recent-subtitles-item-download-direct-width: 25px;
+@recent-subtitles-item-name-width: 300px;
+
+.recent-subtitles-item-badge {
+  background-color: #097fe3;
+  color: yellow;
+  position: absolute;
+  border-radius: 3px;
+  padding: 2px;
+  left: 25px;
+}
+
+.recent-subtitles-item-language {
+  width: @recent-subtitles-item-language-width;
+  left: 20px + @recent-subtitles-item-badge-width;
+  position: absolute;
+  padding: 2px;
+}
+
+.recent-subtitles-title {
+  font-weight: bold;
+}
+
+.recent-subtitles-container {
+  margin-left: 25px;
+}
+
+.recent-subtitles-item-download-direct {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+.recent-subtitles-item-name {
+  margin-left: 20px + @recent-subtitles-item-badge-width + @recent-subtitles-item-language-width;
+  padding: 2px;
+  width: @recent-subtitles-item-name-width;
+  margin-right: @recent-subtitles-item-download-direct-width;
+  text-overflow: ellipsis;
+}
+
 @media screen and (max-width: 480px) {
   .home-tab {
     margin-left: 0px;

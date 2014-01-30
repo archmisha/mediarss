@@ -1,5 +1,7 @@
 package rss.util;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,5 +57,10 @@ public class StringUtils2 {
 			}
 		}
 		return now.getTime();
+	}
+
+	public static String generateUniqueHash() {
+		SecureRandom random = new SecureRandom();
+		return new BigInteger(130, random).toString(32);
 	}
 }

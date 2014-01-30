@@ -16,13 +16,15 @@ define([
 			},
 
 			events: {
+				'click .recent-subtitles-item-download-direct': 'onDownloadSubtitlesClick'
 			},
 
 			constructor: function(options) {
 				Marionette.ItemView.prototype.constructor.apply(this, arguments);
 			},
 
-			onRender: function() {
+			onDownloadSubtitlesClick: function() {
+				console.log('a');
 			}
 		});
 	});

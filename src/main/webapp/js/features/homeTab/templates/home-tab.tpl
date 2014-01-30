@@ -35,7 +35,8 @@
     </div>
 
     <div class="recent-subtitles-container">
-        Recent subtitles:
+        <span class="recent-subtitles-title">Recent subtitles:</span>
+
         <div class='recent-subtitles-list'></div>
     </div>
 </div>
