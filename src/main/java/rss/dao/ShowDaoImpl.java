@@ -4,7 +4,6 @@ import org.springframework.stereotype.Repository;
 import rss.entities.Show;
 import rss.services.shows.CachedShow;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +38,7 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 
 	@Override
 	public List<CachedShow> findCachedShows() {
-		Map<String, Object> params = new HashMap<>(0);
-		return super.findByNamedQueryAndNamedParams("Show.findCachedShows", params);
+		return super.findByNamedQueryAndNamedParams("Show.findCachedShows", null);
 	}
 
 	@Override

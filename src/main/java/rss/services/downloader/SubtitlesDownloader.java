@@ -15,10 +15,11 @@ import rss.services.searchers.SubCenterSubtitlesSearcher;
 import rss.services.shows.CachedShow;
 import rss.services.shows.ShowSearchService;
 import rss.services.subtitles.SubtitleLanguage;
-import rss.services.subtitles.SubtitlesTrackerService;
 import rss.util.DateUtils;
 
 import java.util.*;
+
+//import rss.services.subtitles.SubtitlesTrackerService;
 
 /**
  * User: dikmanm
@@ -30,8 +31,8 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	@Autowired
 	private SubtitlesDao subtitlesDao;
 
-	@Autowired
-	private SubtitlesTrackerService subtitlesTrackerService;
+//	@Autowired
+//	private SubtitlesTrackerService subtitlesTrackerService;
 
 	@Autowired
 	private SubCenterSubtitlesSearcher subCenterSubtitlesSearcher;
@@ -164,7 +165,7 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 			} else {
 				logService.info(getClass(), "Persisting new subtitles: " + subtitles);
 				subtitlesDao.persist(subtitles);
-				subtitlesTrackerService.announce(subtitles);
+//				subtitlesTrackerService.announce(subtitles);
 			}
 		}
 

@@ -18,6 +18,8 @@ public interface MovieDao extends Dao<Movie> {
 
 	Collection<Movie> findUploadedSince(Date uploadedDate);
 
+	Collection<Movie> findOrderedByUploadedSince(int count);
+
 	int findUploadedSinceCount(Date uploadedDate);
 
 //    Movie findByName(String name);

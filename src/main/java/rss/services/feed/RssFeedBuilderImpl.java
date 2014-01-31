@@ -2,17 +2,17 @@ package rss.services.feed;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
-import rss.services.subtitles.SubtitlesTrackerService;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
+
+//import rss.services.subtitles.SubtitlesTrackerService;
 
 /**
  * User: Michael Dikman
@@ -26,8 +26,8 @@ public class RssFeedBuilderImpl implements RssFeedBuilder {
 
 	public static final Pattern MAGNET_LINK_PATTERN = Pattern.compile("(magnet:\\?xt=urn:btih:[^&]+)(&dn=([^&]+))?");
 
-	@Autowired
-	private SubtitlesTrackerService subtitlesTrackerService;
+//	@Autowired
+//	private SubtitlesTrackerService subtitlesTrackerService;
 
 	@Override
 	public String build(String feedTitle, String feedDescription, Collection<? extends Torrent> torrentEntries, Collection<Subtitles> subtitles) {
@@ -64,7 +64,7 @@ public class RssFeedBuilderImpl implements RssFeedBuilder {
 			}
 		}
 
-		for (Subtitles subtitle : subtitles) {
+		/*for (Subtitles subtitle : subtitles) {
 			try {
 				com.turn.ttorrent.common.Torrent torrent = subtitlesTrackerService.toTorrent(subtitle);
 				String magnetLink = "magnet:?xt=urn:btih:" + torrent.getHexInfoHash() + "&dn=" + URLEncoder.encode(subtitle.getName(), "UTF-8") +
@@ -83,7 +83,7 @@ public class RssFeedBuilderImpl implements RssFeedBuilder {
 				log.error("Failed generating rss for '" + subtitle.getName() + "': " + e.getMessage(), e);
 			}
 		}
-
+*/
 		sb.append("  </channel>\n");
 		sb.append("</rss>");
 		return sb.toString();

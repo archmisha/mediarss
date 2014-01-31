@@ -40,7 +40,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 	@Autowired
 	private IMDBService imdbService;
 
-	private static final int MAX_MOVIE_PREVIEWS_CACHE = 20;
+	public static final int MAX_MOVIE_PREVIEWS_CACHE = 30;
 
 	// +1 cuz when reaching max will add the new one and then remove the oldest one
 	private LinkedHashMap<Long, String> moviePreviewPages = new LinkedHashMap<Long, String>(MAX_MOVIE_PREVIEWS_CACHE + 1, 0.75f, true) {

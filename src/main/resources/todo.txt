@@ -1,12 +1,8 @@
-cookie
-
 an email when scheduled movie is out (need an option to disable emails then)
 help
 tvshows change icons, add shceduled state
-instead by imdb id - search by name
 
  - Stop searching in the middle of the search - Stuck everything! strange red line
- - Tracked TV shows - table looks bad
 
 movies mark all as viewed
 

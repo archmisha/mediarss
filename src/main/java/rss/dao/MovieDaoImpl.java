@@ -25,6 +25,15 @@ public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
 	}
 
 	@Override
+	public Collection<Movie> findOrderedByUploadedSince(int count) {
+		Collection<Movie> results = new ArrayList<>();
+		for (Object[] arr : super.<Object[]>findByNamedQueryAndNamedParams("Movie.findOrderedByDateUploaded", null, count)) {
+			results.add((Movie) arr[0]);
+		}
+		return results;
+	}
+
+	@Override
 	public int findUploadedSinceCount(Date uploadedDate) {
 		Map<String, Object> params = new HashMap<>(1);
 		params.put("dateUploaded", uploadedDate);

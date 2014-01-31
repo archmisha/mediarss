@@ -8,6 +8,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
 import rss.controllers.vo.DownloadStatus;
@@ -32,7 +33,9 @@ import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.searchers.composite.torrentz.TorrentzResult;
 import rss.services.subtitles.SubtitlesService;
 import rss.util.DateUtils;
+import rss.util.DurationMeter;
 
+import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -86,7 +89,27 @@ public class MovieServiceImpl implements MovieService {
 	@Autowired
 	private SubtitlesService subtitlesService;
 
+	@Autowired
+	private IMDBPreviewCacheService imdbPreviewCacheService;
+
 	private ConcurrentMap<Movie, Movie> moviesBeingSearched = new ConcurrentHashMap<>();
+
+	@PostConstruct
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void postConstruct() {
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+				logService.info(MovieServiceImpl.class, "Loading movies previews into cache");
+				DurationMeter duration = new DurationMeter();
+				Collection<Movie> latestMovies = movieDao.findOrderedByUploadedSince(IMDBPreviewCacheServiceImpl.MAX_MOVIE_PREVIEWS_CACHE);
+				for (Movie movie : latestMovies) {
+					imdbPreviewCacheService.getImdbPreviewPage(movie);
+				}
+				logService.info(MovieServiceImpl.class, "Finished loading movies previews into cache, took " + duration.getDuration() + " millis");
+			}
+		});
+	}
 
 	public ArrayList<UserMovieVO> getSearchCompletedMovies(long[] ids) {
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
