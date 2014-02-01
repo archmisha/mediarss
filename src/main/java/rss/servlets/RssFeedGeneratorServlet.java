@@ -69,7 +69,7 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 			type = request.getParameter(UrlService.MEDIA_TYPE_URL_PARAMETER);
 			feedHash = request.getParameter(UrlService.USER_FEED_HASH_PARAMETER);
 		} catch (NumberFormatException e) {
-			logService.error(getClass(), "Invalid user parameter: " + e.getMessage(), e);
+			logService.error(getClass(), "Invalid user parameter: " + e.getMessage() + " in queryString: " + request.getQueryString(), e);
 			out.println("Invalid url. Please contact support for assistance");
 			return;
 		}
