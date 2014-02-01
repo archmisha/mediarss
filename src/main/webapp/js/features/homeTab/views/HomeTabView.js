@@ -48,7 +48,7 @@ define([
 					description: 'Those are your personalized rss feeds. You can add them to your torrent client (such as uTorrent)'
 				});
 				this.subtitlesSection = new SectionView({
-					title: 'Subtitles',
+					title: 'Subtitles (in construction)',
 					description: 'Subtitles could be added to your rss feeds (both movies and tv shows)'
 				});
 				this.traktTvImport = new TraktTvImportView();
