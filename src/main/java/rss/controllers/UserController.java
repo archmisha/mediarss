@@ -125,7 +125,7 @@ public class UserController extends BaseController {
 			user.setLoginSeries(StringUtils2.generateUniqueHash());
 			user.setLoginToken(StringUtils2.generateUniqueHash());
 			Cookie cookie = new Cookie(REMEMBER_ME_COOKIE_NAME, user.getEmail() + "," + user.getLoginSeries() + "," + user.getLoginToken());
-			cookie.setMaxAge(60 * 60 * 24); // 24 hours
+			cookie.setMaxAge(-1);// for ever not: 60 * 60 * 24); // 24 hours
 			cookie.setPath("/");
 			response.addCookie(cookie);
 		}
