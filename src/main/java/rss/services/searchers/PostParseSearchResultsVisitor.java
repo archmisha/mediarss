@@ -3,7 +3,6 @@ package rss.services.searchers;
 import org.apache.commons.lang3.tuple.Pair;
 import rss.entities.Torrent;
 import rss.services.requests.episodes.DoubleEpisodeRequest;
-import rss.services.requests.episodes.EpisodeRequest;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
@@ -43,10 +42,12 @@ public class PostParseSearchResultsVisitor implements MediaRequestVisitor<Pair<S
 		}
 
 		for (Torrent torrent : torrents) {
-			String imdbUrl = pair.getKey().getImdbUrl(torrent);
-			if (imdbUrl != null) {
-				torrent.setImdbId(imdbUrl);
-				return null;
+			if (torrent.getImdbId() == null) {
+				String imdbUrl = pair.getKey().getImdbUrl(torrent);
+				if (imdbUrl != null) {
+					torrent.setImdbId(imdbUrl);
+					return null;
+				}
 			}
 		}
 

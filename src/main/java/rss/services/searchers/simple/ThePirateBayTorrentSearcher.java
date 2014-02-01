@@ -107,7 +107,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 			idx2 = idx + hashPrefix.length();
 			String hash = page.substring(idx2, page.indexOf("</dl>", idx2)).trim();
 
-			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders, null);
+			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders);
 			torrent.setHash(hash);
 			torrent.setImdbId(parseImdbUrl(page, title));
 			return torrent;
