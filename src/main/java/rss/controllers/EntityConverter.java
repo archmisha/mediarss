@@ -71,13 +71,17 @@ public class EntityConverter {
 		ArrayList<SubtitlesVO> result = new ArrayList<>();
 		for (Subtitles subtitle : subtitles) {
 			for (Long torrentId : subtitle.getTorrentIds()) {
-				SubtitlesVO subtitlesVO = new SubtitlesVO();
-				subtitlesVO.setType("shows");
 				Torrent torrent = torrentsByIds.get(torrentId);
-				subtitlesVO.setName(torrent.getTitle());
-				subtitlesVO.setLanguage(subtitle.getLanguage().toString());
-				subtitlesVO.setId(subtitle.getId());
-				result.add(subtitlesVO);
+				// a subtitles might have multiple torrents attached, but if that subtitle was queried by only one of the torrents
+				// the others will not be present in the map
+				if (torrent != null) {
+					SubtitlesVO subtitlesVO = new SubtitlesVO();
+					subtitlesVO.setType("shows");
+					subtitlesVO.setName(torrent.getTitle());
+					subtitlesVO.setLanguage(subtitle.getLanguage().toString());
+					subtitlesVO.setId(subtitle.getId());
+					result.add(subtitlesVO);
+				}
 			}
 		}
 
