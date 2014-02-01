@@ -24,7 +24,7 @@ define([
 				showingResultsFor: '.search-results-showing-results-for',
 				showingResultsForText: '.search-results-showing-results-for-text',
 				didYouMean: '.search-results-did-you-mean',
-				didYouMeanList: '.search-results-did-you-mean-list',
+				didYouMeanList: '.search-results-did-you-mean-list'
 			},
 
 			events: {
@@ -39,23 +39,6 @@ define([
 			constructor: function(options) {
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-
-				this.searchResultsCollection = new UserTorrentCollection();
-				this.searchResultsCollection.bind('change:downloadStatus', this.setDownloadAllButtonState, this);
-				this.searchResultsCollectionView = new SearchResultsCollectionView({
-					collection: this.searchResultsCollection,
-					vent: this.vent
-				});
-				var that = this;
-				this.searchResultsCollectionView.on('render', function() {
-					// if there is scroll bar - move download all button more to the left
-					//if (that.searchResultsRegion.$el.get(0).scrollHeight > that.searchResultsRegion.$el.height()) {
-					if (that.searchResultsCollection.length > 8) {
-						that.ui.downloadAllButton.addClass('search-results-download-all-button-with-scroll');
-					} else {
-						that.ui.downloadAllButton.removeClass('search-results-download-all-button-with-scroll');
-					}
-				});
 			},
 
 			showDidYouMean: function(searchResult) {
@@ -69,7 +52,6 @@ define([
 
 			setSearchResults: function(searchResult) {
 				var that = this;
-
 				this.ui.resultsHeader.hide();
 				this.ui.didYouMean.hide();
 				this.ui.titleContainer.hide();
@@ -81,23 +63,21 @@ define([
 				}
 
 				if (searchResult.get('episodes').length > 0) {
-					that.ui.resultsHeader.show();
-					that.onSearchResultsReceived(searchResult);
+					this.ui.resultsHeader.show();
+					this.onSearchResultsReceived(searchResult);
 				} else {
 					var didYouMean = searchResult.get('didYouMean');
 					var actualSearchTerm = searchResult.get('actualSearchTerm');
 					var originalSearchTerm = searchResult.get('originalSearchTerm');
 
 					if (didYouMean !== undefined && didYouMean.length > 0) {
-						that.ui.resultsHeader.show();
-						that.showDidYouMean(searchResult);
-						that.setVisibleShowingResultsFor(actualSearchTerm, actualSearchTerm != null && actualSearchTerm !== originalSearchTerm);
+						this.ui.resultsHeader.show();
+						this.showDidYouMean(searchResult);
+						this.setVisibleShowingResultsFor(actualSearchTerm, actualSearchTerm != null && actualSearchTerm !== originalSearchTerm);
 					}
 
 					if (actualSearchTerm != null) {
-						this.searchResultsCollection.reset();
-						this.searchResultsRegion.show(this.searchResultsCollectionView);
-						this.ui.searchResultsRegion.slideDown('slow');
+						this._showSearchResultsCollectionView();
 					}
 				}
 			},
@@ -126,9 +106,7 @@ define([
 
 				this.ui.resultsCount.html(episodes.length);
 				this.ui.titleContainer.show();
-				this.searchResultsCollection.reset(episodes);
-				this.searchResultsRegion.show(this.searchResultsCollectionView);
-				this.ui.searchResultsRegion.slideDown('slow');
+				this._showSearchResultsCollectionView(episodes);
 
 				this.setDownloadAllButtonState();
 				if (episodes.length === 1) {
@@ -138,6 +116,31 @@ define([
 					this.ui.multipleResultsTitle.show();
 					this.ui.singleResultTitle.hide();
 				}
+			},
+
+			_showSearchResultsCollectionView: function(episodes) {
+				episodes = episodes || [];
+				this.searchResultsCollection = new UserTorrentCollection(episodes);
+				this.searchResultsCollection.bind('change:downloadStatus', this.setDownloadAllButtonState, this);
+
+				var searchResultsCollectionView = new SearchResultsCollectionView({
+					collection: this.searchResultsCollection,
+					vent: this.vent
+				});
+				var that = this;
+				searchResultsCollectionView.on('render', function() {
+					// if there is scroll bar - move download all button more to the left
+					//if (that.searchResultsRegion.$el.get(0).scrollHeight > that.searchResultsRegion.$el.height()) {
+					if (that.searchResultsCollection.length > 8) {
+						that.ui.downloadAllButton.addClass('search-results-download-all-button-with-scroll');
+					} else {
+						that.ui.downloadAllButton.removeClass('search-results-download-all-button-with-scroll');
+					}
+				});
+				this.ui.searchResultsRegion.slideDown('slow', function() {
+					that.ui.searchResultsRegion.show();
+				});
+				this.searchResultsRegion.show(searchResultsCollectionView);
 			},
 
 			setDownloadAllButtonState: function() {
