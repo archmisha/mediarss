@@ -112,7 +112,7 @@ public class MovieServiceImpl implements MovieService {
 							for (Movie movie : latestMovies) {
 								imdbPreviewCacheService.getImdbPreviewPage(movie);
 							}
-							logService.info(MovieServiceImpl.class, "Finished loading movies previews into cache, took " + duration.getDuration() + " millis");
+							logService.info(MovieServiceImpl.class, "Loaded movies previews into cache (" + duration.getDuration() + " ms)");
 						}
 					});
 				} catch (TransactionException e) {
