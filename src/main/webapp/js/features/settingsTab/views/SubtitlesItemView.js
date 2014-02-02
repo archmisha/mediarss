@@ -1,7 +1,7 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/homeTab/templates/subtitles-item.tpl',
+	'text!features/settingsTab/templates/subtitles-item.tpl',
 	'moment',
 	'HttpUtils'
 ],

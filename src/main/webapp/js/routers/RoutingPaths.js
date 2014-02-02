@@ -6,6 +6,7 @@ define([],
 			TVSHOWS: 'tvshows',
 			MOVIES: 'movies/:category',
 			ADMIN: 'admin',
+			SETTINGS: 'settings',
 			LOGOUT: 'logout'
 		};
 	});

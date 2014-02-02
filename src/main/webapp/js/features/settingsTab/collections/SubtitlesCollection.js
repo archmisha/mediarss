@@ -1,6 +1,6 @@
 define([
 	'backbone',
-	'features/homeTab/models/Subtitles'
+	'features/settingsTab/models/Subtitles'
 
 ],
 	function(Backbone, Subtitles) {

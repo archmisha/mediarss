@@ -12,9 +12,6 @@ define([
 			className: 'home-header-tabs',
 
 			ui: {
-//				homeTab: '.home-home-tab',
-//				showsTab: '.home-tvshows-tab',
-//				moviesTab: '.home-movies-tab',
 				adminTab: '.home-admin-tab'
 			},
 

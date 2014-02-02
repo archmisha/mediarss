@@ -9,9 +9,10 @@ define([
 	'features/showsTab/views/ShowsTabView',
 	'features/moviesTab/views/MoviesTabView',
 	'features/adminTab/views/AdminTabView',
-	'HttpUtils'
+	'HttpUtils',
+	'features/settingsTab/views/SettingsTabView'
 ],
-	function(Marionette, StringUtils, RoutingPaths, HomeView, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, HttpUtils) {
+	function(Marionette, StringUtils, RoutingPaths, HomeView, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, HttpUtils, SettingsTabView) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';
@@ -22,12 +23,14 @@ define([
 		tabToView[RoutingPaths.HOME] = HomeTabView;
 		tabToView[RoutingPaths.TVSHOWS] = ShowsTabView;
 		tabToView[RoutingPaths.MOVIES] = MoviesTabView;
+		tabToView[RoutingPaths.SETTINGS] = SettingsTabView;
 		tabToView[RoutingPaths.ADMIN] = AdminTabView;
 
 		var tabToTitle = {};
 		tabToTitle[RoutingPaths.HOME] = BASE_TITLE + ' - Home';
 		tabToTitle[RoutingPaths.TVSHOWS] = BASE_TITLE + ' - TV Shows';
 		tabToTitle[RoutingPaths.MOVIES] = BASE_TITLE + ' - Movies';
+		tabToTitle[RoutingPaths.SETTINGS] = BASE_TITLE + ' - Settings';
 		tabToTitle[RoutingPaths.ADMIN] = BASE_TITLE + ' - Admin';
 
 		var homeView = null;
@@ -50,6 +53,11 @@ define([
 			showMovies: function(category) {
 				tabParams = [category];
 				this._show(RoutingPaths.MOVIES);
+			},
+
+			showSettings: function(category) {
+				tabParams = [category];
+				this._show(RoutingPaths.SETTINGS);
 			},
 
 			showAdmin: function() {

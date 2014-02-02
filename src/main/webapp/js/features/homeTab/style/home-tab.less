@@ -2,40 +2,10 @@
   margin-left: 142px;
 }
 
-.rss-feeds-list {
-  margin-top: 20px;
+.guide-rss-feeds-list {
+  margin-top: 10px;
   margin-bottom: 0px;
   -webkit-padding-start: 0px;
-}
-
-.subtitle-settings {
-  margin-top: 5px;
-  //  height: 30px;
-}
-
-.subtitles-settings-container {
-  height: 40px;
-}
-
-@subtitle-combo-width: 160px;
-.subtitles-settings-combobox-container {
-  margin-left: 15px;
-  width: @subtitle-combo-width;
-  margin-top: 3px;
-  float: left;
-}
-
-.subtitles-settings-combobox-container .chzn-single {
-  width: @subtitle-combo-width;
-}
-
-.subtitles-settings-combobox-container .chzn-drop {
-  width: @subtitle-combo-width + 8 !important;
-}
-
-.subtitles-settings-combobox-container .chzn-search {
-  //  font-size: 13px;
-  display: none;
 }
 
 .rss-feeds-list a {
@@ -65,17 +35,6 @@
   margin-right: 5px;
 }
 
-.trakt-tv-import-container,
-.subtitles-section {
-  margin-top: @sections-margin;
-}
-
-.subtitles-settings-label {
-  margin-left: 25px;
-  margin-top: 6px;
-  float: left;
-}
-
 .tvshows-feed-copy-link-notification,
 .movies-feed-copy-link-notification {
   background-color: rgb(60, 177, 94);
@@ -87,52 +46,9 @@
   color: white;
 }
 
-.subtitles-item {
-  position: relative;
-  margin-top: 7px;
-}
-
-@recent-subtitles-item-badge-width: 50px;
-@recent-subtitles-item-language-width: 45px;
-@recent-subtitles-item-download-direct-width: 25px;
-@recent-subtitles-item-name-width: 300px;
-
-.recent-subtitles-item-badge {
-  background-color: #097fe3;
-  color: yellow;
-  position: absolute;
-  border-radius: 3px;
-  padding: 2px;
-  left: 25px;
-}
-
-.recent-subtitles-item-language {
-  width: @recent-subtitles-item-language-width;
-  left: 20px + @recent-subtitles-item-badge-width;
-  position: absolute;
-  padding: 2px;
-}
-
-.recent-subtitles-title {
-  font-weight: bold;
-}
-
-.recent-subtitles-container {
-  margin-left: 25px;
-}
-
-.recent-subtitles-item-download-direct {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-}
-
-.recent-subtitles-item-name {
-  margin-left: 20px + @recent-subtitles-item-badge-width + @recent-subtitles-item-language-width;
-  padding: 2px;
-  width: @recent-subtitles-item-name-width;
-  margin-right: @recent-subtitles-item-download-direct-width;
-  text-overflow: ellipsis;
+.guide-add-feed-dialog,
+.guide-add-feed-button {
+  margin-left: 20px;
 }
 
 @media screen and (max-width: 480px) {
@@ -145,9 +61,5 @@
     margin-top: 6px;
     margin-left: 10px;
     margin-right: 0px;
-  }
-
-  .subtitles-section {
-    margin-top: 20px;
   }
 }

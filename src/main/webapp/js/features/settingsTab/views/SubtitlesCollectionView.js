@@ -2,7 +2,7 @@
 define([
 	'marionette',
 	'handlebars',
-	'features/homeTab/views/SubtitlesItemView'
+	'features/settingsTab/views/SubtitlesItemView'
 ],
 	function(Marionette, Handlebars, SubtitlesItemView) {
 		"use strict";

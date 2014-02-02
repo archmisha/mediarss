@@ -11,6 +11,7 @@ define([
 				routes[RoutingPaths.HOME] = 'showHomePage';
 				routes[RoutingPaths.TVSHOWS] = 'showTVShows';
 				routes[RoutingPaths.MOVIES] = 'showMovies';
+				routes[RoutingPaths.SETTINGS] = 'showSettings';
 				routes[RoutingPaths.ADMIN] = 'showAdmin';
 				routes[RoutingPaths.LOGOUT] = 'logout';
 				routes['*path'] = 'showHomePage';
