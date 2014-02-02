@@ -113,6 +113,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		css = StringUtils.replace(css, "images/G/01/imdb/images/pro_meter_badge/starmeter_wrap_gradient-996803324._V_.png", "../../../../../../images/imdb/starmeter_wrap_gradient-996803324._V_.png");
 		css = StringUtils.replace(css, "images/G/01/imdb/images/pro_meter_badge/starmeter_icons-366893210._V_.png", "../../../../../../images/imdb/starmeter_icons-366893210._V_.png");
 		css = StringUtils.replace(css, "images/G/01/imdb/images/title/titlePageSprite-2288315300._V_.png", "../../../../../../images/imdb/titlePageSprite-2288315300._V_.png");
+		css = StringUtils.replace(css, "images/G/01/imdb/images/title/titlePageSprite-407338954._V_.png", "../../../../../../images/imdb/titlePageSprite-407338954._V_.png");
 		css = StringUtils.replace(css, "images/G/01/imdb/images/rating/rating-list/sprite-1445387679._V_.png", "../../../../../../../images/imdb/sprite-1445387679._V_.png");
 		css = StringUtils.replace(css, "images/G/01/imdb/images/tn15/starstiny-3317719365._V_.png", "../../../../../../images/imdb/starstiny-3317719365._V_.png");
 
@@ -125,7 +126,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		DurationMeter durationMeter = new DurationMeter();
 		Document doc = Jsoup.parse(page);
 
-		String[] elementsToRemove = new String[]{"#maindetails_sidebar_bottom", "#nb20", "#titleRecs",
+		String[] elementsToRemove = new String[]{"#maindetails_sidebar_bottom", "#nb20", "#titleRecs", ".star-box-rating-widget",
 												 "#titleBoardsTeaser", "div.article.contribute", "div.watch-bar",
 												 "#title_footer_links", "div.message_box", "#titleDidYouKnow",
 												 "#titleAwardsRanks", "#footer", "#titleMediaStrip", "iframe",
@@ -167,7 +168,7 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		}
 
 		// smart text-block removal
-		Set<String> txtBlocksToRemove = new HashSet<>(Arrays.asList("Taglines:", "Motion Picture Rating", "Parents Guide:", "Certificate:"));
+		Set<String> txtBlocksToRemove = new HashSet<>(Arrays.asList("Taglines:", "Motion Picture Rating", "Parents Guide:", "Certificate:", "Official Sites:"));
 		for (Element element : doc.select(".txt-block")) {
 			if (!element.children().isEmpty()) {
 				if (setStartsWith(txtBlocksToRemove, element.children().get(0).text().trim())) {
@@ -178,7 +179,8 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 		}
 
 
-		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;}</style>");
+		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;} .article.title-overview .star-box.giga-star {padding-bottom:0px; }" +
+						  ".giga-star.star-box .star-box-details { margin-top:10px; }</style>");
 
 
 		// replace people images
