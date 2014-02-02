@@ -6,15 +6,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
+import rss.entities.SearcherConfiguration;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
-import rss.services.searchers.SearchResult;
 import rss.services.requests.movies.MovieRequest;
+import rss.services.searchers.SearchResult;
+import rss.services.searchers.SearcherConfigurationService;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -28,8 +31,11 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 	@Mock
 	private PageDownloader pageDownloader;
 
+	@Mock
+	private SearcherConfigurationService searcherConfigurationService;
+
 	@InjectMocks
-	private ThePirateBayTorrentSearcher searcher = new ThePirateBayTorrentSearcher();
+	private ThePirateBayTorrentSearcher<MovieRequest> searcher = new ThePirateBayTorrentSearcher<>();
 
 	@Test
 	public void testSearchWithPirateBayId() {
@@ -97,5 +103,24 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 		SearchResult searchResult = searcher.search(movieRequest);
 
 //		assertEquals("http://www.imdb.com/title/tt2675318", searchResult.getImdbId());
+	}
+
+	@Test
+	public void testSearchResultsPage1() {
+		String domain = "myDomain1.com";
+		String page = loadPage("pirate-bay-search-results-new-moon");
+		MovieRequest movieRequest = new MovieRequest("New Moon", null);
+
+		SearcherConfiguration searcherConfiguration = new SearcherConfiguration();
+		searcherConfiguration.setName("abc");
+		searcherConfiguration.getDomains().add(domain);
+		when(searcherConfigurationService.getSearcherConfiguration(anyString())).thenReturn(searcherConfiguration);
+		when(pageDownloader.downloadPage(any(String.class))).thenReturn(page);
+
+		SearchResult searchResult = searcher.search(movieRequest);
+
+		assertEquals(SearchResult.SearchStatus.FOUND, searchResult.getSearchStatus());
+		assertEquals("http://" + domain + "/torrent/9446130/The_Twilight_Saga_-_New_Moon_%282009%29_1080p_BluRay_x264_Dual_Audio",
+				((Torrent) searchResult.getDownloadables().get(0)).getSourcePageUrl());
 	}
 }
