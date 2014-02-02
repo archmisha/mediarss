@@ -20,7 +20,7 @@ define([
 		var SUBTITLES_NONE = 'None';
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
-			className: 'home-tab',
+			className: 'settings-tab',
 
 			ui: {
 				subtitlesCombobox: '.subtitles-settings-combobox',
@@ -93,22 +93,12 @@ define([
 
 				if ($.browser.flash == true) {
 //					console.log('YES FLASH');
-					var clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]], {
-						moviePath: "ZeroClipboard.swf"
+					this.clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]], {
+						swfPath: "ZeroClipboard.swf"
 					});
-					clip.on('complete', function(client, args) {
-						console.log("Copied text to clipboard: " + args.text + ' ' + this.id);
-						var notification;
-						if (this.id.indexOf('movies') > -1) {
-							notification = $('.movies-feed-copy-link-notification');
-						} else {
-							notification = $('.tvshows-feed-copy-link-notification');
-						}
-						notification.fadeIn('slow', function() {
-							setTimeout(function() {
-								notification.fadeOut('slow');
-							}, 2000);
-						});
+					this.clip.on('complete', this._onCopyComplete);
+					this.clip.on('wrongflash noflash', function() {
+						ZeroClipboard.destroy();
 					});
 				} else {
 //					console.log('no FLASH');
@@ -119,6 +109,25 @@ define([
 						.attr('target', '_blank')
 						.attr('href', this.tabData.moviesRssFeed);
 				}
+			},
+
+			onClose: function() {
+				this.clip.off('complete', this._onCopyComplete);
+			},
+
+			_onCopyComplete: function(client, args) {
+				console.log("Copied text to clipboard: " + args.text + ' ' + this.id);
+				var notification;
+				if (this.id.indexOf('movies') > -1) {
+					notification = $('.movies-feed-copy-link-notification');
+				} else {
+					notification = $('.tvshows-feed-copy-link-notification');
+				}
+				notification.fadeIn('slow', function() {
+					setTimeout(function() {
+						notification.fadeOut('slow');
+					}, 2000);
+				});
 			},
 
 			onSubtitlesComboboxChange: function() {

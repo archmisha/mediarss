@@ -11,22 +11,22 @@
             <div class='rss-feed-title'>TV Shows RSS Feed link</div>
             <div class='rss-feed-link'>
                 (
-                <a id='tvshows-feed-copy-link' class='rss-feed-copy-link' data-clipboard-text="">
+                <a id='guide-tvshows-feed-copy-link' class='rss-feed-copy-link' data-clipboard-text="">
                     <img src="images/copy.gif" class='rss-feed-copy-icon'/>copy link
                 </a>
                 )
-                <span class='tvshows-feed-copy-link-notification'>link copied to clipboard</span>
+                <span class='guide-tvshows-feed-copy-link-notification'>link copied to clipboard</span>
             </div>
         </div>
         <div class='rss-feed'>
             <div class='rss-feed-title'>Movies RSS Feed link</div>
             <div class='rss-feed-link'>
                 (
-                <a data-clipboard-text="" id='movies-feed-copy-link' class='rss-feed-copy-link'>
+                <a data-clipboard-text="" id='guide-movies-feed-copy-link' class='rss-feed-copy-link'>
                     <img src="images/copy.gif" class='rss-feed-copy-icon'/>copy link
                 </a>
                 )
-                <span class='movies-feed-copy-link-notification'>link copied to clipboard</span>
+                <span class='guide-movies-feed-copy-link-notification'>link copied to clipboard</span>
             </div>
         </div>
     </ul>
@@ -38,5 +38,4 @@
     You are good to go with the setup<br/>
     From now on every show / movie you download will appear on your torrent client within half an hour.<br/>
     You can also track on going shows, then every newly aired episode will be automatically added to your tv shows feed.
-
 </div>
