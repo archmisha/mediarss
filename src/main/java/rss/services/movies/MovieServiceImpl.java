@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,18 +98,29 @@ public class MovieServiceImpl implements MovieService {
 	@PostConstruct
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void postConstruct() {
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		executorService.submit(new Runnable() {
 			@Override
-			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-				logService.info(MovieServiceImpl.class, "Loading movies previews into cache");
-				DurationMeter duration = new DurationMeter();
-				Collection<Movie> latestMovies = movieDao.findOrderedByUploadedSince(IMDBPreviewCacheServiceImpl.MAX_MOVIE_PREVIEWS_CACHE);
-				for (Movie movie : latestMovies) {
-					imdbPreviewCacheService.getImdbPreviewPage(movie);
+			public void run() {
+				try {
+					transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+						@Override
+						protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+							logService.info(MovieServiceImpl.class, "Loading movies previews into cache");
+							DurationMeter duration = new DurationMeter();
+							Collection<Movie> latestMovies = movieDao.findOrderedByUploadedSince(IMDBPreviewCacheServiceImpl.MAX_MOVIE_PREVIEWS_CACHE);
+							for (Movie movie : latestMovies) {
+								imdbPreviewCacheService.getImdbPreviewPage(movie);
+							}
+							logService.info(MovieServiceImpl.class, "Finished loading movies previews into cache, took " + duration.getDuration() + " millis");
+						}
+					});
+				} catch (TransactionException e) {
+					logService.error(MovieServiceImpl.class, "Failed pre-loading movies previews: " + e.getMessage(), e);
 				}
-				logService.info(MovieServiceImpl.class, "Finished loading movies previews into cache, took " + duration.getDuration() + " millis");
 			}
 		});
+		executorService.shutdown();
 	}
 
 	public ArrayList<UserMovieVO> getSearchCompletedMovies(long[] ids) {
