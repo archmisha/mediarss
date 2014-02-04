@@ -37,6 +37,7 @@ import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.StringUtils2;
+import rss.util.Utils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -184,7 +185,6 @@ public class ShowServiceImpl implements ShowService {
 									// update show status that might have changed
 									if (show.isEnded() != downloadedShow.isEnded()) {
 										show.setEnded(downloadedShow.isEnded());
-										showsCacheService.updateShowEnded(show);
 										// since show becomes ended, download its episodes schedule one last time
 										downloadFullSchedule(show);
 									}
@@ -194,7 +194,13 @@ public class ShowServiceImpl implements ShowService {
 					} catch (PageDownloadException e) {
 						logService.warn(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
 					} catch (Exception e) {
-						logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
+						// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
+						// will retry to update show status in the next job run - warn level not send to email
+						if (Utils.getRootCause(e).getMessage().contains("Connection timed out")) {
+							logService.warn(aClass, String.format("Failed downloading info for show '%s' because connection has timed out", downloadedShow.getName()));
+						} else {
+							logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
+						}
 					}
 				}
 			});
