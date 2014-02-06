@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.ConnectionTimedOutException;
 import rss.PageDownloadException;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
@@ -107,6 +108,10 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 					results.add(torrent);
 					// if any of the domains worked no point continuing
 					break;
+				} catch (ConnectionTimedOutException e) {
+					// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
+					// will retry to update show status in the next job run - warn level not send to email
+					logService.warn(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage());
 				} catch (PageDownloadException e) {
 					logService.error(getClass(), "Failed parsing page of search for: " + mediaRequest.toQueryString() + ". Page:" + page + " Error: " + e.getMessage());
 				} catch (Exception e) {

@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.ConnectionTimedOutException;
 import rss.EpisodesComparator;
 import rss.PageDownloadException;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
@@ -37,7 +38,6 @@ import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.StringUtils2;
-import rss.util.Utils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -191,16 +191,18 @@ public class ShowServiceImpl implements ShowService {
 								}
 							}
 						});
-					} catch (PageDownloadException e) {
-						logService.warn(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
-					} catch (Exception e) {
+					} catch (ConnectionTimedOutException e) {
 						// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
 						// will retry to update show status in the next job run - warn level not send to email
-						if (Utils.getRootCause(e).getMessage().contains("Connection timed out")) {
-							logService.warn(aClass, String.format("Failed downloading info for show '%s' because connection has timed out", downloadedShow.getName()));
-						} else {
-							logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
-						}
+						logService.warn(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
+					} catch (PageDownloadException e) {
+						logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
+					} catch (Exception e) {
+//						if (Utils.isRootCauseMessageContains(e, "Connection timed out")) {
+//							logService.warn(aClass, String.format("Failed downloading info for show '%s' because connection has timed out", downloadedShow.getName()));
+//						} else {
+						logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
+//						}
 					}
 				}
 			});
