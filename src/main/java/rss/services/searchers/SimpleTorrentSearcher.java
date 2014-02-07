@@ -92,7 +92,6 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 				// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
 				// will retry to update show status in the next job run - warn level not send to email
 				logService.warn(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
-
 			} catch (PageDownloadException e) {
 				logService.error(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
 			} catch (Exception e) {
