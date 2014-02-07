@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.ConnectionTimedOutException;
 import rss.MediaRSSException;
 import rss.entities.Episode;
 import rss.entities.Show;
@@ -192,6 +193,8 @@ public class TVRageServiceImpl implements ShowsProvider {
 				}
 			}
 			return episodes;
+		} catch (ConnectionTimedOutException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new MediaRSSException("Failed to download schedule for show: " + show, e).withUserMessage("Failed to download schedule for show: " + show.getName());
 		}
