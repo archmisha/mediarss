@@ -2,6 +2,7 @@ package rss.services.searchers;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.beans.factory.annotation.Autowired;
+import rss.ConnectionTimedOutException;
 import rss.PageDownloadException;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
@@ -40,15 +41,15 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 
 	@Override
 	public SearchResult search(T mediaRequest) {
-		Collection<String> searchUrl;
+		Collection<String> searchUrls;
 		try {
-			searchUrl = getSearchUrl(mediaRequest);
+			searchUrls = getSearchUrl(mediaRequest);
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed searching for: " + mediaRequest + ". Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
 
-		for (String url : searchUrl) {
+		for (String url : searchUrls) {
 			try {
 				String page = pageDownloader.downloadPage(url);
 
@@ -87,6 +88,11 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 
 				searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
 				return searchResult;
+			} catch (ConnectionTimedOutException e) {
+				// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
+				// will retry to update show status in the next job run - warn level not send to email
+				logService.warn(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
+
 			} catch (PageDownloadException e) {
 				logService.error(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
 			} catch (Exception e) {
