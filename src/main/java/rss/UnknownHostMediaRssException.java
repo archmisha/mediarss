@@ -4,25 +4,25 @@ package rss;
  * User: dikmanm
  * Date: 02/02/13 14:55
  */
-public class UnknownHostException extends PageDownloadException {
+public class UnknownHostMediaRssException extends PageDownloadException {
 
-	public UnknownHostException() {
+	public UnknownHostMediaRssException() {
 		super();    //To change body of overridden methods use File | Settings | File Templates.
 	}
 
-	public UnknownHostException(String message) {
+	public UnknownHostMediaRssException(String message) {
 		super(message);    //To change body of overridden methods use File | Settings | File Templates.
 	}
 
-	public UnknownHostException(String message, Throwable cause) {
+	public UnknownHostMediaRssException(String message, Throwable cause) {
 		super(message, cause);    //To change body of overridden methods use File | Settings | File Templates.
 	}
 
-	public UnknownHostException(Throwable cause) {
+	public UnknownHostMediaRssException(Throwable cause) {
 		super(cause);    //To change body of overridden methods use File | Settings | File Templates.
 	}
 
-	protected UnknownHostException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	protected UnknownHostMediaRssException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);    //To change body of overridden methods use File | Settings | File Templates.
 	}
 }

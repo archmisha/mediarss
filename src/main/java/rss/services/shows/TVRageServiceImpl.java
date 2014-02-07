@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.ConnectionTimedOutException;
 import rss.MediaRSSException;
-import rss.UnknownHostException;
+import rss.UnknownHostMediaRssException;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.services.PageDownloader;
@@ -28,9 +28,10 @@ import java.util.List;
 //@Service("tVRageServiceImpl")
 public class TVRageServiceImpl implements ShowsProvider {
 
-	public static final String SHOW_LIST_URL = "http://services.tvrage.com/feeds/show_list.php";
-	public static final String SHOW_INFO_URL = "http://services.tvrage.com/feeds/full_show_info.php?sid=";
-	public static final String SHOW_SCHEDULE_URL = "http://services.tvrage.com/feeds/fullschedule.php?country=US&24_format=1";
+	public static final String SERVICES_HOSTNAME = "services.tvrage.com";
+	public static final String SHOW_LIST_URL = "http://" + SERVICES_HOSTNAME + "/feeds/show_list.php";
+	public static final String SHOW_INFO_URL = "http://" + SERVICES_HOSTNAME + "/feeds/full_show_info.php?sid=";
+	public static final String SHOW_SCHEDULE_URL = "http://" + SERVICES_HOSTNAME + "/feeds/fullschedule.php?country=US&24_format=1";
 
 	private static final int RETURNING_STATUS = 1;
 	private static final int CANCELED_ENDED_STATUS = 2;
@@ -194,7 +195,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 				}
 			}
 			return episodes;
-		} catch (ConnectionTimedOutException | UnknownHostException e) {
+		} catch (ConnectionTimedOutException | UnknownHostMediaRssException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new MediaRSSException("Failed to download schedule for show: " + show, e).withUserMessage("Failed to download schedule for show: " + show.getName());

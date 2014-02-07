@@ -21,9 +21,10 @@ import org.springframework.stereotype.Service;
 import rss.ConnectionTimedOutException;
 import rss.MediaRSSException;
 import rss.PageDownloadException;
-import rss.UnknownHostException;
+import rss.UnknownHostMediaRssException;
 import rss.services.log.LogService;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
+import rss.services.shows.TVRageServiceImpl;
 import rss.util.Utils;
 
 import java.io.BufferedInputStream;
@@ -256,8 +257,9 @@ public class PageDownloaderImpl implements PageDownloader {
 		} catch (Exception e) {
 			if (Utils.isRootCauseMessageContains(e, "timed out")) {
 				throw new ConnectionTimedOutException("Connection timed out for url: " + url);
-			} else if (Utils.getRootCause(e) instanceof java.net.UnknownHostException) {
-				throw new UnknownHostException("UnknownHostException for url: " + url + " message: " + e.getMessage());
+			} else if (Utils.getRootCause(e) instanceof java.net.UnknownHostException &&
+					   Utils.isRootCauseMessageContains(e, TVRageServiceImpl.SERVICES_HOSTNAME)) {
+				throw new UnknownHostMediaRssException(TVRageServiceImpl.SERVICES_HOSTNAME);
 			} else if (Utils.isCauseMessageContains(e, "Invalid redirect URI")) {
 				throw new PageDownloadException("Invalid redirect URI: " + url);
 			} else if (Utils.isCauseMessageContains(e, "Circular redirect")) {
