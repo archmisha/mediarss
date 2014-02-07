@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.ConnectionTimedOutException;
 import rss.MediaRSSException;
+import rss.UnknownHostException;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.services.PageDownloader;
@@ -193,7 +194,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 				}
 			}
 			return episodes;
-		} catch (ConnectionTimedOutException e) {
+		} catch (ConnectionTimedOutException | UnknownHostException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new MediaRSSException("Failed to download schedule for show: " + show, e).withUserMessage("Failed to download schedule for show: " + show.getName());
