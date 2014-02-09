@@ -248,7 +248,7 @@ public class PageDownloaderImpl implements PageDownloader {
 			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK /*&&
 				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY &&
 				httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_PERMANENTLY*/) {
-				throw new RuntimeException("Url " + url + ": " + httpResponse.getStatusLine());
+				throw new PageDownloadException("Url " + url + ": " + httpResponse.getStatusLine());
 			}
 
 			return streamExtractor.extractResponseStream(defaultHttpClient, httpResponse, context);
