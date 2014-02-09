@@ -142,11 +142,23 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 				String tmp = page.substring(idx, page.indexOf(",", idx));
 				Date dateUploaded = parseDateUploaded(tmp);
 
+				String sizePrefix = "Size ";
+				idx = page.indexOf(sizePrefix, idx) + sizePrefix.length();
+				i = page.indexOf("&nbsp;", idx);
+				tmp = page.substring(idx, i);
+				double size = Double.parseDouble(tmp);
+				idx = page.indexOf(",", i);
+				tmp = page.substring(i, idx);
+				if (tmp.contains("GiB")) {
+					size *= 1024;
+				}
+
 				String seedersPrefix = "<td align=\"right\">";
 				idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();
 				int seeders = Integer.parseInt(page.substring(idx, page.indexOf("</td>", idx)));
 
 				Torrent torrent = new Torrent(title, torrentUrl, dateUploaded, seeders, sourcePageUrl);
+				torrent.setSize((int) size);
 				results.add(torrent);
 
 				idx = page.indexOf("<td class=\"vertTh\">", idx);

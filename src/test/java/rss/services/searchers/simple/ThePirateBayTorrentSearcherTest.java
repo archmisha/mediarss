@@ -120,7 +120,9 @@ public class ThePirateBayTorrentSearcherTest extends BaseTest {
 		SearchResult searchResult = searcher.search(movieRequest);
 
 		assertEquals(SearchResult.SearchStatus.FOUND, searchResult.getSearchStatus());
+		Torrent torrent = (Torrent) searchResult.getDownloadables().get(0);
 		assertEquals("http://" + domain + "/torrent/9446130/The_Twilight_Saga_-_New_Moon_%282009%29_1080p_BluRay_x264_Dual_Audio",
-				((Torrent) searchResult.getDownloadables().get(0)).getSourcePageUrl());
+				torrent.getSourcePageUrl());
+		assertEquals((int) (1024 * 2.29), torrent.getSize());
 	}
 }
