@@ -10,11 +10,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import rss.BaseTest;
 import rss.entities.MediaQuality;
+import rss.entities.SearcherConfiguration;
 import rss.entities.Show;
+import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.matching.MatchCandidate;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
+import rss.services.searchers.SearcherConfigurationService;
 import rss.services.shows.ShowService;
 
 import java.util.Calendar;
@@ -22,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +41,9 @@ public class TorrentSearcher1337xTest extends BaseTest {
 
 	@Mock
 	private ShowService showService;
+
+	@Mock
+	private SearcherConfigurationService searcherConfigurationService;
 
 	@InjectMocks
 	private TorrentSearcher1337x torrentSearcher1337x = new TorrentSearcher1337x();
@@ -74,9 +81,17 @@ public class TorrentSearcher1337xTest extends BaseTest {
 		when(pageDownloader.downloadPage(any(String.class))).thenReturn(loadPage("1337x-rise-of-the-guardians-search-results")).thenReturn(loadPage("1337x-rise-of-the-guardians"));
 		mockFilterReturnAll();
 
+		String domain = "michael.com";
+		SearcherConfiguration searcherConfiguration = new SearcherConfiguration();
+		searcherConfiguration.setName("abc");
+		searcherConfiguration.getDomains().add(domain);
+		when(searcherConfigurationService.getSearcherConfiguration(anyString())).thenReturn(searcherConfiguration);
+
 		SearchResult searchResult = torrentSearcher1337x.search(new SingleEpisodeRequest(null, "suits", new Show(), MediaQuality.HD720P, 1, 1));
 
-//		assertEquals("http://www.imdb.com/title/tt1446192", searchResult.getImdbId());
+		Torrent torrent = (Torrent) searchResult.getDownloadables().get(0);
+		assertEquals("http://www.imdb.com/title/tt1446192", torrent.getImdbId());
+		assertEquals((int) (9.14 * 1024), torrent.getSize());
 	}
 
 	@Test

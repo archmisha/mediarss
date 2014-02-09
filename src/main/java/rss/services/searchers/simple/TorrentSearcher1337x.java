@@ -138,6 +138,15 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 			String dateUploadedAgoString = page.substring(idx, page.indexOf("</span>", idx));
 			Date dateUploadedAgo = StringUtils2.parseDateUploaded(dateUploadedAgoString);
 
+			String sizePrefix = "Total Size</span>";
+			idx = page.indexOf(sizePrefix, idx) + sizePrefix.length();
+			idx = page.indexOf(">", idx) + ">".length();
+			String[] arr = page.substring(idx, page.indexOf("</span>", idx)).split(" ");
+			double size = Double.parseDouble(arr[0]);
+			if (arr[1].equals("GB")) {
+				size *= 1024;
+			}
+
 			String seedersPrefix = "seeders</span>";
 			idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();
 			idx = page.indexOf(">", idx) + ">".length();
@@ -150,6 +159,7 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 			String url = page.substring(idx, page.indexOf("\"", idx));
 
 			Torrent torrent = new Torrent(title, url, dateUploadedAgo, seeders);
+			torrent.setSize((int) size);
 			torrent.setImdbId(parseImdbUrl(page, title));
 			return torrent;
 		} catch (Exception e) {
