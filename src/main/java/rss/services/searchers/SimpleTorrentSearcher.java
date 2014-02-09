@@ -174,15 +174,18 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 
 	// might be in the headers of the torrent or in the content as plain text
 	/*package*/ String getImdbUrl(Torrent torrent) {
-		String page;
-		try {
-			page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
-		} catch (Exception e) {
-			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
+		if (torrent.getSourcePageUrl() == null) {
 			return null;
 		}
 
-		return parseImdbUrl(page, torrent.getTitle());
+		try {
+			String page = pageDownloader.downloadPage(torrent.getSourcePageUrl());
+			return parseImdbUrl(page, torrent.getTitle());
+		} catch (Exception e) {
+			logService.error(getClass(), "Failed retrieving the imdb url of " + torrent.toString() + ": " + e.getMessage(), e);
+		}
+
+		return null;
 	}
 
 	protected String parseImdbUrl(String page, String title) {
