@@ -239,9 +239,11 @@ public class UserController extends BaseController {
 	}
 
 	private Cookie getLoginCookie(HttpServletRequest request) {
-		for (Cookie cookie : request.getCookies()) {
-			if (cookie.getName().equals(REMEMBER_ME_COOKIE_NAME)) {
-				return cookie;
+		if (request.getCookies() != null) {
+			for (Cookie cookie : request.getCookies()) {
+				if (cookie.getName().equals(REMEMBER_ME_COOKIE_NAME)) {
+					return cookie;
+				}
 			}
 		}
 		return null;
