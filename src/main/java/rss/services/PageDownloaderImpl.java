@@ -18,10 +18,9 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.ConnectionTimedOutException;
 import rss.MediaRSSException;
 import rss.PageDownloadException;
-import rss.UnknownHostMediaRssException;
+import rss.RecoverableConnectionException;
 import rss.services.log.LogService;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.shows.TVRageServiceImpl;
@@ -256,10 +255,14 @@ public class PageDownloaderImpl implements PageDownloader {
 			throw new PageDownloadException("Truncated chunk for url: " + url + ". " + e.getMessage());
 		} catch (Exception e) {
 			if (Utils.isRootCauseMessageContains(e, "timed out")) {
-				throw new ConnectionTimedOutException("Connection timed out for url: " + url);
+				throw new RecoverableConnectionException("Connection timed out for url: " + url);
+			} else if (Utils.isRootCauseMessageContains(e, "Bad Gateway")) {
+				throw new RecoverableConnectionException("Bad Gateway for url: " + url);
+			} else if (Utils.isRootCauseMessageContains(e, "Connection reset")) {
+				throw new RecoverableConnectionException("Connection reset for url: " + url);
 			} else if (Utils.getRootCause(e) instanceof java.net.UnknownHostException &&
 					   Utils.isRootCauseMessageContains(e, TVRageServiceImpl.SERVICES_HOSTNAME)) {
-				throw new UnknownHostMediaRssException(TVRageServiceImpl.SERVICES_HOSTNAME);
+				throw new RecoverableConnectionException("Unknown hostname: " + TVRageServiceImpl.SERVICES_HOSTNAME);
 			} else if (Utils.isCauseMessageContains(e, "Invalid redirect URI")) {
 				throw new PageDownloadException("Invalid redirect URI: " + url);
 			} else if (Utils.isCauseMessageContains(e, "Circular redirect")) {

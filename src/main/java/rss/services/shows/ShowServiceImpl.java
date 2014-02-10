@@ -16,10 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.ConnectionTimedOutException;
 import rss.EpisodesComparator;
 import rss.PageDownloadException;
-import rss.UnknownHostMediaRssException;
+import rss.RecoverableConnectionException;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.dao.*;
@@ -192,7 +191,7 @@ public class ShowServiceImpl implements ShowService {
 								}
 							}
 						});
-					} catch (ConnectionTimedOutException | UnknownHostMediaRssException e) {
+					} catch (RecoverableConnectionException e) {
 						// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
 						// will retry to update show status in the next job run - warn level not send to email
 						logService.warn(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
