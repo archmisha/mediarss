@@ -7,10 +7,11 @@
         <div class='section-title'>{{{title}}}</div>
         <div class='section-line'></div>
     </div>
-</div>
-<div class='section-collapsible'>
     <div class='section-description'>
         {{{description}}}
     </div>
-    <div class='section-content'></div>
+</div>
+<div class='section-collapsible'>
+
+<div class='section-content'></div>
 </div>

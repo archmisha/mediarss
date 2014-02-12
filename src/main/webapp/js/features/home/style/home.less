@@ -13,7 +13,7 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   text-decoration: none;
   color: @theme-color;
   padding-top: 7px;
-  padding-bottom: 7px;
+  padding-bottom: 6px;
   padding-left: 20px;
   padding-right: 20px;
 }
@@ -185,5 +185,11 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 
   .home-admin-tab-large {
     display: none;
+  }
+}
+
+@media screen and (max-width: 320px) {
+  .home-header-tabs a {
+    padding-bottom: 7px;
   }
 }
