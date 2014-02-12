@@ -1,5 +1,7 @@
 //@job-font-size: 15px;
 @job-label-width: 200px;
+@admin-searcher-conf-domain-add-button-width: 60px;
+@admin-searcher-conf-domain-list-margin: 20px;
 
 .admin-tab {
   margin-left: 142px;
@@ -250,10 +252,11 @@
   border: 1px solid #dcdcdc;
 }
 
+@admin-searcher-conf-domain-list-width: 193px;
 .admin-searcher-conf-domain-list {
   border: 1px solid #CCCCCC;
   border-radius: 5px;
-  width: 193px;
+  width: @admin-searcher-conf-domain-list-width;
   margin-left: 2px;
   margin-top: 5px;
   padding: 5px;
@@ -274,6 +277,31 @@
 
 .admin-searcher-conf-value {
   margin-left: @admin-searcher-conf-name-width;
+  max-width: @admin-searcher-conf-domain-list-width + 16px;
+}
+
+.access-stats-item-small {
+  display: none;
+}
+
+.admin-searcher-conf-search-box {
+  height: 26px;
+  position: relative;
+}
+
+.admin-searcher-conf-domain-add-button {
+  position: absolute;
+  right: 0px;
+}
+
+.admin-searcher-conf-domain-input {
+  position: absolute;
+  right: @admin-searcher-conf-domain-add-button-width;
+  left: 0px;
+
+  input {
+    width: 100%;
+  }
 }
 
 @media screen and (max-width: 1090px) {
@@ -343,6 +371,38 @@
   }
 
   .admin-searcher-conf-value {
-    margin-left: 20px;
+    margin-left: @admin-searcher-conf-domain-list-margin;
+    max-width: inherit;
+  }
+
+  .access-stats-item-small {
+    display: block;
+  }
+
+  .access-stats-list-header,
+  .access-stats-item-large {
+    display: none;
+  }
+
+  .access-stats-list {
+    max-height: inherit;
+    overflow-y: auto;
+  }
+
+  .access-stats-item {
+    height: inherit;
+  }
+
+  .admin-searcher-conf-domain-list {
+    margin-right: @admin-searcher-conf-domain-list-margin;
+    width: inherit;
+  }
+
+  .admin-searcher-conf-domain-input {
+    right: @admin-searcher-conf-domain-list-margin + @admin-searcher-conf-domain-add-button-width - 2px; // some border
+  }
+
+  .admin-searcher-conf-domain-add-button {
+    right: @admin-searcher-conf-domain-list-margin;
   }
 }
