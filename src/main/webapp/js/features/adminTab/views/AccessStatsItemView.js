@@ -14,7 +14,8 @@ define([
 
 			ui: {
 				userName: '.username-column',
-				impersonateButton: '.impersonate-button'
+				impersonateButton: '.impersonate-button',
+				impersonateButtonDisabled: '.impersonate-button-disabled'
 			},
 
 			events: {
@@ -31,6 +32,10 @@ define([
 				});
 				if (this.model.get('loggedIn')) {
 					this.ui.impersonateButton.hide();
+					this.ui.impersonateButtonDisabled.show();
+				} else {
+					this.ui.impersonateButton.show();
+					this.ui.impersonateButtonDisabled.hide();
 				}
 			},
 

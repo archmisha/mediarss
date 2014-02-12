@@ -115,11 +115,8 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   margin-bottom: 10px;
 }
 
-.home-settings-tab:hover,
-.home-home-tab:hover,
-.home-tvshows-tab:hover,
-.home-movies-tab:hover,
-.home-admin-tab:hover {
+.home-header-tabs a:hover {
+  padding-bottom: 6px;
   background-color: lightblue;
   margin-bottom: 2px;
   border-top-left-radius: 5px;
@@ -147,6 +144,14 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 }
 
 @media screen and (max-width: 480px) {
+  .home-header-tabs a {
+    padding-bottom: 7px;
+  }
+
+  .home-header-tabs a:hover {
+    padding-bottom: 7px;
+  }
+
   .home-masthead {
     margin-top: -27px;
     margin-right: 3px;
@@ -166,8 +171,8 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   }
 
   .home-header-tabs a {
-    padding-left: 4px;
-    padding-right: 4px;
+    padding-left: 3px;
+    padding-right: 3px;
   }
 
   .masthead-separator {

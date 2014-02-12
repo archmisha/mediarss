@@ -135,6 +135,19 @@
   height: 15px;
 }
 
+.impersonate-button-disabled {
+  border: 1px solid #c8c8c8;
+  padding: 0px 0px 5px 14px;
+  height: 15px;
+  background: #f0f0f0;
+  color: black;
+
+  &:hover {
+    cursor: default;
+    background: #f0f0f0;
+  }
+}
+
 .access-stats-list-header {
   font-weight: bold;
   height: 20px;
@@ -142,7 +155,7 @@
 }
 
 .access-stats-item {
-  height: 20px;
+  height: 25px;
   margin-top: 2px;
   margin-bottom: 2px;
 }
@@ -282,6 +295,26 @@
 
 .access-stats-item-small {
   display: none;
+  margin-top: 10px;
+
+  .access-stats-item-small-name {
+    font-weight: bold;
+  }
+
+  .impersonate-button-column {
+    float: none;
+    width: 105px;
+    margin-left: 0px;
+    margin-top: 5px;
+  }
+
+  .access-stats-item-small-data-row-name {
+    position: absolute;
+  }
+
+  .access-stats-item-small-data-row-value {
+    margin-left: 100px;
+  }
 }
 
 .admin-searcher-conf-search-box {
@@ -302,6 +335,10 @@
   input {
     width: 100%;
   }
+}
+
+.access-stats-item-small-data {
+  margin-left: 20px;
 }
 
 @media screen and (max-width: 1090px) {
@@ -404,5 +441,9 @@
 
   .admin-searcher-conf-domain-add-button {
     right: @admin-searcher-conf-domain-list-margin - 2px; // some border
+  }
+
+  .admin-delete-show-title {
+    width: auto;
   }
 }
