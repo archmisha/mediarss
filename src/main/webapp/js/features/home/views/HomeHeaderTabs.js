@@ -15,6 +15,14 @@ define([
 				adminTab: '.home-admin-tab'
 			},
 
+			events: {
+				'click .home-home-tab': '_homeTabClick',
+				'click .home-tvshows-tab': '_showsTabClick',
+				'click .home-movies-tab': '_moviesTabClick',
+				'click .home-settings-tab': '_settingsTabClick',
+				'click .home-admin-tab': '_adminTabClick'
+			},
+
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.selectedTab = options.selectedTab;
@@ -22,8 +30,7 @@ define([
 			},
 
 			onRender: function() {
-				var selector = "a[href$='" + this.selectedTab + "']";
-				this.$el.find(selector).addClass('home-selected-tab');
+				this._getTabEl(this.selectedTab).addClass('home-selected-tab');
 
 				if (this.isAdmin) {
 					this.ui.adminTab.show();
@@ -31,9 +38,46 @@ define([
 			},
 
 			selectTab: function(tabToSelect) {
-				this.$el.find('a').removeClass('home-selected-tab');
-				var selector = "a[href$='" + tabToSelect + "']";
-				this.$el.find(selector).addClass('home-selected-tab');
+				this.$el.find('span').removeClass('home-selected-tab');
+				this._getTabEl(tabToSelect).addClass('home-selected-tab');
+			},
+
+			_getTabEl: function(tab) {
+				var ind = tab.indexOf('/');
+				if (ind > -1) {
+					tab = tab.substring(0, ind);
+				}
+				var selector = "span.home-" + tab + "-tab";
+				return this.$el.find(selector);
+			},
+
+			_homeTabClick: function() {
+				this._tabNavHelper("home");
+			},
+
+			_showsTabClick: function() {
+				this._tabNavHelper("tvshows");
+			},
+
+			_moviesTabClick: function() {
+				this._tabNavHelper("movies/availableMovies");
+			},
+
+			_settingsTabClick: function() {
+				this._tabNavHelper("settings");
+			},
+
+			_adminTabClick: function() {
+				this._tabNavHelper("admin");
+			},
+
+			_tabNavHelper: function(nav) {
+				var url = window.parent.location.href;
+				var ind = url.lastIndexOf('#');
+				if (ind > -1) {
+					url = url.substring(0, url.lastIndexOf('#') + 1);
+				}
+				window.parent.location = url + nav;
 			}
 		});
 	});
