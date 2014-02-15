@@ -1,1 +1,2 @@
-{{name}}<span class='tracked-show-ended'> - Ended</span><img src='images/remove.png' class='tracked-show-image'/>
+<div class='tracked-show-name-container'><span class="tracked-show-name">{{name}}</span><span
+        class='tracked-show-ended'> - Ended</span></div><img src='images/remove.png' class='tracked-show-image'/>

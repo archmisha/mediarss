@@ -82,6 +82,16 @@
   //  font-size: @font-size-body;
   padding: @tracked-show-padding;
   padding-left: @tracked-show-padding-left;
+  position: relative;
+}
+
+@tracked-show-image-top: 9px;
+@tracked-show-image-right: 7px;
+.tracked-show-image {
+  display: none;
+  position: absolute;
+  top: @tracked-show-image-top;
+  right: @tracked-show-image-right;
 }
 
 .tracked-show:hover {
@@ -94,14 +104,9 @@
   .tracked-show-image {
     display: block;
     cursor: pointer;
+    top: @tracked-show-image-top - 1px;
+    right: @tracked-show-image-right - 1px
   }
-}
-
-.tracked-show-image {
-  display: none;
-  float: right;
-  margin-top: 4px;
-  margin-right: 6px;
 }
 
 .shows-combobo-item {
@@ -134,6 +139,14 @@
 .shows-search-episode-label,
 .shows-search-season-label {
   margin-right: 3px;
+}
+
+.tracked-show-name {
+
+}
+
+.tracked-show-name-container {
+  margin-right: 22px;
 }
 
 .tracked-shows-desc {
