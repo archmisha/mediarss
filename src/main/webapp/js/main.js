@@ -3,14 +3,13 @@ require.config({
 		underscore: 'lib/underscore',
 		backbone: 'lib/backbone',
 		marionette: 'lib/backbone.marionette.min',
-		jquery: 'lib/jquery-1.8.2.min',
+		jquery: 'lib/jquery-1.11.0.min',
 		text: 'lib/text',
 		handlebars: 'lib/handlebars-1.0.rc.1.min',
 		less: 'lib/less',
 		moment: 'lib/moment-2.0.0.min',
-		zeroClipboard: 'lib/ZeroClipboard.min',
+		zeroClipboard: 'lib/ZeroClipboard-1.3.1.min',
 		fancybox: 'lib/jquery.fancybox.pack',
-		jqplugin: 'lib/jquery.jqplugin.1.0.2.min',
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
 		noty: 'lib/noty/jquery.noty',
@@ -43,9 +42,6 @@ require.config({
 		},
 		fancybox: {
 			exports: 'Fancybox'
-		},
-		jqplugin: {
-			exports: 'jqPlugin'
 		},
 		chosen: {
 			exports: 'Chosen'

@@ -5,7 +5,6 @@ define([
 	'text!features/settingsTab/templates/settings-tab.tpl',
 	'components/section/views/SectionView',
 	'zeroClipboard',
-	'jqplugin',
 	'chosen',
 	'utils/MessageBox',
 	'utils/Utils',
@@ -14,7 +13,7 @@ define([
 	'features/settingsTab/views/SubtitlesCollectionView',
 	'features/settingsTab/collections/SubtitlesCollection'
 ],
-	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView, SubtitlesCollectionView, SubtitlesCollection) {
+	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView, SubtitlesCollectionView, SubtitlesCollection) {
 		"use strict";
 
 		var SUBTITLES_NONE = 'None';
@@ -96,7 +95,7 @@ define([
 				this.$el.find('#tvshows-feed-copy-link').attr('data-clipboard-text', this.tabData.tvShowsRssFeed);
 				this.$el.find('#movies-feed-copy-link').attr('data-clipboard-text', this.tabData.moviesRssFeed);
 
-				if ($.browser.flash == true) {
+				if (Utils.isFlashEnabled()) {
 //					console.log('YES FLASH');
 					this.clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]]);
 					this.clip.on('complete', this._onCopyComplete);

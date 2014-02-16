@@ -4,13 +4,12 @@ define([
 	'handlebars',
 	'text!features/homeTab/templates/home-tab.tpl',
 	'zeroClipboard',
-	'jqplugin',
 	'chosen',
 	'utils/MessageBox',
 	'utils/Utils',
 	'utils/HttpUtils'
 ],
-	function(Marionette, Handlebars, template, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils) {
+	function(Marionette, Handlebars, template, ZeroClipboard, Chosen, MessageBox, Utils, HttpUtils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -38,7 +37,7 @@ define([
 				this.$el.find('#guide-tvshows-feed-copy-link').attr('data-clipboard-text', this.tabData.tvShowsRssFeed);
 				this.$el.find('#guide-movies-feed-copy-link').attr('data-clipboard-text', this.tabData.moviesRssFeed);
 
-				if ($.browser.flash == true) {
+				if (Utils.isFlashEnabled()) {
 //					console.log('YES FLASH');
 					this.clip = new ZeroClipboard([this.$el.find('#guide-tvshows-feed-copy-link')[0], this.$el.find('#guide-movies-feed-copy-link')[0]]);
 					this.clip.on('complete', this._onCopyComplete);
