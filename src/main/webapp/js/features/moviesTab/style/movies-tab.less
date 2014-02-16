@@ -10,18 +10,6 @@
   margin-left: 142px;
 }
 
-@media screen and (max-width: 993px) and (min-width:951px) {
-  .movies-tab {
-    margin-left: 100px;
-  }
-}
-
-@media screen and (max-width: 950px) and (min-width:0px) {
-  .movies-tab {
-    margin-left: 10px;
-  }
-}
-
 .my-movies-body {
   //  width: 920px;
   margin-top: 20px;
@@ -56,16 +44,6 @@
   border-radius: 5px;
   padding: @list-padding;
   overflow-y: auto;
-}
-
-@media screen and (max-width: 860px) and (min-width:0px) {
-  .movies-torrents-list-wrapper {
-    width: 50%;
-  }
-
-  .movies-list-wrapper {
-    width: 50%;
-  }
 }
 
 .movies-list {
@@ -219,12 +197,23 @@
 
 .movies-search-results {
   margin-top: 30px;
-  width: 500px;
+  max-width: 500px;
+}
+
+.movies-search-result-item-icon {
+  position: absolute;
+  left: @movie-item-padding-left;
+  top: @movie-item-padding;
+}
+
+.movies-search-result-item-status {
+  position: absolute;
+  right: @movie-item-padding;
+  top: 19px;
 }
 
 .movie-search-result-item {
   height: 60px;
-  //  font-size: @font-size-body;
   padding: 5px;
   position: relative;
 
@@ -235,17 +224,23 @@
   &:hover {
     border: 1px solid #dcdcdc;
     background-color: #f5f5f5;
-    padding: 4px;
+    padding: @movie-item-padding - 1px;
 
     .movies-search-result-item-status {
-      right: 4px;
+      right: @movie-item-padding - 1px;
       top: 18px;
+    }
+
+    .movies-search-result-item-icon {
+      position: absolute;
+      left: @movie-item-padding-left - 1px;
+      top: @movie-item-padding - 1px;
     }
   }
 }
 
 .movies-search-result-item-title {
-  margin-left: 10px;
+  //  margin-left: 10px;
 }
 
 .movies-search-result-item-add {
@@ -257,14 +252,44 @@
   margin-right: 5px;
 }
 
-.movies-search-result-item-status {
-  position: absolute;
-  right: 5px;
-  top: 19px;
-}
-
 .movies-torrents-list .search-results-empty-view {
   margin-top: 0px;
+}
+
+.movies-search-result-wrapper {
+  margin-right: 50px;
+}
+
+.movies-search-result-title-wrapper2 {
+  height: 56px; /* this is the actual height of the images */
+  vertical-align: middle;
+  display: table-cell;
+}
+
+.movies-search-result-title-wrapper {
+  margin-left: 50px;
+}
+
+@media screen and (max-width: 993px) {
+  .movies-tab {
+    margin-left: 100px;
+  }
+}
+
+@media screen and (max-width: 950px) {
+  .movies-tab {
+    margin-left: 10px;
+  }
+}
+
+@media screen and (max-width: 860px) {
+  .movies-torrents-list-wrapper {
+    width: 50%;
+  }
+
+  .movies-list-wrapper {
+    width: 50%;
+  }
 }
 
 @media screen and (max-width: 480px) {
@@ -278,5 +303,9 @@
 
   .movies-section {
     margin-top: 20px;
+  }
+
+  .movies-tab {
+    margin-left: 0px;
   }
 }

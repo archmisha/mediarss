@@ -53,7 +53,6 @@ define([
 				var that = this;
 				setTimeout(function() {
 					that.collapsible = that.collapsible && (that.ui.collapseIconsContainer.css('display') !== 'none'); //that.ui.collapseIconsContainer.is(':visible');
-					console.log('collapsible: ' + that.title + ' ' + that.collapsible + '<>' + that.ui.collapseIconsContainer.css('display'));
 
 					if (that.collapsible) {
 						that.ui.sectionHeader.addClass('section-collapsible');

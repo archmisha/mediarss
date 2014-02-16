@@ -3,7 +3,7 @@
  * Time: 14:23
  */
 define([
-	'utils/HttpUtils',
+	'utils/MessageBox',
 	'utils/Spinner'
 ],
 	function(MessageBox, Spinner) {
