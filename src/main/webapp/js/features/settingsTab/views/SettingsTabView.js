@@ -98,9 +98,7 @@ define([
 
 				if ($.browser.flash == true) {
 //					console.log('YES FLASH');
-					this.clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]], {
-						swfPath: "ZeroClipboard.swf"
-					});
+					this.clip = new ZeroClipboard([this.$el.find('#tvshows-feed-copy-link')[0], this.$el.find('#movies-feed-copy-link')[0]]);
 					this.clip.on('complete', this._onCopyComplete);
 					this.clip.on('wrongflash noflash', function() {
 						ZeroClipboard.destroy();

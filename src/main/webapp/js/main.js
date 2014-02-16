@@ -80,9 +80,10 @@ require([
 	'routers/MainRouter',
 	'controllers/BaseController',
 	'moment',
-	'qtip'
+	'qtip',
+	'zeroClipboard'
 ],
-	function($, Backbone, Handlebars, MainRouter, BaseController, Moment, qtip) {
+	function($, Backbone, Handlebars, MainRouter, BaseController, Moment, qtip, ZeroClipboard) {
 		"use strict";
 
 		//  format an ISO date using Moment.js
@@ -105,6 +106,8 @@ require([
 				return options.inverse(date);
 			}
 		});
+
+		ZeroClipboard.config({swfPath: "ZeroClipboard.swf"});
 
 		var app = new Backbone.Marionette.Application();
 
