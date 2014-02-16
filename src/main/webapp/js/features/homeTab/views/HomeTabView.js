@@ -27,13 +27,11 @@ define([
 			},
 
 			onRender: function() {
-				var that = this;
-				HttpUtils.get('rest/user/initial-data', function(res) {
-					that.tabData = res;
+				this.setCopyToClipboard();
+			},
 
-					// register copy to clipboard
-					that.setCopyToClipboard();
-				}, false);
+			setTabData: function(tabData) {
+				this.tabData = tabData;
 			},
 
 			setCopyToClipboard: function() {

@@ -80,8 +80,10 @@ define([
 					that.headerRegion.show(that.headerView);
 
 					if (that.changeTabData) {
-						that.changeTab(that.changeTabData.tabToSelect, that.changeTabData.tabParams);
+						var tabToSelect = that.changeTabData.tabToSelect;
+						var tabParams = that.changeTabData.tabParams;
 						that.changeTabData = null;
+						that.changeTab(tabToSelect, tabParams);
 					}
 				});
 			},
@@ -104,6 +106,9 @@ define([
 				Backbone.history.navigate(route, {trigger: false});
 				document.title = tabs[tabToSelect].title;
 
+				if (tabs[tabToSelect].view.setTabData) {
+					tabs[tabToSelect].view.setTabData(this.tabData);
+				}
 				this.contentRegion.show(tabs[tabToSelect].view);
 				this.homeHeaderTabs.selectTab(tabToSelect);
 			}

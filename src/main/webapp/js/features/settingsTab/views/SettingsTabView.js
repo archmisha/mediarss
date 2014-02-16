@@ -55,12 +55,17 @@ define([
 
 				this.recentSubtitlesCollection = new SubtitlesCollection();
 				this.recentSubtitlesView = new SubtitlesCollectionView({collection: this.recentSubtitlesCollection});
+				this.tabData = {};
+			},
+
+			setTabData: function(tabData) {
+				$.extend(this.tabData, tabData);
 			},
 
 			onRender: function() {
 				var that = this;
 				HttpUtils.get('rest/user/initial-data', function(res) {
-					that.tabData = res;
+					$.extend(that.tabData, res);
 					var subtitleValues = [SUBTITLES_NONE].concat(that.tabData.subtitles);
 					subtitleValues.forEach(function(subtitle) {
 						that.ui.subtitlesCombobox.append(

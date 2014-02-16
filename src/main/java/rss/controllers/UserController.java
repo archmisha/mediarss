@@ -225,8 +225,6 @@ public class UserController extends BaseController {
 		Map<String, Object> result = new HashMap<>();
 		result.put("subtitles", SubtitleLanguage.getValues());
 		result.put("userSubtitles", user.getSubtitles() == null ? null : user.getSubtitles().toString());
-		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
-		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
 
 		Set<Torrent> torrents = tvShowsRssFeedGenerator.getFeedTorrents(user);
 		Collection<Subtitles> subtitles = subtitlesDao.find(torrents, user.getSubtitles());
@@ -254,6 +252,8 @@ public class UserController extends BaseController {
 		result.put("isAdmin", isAdmin(user));
 		result.put("deploymentDate", settingsService.getDeploymentDate());
 		result.put("firstName", user.getFirstName());
+		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
+		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
 		return result;
 	}
 }
