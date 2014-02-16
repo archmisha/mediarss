@@ -23,8 +23,6 @@ define([
 
 			ui: {
 				subtitlesCombobox: '.subtitles-settings-combobox',
-				tvShowsCopyLinkNotification: '.tvshows-feed-copy-link-notification',
-				moviesCopyLinkNotification: '.movies-feed-copy-link-notification',
 				recentSubtitlesListContainer: '.recent-subtitles-container'
 			},
 
@@ -121,15 +119,11 @@ define([
 				console.log("Copied text to clipboard: " + args.text + ' ' + this.id);
 				var notification;
 				if (this.id.indexOf('movies') > -1) {
-					notification = $('.movies-feed-copy-link-notification');
+					notification = 'Movies';
 				} else {
-					notification = $('.tvshows-feed-copy-link-notification');
+					notification = 'TV Shows';
 				}
-				notification.fadeIn('slow', function() {
-					setTimeout(function() {
-						notification.fadeOut('slow');
-					}, 2000);
-				});
+				MessageBox.info(notification + ' rss feed link is copied to clipboard');
 			},
 
 			onSubtitlesComboboxChange: function() {

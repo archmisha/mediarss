@@ -8,7 +8,6 @@
                 <img src="images/copy.gif" class='rss-feed-copy-icon'/>copy link
             </a>
             )
-            <span class='tvshows-feed-copy-link-notification'>link copied to clipboard</span>
         </div>
     </div>
     <div class='rss-feed'>
@@ -19,7 +18,6 @@
                 <img src="images/copy.gif" class='rss-feed-copy-icon'/>copy link
             </a>
             )
-            <span class='movies-feed-copy-link-notification'>link copied to clipboard</span>
         </div>
     </div>
 </ul>

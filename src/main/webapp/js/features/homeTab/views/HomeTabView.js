@@ -16,11 +16,6 @@ define([
 			template: Handlebars.compile(template),
 			className: 'home-tab',
 
-			ui: {
-				tvShowsCopyLinkNotification: '.guide-tvshows-feed-copy-link-notification',
-				moviesCopyLinkNotification: '.guide-movies-feed-copy-link-notification'
-			},
-
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 			},
@@ -61,17 +56,14 @@ define([
 
 			_onCopyComplete: function(client, args) {
 				console.log("Copied text to clipboard: " + args.text + ' ' + this.id);
+
 				var notification;
 				if (this.id.indexOf('movies') > -1) {
-					notification = $('.guide-movies-feed-copy-link-notification');
+					notification = 'Movies';
 				} else {
-					notification = $('.guide-tvshows-feed-copy-link-notification');
+					notification = 'TV Shows';
 				}
-				notification.fadeIn('slow', function() {
-					setTimeout(function() {
-						notification.fadeOut('slow');
-					}, 2000);
-				});
+				MessageBox.info(notification + ' rss feed link is copied to clipboard');
 			}
 		});
 	});
