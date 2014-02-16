@@ -1,8 +1,8 @@
 define([
 	'marionette',
 	'handlebars',
-	'HttpUtils',
-	'MessageBox',
+	'utils/HttpUtils',
+	'utils/MessageBox',
 	'features/adminTab/views/SearcherConfigurationItemView'
 ],
 	function(Marionette, Handlebars, HttpUtils, MessageBox, SearcherConfigurationItemView) {

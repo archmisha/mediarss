@@ -3,7 +3,7 @@ define([
 	'handlebars',
 	'text!features/adminTab/templates/job-item.tpl',
 	'moment',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function(Marionette, Handlebars, template, Moment, HttpUtils) {
 		"use strict";
@@ -89,18 +89,18 @@ define([
 				$.post("rest/jobs/start", {
 					name: this.model.get('name')
 				}).success(function(jobStatus) {
-						that.model.clear().set(jobStatus);
-						that.ui.startingStatus.hide();
-						that._markJobRunning();
-					}).error(function(res) {
-						console.log('error. data: ' + res);
-						that.ui.startingStatus.hide();
-						if (that.model.get('start') == null) {
-							that.ui.neverRunStatus.show();
-						} else {
-							that.ui.runningStatus.show();
-						}
-					});
+					that.model.clear().set(jobStatus);
+					that.ui.startingStatus.hide();
+					that._markJobRunning();
+				}).error(function(res) {
+					console.log('error. data: ' + res);
+					that.ui.startingStatus.hide();
+					if (that.model.get('start') == null) {
+						that.ui.neverRunStatus.show();
+					} else {
+						that.ui.runningStatus.show();
+					}
+				});
 			},
 
 			_startPollingThread: function() {

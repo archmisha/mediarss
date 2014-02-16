@@ -3,7 +3,7 @@ define([
 	'handlebars',
 	'text!features/adminTab/templates/access-stats-item.tpl',
 	'qtip',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function(Marionette, Handlebars, template, qtip, HttpUtils) {
 		"use strict";

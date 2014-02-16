@@ -6,9 +6,9 @@ define([
 	'zeroClipboard',
 	'jqplugin',
 	'chosen',
-	'MessageBox',
+	'utils/MessageBox',
 	'utils/Utils',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function(Marionette, Handlebars, template, ZeroClipboard, jqPlugin, Chosen, MessageBox, Utils, HttpUtils) {
 		"use strict";

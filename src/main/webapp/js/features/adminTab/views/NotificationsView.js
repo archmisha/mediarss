@@ -2,8 +2,8 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/adminTab/templates/notifications.tpl',
-	'HttpUtils',
-	'MessageBox'
+	'utils/HttpUtils',
+	'utils/MessageBox'
 ],
 	function(Marionette, Handlebars, template, HttpUtils, MessageBox) {
 		"use strict";

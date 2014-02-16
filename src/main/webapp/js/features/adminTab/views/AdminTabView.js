@@ -9,8 +9,8 @@ define([
 	'features/adminTab/views/NotificationsView',
 	'features/adminTab/collections/UsersCollection',
 	'features/adminTab/views/AccessStatsCompositeView',
-	'HttpUtils',
-	'MessageBox',
+	'utils/HttpUtils',
+	'utils/MessageBox',
 	'select2',
 	'utils/Utils',
 	'features/adminTab/views/SearcherConfigurationsCollectionView',
@@ -52,7 +52,6 @@ define([
 
 				this.jobs = new JobsCollection();
 				this.jobsView = new JobsCollectionView({collection: this.jobs});
-				this.jobs.fetch();
 
 				this.jobsSection = new SectionView({
 					title: 'Actions',
@@ -68,7 +67,6 @@ define([
 
 				this.users = new UsersCollection();
 				this.accessStatsView = new AccessStatsCompositeView({collection: this.users});
-				this.users.fetch();
 
 				this.accessStatsSection = new SectionView({
 					title: 'Access Statistics',
@@ -82,7 +80,6 @@ define([
 					description: '',
 					content: this.searcherConfigurationsCollectionView
 				});
-				this.searcherConfigurationsCollection.fetch();
 			},
 
 			onRender: function() {
@@ -93,6 +90,9 @@ define([
 				this.accessStatsSectionRegion.show(this.accessStatsSection);
 				this.accessStatsRegion.show(this.accessStatsView);
 				this.searcherConfigurationsSectionRegion.show(this.searcherConfigurationsSection);
+				this.jobs.fetch();
+				this.users.fetch();
+				this.searcherConfigurationsCollection.fetch();
 			},
 
 			onShow: function() {

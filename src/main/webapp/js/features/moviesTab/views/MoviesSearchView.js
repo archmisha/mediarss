@@ -4,9 +4,9 @@ define([
 	'handlebars',
 	'text!features/moviesTab/templates/movies-search.tpl',
 	'features/moviesTab/views/MovieSearchResultsCollectionView',
-	'HttpUtils',
+	'utils/HttpUtils',
 	'components/section/views/SectionView',
-	'MessageBox',
+	'utils/MessageBox',
 	'features/moviesTab/collections/MoviesCollection'
 ],
 	function(Marionette, Handlebars, template, MovieSearchResultsCollectionView, HttpUtils, SectionView, MessageBox, MoviesCollection) {

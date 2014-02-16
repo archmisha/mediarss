@@ -5,9 +5,9 @@ define([
 	'text!features/showsTab/templates/shows-search.tpl',
 	'features/collections/UserTorrentCollection',
 	'components/search-result/views/SearchResultsCollectionView',
-	'HttpUtils',
+	'utils/HttpUtils',
 	'components/search-result/views/SearchResultsView',
-	'MessageBox',
+	'utils/MessageBox',
 	'features/showsTab/views/ActiveSearchCollectionView',
 	'features/showsTab/collections/ActiveSearchCollection',
 	'components/search-result/models/SearchResult'

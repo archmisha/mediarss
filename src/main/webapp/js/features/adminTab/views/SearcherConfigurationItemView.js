@@ -3,7 +3,7 @@ define([
 	'handlebars',
 	'text!features/adminTab/templates/searcher-configuration-item.tpl',
 	'qtip',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function(Marionette, Handlebars, template, qtip, HttpUtils, SearcherDomainConfigurationsCollection, SearcherDomainConfigurationsCollectionView) {
 		"use strict";

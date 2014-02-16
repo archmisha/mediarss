@@ -8,9 +8,9 @@ define([
 	'features/showsTab/collections/ShowsCollection',
 	'components/section/views/SectionView',
 	'features/showsTab/views/ShowsSearchView',
-	'MessageBox',
+	'utils/MessageBox',
 	'features/showsTab/views/ShowsScheduleView',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function($, Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, ShowsSearchView, MessageBox, ShowsScheduleView, HttpUtils) {
 		"use strict";

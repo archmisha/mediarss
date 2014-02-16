@@ -9,12 +9,12 @@ define([
 	'features/moviesTab/collections/MoviesCollection',
 	'components/search-result/views/SearchResultsCollectionView',
 	'features/collections/UserTorrentCollection',
-	'HttpUtils',
+	'utils/HttpUtils',
 	'components/section/views/SectionView',
-	'MessageBox',
+	'utils/MessageBox',
 	'fancybox',
 	'moment',
-	'StringUtils',
+	'utils/StringUtils',
 	'routers/RoutingPaths'
 ],
 	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, SearchResultsCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment, StringUtils, RoutingPaths) {

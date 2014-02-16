@@ -25,12 +25,14 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.selectedTab = options.selectedTab;
-				this.isAdmin = options.isAdmin;
+			},
+
+			setAdmin: function(isAdmin) {
+				this.isAdmin = isAdmin;
 			},
 
 			onRender: function() {
-				this._getTabEl(this.selectedTab).addClass('home-selected-tab');
+//				this._getTabEl(this.selectedTab).addClass('home-selected-tab');
 
 				if (this.isAdmin) {
 					this.ui.adminTab.show();

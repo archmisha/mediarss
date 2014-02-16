@@ -6,12 +6,12 @@ define([
 	'features/showsTab/views/TrackedShowsCollectionView',
 	'text!features/showsTab/templates/tracked-shows-component.tpl',
 	'features/showsTab/collections/ShowsCollection',
-	'HttpUtils',
+	'utils/HttpUtils',
 	'select2',
-	'Spinner',
+	'utils/Spinner',
 	'utils/Utils',
 	'features/showsTab/models/Show',
-	'MessageBox'
+	'utils/MessageBox'
 ],
 	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, HttpUtils, select2, Spinner, Utils, Show, MessageBox) {
 		"use strict";

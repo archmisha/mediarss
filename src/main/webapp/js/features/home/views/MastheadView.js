@@ -3,8 +3,8 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/home/templates/masthead.tpl',
-	'MessageBox',
-	'HttpUtils',
+	'utils/MessageBox',
+	'utils/HttpUtils',
 	'utils/Utils'
 ],
 	function(Marionette, Handlebars, template, MessageBox, HttpUtils, Utils) {
@@ -26,7 +26,10 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
-				this.tabData = options.tabData;
+			},
+
+			setTabData: function(tabData) {
+				this.tabData = tabData;
 			},
 
 			onShow: function() {

@@ -3,7 +3,7 @@ define([
 	'handlebars',
 	'text!features/showsTab/templates/shows-schedule.tpl',
 	'features/showsTab/models/ShowsSchedule',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function(Marionette, Handlebars, template, ShowsSchedule, HttpUtils) {
 		"use strict";

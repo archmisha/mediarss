@@ -7,9 +7,9 @@ define([
 	'zeroClipboard',
 	'jqplugin',
 	'chosen',
-	'MessageBox',
+	'utils/MessageBox',
 	'utils/Utils',
-	'HttpUtils',
+	'utils/HttpUtils',
 	'components/traktTvImport/views/TraktTvImportView',
 	'features/settingsTab/views/SubtitlesCollectionView',
 	'features/settingsTab/collections/SubtitlesCollection'

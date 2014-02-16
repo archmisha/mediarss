@@ -3,7 +3,7 @@ define([
 	'handlebars',
 	'text!features/settingsTab/templates/subtitles-item.tpl',
 	'moment',
-	'HttpUtils'
+	'utils/HttpUtils'
 ],
 	function(Marionette, Handlebars, template, Moment, HttpUtils) {
 		"use strict";

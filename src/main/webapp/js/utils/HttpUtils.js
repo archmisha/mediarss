@@ -2,7 +2,10 @@
  * Date: 06/01/13
  * Time: 14:23
  */
-define(['MessageBox', 'Spinner'],
+define([
+	'utils/HttpUtils',
+	'utils/Spinner'
+],
 	function(MessageBox, Spinner) {
 		"use strict";
 
