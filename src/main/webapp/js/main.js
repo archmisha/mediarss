@@ -13,7 +13,7 @@ require.config({
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
 		noty: 'lib/noty/jquery.noty',
-		qtip: 'lib/jquery.qtip-1.0.0-rc3.min',
+		qtip: 'lib/jquery.qtip-2.2.0.min',
 		ajaxChosen: 'lib/ajax-chosen.min',
 		select2: 'lib/select2.min',
 		jqueryMsgBox: 'lib/jquery.msgBox'
@@ -117,18 +117,6 @@ require([
 				controller: controller
 			});
 			Backbone.history.start();
-
-			$.fn.qtip.styles.rssStyle = {
-				name: 'blue',
-				color: '#097fe3',
-				fontSize: 13,
-				border: {
-					width: 1,
-					radius: 4
-				},
-				whiteSpace: 'nowrap',
-				width: 'auto'
-			};
 
 			// preload error dialog images
 			$(['images/jqueryMessageBox/error.jpg',

@@ -2,9 +2,10 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movie-item.tpl',
-	'qtip'
+	'qtip',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, qtip) {
+	function(Marionette, Handlebars, template, qtip, Utils) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -50,12 +51,7 @@ define([
 
 				this.updateDownloadStatus();
 
-				[this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage, this.ui.searchingImage].forEach(
-					function(el) {
-						el.qtip({
-							style: 'rssStyle'
-						});
-					});
+				Utils.addTooltip([this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage, this.ui.searchingImage]);
 
 				var that = this;
 				$('.movie-show-preview-' + this.model.get('id')).fancybox({
@@ -109,6 +105,12 @@ define([
 
 			onFutureMovieRemoveClick: function() {
 				this.vent.trigger('future-movie-remove', this.model);
+			},
+
+			templateHelpers: function() {
+				return {
+					'escapedTitle': Utils.fixForTooltip(this.model.get('title'))
+				};
 			}
 		});
 	});

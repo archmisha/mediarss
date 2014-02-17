@@ -1,9 +1,10 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!components/search-result/templates/search-result-item.tpl'
+	'text!components/search-result/templates/search-result-item.tpl',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template) {
+	function(Marionette, Handlebars, template, Utils) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -55,18 +56,7 @@ define([
 					this.$el.addClass('search-result-item-not-viewed');
 				}
 
-				[this.ui.downloadButton, this.ui.scheduledStatus, this.ui.downloadedStatus, this.ui.body].forEach(
-					function(el) {
-						el.qtip({
-							style: 'rssStyle',
-							position: {
-								corner: {
-									target: 'bottomLeft',
-									tooltip: 'topLeft'
-								}
-							}
-						});
-					});
+				Utils.addTooltip([this.ui.downloadButton, this.ui.scheduledStatus, this.ui.downloadedStatus, this.ui.body])
 			},
 
 			onDownloadButtonClick: function() {
@@ -85,6 +75,12 @@ define([
 				} else if (this.model.get('downloadStatus') == 'NONE') {
 					this.ui.downloadButton.show();
 				}
+			},
+
+			templateHelpers: function() {
+				return {
+					'escapedTitle': Utils.fixForTooltip(this.model.get('title'))
+				};
 			}
 		});
 	});

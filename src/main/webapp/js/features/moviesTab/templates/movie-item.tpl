@@ -11,7 +11,7 @@
 </div>
 <div style="margin-left:30px;">
     <div class='movie-item-inner'>
-        <span class='movie-item-title' title='{{{title}}}'>{{{title}}}</span>
+        <span class='movie-item-title' title="{{{escapedTitle}}}">{{{title}}}</span>
         <a href='rest/movies/imdb/{{id}}' class='movie-show-preview-{{id}}'><img src='images/preview.gif'
                                                                                  class='movie-show-preview-image'/></a>
     </div>

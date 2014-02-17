@@ -33,6 +33,23 @@ define([],
 					if (navigator.mimeTypes ["application/x-shockwave-flash"] != undefined) hasFlash = true;
 				}
 				return hasFlash;
+			},
+
+			fixForTooltip: function(text) {
+				return text.replace('\'', '&#39;');
+			},
+
+			addTooltip: function(arr) {
+				arr.forEach(
+					function(el) {
+						el.qtip({
+							style: 'qtip-blue qtip-rounded',
+							position: {
+								my: 'top left',
+								at: 'bottom left'
+							}
+						});
+					});
 			}
 		};
 	});

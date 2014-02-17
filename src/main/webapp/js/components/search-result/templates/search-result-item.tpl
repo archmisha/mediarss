@@ -6,8 +6,8 @@
     <img src="images/complete.png" width="20" height="20" class='search-result-item-downloaded-image'
          title="Torrent Was Already Downloaded"/>
 </div>
-<div class='search-result-item-body' title='{{{title}}}'>
-    <div class='search-result-item-title'>{{{title}}}</div>
+<div class='search-result-item-body' title='{{{escapedTitle}}}'>
+<div class='search-result-item-title'>{{{title}}}</div>
     <div class='search-result-item-sub-title'>Uploaded on {{dateFormat uploadedDate format="DD/MM/YYYY HH:mm"
         default='never'}}<span class='search-result-item-size'>, Size: {{size}} MB</span><span class='search-result-item-scheduled-on'>, Scheduled on <span
                 class='search-result-item-scheduled-on-date'>{{dateFormat scheduledDate format="DD/MM/YYYY HH:mm" default='never'}}</span></span>
