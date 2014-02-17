@@ -1,11 +1,11 @@
 require.config({
 	paths: {
-		underscore: 'lib/underscore',
-		backbone: 'lib/backbone',
-		marionette: 'lib/backbone.marionette.min',
+		underscore: 'lib/underscore-1.6.0-min',
+		backbone: 'lib/backbone-min-1.1.1',
+		marionette: 'lib/backbone.marionette-1.6.2.min',
 		jquery: 'lib/jquery-1.11.0.min',
 		text: 'lib/text',
-		handlebars: 'lib/handlebars-1.0.rc.1.min',
+		handlebars: 'lib/handlebars-v1.3.0',
 		less: 'lib/less',
 		moment: 'lib/moment-2.0.0.min',
 		zeroClipboard: 'lib/ZeroClipboard-1.3.1.min',

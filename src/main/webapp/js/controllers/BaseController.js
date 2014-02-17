@@ -12,7 +12,6 @@ define([
 
 			constructor: function(params) {
 				Marionette.Controller.prototype.constructor.apply(this, arguments);
-//				this.mainRegion = params.mainRegion;
 			},
 
 			initialize: function(options) {

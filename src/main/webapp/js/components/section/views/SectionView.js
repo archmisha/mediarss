@@ -16,7 +16,8 @@ define([
 				sectionHeader: '.section-header',
 				collapsedIcon: '.section-collapsed-icon',
 				expandedIcon: '.section-expanded-icon',
-				collapsibleContent: '.section-collapsible'
+				collapsibleContent: '.section-collapsible',
+				counter: '.tracked-shows-counter'
 			},
 
 			events: {
@@ -35,6 +36,7 @@ define([
 				this.contentView = options.content;
 				this.collapsible = options.collapsible;
 				this.expanded = !options.collapsed;
+				this.getCounter = options.getCounter;
 				if (options.descriptionViewDef) {
 					this.descriptionView = new options.descriptionViewDef(options);
 				}
@@ -47,6 +49,7 @@ define([
 				if (this.contentView) {
 					this.contentRegion.show(this.contentView);
 				}
+				this.updateCounter();
 			},
 
 			onShow: function() {
@@ -109,6 +112,12 @@ define([
 					'title': this.title,
 					'description': this.description
 				};
+			},
+
+			updateCounter: function() {
+				if (this.getCounter) { // optional
+					this.ui.counter.html('(' + this.getCounter() + ')');
+				}
 			}
 		});
 	});
