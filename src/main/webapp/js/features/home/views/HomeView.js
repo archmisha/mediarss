@@ -85,7 +85,7 @@ define([
 						that.changeTabData = null;
 						that.changeTab(tabToSelect, tabParams);
 					}
-				});
+				}, false); // don't show loading circle
 			},
 
 			changeTab: function(tabToSelect, tabParams) {
