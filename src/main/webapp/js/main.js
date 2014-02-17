@@ -82,6 +82,17 @@ require([
 	function($, Backbone, Handlebars, MainRouter, BaseController, Moment, qtip, ZeroClipboard) {
 		"use strict";
 
+		// jquery doesn't support $.browser from 1.9 and some plugins still use it ...
+		$.browser = {};
+		(function() {
+			$.browser.msie = false;
+			$.browser.version = 0;
+			if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
+				$.browser.msie = true;
+				$.browser.version = RegExp.$1;
+			}
+		})();
+
 		//  format an ISO date using Moment.js
 		//  http://momentjs.com/
 		//  moment syntax example: moment(Date("2011-07-18T15:50:52")).format("MMMM YYYY")
@@ -121,8 +132,8 @@ require([
 			// preload error dialog images
 			$(['images/jqueryMessageBox/error.jpg',
 				'images/jqueryMessageBox/msgBoxBackGround.png']).each(function() {
-					$('<img />').attr('src', this).appendTo('body').css('display', 'none');
-				});
+				$('<img />').attr('src', this).appendTo('body').css('display', 'none');
+			});
 		});
 
 		app.start();

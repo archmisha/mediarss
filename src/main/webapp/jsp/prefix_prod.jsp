@@ -14,7 +14,6 @@
 
     <link rel="stylesheet" type="text/css" href="style/login.css"/>
     <script src="../js/lib/jquery-1.11.0.min.js.js"></script>
-    <script src="../js/lib/jquery.ba-bbq.min.js"></script>
 </head>
 
 <body>

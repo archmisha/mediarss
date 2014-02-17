@@ -27,13 +27,6 @@ $(function() {
 			return false;
 		}
 
-		var hash = $.param.fragment();
-		console.log('hash: ' + hash);
-		if (hash === '') {
-			hash = 'home';
-			console.log('hash: set to home');
-		}
-
 		$.post("rest/user/login", {
 			username: username,
 			password: password,

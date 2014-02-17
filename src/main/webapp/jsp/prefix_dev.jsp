@@ -14,7 +14,6 @@
 
     <link rel="stylesheet/less" type="text/css" href="../style/login-manifest.less"/>
     <script src="../js/lib/jquery-1.11.0.min.js"></script>
-    <script src="../js/lib/jquery.ba-bbq.min.js"></script>
 </head>
 
 <body>
