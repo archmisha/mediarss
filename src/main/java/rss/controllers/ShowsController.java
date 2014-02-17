@@ -23,6 +23,7 @@ import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.shows.ShowAutoCompleteItem;
 import rss.services.shows.ShowSearchService;
 import rss.services.shows.UserActiveSearch;
+import rss.services.user.UserCacheService;
 import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +46,9 @@ public class ShowsController extends BaseController {
 	@Autowired
 	protected ShowSearchService showSearchService;
 
+	@Autowired
+	private UserCacheService userCacheService;
+
 	@RequestMapping(value = "/add-tracked/{showId}", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -61,7 +65,7 @@ public class ShowsController extends BaseController {
 		}
 
 		// invalidate schedule to be regenerated next request
-		sessionService.setSchedule(null);
+		userCacheService.invalidateSchedule(user);
 		Map<String, Object> result = new HashMap<>();
 		result.put("success", true);
 		return result;
@@ -77,7 +81,7 @@ public class ShowsController extends BaseController {
 		user.getShows().remove(show);
 
 		// invalidate schedule to be regenerated next request
-		sessionService.setSchedule(null);
+		userCacheService.invalidateSchedule(user);
 		Map<String, Object> result = new HashMap<>();
 		result.put("success", true);
 		return result;
@@ -184,11 +188,7 @@ public class ShowsController extends BaseController {
 		User user = userDao.find(sessionService.getLoggedInUserId());
 
 		DurationMeter duration = new DurationMeter();
-		ShowsScheduleVO schedule = sessionService.getSchedule();
-		if (schedule == null) {
-			schedule = showService.getSchedule(user);
-			sessionService.setSchedule(schedule);
-		}
+		ShowsScheduleVO schedule = userCacheService.getSchedule(user);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("schedule", schedule);

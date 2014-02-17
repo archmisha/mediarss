@@ -186,4 +186,21 @@ public class User extends BaseEntity {
 	public void setLoginSeries(String loginSeries) {
 		this.loginSeries = loginSeries;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		BaseEntity that = (BaseEntity) o;
+
+		if (id != that.id) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) (id ^ (id >>> 32));
+	}
 }

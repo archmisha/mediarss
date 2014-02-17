@@ -18,11 +18,11 @@ import rss.entities.Torrent;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SettingsService;
-import rss.services.UserService;
-import rss.services.UserServiceImpl;
 import rss.services.feed.RssFeedGenerator;
 import rss.services.log.LogService;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.services.user.UserService;
+import rss.services.user.UserServiceImpl;
 import rss.util.DurationMeter;
 import rss.util.StringUtils2;
 

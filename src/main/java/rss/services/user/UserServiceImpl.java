@@ -1,4 +1,4 @@
-package rss.services;
+package rss.services.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import rss.EmailAlreadyRegisteredException;
 import rss.dao.UserDao;
 import rss.entities.User;
+import rss.services.EmailService;
+import rss.services.UrlService;
 import rss.util.StringUtils2;
 
 import java.util.Date;
@@ -38,6 +40,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
+
+	@Autowired
+	private UserCacheService userCacheService;
 
 	// no need for a transaction here, but inside creating a new transaction
 	@Override
@@ -78,6 +83,8 @@ public class UserServiceImpl implements UserService {
 				return user;
 			}
 		});
+
+		userCacheService.addUser(user);
 
 		try {
 			emailService.notifyNewUserRegistered(user);

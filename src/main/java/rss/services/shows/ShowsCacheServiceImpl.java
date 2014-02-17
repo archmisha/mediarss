@@ -6,9 +6,6 @@ import org.paukov.combinatorics.Generator;
 import org.paukov.combinatorics.ICombinatoricsVector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import rss.dao.ShowDao;
 import rss.entities.Show;
 import rss.services.log.LogService;
@@ -34,9 +31,6 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 	private ShowDao showDao;
 
 	@Autowired
-	private TransactionTemplate transactionTemplate;
-
-	@Autowired
 	protected LogService logService;
 
 	private Map<Long, CachedShow> cache = new HashMap<>();
@@ -55,12 +49,7 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 		executorService.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
-				transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-					@Override
-					protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-						reloadCache();
-					}
-				});
+				reloadCache();
 			}
 		}, 0, 1, TimeUnit.HOURS);
 	}
