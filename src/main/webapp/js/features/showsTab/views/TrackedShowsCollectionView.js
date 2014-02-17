@@ -12,6 +12,7 @@ define([
 			emptyView: TrackedShowsCollectionLoadingView,
 
 			constructor: function(options) {
+				this.vent = options.vent;
 				this.itemViewOptions = { vent: options.vent };
 
 				Marionette.CollectionView.prototype.constructor.apply(this, arguments);
@@ -20,6 +21,7 @@ define([
 			},
 
 			_updateLoadingLabel: function() {
+				// after any change we know it is already loaded
 				this.$el.find('.tracked-shows-empty-label-container').html('No tracked shows');
 			}
 		});

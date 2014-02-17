@@ -106,6 +106,11 @@ define([
 				Backbone.history.navigate(route, {trigger: false});
 				document.title = tabs[tabToSelect].title;
 
+				// workaround
+				if (tabToSelect === RoutingPaths.TVSHOWS) {
+					tabs[tabToSelect].view = new ShowsTabView();
+				}
+
 				if (tabs[tabToSelect].view.setTabData) {
 					tabs[tabToSelect].view.setTabData(this.tabData);
 				}

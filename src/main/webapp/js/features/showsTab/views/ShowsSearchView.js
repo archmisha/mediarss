@@ -193,8 +193,6 @@ define([
 						return;
 					}
 
-//					that.ui.progressDuration.html(Moment.duration((new Date()).getTime() - that.model.get('start')).humanize());
-
 					$.get("rest/shows/search/status")
 						.success(function(res) {
 							// if all jobs have stopped
@@ -220,17 +218,12 @@ define([
 					that.timer = setTimeout(f, 1000);
 				};
 				that.timer = setTimeout(f, 1000);
+				f();
 			},
 
 			_stopPollingThread: function() {
 				clearTimeout(this.timer);
 				this.timer = null;
-//				this.ui.notRunningStatus.show();
-//				this.ui.lastRunAt.html(this._formatDate(this.model.get('start')));
-//				this.ui.runningStatus.hide();
-//				if (this.model.get('errorMessage') != null) {
-//					this.ui.errorStatus.show();
-//				}
 			},
 
 			onActiveSearchRemove: function(activeSearchModel) {

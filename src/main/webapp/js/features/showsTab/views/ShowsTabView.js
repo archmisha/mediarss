@@ -32,6 +32,8 @@ define([
 			},
 
 			constructor: function(options) {
+				var that = this;
+				this.isDataLoaded = false;
 				this.vent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 
@@ -44,9 +46,12 @@ define([
 
 				this.trackedShowsView = new TrackedShowsComponentView({vent: this.vent});
 				this.trackedShowsSection = new SectionView({
-					title: 'Tracked TV Shows <span class=\'tracked-shows-counter\'></span>',
+					title: 'Tracked TV Shows',
 					description: 'Ended shows are not shown as there is no point tracking them',
-					vent: this.vent
+					vent: this.vent,
+					getCounter: function() {
+						return that.trackedShowsView.getTrackedShowsCount();
+					}
 				});
 
 				this.showsScheduleView = new ShowsScheduleView({vent: this.vent});
@@ -58,11 +63,9 @@ define([
 					collapsible: true
 				});
 
-				this.vent.on('shows-schedule-update', this._onScheduleUpdate, this);
-			},
-
-			_onScheduleUpdate: function() {
-				$('.tracked-shows-counter').html('(' + this.trackedShowsView.getTrackedShowsCount() + ')');
+				this.vent.on('tracked-shows-change', function() {
+					that.trackedShowsSection.updateCounter();
+				}, this);
 			},
 
 			onRender: function() {
@@ -73,15 +76,18 @@ define([
 				this.showsScheduleSectionRegion.show(this.showsScheduleSection);
 
 				var that = this;
-				HttpUtils.get("rest/shows/tracked-shows", function(res) {
-					that.trackedShowsView.setTrackedShows(res.trackedShows);
-					that.showsSearchView.setAdmin(res.isAdmin);
-					$('.tracked-shows-counter').html('(' + res.trackedShows.length + ')');
-				}, false); // no need loading here
-				HttpUtils.get("rest/shows/schedule", function(res) {
-					that.showsScheduleView.setSchedule(res.schedule);
-					that.showsSearchView.setAdmin(res.isAdmin);
-				}, false); // no need loading here
+				if (!this.isDataLoaded) {
+					this.isDataLoaded = true;
+					HttpUtils.get("rest/shows/tracked-shows", function(res) {
+						that.trackedShowsView.setTrackedShows(res.trackedShows);
+						that.showsSearchView.setAdmin(res.isAdmin);
+						that.vent.trigger('tracked-shows-change');
+					}, false); // no need loading here
+					HttpUtils.get("rest/shows/schedule", function(res) {
+						that.showsScheduleView.setSchedule(res.schedule);
+						that.showsSearchView.setAdmin(res.isAdmin);
+					}, false); // no need loading here
+				}
 			}
 		});
 	});

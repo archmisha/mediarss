@@ -21,7 +21,7 @@ define([
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 				this.model = new ShowsSchedule();
-				this.vent.on('shows-schedule-update', this._onScheduleUpdate, this);
+				this.vent.on('tracked-shows-change', this._onScheduleUpdate, this);
 			},
 
 			_onScheduleUpdate: function() {
@@ -34,8 +34,12 @@ define([
 			setSchedule: function(schedule) {
 				this.model.clear().set({schedule: schedule});
 				this.render();
-				// must call after the render call
-				this.ui.loadingComponent.hide();
+			},
+
+			onRender: function() {
+				if (this.model.get('schedule')) {
+					this.ui.loadingComponent.hide();
+				}
 			}
 		});
 	});

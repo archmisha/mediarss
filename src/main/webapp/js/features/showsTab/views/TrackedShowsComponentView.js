@@ -40,11 +40,11 @@ define([
 				var that = this;
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+
 				this.trackedShowsCollection = new ShowsCollection();
 				this.trackedShowsCollection.on('change reset add remove', function() {
 					var hasEnded = false;
 					that.trackedShowsCollection.forEach(function(trackedShow) {
-						console.log('ab');
 						if (trackedShow.get('ended')) {
 							hasEnded = true;
 						}
@@ -59,20 +59,27 @@ define([
 				this.trackedShowsView = new TrackedShowsCollectionView({
 					collection: this.trackedShowsCollection,
 					vent: this.vent
-				})
+				});
 
 				this.vent.on('tracked-show-remove', this._onRemoveTrackedShow, this);
 			},
 
 			onRender: function() {
 				this.trackedShowsListRegion.show(this.trackedShowsView);
+				this._setTrackedShowsListBorder();
+				this.trackedShowsCollection.bind("change reset add remove", this._setTrackedShowsListBorder, this);
+			},
+
+			_setTrackedShowsListBorder: function() {
+				if (this.trackedShowsCollection.length > 0) {
+					this.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
+				} else {
+					this.ui.trackedShowsList.removeClass('tracked-shows-list-non-empty');
+				}
 			},
 
 			setTrackedShows: function(trackedShows) {
 				this.trackedShowsCollection.reset(trackedShows);
-				if (this.trackedShowsCollection.length > 0) {
-					this.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
-				}
 			},
 
 			getTrackedShowsCount: function() {
@@ -88,35 +95,23 @@ define([
 				}
 
 				var that = this;
-				Spinner.mask();
-				setTimeout(function() {
-					HttpUtils.post("rest/shows/add-tracked/" + showId, {}, function(res) {
-						Spinner.unmask();
-						that.trackedShowsCollection.add(new Show({id: comboShow.id, name: comboShow.text, ended: comboShow.ended}));
-						that.trackedShowsCollection.sort();
-						that.ui.trackedShowsList.addClass('tracked-shows-list-non-empty');
-						that.ui.showsComboBox.select2('data', '');
-						MessageBox.info('Show \'' + comboShow.text + '\' is being tracked');
-						that.vent.trigger('shows-schedule-update');
-					}, false);
-				}, 150);
+				HttpUtils.post("rest/shows/add-tracked/" + showId, {}, function(res) {
+					that.trackedShowsCollection.add(new Show({id: comboShow.id, name: comboShow.text, ended: comboShow.ended}));
+					that.trackedShowsCollection.sort();
+					that.ui.showsComboBox.select2('data', '');
+					MessageBox.info('Show \'' + comboShow.text + '\' is being tracked');
+					that.vent.trigger('tracked-shows-change');
+				});
 			},
 
 			_onRemoveTrackedShow: function(show) {
 				var that = this;
-				Spinner.mask();
-				setTimeout(function() {
-					HttpUtils.post("rest/shows/remove-tracked/" + show.id, {}, function(res) {
-						Spinner.unmask();
-						var showModel = that.trackedShowsCollection.get(show.id);
-						that.trackedShowsCollection.remove(show);
-						if (that.trackedShowsCollection.length == 0) {
-							that.ui.trackedShowsList.removeClass('tracked-shows-list-non-empty');
-						}
-						MessageBox.info('Show \'' + showModel.get('name') + '\' is no more tracked');
-						that.vent.trigger('shows-schedule-update');
-					}, false);
-				}, 150);
+				HttpUtils.post("rest/shows/remove-tracked/" + show.id, {}, function(res) {
+					var showModel = that.trackedShowsCollection.get(show.id);
+					that.trackedShowsCollection.remove(show);
+					MessageBox.info('Show \'' + showModel.get('name') + '\' is no more tracked');
+					that.vent.trigger('tracked-shows-change');
+				});
 			},
 
 			onShow: function() {
