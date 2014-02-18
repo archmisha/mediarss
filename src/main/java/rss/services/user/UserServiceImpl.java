@@ -94,8 +94,9 @@ public class UserServiceImpl implements UserService {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override
 				protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-					User persistedUser = userDao.find(user.getId());
+					User persistedUser = userCacheService.getUser(user.getId());
 					userDao.delete(persistedUser);
+					userCacheService.invalidateUser(persistedUser);
 				}
 			});
 			throw new RuntimeException("Failed sending emails on user registration: " + e.getMessage(), e);
@@ -108,5 +109,10 @@ public class UserServiceImpl implements UserService {
 
 	public String getTvShowsRssFeed(User user) {
 		return urlService.getApplicationUrl() + String.format(UrlService.PERSONAL_RSS_FEED_URL, user.getId(), UrlService.TV_SHOWS_RSS_FEED_TYPE, user.getFeedHash());
+	}
+
+	@Override
+	public User getUser(long userId) {
+		return userDao.find(userId);
 	}
 }

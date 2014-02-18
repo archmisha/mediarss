@@ -8,11 +8,11 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.UrlService;
 import rss.services.feed.RssFeedGenerator;
 import rss.services.log.LogService;
+import rss.services.user.UserCacheService;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -40,7 +40,7 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 	private RssFeedGenerator moviesRssFeedGenerator;
 
 	@Autowired
-	private UserDao userDao;
+	private UserCacheService userCacheService;
 
 	@Autowired
 	private LogService logService;
@@ -78,7 +78,7 @@ public class RssFeedGeneratorServlet extends HttpServlet {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override
 				protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-					User user = userDao.find(userId);
+					User user = userCacheService.getUser(userId);
 					if (user == null) {
 						logService.error(getClass(), "Invalid user parameter: " + userId);
 						out.println("Failed generating feed. Please contact support for assistance");

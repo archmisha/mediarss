@@ -1,6 +1,7 @@
 package rss.services.shows;
 
 import com.google.common.base.Predicate;
+import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.Episode;
 import rss.entities.Show;
@@ -43,4 +44,6 @@ public interface ShowService {
 	void disconnectTorrentsFromEpisode(Episode episode);
 
 	void downloadEpisode(User user, long torrentId);
+
+	List<ShowVO> getTrackedShows(User user);
 }

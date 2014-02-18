@@ -12,6 +12,7 @@ import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserTorrent;
 import rss.services.log.LogService;
+import rss.services.user.UserCacheService;
 import rss.util.DateUtils;
 
 import java.util.*;
@@ -36,6 +37,9 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 	@Autowired
 	private LogService logService;
 
+	@Autowired
+	protected UserCacheService userCacheService;
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String generateFeed(User user) {
@@ -44,6 +48,7 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 		Date downloadDate = new Date();
 		user.setLastMoviesFeedGenerated(downloadDate);
 		userDao.merge(user);
+		userCacheService.invalidateUser(user);
 
 		Collection<Torrent> torrentEntries = new ArrayList<>();
 		int backlogDays = 7;

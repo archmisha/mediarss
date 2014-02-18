@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
 import rss.dao.JobStatusDao;
 import rss.dao.MovieDao;
-import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
 import rss.services.SessionService;
@@ -31,9 +30,6 @@ import java.util.Map;
 @Controller
 @RequestMapping("/movies")
 public class MoviesController extends BaseController {
-
-	@Autowired
-	private UserDao userDao;
 
 	@Autowired
 	private SessionService sessionService;
@@ -111,15 +107,16 @@ public class MoviesController extends BaseController {
 	public Map<String, Object> downloadMovie(@RequestParam("torrentId") long torrentId,
 											 @RequestParam("movieId") long movieId,
 											 @RequestParam("isUserMovies") boolean isUserMovies) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		movieService.addMovieDownload(user, movieId, torrentId);
+		userCacheService.invalidateUserMovies(user);
 
 		Map<String, Object> result = new HashMap<>();
 		if (isUserMovies) {
-			result.put("movies", movieService.getUserMovies(user));
+			result.put("movies", userCacheService.getUserMovies(user));
 		} else {
 			result.put("movies", movieService.getAvailableMovies(user));
-			result.put("userMoviesCount", movieService.getUserMoviesCount(user));
+			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		}
 		return result;
 	}
@@ -128,7 +125,7 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void markMovieViewed(@RequestParam("movieId") long movieId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		movieService.markMovieViewed(user, movieId);
 	}
 
@@ -136,7 +133,7 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> addMovieFromSearch(@RequestParam("imdbId") String imdbId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		Pair<Movie, Boolean> futureMovieResult = movieService.addFutureMovieDownload(user, imdbId);
 		if (futureMovieResult == null) {
 			throw new MediaRSSException("Movie ID was not found in IMDB").doNotLog();
@@ -154,10 +151,11 @@ public class MoviesController extends BaseController {
 			}
 		}
 
+		userCacheService.invalidateUserMovies(user);
 		logService.info(getClass(), "User " + user + " downloads " + movie);
 
 		// must be after movieUserTorrent creation
-		result.put("movies", movieService.getUserMovies(user));
+		result.put("movies", userCacheService.getUserMovies(user));
 		result.put("movieId", movie.getId());
 		return result;
 	}
@@ -166,7 +164,7 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> search(@RequestParam("query") String query) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		Map<String, Object> result = new HashMap<>();
 		result.put("searchResults", movieService.search(user, query));
 		return result;
@@ -176,7 +174,7 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> removeFutureMovie(@RequestParam("movieId") long movieId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		UserMovie userMovie = movieDao.findUserMovie(user, movieId);
 		// no idea how can happen, dima had it
 		if (userMovie != null) {
@@ -184,6 +182,7 @@ public class MoviesController extends BaseController {
 				userTorrentDao.delete(userMovieTorrent);
 			}
 			movieDao.delete(userMovie);
+			userCacheService.invalidateUserMovies(user);
 		}
 
 		Map<String, Object> result = new HashMap<>();
@@ -204,13 +203,13 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getUserMovies() {
-		User user = userDao.find(sessionService.getLoggedInUserId());
-
 		DurationMeter duration = new DurationMeter();
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+
 		Map<String, Object> result = new HashMap<>();
-		result.put("movies", movieService.getUserMovies(user));
+		result.put("movies", userCacheService.getUserMovies(user));
 		duration.stop();
-		logService.info(getClass(), "User movies " + duration.getDuration() + " ms");
+		logService.info(getClass(), "movies [userMovies] " + duration.getDuration() + " ms");
 		return result;
 	}
 
@@ -218,13 +217,13 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getAvailableMovies() {
-		User user = userDao.find(sessionService.getLoggedInUserId());
-
 		DurationMeter duration = new DurationMeter();
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+
 		Map<String, Object> result = new HashMap<>();
 		result.put("movies", movieService.getAvailableMovies(user));
 		duration.stop();
-		logService.info(getClass(), "Available movies " + duration.getDuration() + " ms");
+		logService.info(getClass(), "movies [availableMovies] " + duration.getDuration() + " ms");
 		return result;
 	}
 
@@ -232,21 +231,21 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> initialData(@PathVariable(value = "category") String category) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
-
 		DurationMeter duration = new DurationMeter();
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+
 		Map<String, Object> result = new HashMap<>();
 		if (category.equals("availableMovies")) {
 			result.put("availableMovies", movieService.getAvailableMovies(user));
-			result.put("userMoviesCount", movieService.getUserMoviesCount(user));
+			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		} else {
-			result.put("userMovies", movieService.getUserMovies(user));
+			result.put("userMovies", userCacheService.getUserMovies(user));
 			result.put("availableMoviesCount", movieService.getAvailableMoviesCount(user));
 		}
 		result.put("moviesLastUpdated", getMoviesLastUpdated());
 		result.put("isAdmin", isAdmin(user));
 		duration.stop();
-		logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
+		logService.info(getClass(), "movies [" + category + "] " + duration.getDuration() + " ms");
 
 		return result;
 	}

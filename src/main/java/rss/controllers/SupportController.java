@@ -5,7 +5,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SessionService;
@@ -24,9 +23,6 @@ public class SupportController extends BaseController {
 	private SessionService sessionService;
 
 	@Autowired
-	private UserDao userDao;
-
-	@Autowired
 	private EmailService emailService;
 
 	@RequestMapping(value = "", method = RequestMethod.POST)
@@ -34,7 +30,7 @@ public class SupportController extends BaseController {
 	public String submitSupportTicket(HttpServletRequest request) {
 		String type = extractString(request, "type", true);
 		String content = extractString(request, "content", true);
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 
 		emailService.notifyOfATicket(user, type, content);
 		return type + " was successfully submitted";

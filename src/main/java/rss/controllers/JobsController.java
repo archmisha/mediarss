@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.dao.JobStatusDao;
-import rss.dao.UserDao;
 import rss.entities.JobStatus;
 import rss.entities.User;
 import rss.services.JobRunner;
@@ -38,9 +37,6 @@ public class JobsController extends BaseController {
 	private SessionService sessionService;
 
 	@Autowired
-	private UserDao userDao;
-
-	@Autowired
 	private MoviesScrabbler moviesScrabbler;
 
 	@Autowired
@@ -69,7 +65,7 @@ public class JobsController extends BaseController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	@ResponseBody
 	public Collection<JobStatus> getAll() {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		List<JobStatus> jobs = jobStatusDao.findAll();
@@ -95,7 +91,7 @@ public class JobsController extends BaseController {
 	@RequestMapping(value = "/start", method = RequestMethod.POST)
 	@ResponseBody
 	public JobStatus start(HttpServletRequest request) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		String name = extractString(request, "name", true);
@@ -109,7 +105,7 @@ public class JobsController extends BaseController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
 	public JobStatus get(@PathVariable long id) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		JobStatus jobStatus = jobStatusDao.find(id);

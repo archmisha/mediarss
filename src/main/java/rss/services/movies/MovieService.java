@@ -7,8 +7,8 @@ import rss.entities.User;
 import rss.services.downloader.DownloadResult;
 import rss.services.requests.movies.MovieRequest;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * User: dikmanm
@@ -16,15 +16,15 @@ import java.util.Collection;
  */
 public interface MovieService {
 
-	ArrayList<UserMovieVO> getSearchCompletedMovies(long[] ids);
+	List<UserMovieVO> getSearchCompletedMovies(long[] ids);
 
 	int getUserMoviesCount(User user);
 
 	int getAvailableMoviesCount(User user);
 
-	ArrayList<UserMovieVO> getUserMovies(User user);
+	List<UserMovieVO> getUserMovies(User user);
 
-	ArrayList<UserMovieVO> getAvailableMovies(User loggedInUser);
+	List<UserMovieVO> getAvailableMovies(User loggedInUser);
 
 	Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId);
 

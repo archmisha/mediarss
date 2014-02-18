@@ -86,6 +86,8 @@ public class ShowsCacheServiceImpl implements ShowsCacheService {
 
 			duration.stop();
 			logService.info(getClass(), String.format("Loaded shows cache (%d ms)", duration.getDuration()));
+		} catch (Exception e) {
+			logService.error(getClass(), "Failed loading shows cache: " + e.getMessage(), e);
 		} finally {
 			lock.unlock();
 		}

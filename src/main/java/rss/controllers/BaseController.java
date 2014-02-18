@@ -14,6 +14,7 @@ import rss.services.SettingsService;
 import rss.services.log.LogService;
 import rss.services.shows.ShowAutoCompleteItem;
 import rss.services.shows.ShowService;
+import rss.services.user.UserCacheService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +35,9 @@ public class BaseController {
 
 	@Autowired
 	protected LogService logService;
+
+	@Autowired
+	protected UserCacheService userCacheService;
 
 	@Autowired
 	protected SettingsService settingsService;

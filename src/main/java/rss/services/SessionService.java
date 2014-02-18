@@ -1,6 +1,5 @@
 package rss.services;
 
-import rss.controllers.vo.ShowsScheduleVO;
 import rss.entities.User;
 import rss.services.shows.UsersSearchesCache;
 
@@ -24,10 +23,6 @@ public interface SessionService {
 	boolean isUserLogged();
 
 	public Long getImpersonatedUserId();
-
-	ShowsScheduleVO getSchedule();
-
-	void setSchedule(ShowsScheduleVO schedule);
 
 	UsersSearchesCache getUsersSearchesCache();
 

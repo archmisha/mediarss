@@ -1,12 +1,9 @@
 package rss.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import rss.UserNotLoggedInException;
-import rss.controllers.vo.ShowsScheduleVO;
-import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.shows.UsersSearchesCache;
 
@@ -21,15 +18,11 @@ import java.util.Date;
 @Scope(value = "session", proxyMode = ScopedProxyMode.INTERFACES)
 public class SessionServiceImpl implements SessionService {
 
-	@Autowired
-	private UserDao userDao;
-
 	// not holding the actual user, cuz then need to make him be in sync with the database all the time
 	private Long loggedInUserId;
 	private Long impersonatedUserId;
 	private Date prevLoginDate;
 	private UsersSearchesCache usersSearchesCache;
-	private ShowsScheduleVO schedule;
 
 	public void setLoggedInUser(User user) {
 		loggedInUserId = user.getId();
@@ -62,21 +55,10 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public ShowsScheduleVO getSchedule() {
-		return schedule;
-	}
-
-	@Override
-	public void setSchedule(ShowsScheduleVO schedule) {
-		this.schedule = schedule;
-	}
-
-	@Override
 	public void clearLoggedInUser() {
 		loggedInUserId = null;
 		impersonatedUserId = null;
 		prevLoginDate = null;
-		schedule = null;
 		usersSearchesCache = new UsersSearchesCache();
 	}
 

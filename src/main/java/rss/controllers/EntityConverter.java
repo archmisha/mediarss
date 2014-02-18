@@ -32,6 +32,12 @@ public class EntityConverter {
 		for (Show show : shows) {
 			result.add(new ShowVO().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()));
 		}
+		Collections.sort(result, new Comparator<ShowVO>() {
+			@Override
+			public int compare(ShowVO o1, ShowVO o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
+			}
+		});
 		return result;
 	}
 

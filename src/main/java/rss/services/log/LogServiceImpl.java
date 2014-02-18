@@ -7,10 +7,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.EmailService;
 import rss.services.SessionService;
+import rss.services.user.UserCacheService;
 
 /**
  * User: Michael Dikman
@@ -24,7 +24,7 @@ public class LogServiceImpl implements LogService {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private UserDao userDao;
+	private UserCacheService userCacheService;
 
 	@Autowired
 	private EmailService emailService;
@@ -86,7 +86,7 @@ public class LogServiceImpl implements LogService {
 			if (!sessionService.isUserLogged()) {
 				return msg;
 			}
-			User user = userDao.find(sessionService.getLoggedInUserId());
+			User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 			return String.format("[%s(%d)] - %s", user.getEmail(), user.getId(), msg);
 		} catch (BeansException e) {
 			return msg;

@@ -93,7 +93,7 @@ public class UserController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		if (loggedIn) {
-			User user = userDao.find(sessionService.getLoggedInUserId());
+			User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 			result = createTabData(user);
 		}
 		result.put("isLoggedIn", loggedIn);
@@ -131,9 +131,10 @@ public class UserController extends BaseController {
 		}
 
 		sessionService.setLoggedInUser(user);
-
-		// important to be after setting the lastLoginDate. session service saves the previous
+		// important to be after setting the logged in user. session service saves the previous
 		user.setLastLogin(new Date());
+
+		userCacheService.invalidateUser(user);
 
 		return createTabData(user);
 	}
@@ -168,7 +169,7 @@ public class UserController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void subtitles(@RequestParam("subtitles") String subtitles) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		user.setSubtitles(SubtitleLanguage.fromString(subtitles));
 	}
 
@@ -219,7 +220,7 @@ public class UserController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> initialData() {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 
 		DurationMeter duration = new DurationMeter();
 		Map<String, Object> result = new HashMap<>();

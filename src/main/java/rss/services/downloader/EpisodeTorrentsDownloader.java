@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import rss.EpisodesComparator;
 import rss.MediaRSSException;
 import rss.ShowNotFoundException;
-import rss.dao.*;
+import rss.dao.EpisodeDao;
+import rss.dao.ShowDao;
+import rss.dao.SubtitlesDao;
+import rss.dao.TorrentDao;
 import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
@@ -25,6 +28,7 @@ import rss.services.shows.EpisodesMapper;
 import rss.services.shows.ShowService;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.services.subtitles.SubtitlesService;
+import rss.services.user.UserCacheService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 
@@ -64,7 +68,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	private SubtitlesDao subtitlesDao;
 
 	@Autowired
-	private UserDao userDao;
+	private UserCacheService userCacheService;
 
 	@Override
 	protected boolean isSingleTransaction() {
@@ -564,7 +568,7 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	}
 
 	private void getSubtitleLanguagesForShowHelper(long userId, Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show) {
-		SubtitleLanguage subtitleLanguage = userDao.find(userId).getSubtitles();
+		SubtitleLanguage subtitleLanguage = userCacheService.getUser(userId).getSubtitles();
 		if (subtitleLanguage != null) {
 			languagesPerShow.put(show, Collections.singletonList(subtitleLanguage));
 		} else {

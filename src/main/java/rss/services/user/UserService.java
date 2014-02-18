@@ -14,4 +14,6 @@ public interface UserService {
 	String getMoviesRssFeed(User user);
 
 	String getTvShowsRssFeed(User user);
+
+	User getUser(long userId);
 }

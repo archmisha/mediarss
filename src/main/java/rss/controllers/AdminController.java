@@ -58,7 +58,7 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/notification", method = RequestMethod.POST)
 	@ResponseBody
 	public void sendNotification(HttpServletRequest request) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		String text = extractString(request, "text", true);
@@ -68,7 +68,7 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/users", method = RequestMethod.GET)
 	@ResponseBody
 	public Collection<UserVO> getAllUsers() {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		List<UserVO> users = entityConverter.toThinUser(userDao.findAll());
@@ -90,7 +90,7 @@ public class AdminController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String downloadSchedule(@PathVariable Long showId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		Show show = showDao.find(showId);
@@ -102,7 +102,7 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/shows/autocomplete", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<String, Object> autoCompleteShows(HttpServletRequest request, HttpServletResponse response) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 		return autoCompleteShowNames(request, response, true, null);
 	}
@@ -111,12 +111,12 @@ public class AdminController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String deleteShow(@PathVariable Long showId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		Show show = showDao.find(showId);
 		if (show == null) {
-			return "Show with id " + show + " is not found";
+			return "Show with id " + showId + " is not found";
 		}
 
 		// allow deletion only if no one is tracking this show
@@ -138,12 +138,12 @@ public class AdminController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String deleteMovie(@PathVariable Long movieId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		Movie movie = movieDao.find(movieId);
 		if (movie == null) {
-			return "Movie with id " + movie + " is not found";
+			return "Movie with id " + movieId + " is not found";
 		}
 
 		// allow deletion only if no one is tracking this movie
@@ -171,7 +171,7 @@ public class AdminController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void impersonate(@PathVariable Long userId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		sessionService.impersonate(userId);
@@ -180,7 +180,7 @@ public class AdminController extends BaseController {
 	@RequestMapping(value = "/searcher-configurations", method = RequestMethod.GET)
 	@ResponseBody
 	public Collection<SearcherConfiguration> getSearcherConfigurations() {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		return searcherConfigurationService.getSearcherConfigurations();
@@ -190,7 +190,7 @@ public class AdminController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void addDomainToSearcherConfiguration(@PathVariable String name, @RequestParam("domain") String domain) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		searcherConfigurationService.addDomain(name, domain);
@@ -200,7 +200,7 @@ public class AdminController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void removeDomainToSearcherConfiguration(@PathVariable String name, @PathVariable String domain) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		verifyAdminPermissions(user);
 
 		searcherConfigurationService.removeDomain(name, domain);

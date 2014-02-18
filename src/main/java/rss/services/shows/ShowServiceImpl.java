@@ -19,7 +19,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import rss.EpisodesComparator;
 import rss.PageDownloadException;
 import rss.RecoverableConnectionException;
+import rss.controllers.EntityConverter;
 import rss.controllers.vo.ShowScheduleEpisodeItem;
+import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.ShowsScheduleVO;
 import rss.dao.*;
 import rss.entities.*;
@@ -96,6 +98,9 @@ public class ShowServiceImpl implements ShowService {
 
 	@Autowired
 	private TorrentDao torrentDao;
+
+	@Autowired
+	protected EntityConverter entityConverter;
 
 	@Autowired
 	protected UserTorrentDao userTorrentDao;
@@ -680,5 +685,10 @@ public class ShowServiceImpl implements ShowService {
 			userTorrentDao.persist(userTorrent);
 		}
 		userTorrent.setAdded(new Date());
+	}
+
+	@Override
+	public List<ShowVO> getTrackedShows(User user) {
+		return entityConverter.toThinShows(user.getShows());
 	}
 }

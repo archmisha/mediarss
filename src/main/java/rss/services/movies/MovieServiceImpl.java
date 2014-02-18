@@ -123,7 +123,7 @@ public class MovieServiceImpl implements MovieService {
 		executorService.shutdown();
 	}
 
-	public ArrayList<UserMovieVO> getSearchCompletedMovies(long[] ids) {
+	public List<UserMovieVO> getSearchCompletedMovies(long[] ids) {
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 
@@ -159,7 +159,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public ArrayList<UserMovieVO> getUserMovies(User user) {
+	public List<UserMovieVO> getUserMovies(User user) {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 		Map<Long, Movie> movies = new HashMap<>();
