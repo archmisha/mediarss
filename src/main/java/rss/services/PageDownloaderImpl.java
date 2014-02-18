@@ -269,7 +269,7 @@ public class PageDownloaderImpl implements PageDownloader {
 				throw new PageDownloadException("Circular redirect URI: " + url);
 			}
 			String errorMessagePrefix = "Failed searching for: " + url + " with error:";
-			throw new MediaRSSException(errorMessagePrefix + " " + e.getMessage(), e);
+			throw new PageDownloadException(errorMessagePrefix + " " + e.getMessage(), e);
 		} finally {
 			// When HttpClient instance is no longer needed,
 			// shut down the connection manager to ensure
