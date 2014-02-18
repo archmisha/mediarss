@@ -23,23 +23,23 @@ define([
 		var tabs = {};
 		tabs[RoutingPaths.HOME] = {
 			title: BASE_TITLE + ' - Home',
-			view: new HomeTabView()
+			view: HomeTabView
 		};
 		tabs[RoutingPaths.TVSHOWS] = {
 			title: BASE_TITLE + ' - TV Shows',
-			view: new ShowsTabView()
+			view: ShowsTabView
 		};
 		tabs[RoutingPaths.MOVIES] = {
 			title: BASE_TITLE + ' - Movies',
-			view: new MoviesTabView()
+			view: MoviesTabView
 		};
 		tabs[RoutingPaths.SETTINGS] = {
 			title: BASE_TITLE + ' - Settings',
-			view: new SettingsTabView()
+			view: SettingsTabView
 		};
 		tabs[RoutingPaths.ADMIN] = {
 			title: BASE_TITLE + ' - Admin',
-			view: new AdminTabView()
+			view: AdminTabView
 		};
 
 		return Marionette.Layout.extend({
@@ -106,15 +106,11 @@ define([
 				Backbone.history.navigate(route, {trigger: false});
 				document.title = tabs[tabToSelect].title;
 
-				// workaround
-				if (tabToSelect === RoutingPaths.TVSHOWS) {
-					tabs[tabToSelect].view = new ShowsTabView();
+				var tabView = new tabs[tabToSelect].view();
+				if (tabView.setTabData) {
+					tabView.setTabData(this.tabData);
 				}
-
-				if (tabs[tabToSelect].view.setTabData) {
-					tabs[tabToSelect].view.setTabData(this.tabData);
-				}
-				this.contentRegion.show(tabs[tabToSelect].view);
+				this.contentRegion.show(tabView);
 				this.homeHeaderTabs.selectTab(tabToSelect);
 			}
 		});
