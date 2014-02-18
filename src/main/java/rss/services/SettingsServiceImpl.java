@@ -38,10 +38,11 @@ public class SettingsServiceImpl implements SettingsService {
 
 	private Date deploymentDate;
 	private Date startupDate;
-	private Properties prop;
 	private ExecutorService executorService;
 	private boolean shouldRun;
 	private WatchService watchService;
+
+	private SettingsBean settingsBean;
 
 	private Collection<SettingsUpdateListener> updateListeners = new ArrayList<>();
 
@@ -87,8 +88,9 @@ public class SettingsServiceImpl implements SettingsService {
 				logService.info(getClass(), "Loading default " + SETTINGS_FILENAME + " file from classpath");
 				settingsFile = new ClassPathResource(SETTINGS_FILENAME, SettingsServiceImpl.class.getClassLoader()).getFile();
 			}
-			prop = new Properties();
+			Properties prop = new Properties();
 			prop.load(new FileReader(settingsFile));
+			settingsBean = new SettingsBean(prop);
 		} catch (Exception e) {
 			logService.error(getClass(), "Failed loading " + SETTINGS_FILENAME + ": " + e.getMessage(), e);
 		}
@@ -178,104 +180,77 @@ public class SettingsServiceImpl implements SettingsService {
 
 	@Override
 	public boolean useWebProxy() {
-		return "true".equals(prop.getProperty("webproxy"));
+		return settingsBean.useWebProxy();
 	}
 
 	@Override
 	public String getWebHostName() {
-		try {
-			String value = prop.getProperty("web.host");
-			if (StringUtils.isBlank(value)) {
-				value = InetAddress.getLocalHost().getHostAddress();
-			}
-			return value;
-		} catch (UnknownHostException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		}
+		return settingsBean.getWebHostName();
 	}
 
 	@Override
 	public boolean isDevEnvironment() {
-		return getWebHostName().equals("localhost");
+		return settingsBean.isDevEnvironment();
 	}
 
 	@Override
 	public String getWebRootContext() {
-		return prop.getProperty("web.root.context");
+		return settingsBean.getWebRootContext();
 	}
 
 	@Override
 	public String getTrackerUrl() {
-		return prop.getProperty("tracker.url");
+		return settingsBean.getTrackerUrl();
 	}
 
 	@Override
 	public boolean isLogMemory() {
-		return "true".equals(prop.getProperty("log.memory"));
+		return settingsBean.isLogMemory();
 	}
 
 	@Override
 	public boolean areSubtitlesEnabled() {
-		return "true".equals(prop.getProperty("subtitles"));
+		return settingsBean.areSubtitlesEnabled();
 	}
 
 	@Override
 	public int getWebPort() {
-		return Integer.parseInt(prop.getProperty("web.port"));
+		return settingsBean.getWebPort();
 	}
 
 	@Override
 	public String getTorrentDownloadedPath() {
-		return prop.getProperty("torrent.downloaded.path");
+		return settingsBean.getTorrentDownloadedPath();
 	}
 
 	@Override
 	public int getTVComPagesToDownload() {
-		return Integer.parseInt(prop.getProperty("tvcom.pages.to.download"));
+		return settingsBean.getTVComPagesToDownload();
 	}
 
 	@Override
 	public String getAlternativeResourcesPath() {
-		return prop.getProperty("alternative.resources.path");
+		return settingsBean.getAlternativeResourcesPath();
 	}
 
 	@Override
 	public String getTorrentWatchPath() {
-		return prop.getProperty("torrent.watch.path");
+		return settingsBean.getTorrentWatchPath();
 	}
 
 	@Override
 	public Set<String> getAdministratorEmails() {
-		Set<String> result = new HashSet<>();
-		result.addAll(Arrays.asList(prop.getProperty("admins").split(",")));
-		result.add(ADMIN_DEFAULT_EMAIL);
-		return result;
+		return settingsBean.getAdminEmails();
 	}
 
 	@Override
 	public String getShowAlias(String name) {
-		for (String key : prop.stringPropertyNames()) {
-			if (key.startsWith("show.alias.") && key.endsWith(".name") && prop.getProperty(key).equalsIgnoreCase(name)) {
-				String aliasKey = key.substring(0, key.lastIndexOf(".")) + ".alias";
-				return prop.getProperty(aliasKey);
-			}
-		}
-		return null;
+		return settingsBean.getShowAlias(name);
 	}
 
 	@Override
 	public int getShowSeasonAlias(String name, int season) {
-		for (String key : prop.stringPropertyNames()) {
-			if (key.startsWith("show.alias.") && key.endsWith(".name") && prop.getProperty(key).equalsIgnoreCase(name)) {
-				String aliasKey = key.substring(0, key.lastIndexOf(".")) + "." + season;
-				if (prop.containsKey(aliasKey)) {
-					return Integer.parseInt(prop.getProperty(aliasKey));
-				} else {
-					return season;
-				}
-			}
-		}
-		return season;
+		return settingsBean.getShowSeasonAlias(name, season);
 	}
 
 	@Override
@@ -296,5 +271,125 @@ public class SettingsServiceImpl implements SettingsService {
 	@Override
 	public void removeUpdateListener(SettingsUpdateListener listener) {
 		this.updateListeners.remove(listener);
+	}
+
+	private class SettingsBean {
+		private Properties prop;
+
+		private Set<String> adminEmails;
+		private boolean logMemory;
+		private int tvComPagesToDownload;
+		private int webPort;
+		private boolean areSubtitlesEnabled;
+		private boolean devEnvironment;
+		private boolean useWebProxy;
+		private String trackerUrl;
+		private String torrentDownloadedPath;
+		private String webRootContext;
+		private String torrentWatchPath;
+		private String alternativeResourcesPath;
+
+		public SettingsBean(Properties prop) {
+			this.prop = prop;
+
+			adminEmails = new HashSet<>();
+			adminEmails.addAll(Arrays.asList(prop.getProperty("admins").split(",")));
+			adminEmails.add(ADMIN_DEFAULT_EMAIL);
+			logMemory = "true".equals(prop.getProperty("log.memory"));
+			tvComPagesToDownload = Integer.parseInt(prop.getProperty("tvcom.pages.to.download"));
+			webPort = Integer.parseInt(prop.getProperty("web.port"));
+			areSubtitlesEnabled = "true".equals(prop.getProperty("subtitles"));
+			devEnvironment = getWebHostName().equals("localhost");
+			useWebProxy = "true".equals(prop.getProperty("webproxy"));
+			trackerUrl = prop.getProperty("tracker.url");
+			torrentDownloadedPath = prop.getProperty("torrent.downloaded.path");
+			webRootContext = prop.getProperty("web.root.context");
+			torrentWatchPath = prop.getProperty("torrent.watch.path");
+			alternativeResourcesPath = prop.getProperty("alternative.resources.path");
+		}
+
+		public Set<String> getAdminEmails() {
+			return adminEmails;
+		}
+
+		public boolean isLogMemory() {
+			return logMemory;
+		}
+
+		public int getTVComPagesToDownload() {
+			return tvComPagesToDownload;
+		}
+
+		public int getWebPort() {
+			return webPort;
+		}
+
+		public boolean areSubtitlesEnabled() {
+			return areSubtitlesEnabled;
+		}
+
+		public boolean isDevEnvironment() {
+			return devEnvironment;
+		}
+
+		public boolean useWebProxy() {
+			return useWebProxy;
+		}
+
+		public String getTrackerUrl() {
+			return trackerUrl;
+		}
+
+		public String getTorrentDownloadedPath() {
+			return torrentDownloadedPath;
+		}
+
+		public String getWebRootContext() {
+			return webRootContext;
+		}
+
+		public String getTorrentWatchPath() {
+			return torrentWatchPath;
+		}
+
+		public String getAlternativeResourcesPath() {
+			return alternativeResourcesPath;
+		}
+
+		public String getShowAlias(String name) {
+			for (String key : prop.stringPropertyNames()) {
+				if (key.startsWith("show.alias.") && key.endsWith(".name") && prop.getProperty(key).equalsIgnoreCase(name)) {
+					String aliasKey = key.substring(0, key.lastIndexOf(".")) + ".alias";
+					return prop.getProperty(aliasKey);
+				}
+			}
+			return null;
+		}
+
+		public String getWebHostName() {
+			try {
+				String value = prop.getProperty("web.host");
+				if (StringUtils.isBlank(value)) {
+					value = InetAddress.getLocalHost().getHostAddress();
+				}
+				return value;
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+		}
+
+		public int getShowSeasonAlias(String name, int season) {
+			for (String key : prop.stringPropertyNames()) {
+				if (key.startsWith("show.alias.") && key.endsWith(".name") && prop.getProperty(key).equalsIgnoreCase(name)) {
+					String aliasKey = key.substring(0, key.lastIndexOf(".")) + "." + season;
+					if (prop.containsKey(aliasKey)) {
+						return Integer.parseInt(prop.getProperty(aliasKey));
+					} else {
+						return season;
+					}
+				}
+			}
+			return season;
+		}
 	}
 }
