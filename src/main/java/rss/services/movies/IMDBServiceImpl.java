@@ -70,9 +70,6 @@ public class IMDBServiceImpl implements IMDBService {
 	private ImageDao imageDao;
 
 	@Autowired
-	private IMDBPreviewCacheService imdbPreviewCacheService;
-
-	@Autowired
 	private TransactionTemplate transactionTemplate;
 
 	@Override
@@ -89,8 +86,9 @@ public class IMDBServiceImpl implements IMDBService {
 
 	private IMDBParseResult downloadMovieFromIMDB(String imdbUrl, boolean imagesAsync) {
 		long from = System.currentTimeMillis();
+		String page = null;
 		try {
-			String page = pageDownloader.downloadPage(imdbUrl);
+			page = pageDownloader.downloadPage(imdbUrl);
 
 			// check for old year
 			// <meta name="title" content="The Prestige (2006) - IMDb" />
@@ -104,8 +102,9 @@ public class IMDBServiceImpl implements IMDBService {
 			// check for release date
 			// <meta itemprop="datePublished" content="1999-03-31">
 			Matcher releaseDateMatcher = RELEASE_DATE_PATTERN.matcher(page);
+			releaseDateMatcher.find();
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			Date releaseDate = sdf.parse(releaseDateMatcher.group(0));
+			Date releaseDate = sdf.parse(releaseDateMatcher.group(1));
 
 			Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(page);
 			boolean isComingSoon = comingSoonMatcher.find();
@@ -139,7 +138,7 @@ public class IMDBServiceImpl implements IMDBService {
 			// for any reason, regexp might fail or something else
 			// usually it is HTTP/1.1 404 Not Found
 			if (!e.getMessage().contains("404 Not Found")) {
-				logService.error(getClass(), "Failed downloading IMDB page " + imdbUrl + ": " + e.getMessage(), e);
+				logService.error(getClass(), "Failed downloading or parsing IMDB page " + imdbUrl + ": " + e.getMessage() + ". Page: " + page, e);
 			}
 
 			return IMDBParseResult.createNotFound(imdbUrl);
