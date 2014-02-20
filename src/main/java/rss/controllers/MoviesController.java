@@ -57,7 +57,7 @@ public class MoviesController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public String getImdbPreviewPage(@PathVariable long movieId) {
 		Movie movie = movieDao.find(movieId);
-		return imdbPreviewCacheService.getImdbPreviewPage(movie);
+		return movieService.getImdbPreviewPage(movie);
 	}
 
 	@RequestMapping(value = "/imdb/css/{cssFileName}.css", method = RequestMethod.GET)

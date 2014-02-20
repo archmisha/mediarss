@@ -110,7 +110,7 @@ public class MovieServiceImpl implements MovieService {
 							DurationMeter duration = new DurationMeter();
 							Collection<Movie> latestMovies = movieDao.findOrderedByUploadedSince(IMDBPreviewCacheServiceImpl.MAX_MOVIE_PREVIEWS_CACHE);
 							for (Movie movie : latestMovies) {
-								imdbPreviewCacheService.getImdbPreviewPage(movie);
+								getImdbPreviewPage(movie);
 							}
 							logService.info(MovieServiceImpl.class, "Loaded movies previews into cache (" + duration.getDuration() + " ms)");
 						}
@@ -200,8 +200,15 @@ public class MovieServiceImpl implements MovieService {
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 
 		Collection<Movie> latestMovies = getLatestMovies();
-		ArrayList<UserMovieVO> result = populateUserMovieTorrents(user, torrentsByIds, latestMovies, userMoviesVOContainer);
+		Collection<Movie> topMovies = getTopMovies();
 
+		List<Movie> movies = new ArrayList<>();
+		movies.addAll(latestMovies);
+		movies.addAll(topMovies);
+
+		ArrayList<UserMovieVO> result = populateUserMovieTorrents(user, torrentsByIds, movies, userMoviesVOContainer);
+
+		// todo: sort by movie release date
 		Collections.sort(result, new Comparator<UserMovieVO>() {
 			@Override
 			public int compare(UserMovieVO o1, UserMovieVO o2) {
@@ -217,6 +224,11 @@ public class MovieServiceImpl implements MovieService {
 			}
 		});
 		return result;
+	}
+
+	private Collection<Movie> getTopMovies() {
+		// todo
+		return new ArrayList<>();
 	}
 
 	private ArrayList<UserMovieVO> populateUserMovieTorrents(User user,
@@ -244,7 +256,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	private Collection<Movie> getLatestMovies() {
-		return movieDao.findUploadedSince(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7));
+		return movieDao.findUploadedSince(DateUtils.getPastDate(new Date()/*sessionService.getPrevLoginDate()*/, 14));
 	}
 
 	private void enrichWithNonUserTorrents(User user, Collection<Movie> movies, UserMoviesVOContainer userMoviesVOContainer, Map<Long, Torrent> torrentsByIds) {
@@ -365,8 +377,8 @@ public class MovieServiceImpl implements MovieService {
 						return transactionTemplate.execute(new TransactionCallback<Movie>() {
 							@Override
 							public Movie doInTransaction(TransactionStatus arg0) {
-								Movie movie = new Movie(imdbParseResult.getName(), imdbUrl, imdbParseResult.getYear());
-								movieDao.persist(movie);
+								Movie movie = new Movie(imdbParseResult.getName(), imdbUrl, imdbParseResult.getYear(), imdbParseResult.getReleaseDate());
+								addMovie(movie, imdbParseResult);
 								return movie;
 							}
 						});
@@ -506,5 +518,21 @@ public class MovieServiceImpl implements MovieService {
 			movieRequests.add(movieRequest);
 		}
 		movieTorrentsDownloader.download(movieRequests, new DownloadConfig());
+	}
+
+	@Override
+	public void addMovie(Movie movie, IMDBParseResult imdbParseResult) {
+		imdbPreviewCacheService.addImdbPreview(movie, imdbParseResult.getPage());
+		movieDao.persist(movie);
+	}
+
+	@Override
+	public String getImdbPreviewPage(Movie movie) {
+		String page = imdbPreviewCacheService.getImdbPreviewPage(movie);
+		if (page == null) {
+			page = imdbService.downloadMovieFromIMDB(movie.getImdbUrl()).getPage();
+			imdbPreviewCacheService.addImdbPreview(movie, page);
+		}
+		return page;
 	}
 }

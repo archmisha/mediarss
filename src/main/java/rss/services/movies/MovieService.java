@@ -37,4 +37,8 @@ public interface MovieService {
 	Collection<IMDBAutoCompleteItem> search(User user, String query);
 
 	void downloadUserMovies();
+
+	void addMovie(Movie movie, IMDBParseResult imdbParseResult);
+
+	String getImdbPreviewPage(Movie movie);
 }

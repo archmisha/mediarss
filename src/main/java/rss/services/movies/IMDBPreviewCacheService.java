@@ -8,7 +8,7 @@ import rss.entities.Movie;
  */
 public interface IMDBPreviewCacheService {
 
-	String cleanImdbPage(String name, String page);
+	void addImdbPreview(Movie movie, String page);
 
 	String getImdbPreviewPage(Movie movie);
 

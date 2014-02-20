@@ -8,6 +8,7 @@ import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
+import rss.services.movies.MovieService;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 import rss.util.CollectionUtils;
@@ -22,6 +23,9 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 
 	@Autowired
 	private MovieDao movieDao;
+
+	@Autowired
+	private MovieService movieService;
 
 	@Autowired
 	private TorrentDao torrentDao;
@@ -126,7 +130,7 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 			}
 
 			movie = new Movie(imdbParseResult.getName(), imdbId, imdbParseResult.getYear(), imdbParseResult.getReleaseDate());
-			movieDao.persist(movie);
+			movieService.addMovie(movie, imdbParseResult);
 		}
 		return movie;
 	}
