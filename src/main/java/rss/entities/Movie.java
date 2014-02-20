@@ -43,6 +43,9 @@ public class Movie extends Media {
 	@Column(name = "year")
 	private int year;
 
+	@Column(name = "release_date")
+	private Date releaseDate;
+
 	//, unique = true
 	@Column(name = "subcenter_url")
 	private String subCenterUrl;
@@ -55,11 +58,12 @@ public class Movie extends Media {
 	private Movie() {
 	}
 
-	public Movie(String name, String imdbUrl, int year) {
+	public Movie(String name, String imdbUrl, int year, Date releaseDate) {
 		this();
 		this.name = name;
 		this.imdbUrl = imdbUrl;
 		this.year = year;
+		this.releaseDate = releaseDate;
 	}
 
 	public String getName() {

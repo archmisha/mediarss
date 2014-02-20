@@ -64,21 +64,18 @@ public class IMDBPreviewCacheServiceImpl implements IMDBPreviewCacheService {
 			return page;
 		}
 
+		IMDBParseResult imdbParseResult;
 		try {
 			DurationMeter durationMeter = new DurationMeter();
-			page = pageDownloader.downloadPage(movie.getImdbUrl());
-			page = cleanImdbPage(movie.getName(), page);
+			imdbParseResult = imdbService.downloadMovieFromIMDB(movie.getImdbUrl());
+			page = imdbParseResult.getPage();
 			durationMeter.stop();
 			logService.debug(getClass(), String.format("IMDB page download for movie %s took %d ms", movie.getName(), durationMeter.getDuration()));
+			moviePreviewPages.put(movie.getId(), page);
 		} catch (Exception e) {
 			page = null;
 			logService.error(getClass(), e.getMessage(), e);
 		}
-
-		moviePreviewPages.put(movie.getId(), page);
-
-		// pre-download movie images, so no concurrency issue arise when the browser tries to fetch the images
-		imdbService.downloadImages(page, movie.getImdbUrl());
 
 		return page;
 	}

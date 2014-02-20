@@ -125,7 +125,7 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 				return null;
 			}
 
-			movie = new Movie(imdbParseResult.getName(), imdbId, imdbParseResult.getYear());
+			movie = new Movie(imdbParseResult.getName(), imdbId, imdbParseResult.getYear(), imdbParseResult.getReleaseDate());
 			movieDao.persist(movie);
 		}
 		return movie;

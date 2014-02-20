@@ -43,7 +43,7 @@ public class MoviesTorrentEntriesDownloaderIntegrationTest extends BaseTest {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void testFoundInCache() {
 		// name is not always the same but hash is
-		Movie movie = new Movie("Fire with Fire (Video 2012)", "imdb url", 2012);
+		Movie movie = new Movie("Fire with Fire (Video 2012)", "imdb url", 2012, new Date());
 		Torrent torrent = new Torrent("Fire.With.Fire.2012.BluRay.720p.DTS.x264-CHD", "url", new Date(), 1);
 		String hash = "my hash";
 		torrent.setHash(hash);

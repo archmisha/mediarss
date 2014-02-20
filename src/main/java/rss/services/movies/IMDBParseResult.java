@@ -1,5 +1,7 @@
 package rss.services.movies;
 
+import java.util.Date;
+
 /**
  * User: dikmanm
  * Date: 20/04/13 16:23
@@ -11,6 +13,8 @@ public class IMDBParseResult {
 	private int year;
 	private boolean comingSoon;
 	private int viewers;
+	private Date releaseDate;
+	private String page;
 
 	public boolean isFound() {
 		return found;
@@ -20,12 +24,23 @@ public class IMDBParseResult {
 		return new IMDBParseResult().withFound(false).widthImdbUrl(imdbUrl);
 	}
 
-	public static IMDBParseResult createFound(String imdbUrl, String name, int year, boolean comingSoon, int viewers) {
-		return new IMDBParseResult().withFound(true).widthImdbUrl(imdbUrl).withName(name).withYear(year).withComingSoon(comingSoon).withViewers(viewers);
+	public static IMDBParseResult createFound(String imdbUrl, String name, int year, boolean comingSoon, int viewers, Date releaseDate, String page) {
+		return new IMDBParseResult().withFound(true).widthImdbUrl(imdbUrl).withName(name).withYear(year)
+				.withComingSoon(comingSoon).withViewers(viewers).withReleaseDate(releaseDate).withPage(page);
 	}
 
 	private IMDBParseResult withViewers(int viewers) {
 		this.viewers = viewers;
+		return this;
+	}
+
+	private IMDBParseResult withPage(String page) {
+		this.page = page;
+		return this;
+	}
+
+	private IMDBParseResult withReleaseDate(Date releaseDate) {
+		this.releaseDate = releaseDate;
 		return this;
 	}
 
@@ -68,5 +83,13 @@ public class IMDBParseResult {
 
 	public int getViewers() {
 		return viewers;
+	}
+
+	public Date getReleaseDate() {
+		return releaseDate;
+	}
+
+	public String getPage() {
+		return page;
 	}
 }
