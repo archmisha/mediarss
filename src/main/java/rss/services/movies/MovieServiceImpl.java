@@ -50,8 +50,6 @@ import java.util.concurrent.*;
 @Service
 public class MovieServiceImpl implements MovieService {
 
-	private static final String IMDB_URL = "http://www.imdb.com/title/";
-
 	public static final int USER_MOVIES_DISPLAY_DAYS_HISTORY = 14;
 
 	@Autowired
@@ -89,6 +87,9 @@ public class MovieServiceImpl implements MovieService {
 
 	@Autowired
 	private SubtitlesService subtitlesService;
+
+	@Autowired
+	private TopMoviesService topMoviesService;
 
 	@Autowired
 	private IMDBPreviewCacheService imdbPreviewCacheService;
@@ -132,7 +133,7 @@ public class MovieServiceImpl implements MovieService {
 			if (!moviesBeingSearched.containsKey(movie)) {
 				UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
-					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(false), torrent.getDateUploaded());
+					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(false)/*, torrent.getDateUploaded()*/);
 					torrentsByIds.put(torrent.getId(), torrent);
 				}
 			}
@@ -202,33 +203,34 @@ public class MovieServiceImpl implements MovieService {
 		Collection<Movie> latestMovies = getLatestMovies();
 		Collection<Movie> topMovies = getTopMovies();
 
-		List<Movie> movies = new ArrayList<>();
+		// filter out duplicates
+		Set<Movie> movies = new HashSet<>();
 		movies.addAll(latestMovies);
 		movies.addAll(topMovies);
 
 		ArrayList<UserMovieVO> result = populateUserMovieTorrents(user, torrentsByIds, movies, userMoviesVOContainer);
 
-		// todo: sort by movie release date
 		Collections.sort(result, new Comparator<UserMovieVO>() {
 			@Override
 			public int compare(UserMovieVO o1, UserMovieVO o2) {
-				Date o1LatestUploadDate = o1.getLatestUploadDate();
-				Date o2LatestUploadDate = o2.getLatestUploadDate();
-				if (o1LatestUploadDate.before(o2LatestUploadDate)) {
-					return 1;
-				} else if (o1LatestUploadDate.after(o2LatestUploadDate)) {
-					return -1;
-				} else {
-					return o1.getTitle().compareTo(o2.getTitle());
+				Date o1ReleaseDate = o1.getReleaseDate();
+				Date o2ReleaseDate = o2.getReleaseDate();
+				if (o1ReleaseDate != null && o2ReleaseDate != null) {
+					if (o1ReleaseDate.before(o2ReleaseDate)) {
+						return 1;
+					} else if (o1ReleaseDate.after(o2ReleaseDate)) {
+						return -1;
+					}
 				}
+
+				return o1.getTitle().compareTo(o2.getTitle());
 			}
 		});
 		return result;
 	}
 
 	private Collection<Movie> getTopMovies() {
-		// todo
-		return new ArrayList<>();
+		return topMoviesService.getTopMovies();
 	}
 
 	private ArrayList<UserMovieVO> populateUserMovieTorrents(User user,
@@ -239,7 +241,7 @@ public class MovieServiceImpl implements MovieService {
 		for (UserMovieTorrent userTorrent : userTorrentDao.findUserMovieTorrents(user, latestMovies)) {
 			Movie movie = userTorrent.getUserMovie().getMovie();
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(true), userTorrent.getTorrent().getDateUploaded());
+			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(true)/*, userTorrent.getTorrent().getDateUploaded()*/);
 			torrentsByIds.put(userTorrent.getTorrent().getId(), userTorrent.getTorrent());
 		}
 
@@ -269,7 +271,7 @@ public class MovieServiceImpl implements MovieService {
 			for (Torrent torrent : torrentDao.find(org.apache.commons.collections.CollectionUtils.subtract(movie.getTorrentIds(), torrentsByIds.keySet()))) {
 				torrentsByIds.put(torrent.getId(), torrent);
 				boolean isViewed = view != null && view.getCreated().after(torrent.getCreated());
-				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed), torrent.getDateUploaded());
+				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed)/*, torrent.getDateUploaded()*/);
 				areAllViewed &= isViewed;
 			}
 
@@ -289,7 +291,8 @@ public class MovieServiceImpl implements MovieService {
 			if (userMovieVO == null) {
 				userMovieVO = new UserMovieVO()
 						.withId(movie.getId())
-						.withTitle(movie.getName());
+						.withTitle(movie.getName())
+						.withReleaseDate(movie.getReleaseDate());
 //						.withImdbUrl(movie.getImdbUrl());
 				lwUserMovies.put(movie.getName(), userMovieVO);
 			}
@@ -361,7 +364,7 @@ public class MovieServiceImpl implements MovieService {
 	public Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId) {
 		try {
 			// just if someone entered some junk in the imdbid, better get 404 than malformed url
-			final String imdbUrl = IMDB_URL + URLEncoder.encode(imdbId, "UTF-8");
+			final String imdbUrl = IMDBServiceImpl.IMDB_URL + URLEncoder.encode(imdbId, "UTF-8");
 			Movie movie = movieDao.findByImdbUrl(imdbUrl);
 			if (movie == null) {
 				final IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDBAndImagesAsync(imdbUrl);
@@ -463,6 +466,7 @@ public class MovieServiceImpl implements MovieService {
 	@Override
 	public DownloadResult<Movie, MovieRequest> downloadLatestMovies() {
 		logService.info(getClass(), "Downloading '" + TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d" + "'");
+		DurationMeter duration = new DurationMeter();
 		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d");
 
 		// retry with 7 days
@@ -487,7 +491,12 @@ public class MovieServiceImpl implements MovieService {
 			}
 		}
 
-		return latestMoviesDownloader.download(movieRequests, new DownloadConfig());
+		DownloadResult<Movie, MovieRequest> downloadResult = latestMoviesDownloader.download(movieRequests, new DownloadConfig());
+
+		duration.stop();
+		logService.info(getClass(), "Downloading latest movies took " + duration.getDuration() + " ms");
+
+		return downloadResult;
 	}
 
 	@Override
@@ -497,7 +506,7 @@ public class MovieServiceImpl implements MovieService {
 
 		Map<String, IMDBAutoCompleteItem> imdbIds = new HashMap<>();
 		for (IMDBAutoCompleteItem searchResult : searchResults) {
-			imdbIds.put(IMDB_URL + searchResult.getId(), searchResult);
+			imdbIds.put(IMDBServiceImpl.IMDB_URL + searchResult.getId(), searchResult);
 		}
 
 		for (UserMovie userMovie : movieDao.findUserMoviesByIMDBIds(user, imdbIds.keySet())) {
@@ -510,6 +519,8 @@ public class MovieServiceImpl implements MovieService {
 	@Override
 	public void downloadUserMovies() {
 		logService.info(getClass(), "Downloading user movies");
+		DurationMeter duration = new DurationMeter();
+
 		List<Movie> movies = movieDao.findAllUserMovies(MovieServiceImpl.USER_MOVIES_DISPLAY_DAYS_HISTORY);
 		Set<MovieRequest> movieRequests = new HashSet<>();
 		for (Movie movie : movies) {
@@ -518,6 +529,9 @@ public class MovieServiceImpl implements MovieService {
 			movieRequests.add(movieRequest);
 		}
 		movieTorrentsDownloader.download(movieRequests, new DownloadConfig());
+
+		duration.stop();
+		logService.info(getClass(), "Downloading user movies took " + duration.getDuration() + " ms");
 	}
 
 	@Override

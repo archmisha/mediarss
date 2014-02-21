@@ -14,11 +14,12 @@ public class UserMovieVO {
 	private long id;
 	private String title;
 	private List<UserMovieTorrentVO> torrents;
-	private Date latestUploadDate;
+	//	private Date latestUploadDate;
 	private DownloadStatus downloadStatus;
 	private boolean viewed;
 	private Date scheduledDate;
 	private Date added;
+	private Date releaseDate;
 
 	public UserMovieVO() {
 		viewed = false;
@@ -34,7 +35,7 @@ public class UserMovieVO {
 		this.viewed = isViewed;
 	}
 
-	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO, Date torrentUploadDate) {
+	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO/*, Date torrentUploadDate*/) {
 		torrents.add(userMovieTorrentVO);
 
 		// if any torrent got downloaded status use it, otherwise the next in line is scheduled and if nothing else the default is none.
@@ -44,9 +45,9 @@ public class UserMovieVO {
 			downloadStatus = DownloadStatus.SCHEDULED;
 		}
 
-		if (latestUploadDate == null || latestUploadDate.before(torrentUploadDate)) {
-			latestUploadDate = torrentUploadDate;
-		}
+//		if (latestUploadDate == null || latestUploadDate.before(torrentUploadDate)) {
+//			latestUploadDate = torrentUploadDate;
+//		}
 	}
 
 	public long getId() {
@@ -61,14 +62,6 @@ public class UserMovieVO {
 	public UserMovieVO withTitle(String title) {
 		this.title = title;
 		return this;
-	}
-
-	public void setLatestUploadDate(Date latestUploadDate) {
-		this.latestUploadDate = latestUploadDate;
-	}
-
-	public Date getLatestUploadDate() {
-		return latestUploadDate;
 	}
 
 	public DownloadStatus getDownloadStatus() {
@@ -103,5 +96,14 @@ public class UserMovieVO {
 
 	public Date getAdded() {
 		return added;
+	}
+
+	public UserMovieVO withReleaseDate(Date releaseDate) {
+		this.releaseDate = releaseDate;
+		return this;
+	}
+
+	public Date getReleaseDate() {
+		return releaseDate;
 	}
 }

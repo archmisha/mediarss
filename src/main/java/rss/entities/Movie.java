@@ -128,4 +128,8 @@ public class Movie extends Media {
 	public void setSubCenterUrlScanDate(Date subCenterUrlScanDate) {
 		this.subCenterUrlScanDate = subCenterUrlScanDate;
 	}
+
+	public Date getReleaseDate() {
+		return releaseDate;
+	}
 }

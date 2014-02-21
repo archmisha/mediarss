@@ -27,6 +27,7 @@ import rss.util.DurationMeter;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +42,7 @@ import java.util.regex.Pattern;
 @Service
 public class IMDBServiceImpl implements IMDBService {
 
+	public static final String IMDB_URL = "http://www.imdb.com/title/";
 	public static final String IMDB_CSS_URL_PREFIX = "http://z-ecx.images-amazon.com/images/G/01/imdb/css/collections/";
 	public static final String IMDB_IMAGE_URL_PREFIX = "http://ia.media-imdb.com/images/M/";
 	public static final String REST_PERSON_IMAGE_URL_PREFIX = "../../../rest/movies/imdb/person-image/";
@@ -103,8 +105,15 @@ public class IMDBServiceImpl implements IMDBService {
 			// <meta itemprop="datePublished" content="1999-03-31">
 			Matcher releaseDateMatcher = RELEASE_DATE_PATTERN.matcher(page);
 			releaseDateMatcher.find();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			Date releaseDate = sdf.parse(releaseDateMatcher.group(1));
+			String releaseDateStr = releaseDateMatcher.group(1);
+			Date releaseDate;
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				releaseDate = sdf.parse(releaseDateStr);
+			} catch (ParseException e) {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+				releaseDate = sdf.parse(releaseDateStr);
+			}
 
 			Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(page);
 			boolean isComingSoon = comingSoonMatcher.find();
