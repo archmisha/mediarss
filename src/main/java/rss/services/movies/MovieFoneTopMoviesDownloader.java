@@ -69,10 +69,14 @@ public class MovieFoneTopMoviesDownloader implements TopMoviesDownloader {
 				Movie movie = movieDao.findByImdbUrl(imdbId);
 				if (movie == null) {
 					IMDBParseResult imdbParseResult = imdbService.downloadMovieFromIMDB(imdbId);
-					movie = new Movie(imdbParseResult.getName(), imdbId, imdbParseResult.getYear(), imdbParseResult.getReleaseDate());
-					movieService.addMovie(movie, imdbParseResult);
+					if (imdbParseResult.isFound()) {
+						movie = new Movie(imdbParseResult.getName(), imdbId, imdbParseResult.getYear(), imdbParseResult.getReleaseDate());
+						movieService.addMovie(movie, imdbParseResult);
+					}
 				}
-				result.add(movie);
+				if (movie != null) {
+					result.add(movie);
+				}
 
 				if (result.size() == count) {
 					break;
