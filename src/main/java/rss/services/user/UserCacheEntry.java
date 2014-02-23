@@ -20,6 +20,7 @@ public class UserCacheEntry {
 	private List<ShowVO> trackedShows;
 	private User user;
 	private List<UserMovieVO> userMovies;
+	private List<UserMovieVO> availableMovies;
 
 	public UserCacheEntry(User user) {
 		lock = new ReentrantLock();
@@ -64,5 +65,13 @@ public class UserCacheEntry {
 
 	public void setUserMovies(List<UserMovieVO> userMovies) {
 		this.userMovies = userMovies;
+	}
+
+	public List<UserMovieVO> getAvailableMovies() {
+		return availableMovies;
+	}
+
+	public void setAvailableMovies(List<UserMovieVO> availableMovies) {
+		this.availableMovies = availableMovies;
 	}
 }

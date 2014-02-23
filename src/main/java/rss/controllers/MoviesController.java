@@ -221,7 +221,7 @@ public class MoviesController extends BaseController {
 		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("movies", movieService.getAvailableMovies(user));
+		result.put("movies", userCacheService.getAvailableMovies(user));
 		duration.stop();
 		logService.info(getClass(), "movies [availableMovies] " + duration.getDuration() + " ms");
 		return result;
@@ -236,11 +236,11 @@ public class MoviesController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		if (category.equals("availableMovies")) {
-			result.put("availableMovies", movieService.getAvailableMovies(user));
+			result.put("availableMovies", userCacheService.getAvailableMovies(user));
 			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		} else {
 			result.put("userMovies", userCacheService.getUserMovies(user));
-			result.put("availableMoviesCount", movieService.getAvailableMoviesCount(user));
+			result.put("availableMoviesCount", userCacheService.getAvailableMoviesCount(user));
 		}
 		result.put("moviesLastUpdated", getMoviesLastUpdated());
 		result.put("isAdmin", isAdmin(user));

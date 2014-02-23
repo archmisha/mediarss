@@ -102,6 +102,7 @@ public class UserCacheServiceImpl implements UserCacheService {
 				invalidateSchedule(user);
 				invalidateTrackedShows(user);
 				invalidateUserMovies(user);
+				invalidateAvailableMovies(user);
 			}
 		});
 	}
@@ -191,6 +192,29 @@ public class UserCacheServiceImpl implements UserCacheService {
 	public int getUserMoviesCount(User user) {
 		UserCacheEntry cacheEntry = cache.get(user.getId());
 		return cacheEntry.getUserMovies().size();
+	}
+
+	@Override
+	public void invalidateAvailableMovies(User user) {
+		final List<UserMovieVO> userMovies = movieService.getAvailableMovies(user);
+		performUserUpdate(user.getId(), new AtomicUserUpdate() {
+			@Override
+			public void run(UserCacheEntry cacheEntry) {
+				cacheEntry.setAvailableMovies(userMovies);
+			}
+		});
+	}
+
+	@Override
+	public List<UserMovieVO> getAvailableMovies(User user) {
+		UserCacheEntry cacheEntry = cache.get(user.getId());
+		return cacheEntry.getAvailableMovies();
+	}
+
+	@Override
+	public int getAvailableMoviesCount(User user) {
+		UserCacheEntry cacheEntry = cache.get(user.getId());
+		return cacheEntry.getAvailableMovies().size();
 	}
 
 	private void performUserUpdate(long userId, AtomicUserUpdate update) {

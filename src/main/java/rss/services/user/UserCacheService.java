@@ -27,10 +27,15 @@ public interface UserCacheService {
 
 	void invalidateUser(User user);
 
-
 	List<UserMovieVO> getUserMovies(User user);
 
 	void invalidateUserMovies(User user);
 
 	int getUserMoviesCount(User user);
+
+	void invalidateAvailableMovies(User user);
+
+	List<UserMovieVO> getAvailableMovies(User user);
+
+	int getAvailableMoviesCount(User user);
 }
