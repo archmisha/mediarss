@@ -105,6 +105,20 @@ require([
 //			console.log('dateFormat:  context=' + new Date(context) + ' ' + Moment(new Date(context)).format(f));
 			return Moment(new Date(context)).format(f);
 		});
+		Handlebars.registerHelper('ifeq', function(conditional, options) {
+			if (options.hash.value === conditional) {
+				return options.fn(this)
+			} else {
+				return options.inverse(this);
+			}
+		});
+		Handlebars.registerHelper('ifneq', function(conditional, options) {
+			if (options.hash.value !== conditional) {
+				return options.fn(this)
+			} else {
+				return options.inverse(this);
+			}
+		});
 
 		Handlebars.registerHelper('isToday', function(date, options) {
 			if (new Date(date).toDateString() == (new Date()).toDateString()) {

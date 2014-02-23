@@ -2,9 +2,9 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movie-search-result-item.tpl',
-	'qtip'
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, qtip) {
+	function(Marionette, Handlebars, template, Utils) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -12,9 +12,7 @@ define([
 			className: 'movie-search-result-item',
 
 			ui: {
-				addButton: '.movies-search-result-item-add',
-				addedStatus: '.movies-search-result-item-added',
-				movieYear: '.movie-search-result-item-year'
+				movieNameWrapper: '.movies-search-result-title-wrapper'
 			},
 
 			events: {
@@ -27,29 +25,22 @@ define([
 
 				var that = this;
 				this.model.on('change:added', function() {
-					that.setStatus();
+					that.render();
 				});
 			},
 
-			setStatus: function() {
-				if (this.model.get('added')) {
-					this.ui.addButton.hide();
-					this.ui.addedStatus.show();
-				} else {
-					this.ui.addButton.show();
-					this.ui.addedStatus.hide();
-				}
-			},
-
 			onRender: function() {
-				this.setStatus();
-				if (this.model.get('year') === -1) {
-					this.ui.movieYear.hide();
-				}
+				Utils.addTooltip([this.ui.movieNameWrapper]);
 			},
 
 			onMovieSearchResultItemAddClick: function() {
 				this.vent.trigger('movie-search-result-item-add', this.model);
+			},
+
+			templateHelpers: function() {
+				return {
+					'escapedTitle': Utils.fixForTooltip(this.model.get('name') + ' (' + this.model.get('year') + ')')
+				};
 			}
 		});
 	});

@@ -1,11 +1,11 @@
 define([
+	'jquery',
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movie-item.tpl',
-	'qtip',
 	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, qtip, Utils) {
+	function($, Marionette, Handlebars, template, Utils) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
