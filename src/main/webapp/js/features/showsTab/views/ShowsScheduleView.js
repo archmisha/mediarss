@@ -12,14 +12,11 @@ define([
 			template: Handlebars.compile(template),
 			className: 'shows-schedule-list',
 
-			ui: {
-				loadingComponent: '.shows-schedule-loading'
-			},
-
 			constructor: function(options) {
 				this.schedule = options.schedule;
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+
 				this.model = new ShowsSchedule();
 				this.vent.on('tracked-shows-change', this._onScheduleUpdate, this);
 			},
@@ -37,9 +34,6 @@ define([
 			},
 
 			onRender: function() {
-				if (this.model.get('schedule')) {
-					this.ui.loadingComponent.hide();
-				}
 			}
 		});
 	});

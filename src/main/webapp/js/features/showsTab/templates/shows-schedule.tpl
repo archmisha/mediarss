@@ -1,4 +1,6 @@
+{{#ifundef schedule}}
 <span class='shows-schedule-loading'>loading ...</span>
+{{/ifundef}}
 {{#each schedule.schedules}}
     {{#isToday date}}
         <div class='shows-schedule-day'>{{dateFormat this format="DD/MM (dddd)" default='never'}} - <span class='shows-schedule-today'>Today</span></div>

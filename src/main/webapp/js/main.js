@@ -119,6 +119,13 @@ require([
 				return options.inverse(this);
 			}
 		});
+		Handlebars.registerHelper('ifundef', function(conditional, options) {
+			if (!conditional) {
+				return options.fn(this)
+			} else {
+				return options.inverse(this);
+			}
+		});
 
 		Handlebars.registerHelper('isToday', function(date, options) {
 			if (new Date(date).toDateString() == (new Date()).toDateString()) {
