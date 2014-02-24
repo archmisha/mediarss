@@ -3,9 +3,10 @@
 define([
 	'marionette',
 	'routers/RoutingPaths',
-	'features/home/views/HomeView'
+	'features/home/views/HomeView',
+	'utils/Utils'
 ],
-	function(Marionette, RoutingPaths, HomeView) {
+	function(Marionette, RoutingPaths, HomeView, Utils) {
 		"use strict";
 
 		return Marionette.Controller.extend({
@@ -41,9 +42,7 @@ define([
 
 			logout: function() {
 				// it is host:port/#logout here
-				var url = window.parent.location.href;
-				url = url.substring(0, url.lastIndexOf('/') + 1);
-				window.parent.location = url + "rest/user/logout";
+				window.parent.location = Utils.getBaseUrl().getBaseUrl() + "/rest/user/logout";
 			},
 
 			_show: function(tabToSelect, tabParams) {

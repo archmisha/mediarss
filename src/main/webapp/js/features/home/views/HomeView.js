@@ -13,9 +13,10 @@ define([
 	'features/moviesTab/views/MoviesTabView',
 	'features/adminTab/views/AdminTabView',
 	'features/settingsTab/views/SettingsTabView',
-	'utils/StringUtils'
+	'utils/StringUtils',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, HeaderView, HomeHeaderTabs, MastheadView, HttpUtils, RoutingPaths, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, SettingsTabView, StringUtils) {
+	function(Marionette, Handlebars, template, HeaderView, HomeHeaderTabs, MastheadView, HttpUtils, RoutingPaths, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, SettingsTabView, StringUtils, Utils) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';
@@ -65,17 +66,14 @@ define([
 			onRender: function() {
 				var that = this;
 				HttpUtils.get("rest/user/pre-login", function(res) {
-					that.tabData = res;
-					that.mastheadView.setTabData(that.tabData);
-					that.homeHeaderTabs.setAdmin(that.tabData.isAdmin);
-
-					if (!that.tabData.isLoggedIn) {
-						var url = window.parent.location.href;
-						url = url.substring(0, url.lastIndexOf('/'));
-						window.parent.location = url;
+					if (!res.isLoggedIn) {
+						window.parent.location = Utils.getBaseUrl();
 						return;
 					}
 
+					that.tabData = res;
+					that.mastheadView.setTabData(that.tabData);
+					that.homeHeaderTabs.setAdmin(that.tabData.isAdmin);
 					that.mastheadRegion.show(that.mastheadView);
 					that.headerRegion.show(that.headerView);
 

@@ -50,6 +50,15 @@ define([],
 							}
 						});
 					});
+			},
+
+			getBaseUrl: function() {
+				// first cut of up to # then find last index of '/'
+				// otherwise localhost:8080/#movies/userMovies screws stuff
+				var url = window.parent.location.href;
+				url = url.substring(0, url.lastIndexOf('#'));
+				url = url.substring(0, url.lastIndexOf('/'));
+				return url;
 			}
 		};
 	});
