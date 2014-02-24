@@ -10,7 +10,12 @@
 .search-result-item {
   position: relative;
   padding: @search-result-item-padding;
-  //  font-size: @font-size-body;
+}
+
+.search-result-item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .search-result-item:hover {
@@ -49,9 +54,10 @@
 
 .search-result-item-body {
   margin-left: @search-result-item-status-width;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+
+  &:hover {
+    cursor: default;
+  }
 }
 
 .search-result-item-sub-title {
