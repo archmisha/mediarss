@@ -7,8 +7,6 @@ define([
 	'features/moviesTab/views/MovieCollectionView',
 	'features/moviesTab/views/MoviesSearchView',
 	'features/moviesTab/collections/MoviesCollection',
-	'components/search-result/views/SearchResultsCollectionView',
-	'features/collections/UserTorrentCollection',
 	'utils/HttpUtils',
 	'components/section/views/SectionView',
 	'utils/MessageBox',
@@ -17,10 +15,9 @@ define([
 	'utils/StringUtils',
 	'routers/RoutingPaths'
 ],
-	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, SearchResultsCollectionView, UserTorrentCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment, StringUtils, RoutingPaths) {
+	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment, StringUtils, RoutingPaths) {
 		"use strict";
 
-		var selectedMovie = null;
 		return Marionette.Layout.extend({
 			template: Handlebars.compile(template),
 			className: 'movies-tab',
@@ -29,8 +26,7 @@ define([
 				availableMoviesCounter: '.movies-counter',
 				userMoviesCounter: '.future-movies-counter',
 				userMoviesFilter: '.future-movies-filter',
-				availableMoviesFilter: '.movies-filter',
-				noMovieSelected: '.movies-torrents-list-movie-not-selected'
+				availableMoviesFilter: '.movies-filter'
 			},
 
 			events: {
@@ -39,9 +35,8 @@ define([
 			},
 
 			regions: {
-				moviesSearchRegin: '.movies-search-section',
+				moviesSearchRegion: '.movies-search-section',
 				moviesListRegion: '.movies-list-container',
-				movieTorrentListRegion: '.movies-torrents-list',
 				moviesSectionRegion: '.movies-section'
 			},
 
@@ -49,15 +44,10 @@ define([
 				this.vent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 
-				this.moviesCollection = new MoviesCollection();
-				this.moviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.moviesCollection});
-
-				this.movieTorrentCollection = new UserTorrentCollection();
-				this.movieTorrentColletionView = new SearchResultsCollectionView({
-					vent: this.vent,
-					collection: this.movieTorrentCollection,
-					emptyMessage: 'No available torrents yet'
-				});
+				this.availalbleMoviesCollection = new MoviesCollection();
+				this.userMoviesCollection = new MoviesCollection();
+				this.availableMoviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.availalbleMoviesCollection});
+				this.userMoviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.userMoviesCollection});
 
 				this.moviesSection = new SectionView({
 					title: 'Latest Movies',
@@ -67,18 +57,22 @@ define([
 
 				this.moviesSearchView = new MoviesSearchView({vent: this.vent});
 
-				this.vent.on('movie-selected', this.onMovieSelected, this);
 				this.vent.on('future-movie-remove', this.onUserMovieRemove, this);
 				this.vent.on('search-result-item-download', this.onMovieTorrentDownload, this);
 				this.vent.on('movie-search-add', this.onFutureMovieAddButtonClick, this);
 			},
 
 			onRender: function() {
-				this.moviesListRegion.show(this.moviesCollectionView);
 				this.moviesSectionRegion.show(this.moviesSection);
-				this.moviesSearchRegin.show(this.moviesSearchView);
+				this.moviesSearchRegion.show(this.moviesSearchView);
 
 				var isAvailableMovies = window.location.href.indexOf('userMovies') === -1;
+				if (isAvailableMovies) {
+					this.moviesListRegion.show(this.availableMoviesCollectionView);
+				} else {
+					this.moviesListRegion.show(this.userMoviesCollectionView);
+				}
+
 				var that = this;
 				HttpUtils.get('rest/movies/initial-data/' + (isAvailableMovies ? 'availableMovies' : 'userMovies'), function(res) {
 					if (isAvailableMovies) {
@@ -110,50 +104,11 @@ define([
 						that._updateAvailableMovies(res.movies);
 						that.ui.userMoviesCounter.html(res.userMoviesCount);
 					}
-					var movieModel = that.moviesCollection.get(userTorrent.get('movieId'));
-					that.onMovieSelected(movieModel);
 				});
-			},
-
-			onMovieSelected: function(movieModel) {
-				// clicked twice the same movie
-				if (selectedMovie == movieModel) {
-					return;
-				}
-				selectedMovie = movieModel;
-
-				this.moviesCollection.forEach(function(curMovieModel) {
-					curMovieModel.set('selected', false);
-				});
-				movieModel.set('selected', true);
-
-				// update server that movie is viewed
-				if (!movieModel.get('viewed')) {
-					HttpUtils.post("rest/movies/view", {
-						movieId: movieModel.get('id')
-					}, function(res) {
-						movieModel.set('viewed', true);
-						movieModel.get('torrents').forEach(function(t) {
-							t.viewed = true;
-						});
-					}, false);
-				}
-
-				this.ui.noMovieSelected.hide();
-				this.movieTorrentCollection.reset(movieModel.get('torrents'));
-				this.movieTorrentListRegion.show(this.movieTorrentColletionView);
-
-				if (movieModel.get('downloadStatus') === 'OLD') {
-					this.movieTorrentColletionView.setEmptyMessage('No available torrents');
-				} else {
-					this.movieTorrentColletionView.setEmptyMessage('No available torrents yet');
-				}
 			},
 
 			onFutureMovieAddButtonClick: function(res) {
 				this._switchToUserMovies(res.movies);
-				var movieModel = this.moviesCollection.get(res.movieId);
-				this.onMovieSelected(movieModel);
 			},
 
 			onUserMovieRemove: function(movieModel) {
@@ -163,14 +118,8 @@ define([
 				}, function(res) {
 					MessageBox.info(res.message);
 
-					that.moviesCollection.remove(movieModel.get('id'));
-					that.ui.userMoviesCounter.html(that.moviesCollection.size());
-
-					// only if the removed movie is the selected movie then clear the torrents list
-					if (selectedMovie == movieModel) {
-						that.movieTorrentListRegion.close();
-						that.ui.noMovieSelected.show();
-					}
+					that.userMoviesCollection.remove(movieModel.get('id'));
+					that.ui.userMoviesCounter.html(that.userMoviesCollection.size());
 				});
 			},
 
@@ -180,7 +129,7 @@ define([
 
 			_updateUserMovies: function(movies) {
 				this.ui.userMoviesCounter.html(movies.length);
-				this.moviesCollection.reset(movies);
+				this.userMoviesCollection.reset(movies);
 
 				var moviesBeingSearched = this._getMoviesBeingSearched();
 				if (moviesBeingSearched.length > 0) {
@@ -190,7 +139,7 @@ define([
 
 			_getMoviesBeingSearched: function() {
 				var moviesBeingSearched = [];
-				this.moviesCollection.forEach(function(movieModel) {
+				this.userMoviesCollection.forEach(function(movieModel) {
 					if (movieModel.get('downloadStatus') === 'BEING_SEARCHED') {
 						moviesBeingSearched.push(movieModel.get('id'));
 					}
@@ -200,14 +149,12 @@ define([
 
 			_updateAvailableMovies: function(movies) {
 				this.ui.availableMoviesCounter.html(movies.length);
-				this.moviesCollection.reset(movies);
+				this.availalbleMoviesCollection.reset(movies);
 			},
 
 			_switchToUserMovies: function(movies) {
 				Backbone.history.navigate(StringUtils.formatRoute(RoutingPaths.MOVIES, 'userMovies'), {trigger: false});
 
-				this.movieTorrentListRegion.close();
-				this.ui.noMovieSelected.show();
 				this.ui.availableMoviesFilter.removeClass('filter-selected');
 				this.ui.userMoviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.addClass('future-movies-list');
@@ -217,8 +164,6 @@ define([
 			_switchToAvailableMovies: function(movies) {
 				Backbone.history.navigate(StringUtils.formatRoute(RoutingPaths.MOVIES, 'availableMovies'), {trigger: false});
 
-				this.movieTorrentListRegion.close();
-				this.ui.noMovieSelected.show();
 				this.ui.userMoviesFilter.removeClass('filter-selected');
 				this.ui.availableMoviesFilter.addClass('filter-selected');
 				this.moviesListRegion.$el.removeClass('future-movies-list');
@@ -235,6 +180,7 @@ define([
 				var that = this;
 				HttpUtils.get('rest/movies/user-movies', function(res) {
 					that._updateUserMovies(res.movies);
+					that.moviesListRegion.show(that.userMoviesCollectionView);
 				});
 			},
 
@@ -252,6 +198,7 @@ define([
 				var that = this;
 				HttpUtils.get('rest/movies/available-movies', function(res) {
 					that._updateAvailableMovies(res.movies);
+					that.moviesListRegion.show(that.availableMoviesCollectionView);
 				});
 			},
 
@@ -271,15 +218,18 @@ define([
 						ids: moviesBeingSearched
 					}).success(function(res) {
 						if (that.timer !== null) {
+							var moviesCollection;
+							if (this._isUserMoviesSelected()) {
+								moviesCollection = this.userMoviesCollection;
+							} else {
+								moviesCollection = this.availalbleMoviesCollection;
+							}
+
 							for (var i = 0; i < res.completed.length; ++i) {
 								var el = res.completed[i];
-								var movieModel = that.moviesCollection.get(el.id);
+								var movieModel = moviesCollection.get(el.id);
 								movieModel.set('torrents', el.torrents);
 								movieModel.set('downloadStatus', el.downloadStatus);
-							}
-							if (selectedMovie == movieModel) {
-								selectedMovie = null;
-								that.onMovieSelected(movieModel);
 							}
 
 							if (res.completed.length === moviesBeingSearched.length) {

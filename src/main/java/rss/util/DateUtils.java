@@ -160,6 +160,12 @@ public class DateUtils {
 		return isWithinDaysFuture(cal, days);
 	}
 
+	public static boolean isWithinDaysPast(Date date, int days) {
+		// abs just in case, to avoid mistakes
+		return DateUtils.isAfterDay(date, DateUtils.getPastDate(Math.abs(days))) &&
+			   DateUtils.isBeforeDay(date, new Date());
+	}
+
 	/**
 	 * <p>Checks if a calendar date is after today and within a number of days in the future.</p>
 	 *
@@ -209,7 +215,7 @@ public class DateUtils {
 	 *
 	 * @param date The date.
 	 * @return true iff the date is not null and any of the date's hour, minute,
-	 *         seconds or millisecond values are greater than zero.
+	 * seconds or millisecond values are greater than zero.
 	 */
 	public static boolean hasTime(Date date) {
 		if (date == null) {

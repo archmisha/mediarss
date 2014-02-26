@@ -121,13 +121,13 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
-	@RequestMapping(value = "/view", method = RequestMethod.POST)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void markMovieViewed(@RequestParam("movieId") long movieId) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		movieService.markMovieViewed(user, movieId);
-	}
+//	@RequestMapping(value = "/view", method = RequestMethod.POST)
+//	@ResponseBody
+//	@Transactional(propagation = Propagation.REQUIRED)
+//	public void markMovieViewed(@RequestParam("movieId") long movieId) {
+//		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+//		movieService.markMovieViewed(user, movieId);
+//	}
 
 	@RequestMapping(value = "/future/add", method = RequestMethod.POST)
 	@ResponseBody

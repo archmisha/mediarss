@@ -18,7 +18,6 @@ import rss.controllers.vo.UserMovieVO;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
-import rss.dao.ViewDao;
 import rss.entities.*;
 import rss.services.SessionService;
 import rss.services.downloader.DownloadConfig;
@@ -51,6 +50,7 @@ import java.util.concurrent.*;
 public class MovieServiceImpl implements MovieService {
 
 	public static final int USER_MOVIES_DISPLAY_DAYS_HISTORY = 14;
+	public static final int DAYS_TORRENT_CONSIDERED_NEW = 7;
 
 	@Autowired
 	private SessionService sessionService;
@@ -82,8 +82,8 @@ public class MovieServiceImpl implements MovieService {
 	@Autowired
 	private TorrentzParser torrentzParser;
 
-	@Autowired
-	private ViewDao viewDao;
+//	@Autowired
+//	private ViewDao viewDao;
 
 	@Autowired
 	private SubtitlesService subtitlesService;
@@ -149,15 +149,15 @@ public class MovieServiceImpl implements MovieService {
 		return result;
 	}
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	public int getUserMoviesCount(User user) {
-		return movieDao.findUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY);
-	}
+//	@Transactional(propagation = Propagation.REQUIRED)
+//	public int getUserMoviesCount(User user) {
+//		return movieDao.findUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY);
+//	}
 
-	@Override
-	public int getAvailableMoviesCount(User user) {
-		return movieDao.findUploadedSinceCount(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7));
-	}
+//	@Override
+//	public int getAvailableMoviesCount(User user) {
+//		return movieDao.findUploadedSinceCount(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7));
+//	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public List<UserMovieVO> getUserMovies(User user) {
@@ -235,18 +235,19 @@ public class MovieServiceImpl implements MovieService {
 
 	private ArrayList<UserMovieVO> populateUserMovieTorrents(User user,
 															 Map<Long, Torrent> torrentsByIds,
-															 Collection<Movie> latestMovies,
+															 Collection<Movie> movies,
 															 UserMoviesVOContainer userMoviesVOContainer) {
-		// get all userMovieTorrents related to the latest movies
-		for (UserMovieTorrent userTorrent : userTorrentDao.findUserMovieTorrents(user, latestMovies)) {
+		// get all userMovieTorrents related to the given movies
+		for (UserMovieTorrent userTorrent : userTorrentDao.findUserMovieTorrents(user, movies)) {
 			Movie movie = userTorrent.getUserMovie().getMovie();
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
-			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(true)/*, userTorrent.getTorrent().getDateUploaded()*/);
+			boolean isViewed = !DateUtils.isWithinDaysPast(userTorrent.getTorrent().getDateUploaded(), DAYS_TORRENT_CONSIDERED_NEW);
+			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(isViewed)/*, userTorrent.getTorrent().getDateUploaded()*/);
 			torrentsByIds.put(userTorrent.getTorrent().getId(), userTorrent.getTorrent());
 		}
 
 		// add movies that had no userMovieTorrents
-		enrichWithNonUserTorrents(user, latestMovies, userMoviesVOContainer, torrentsByIds);
+		enrichWithNonUserTorrents(user, movies, userMoviesVOContainer, torrentsByIds);
 
 		ArrayList<UserMovieVO> result = new ArrayList<>(userMoviesVOContainer.getUserMovies());
 
@@ -266,11 +267,12 @@ public class MovieServiceImpl implements MovieService {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 
 			boolean areAllViewed = true;
-			View view = viewDao.find(user, movie.getId());
+//			View view = viewDao.find(user, movie.getId());
 
 			for (Torrent torrent : torrentDao.find(org.apache.commons.collections.CollectionUtils.subtract(movie.getTorrentIds(), torrentsByIds.keySet()))) {
 				torrentsByIds.put(torrent.getId(), torrent);
-				boolean isViewed = view != null && view.getCreated().after(torrent.getCreated());
+//				boolean isViewed = view != null && view.getCreated().after(torrent.getCreated());
+				boolean isViewed = !DateUtils.isWithinDaysPast(torrent.getCreated(), DAYS_TORRENT_CONSIDERED_NEW);
 				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed)/*, torrent.getDateUploaded()*/);
 				areAllViewed &= isViewed;
 			}
@@ -450,18 +452,18 @@ public class MovieServiceImpl implements MovieService {
 		return userMovie;
 	}
 
-	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void markMovieViewed(User user, long movieId) {
-		View view = viewDao.find(user, movieId);
-		if (view == null) {
-			view = new View();
-			view.setUser(user);
-			view.setObjectId(movieId);
-			viewDao.persist(view);
-		}
-		view.setCreated(new Date());
-	}
+//	@Override
+//	@Transactional(propagation = Propagation.REQUIRED)
+//	public void markMovieViewed(User user, long movieId) {
+//		View view = viewDao.find(user, movieId);
+//		if (view == null) {
+//			view = new View();
+//			view.setUser(user);
+//			view.setObjectId(movieId);
+//			viewDao.persist(view);
+//		}
+//		view.setCreated(new Date());
+//	}
 
 	@Override
 	public DownloadResult<Movie, MovieRequest> downloadLatestMovies() {
