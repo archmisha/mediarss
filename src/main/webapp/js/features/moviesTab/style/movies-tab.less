@@ -16,7 +16,7 @@
   border: @list-border solid #CCCCCC;
   border-radius: 5px;
   padding: @list-padding;
-  width: 500px;
+  max-width: 500px;
 }
 
 .movie-item-torrents-collapse,
@@ -52,40 +52,48 @@
   position: relative;
 }
 
+.movie-item-new-label-short,
 .movie-item-new-label {
-  display: none;
   background-color: red;
   color: yellow;
   border-radius: 5px;
   padding: 0px 3px;
+  font-weight: normal;
+  white-space: nowrap;
+  display: none;
+}
+
+.movie-item-new-label {
   float: left;
 }
 
 @movie-item-new-label-width: 50px;
 @movie-item-icon-wrapper-width: 24px;
 .movie-item-title-wrapper {
-  //  margin-right: @movie-item-new-label-width;
 }
 
-.movie-item-title-wrapper-with-new-label {
-  //  margin-left: @movie-item-icon-wrapper-width;
-  //  margin-right: @movie-item-new-label-width;
-}
-
+.movie-item-title-no-wrap,
 .movie-item-title {
   cursor: default;
   font-weight: bold;
-  margin-right: 5px;
+}
+
+.movie-item-title {
+  float: left;
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   max-width: 400px;
-  float: left;
+  margin-right: 10px;
+}
+
+.movie-item-title-no-wrap {
+  display: none;
+  margin-right: 20px;
 }
 
 .movie-item-inner {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  height: 20px;
 }
 
 .movie-item-icon-wrapper {
@@ -302,5 +310,22 @@
 
   .movies-tab {
     margin-left: 0px;
+  }
+
+  .movie-item-title-no-wrap {
+    display: block;
+  }
+
+  .movie-item-title {
+    display: none;
+  }
+
+  .movie-item-long-wrapper {
+    display: none;
+  }
+
+  // when small resoultion, we remove the height and the float and let the text wrap itself multiple lines
+  .movie-item-inner {
+    height: auto;
   }
 }

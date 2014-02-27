@@ -28,7 +28,8 @@ define([
 				showAllLink: '.movie-item-torrents-show-all',
 				statusIconsContainer: '.movie-item-icon-wrapper',
 				titleWrapper: '.movie-item-title-wrapper',
-				newTorrentsLabel: '.movie-item-new-label'
+				newTorrentsLabel: '.movie-item-new-label',
+				newTorrentsLabelShort: '.movie-item-new-label-short'
 			},
 
 			events: {
@@ -112,11 +113,10 @@ define([
 
 				if (this.notViewedCounter > 0) {
 					this.ui.statusIconsContainer.addClass('movie-item-icon-wrapper-with-new-label');
-					this.ui.titleWrapper.addClass('movie-item-title-wrapper-with-new-label');
 					this.ui.newTorrentsLabel.show();
+					this.ui.newTorrentsLabelShort.show();
 				} else {
 					this.ui.statusIconsContainer.removeClass('movie-item-icon-wrapper-with-new-label');
-					this.ui.titleWrapper.removeClass('movie-item-title-wrapper-with-new-label');
 				}
 			},
 

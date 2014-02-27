@@ -12,8 +12,12 @@
     </div>
     <div class='movie-item-title-wrapper'>
         <div class='movie-item-inner'>
-            <div class='movie-item-title' title="{{{escapedTitle}}}">{{{title}}}</div>
-            <span class='movie-item-new-label'>{{notViewedTorrentsCounter}} new</span>
+            <div class='movie-item-long-wrapper'>
+                <div class='movie-item-title' title="{{{escapedTitle}}}">{{{title}}}</div>
+                <span class='movie-item-new-label'>{{notViewedTorrentsCounter}} new</span>
+            </div>
+            <span class='movie-item-title-no-wrap' title="{{{escapedTitle}}}">{{{title}}}&nbsp;&nbsp;<span
+                    class='movie-item-new-label-short'>{{notViewedTorrentsCounter}} new</span></span>
             <a href='rest/movies/imdb/{{id}}' class='movie-show-preview-{{id}}'><img src='images/preview.gif'
                                                                                      class='movie-show-preview-image'/></a>
         </div>
