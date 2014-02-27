@@ -139,3 +139,21 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.search-result-item-size-small {
+  display: none;
+}
+
+@media screen and (max-width: 480px) {
+  .search-result-item-title {
+    white-space: inherit;
+  }
+
+  .search-result-item-size-large {
+    display: none;
+  }
+
+  .search-result-item-size-small {
+    display: block;
+  }
+}
