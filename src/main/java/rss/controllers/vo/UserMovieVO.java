@@ -16,24 +16,14 @@ public class UserMovieVO {
 	private List<UserMovieTorrentVO> viewedTorrents;
 	private List<UserMovieTorrentVO> notViewedTorrents;
 	private DownloadStatus downloadStatus;
-	private boolean viewed;
 	private Date scheduledDate;
 	private Date added;
 	private Date releaseDate;
 
 	public UserMovieVO() {
-		viewed = false;
 		viewedTorrents = new ArrayList<>();
 		notViewedTorrents = new ArrayList<>();
 		downloadStatus = DownloadStatus.NONE;
-	}
-
-	public boolean isViewed() {
-		return viewed;
-	}
-
-	public void setViewed(boolean isViewed) {
-		this.viewed = isViewed;
 	}
 
 	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO/*, Date torrentUploadDate*/) {

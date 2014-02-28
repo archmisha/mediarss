@@ -21,9 +21,6 @@ define([
 
 			onTrackedShowRemove: function() {
 				this.vent.trigger('tracked-show-remove', this.model);
-			},
-
-			onRender: function() {
 			}
 		});
 	});

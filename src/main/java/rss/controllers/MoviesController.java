@@ -166,6 +166,7 @@ public class MoviesController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> removeFutureMovie(@RequestParam("movieId") long movieId) {
+		DurationMeter duration = new DurationMeter();
 		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		UserMovie userMovie = movieDao.findUserMovie(user, movieId);
 		// no idea how can happen, dima had it
@@ -176,6 +177,9 @@ public class MoviesController extends BaseController {
 			movieDao.delete(userMovie);
 			userCacheService.invalidateUserMovies(user);
 		}
+
+		duration.stop();
+		logService.info(getClass(), "movies [remove userMovies] " + duration.getDuration() + " ms");
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("message", "Movie " + (userMovie == null ? "" : "'" + userMovie.getMovie().getName() + "'") + " was removed from your movies");

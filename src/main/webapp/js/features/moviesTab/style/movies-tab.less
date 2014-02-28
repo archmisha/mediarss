@@ -3,6 +3,8 @@
 @list-padding: 5px;
 @list-border: 1px;
 @filters-height: 20px;
+@movie-item-new-label-width: 50px;
+@movie-item-icon-wrapper-width: 24px;
 
 .movies-tab {
   margin-left: 142px;
@@ -68,18 +70,13 @@
   float: left;
 }
 
-@movie-item-new-label-width: 50px;
-@movie-item-icon-wrapper-width: 24px;
-.movie-item-title-wrapper {
-}
-
-.movie-item-title-no-wrap,
-.movie-item-title {
+.movie-item-title-text-short,
+.movie-item-title-text {
   cursor: default;
   font-weight: bold;
 }
 
-.movie-item-title {
+.movie-item-title-text {
   float: left;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -87,19 +84,17 @@
   max-width: 400px;
 }
 
-.movie-item-title-no-wrap {
+.movie-item-title-text-short {
   display: none;
   margin-right: 20px;
 }
 
-.movie-item-inner {
+.movie-item-title {
   height: 20px;
 }
 
 .movie-item-icon-wrapper {
-  position: absolute;
-  top: 4px;
-  left: 0px;
+  float: left;
   height: 24px;
   width: @movie-item-icon-wrapper-width;
 }
@@ -130,13 +125,6 @@
   .future-movie-item-remove-image {
     display: inline !important;
   }
-
-  .movie-item-scheduled-image,
-  .movie-item-searching-image,
-  .movie-item-downloaded-image,
-  .movie-item-future-image {
-    display: none !important;
-  }
 }
 
 .movie-show-preview-image {
@@ -153,8 +141,12 @@
 .future-movie-item-remove-image {
   cursor: pointer;
   color: #097fe3;
-  text-decoration: underline;
   margin-left: 10px;
+  font-weight: normal;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .movie-item-not-viewed {
@@ -202,15 +194,16 @@
   font-weight: bold;
 }
 
-.movie-sub-title,
+.movie-item-sub-title,
 .movie-torrent-sub-title {
+  margin-left: @movie-item-icon-wrapper-width;
   font-size: 11px;
   color: #808080;
   margin-bottom: 4px;
   font-weight: normal; /* no bold of not-viewed */
 }
 
-.movie-sub-title,
+.movie-item-sub-title,
 .movie-scheduled-on {
   display: none;
 }
@@ -316,11 +309,11 @@
     margin-left: 0px;
   }
 
-  .movie-item-title-no-wrap {
+  .movie-item-title-text-short {
     display: block;
   }
 
-  .movie-item-title {
+  .movie-item-title-text {
     display: none;
   }
 
@@ -328,8 +321,8 @@
     display: none;
   }
 
-  // when small resoultion, we remove the height and the float and let the text wrap itself multiple lines
-  .movie-item-inner {
+  // when small resolution, we remove the height and the float and let the text wrap itself multiple lines
+  .movie-item-title {
     height: auto;
   }
 }

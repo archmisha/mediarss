@@ -170,7 +170,6 @@ public class MovieServiceImpl implements MovieService {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(userMovie.getMovie());
 			userMovieVO.withScheduledOn(userMovie.getUpdated());
 			userMovieVO.withAdded(userMovie.getUpdated());
-			userMovieVO.setViewed(true);
 			// if there are not torrents at all yet, it is a future movie or being searched right now or an old movie without torrents
 			if (userMovie.getMovie().getTorrentIds().isEmpty()) {
 				if (moviesBeingSearched.containsKey(userMovie.getMovie())) {
@@ -268,16 +267,11 @@ public class MovieServiceImpl implements MovieService {
 		for (Movie movie : movies) {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 
-			boolean areAllViewed = true;
-
 			for (Torrent torrent : torrentDao.find(org.apache.commons.collections.CollectionUtils.subtract(movie.getTorrentIds(), torrentsByIds.keySet()))) {
 				torrentsByIds.put(torrent.getId(), torrent);
-				boolean isViewed = !DateUtils.isWithinDaysPast(torrent.getCreated(), DAYS_TORRENT_CONSIDERED_NEW);
+				boolean isViewed = !DateUtils.isWithinDaysPast(torrent.getDateUploaded(), DAYS_TORRENT_CONSIDERED_NEW);
 				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed)/*, torrent.getDateUploaded()*/);
-				areAllViewed &= isViewed;
 			}
-
-			userMovieVO.setViewed(areAllViewed);
 		}
 	}
 

@@ -20,9 +20,9 @@ define([
 				scheduledImage: '.movie-item-scheduled-image',
 				downloadedImage: '.movie-item-downloaded-image',
 				searchingImage: '.movie-item-searching-image',
-				movieTitle: '.movie-item-title',
+				movieTitle: '.movie-item-title-text',
 				futureImage: '.movie-item-future-image',
-				subTitle: '.movie-sub-title',
+				subTitle: '.movie-item-sub-title',
 				scheduledOn: '.movie-scheduled-on',
 				collapseLink: '.movie-item-torrents-collapse',
 				showAllLink: '.movie-item-torrents-show-all',
@@ -34,7 +34,8 @@ define([
 
 			events: {
 				'click': 'onMovieClick',
-				'click .future-movie-item-remove-image .future-movie-item-remove-image-short': 'onFutureMovieRemoveClick',
+				'click .future-movie-item-remove-image-short': 'onFutureMovieRemoveClick',
+				'click .future-movie-item-remove-image': 'onFutureMovieRemoveClick',
 				'click .movie-item-torrents-show-all': '_onShowAllClick',
 				'click .movie-item-torrents-collapse': '_onCollapseClick'
 			},
@@ -140,17 +141,22 @@ define([
 				this.ui.downloadedImage.hide();
 				this.ui.futureImage.hide();
 				this.ui.searchingImage.hide();
+				this.ui.statusIconsContainer.hide();
 
 				if (this.model.get('downloadStatus') == 'SCHEDULED') {
 					this.ui.scheduledImage.show();
+					this.ui.statusIconsContainer.show();
 				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
 					this.ui.downloadedImage.show();
+					this.ui.statusIconsContainer.show();
 				} else if (this.model.get('downloadStatus') == 'BEING_SEARCHED') {
 					this.ui.searchingImage.show();
+					this.ui.statusIconsContainer.show();
 				} else if (this.model.get('downloadStatus') == 'FUTURE') {
 					this.ui.futureImage.show();
 					this.ui.scheduledOn.show();
 					this.ui.subTitle.show();
+					this.ui.statusIconsContainer.show();
 				}
 			},
 

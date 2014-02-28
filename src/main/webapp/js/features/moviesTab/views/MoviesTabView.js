@@ -118,7 +118,7 @@ define([
 				}, function(res) {
 					MessageBox.info(res.message);
 
-					that.userMoviesCollection.remove(movieModel.get('id'));
+					that.userMoviesCollection.remove(movieModel);
 					that.ui.userMoviesCounter.html(that.userMoviesCollection.size());
 				});
 			},
