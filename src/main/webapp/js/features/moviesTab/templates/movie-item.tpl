@@ -8,16 +8,19 @@
              title="The Movie Will Be Downloaded As Soon As It Is Out"/>
         <img src="images/searching.png" width="18" height="18" class='movie-item-searching-image'
              title="Movie search is in progress"/>
-        <img src='images/remove.png' class='future-movie-item-remove-image'/>
+        <!--<img src='images/remove.png' class='future-movie-item-remove-image'/>-->
     </div>
     <div class='movie-item-title-wrapper'>
         <div class='movie-item-inner'>
             <div class='movie-item-long-wrapper'>
                 <div class='movie-item-title' title="{{{escapedTitle}}}">{{{title}}}</div>
                 <span class='movie-item-new-label'>{{notViewedTorrentsCounter}} new</span>
+                <span class='future-movie-item-remove-image'>remove</span>
             </div>
             <span class='movie-item-title-no-wrap' title="{{{escapedTitle}}}">{{{title}}}&nbsp;&nbsp;<span
-                    class='movie-item-new-label-short'>{{notViewedTorrentsCounter}} new</span></span>
+                    class='movie-item-new-label-short'>{{notViewedTorrentsCounter}} new</span>
+                <span class='future-movie-item-remove-image-short'>remove</span>
+            </span>
             <a href='rest/movies/imdb/{{id}}' class='movie-show-preview-{{id}}'><img src='images/preview.gif'
                                                                                      class='movie-show-preview-image'/></a>
         </div>

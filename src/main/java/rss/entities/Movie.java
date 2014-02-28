@@ -12,7 +12,7 @@ import java.util.Date;
 @Table(name = "movie")
 @NamedQueries({
 		@NamedQuery(name = "Movie.findByDateUploaded",
-				query = "select m from Movie as m join m.torrentIds as tid " +
+				query = "select distinct m from Movie as m join m.torrentIds as tid " +
 						"where tid in (select t.id from Torrent as t where t.dateUploaded > :dateUploaded)"),
 		@NamedQuery(name = "Movie.findOrderedByDateUploaded",
 				query = "select m, max(t.dateUploaded) as uploaded from Movie as m join m.torrentIds as tid, Torrent as t " +

@@ -143,7 +143,8 @@ public class MovieServiceImpl implements MovieService {
 
 		UserMovieStatusComparator comparator = new UserMovieStatusComparator(torrentsByIds);
 		for (UserMovieVO userMovieVO : result) {
-			Collections.sort(userMovieVO.getTorrents(), comparator);
+			Collections.sort(userMovieVO.getViewedTorrents(), comparator);
+			Collections.sort(userMovieVO.getNotViewedTorrents(), comparator);
 		}
 
 		return result;
@@ -196,7 +197,7 @@ public class MovieServiceImpl implements MovieService {
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public ArrayList<UserMovieVO> getAvailableMovies(User user) {
+	public List<UserMovieVO> getAvailableMovies(User user) {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();
 		UserMoviesVOContainer userMoviesVOContainer = new UserMoviesVOContainer();
 
@@ -247,31 +248,30 @@ public class MovieServiceImpl implements MovieService {
 		}
 
 		// add movies that had no userMovieTorrents
-		enrichWithNonUserTorrents(user, movies, userMoviesVOContainer, torrentsByIds);
+		enrichWithNonUserTorrents(movies, userMoviesVOContainer, torrentsByIds);
 
 		ArrayList<UserMovieVO> result = new ArrayList<>(userMoviesVOContainer.getUserMovies());
 
 		UserMovieStatusComparator comparator = new UserMovieStatusComparator(torrentsByIds);
 		for (UserMovieVO userMovieVO : result) {
-			Collections.sort(userMovieVO.getTorrents(), comparator);
+			Collections.sort(userMovieVO.getNotViewedTorrents(), comparator);
+			Collections.sort(userMovieVO.getViewedTorrents(), comparator);
 		}
 		return result;
 	}
 
 	private Collection<Movie> getLatestMovies() {
-		return movieDao.findUploadedSince(DateUtils.getPastDate(new Date()/*sessionService.getPrevLoginDate()*/, 14));
+		return movieDao.findUploadedSince(DateUtils.getPastDate(new Date(), 7));
 	}
 
-	private void enrichWithNonUserTorrents(User user, Collection<Movie> movies, UserMoviesVOContainer userMoviesVOContainer, Map<Long, Torrent> torrentsByIds) {
+	private void enrichWithNonUserTorrents(Collection<Movie> movies, UserMoviesVOContainer userMoviesVOContainer, Map<Long, Torrent> torrentsByIds) {
 		for (Movie movie : movies) {
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 
 			boolean areAllViewed = true;
-//			View view = viewDao.find(user, movie.getId());
 
 			for (Torrent torrent : torrentDao.find(org.apache.commons.collections.CollectionUtils.subtract(movie.getTorrentIds(), torrentsByIds.keySet()))) {
 				torrentsByIds.put(torrent.getId(), torrent);
-//				boolean isViewed = view != null && view.getCreated().after(torrent.getCreated());
 				boolean isViewed = !DateUtils.isWithinDaysPast(torrent.getCreated(), DAYS_TORRENT_CONSIDERED_NEW);
 				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed)/*, torrent.getDateUploaded()*/);
 				areAllViewed &= isViewed;
@@ -295,7 +295,6 @@ public class MovieServiceImpl implements MovieService {
 						.withId(movie.getId())
 						.withTitle(movie.getName())
 						.withReleaseDate(movie.getReleaseDate());
-//						.withImdbUrl(movie.getImdbUrl());
 				lwUserMovies.put(movie.getName(), userMovieVO);
 			}
 			return userMovieVO;

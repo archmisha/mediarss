@@ -23,7 +23,7 @@ import java.util.Set;
 @Service
 public class TopMoviesServiceImpl implements TopMoviesService {
 
-	private static final int TOP_MOVIES_COUNT = 30;
+	private static final int TOP_MOVIES_COUNT = 20;
 
 	@Autowired
 	private TopMoviesDownloader movieFoneTopMoviesDownloader;

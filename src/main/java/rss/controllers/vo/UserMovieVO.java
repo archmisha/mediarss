@@ -13,8 +13,8 @@ public class UserMovieVO {
 
 	private long id;
 	private String title;
-	private List<UserMovieTorrentVO> torrents;
-	//	private Date latestUploadDate;
+	private List<UserMovieTorrentVO> viewedTorrents;
+	private List<UserMovieTorrentVO> notViewedTorrents;
 	private DownloadStatus downloadStatus;
 	private boolean viewed;
 	private Date scheduledDate;
@@ -23,7 +23,8 @@ public class UserMovieVO {
 
 	public UserMovieVO() {
 		viewed = false;
-		torrents = new ArrayList<>();
+		viewedTorrents = new ArrayList<>();
+		notViewedTorrents = new ArrayList<>();
 		downloadStatus = DownloadStatus.NONE;
 	}
 
@@ -36,7 +37,11 @@ public class UserMovieVO {
 	}
 
 	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO/*, Date torrentUploadDate*/) {
-		torrents.add(userMovieTorrentVO);
+		if (userMovieTorrentVO.isViewed()) {
+			viewedTorrents.add(userMovieTorrentVO);
+		} else {
+			notViewedTorrents.add(userMovieTorrentVO);
+		}
 
 		// if any torrent got downloaded status use it, otherwise the next in line is scheduled and if nothing else the default is none.
 		if (userMovieTorrentVO.getDownloadStatus() == DownloadStatus.DOWNLOADED) {
@@ -72,8 +77,12 @@ public class UserMovieVO {
 		return title;
 	}
 
-	public List<UserMovieTorrentVO> getTorrents() {
-		return torrents;
+	public List<UserMovieTorrentVO> getViewedTorrents() {
+		return viewedTorrents;
+	}
+
+	public List<UserMovieTorrentVO> getNotViewedTorrents() {
+		return notViewedTorrents;
 	}
 
 	public void setDownloadStatus(DownloadStatus downloadStatus) {

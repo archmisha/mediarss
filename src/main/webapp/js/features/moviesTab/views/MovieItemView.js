@@ -34,7 +34,7 @@ define([
 
 			events: {
 				'click': 'onMovieClick',
-				'click .future-movie-item-remove-image': 'onFutureMovieRemoveClick',
+				'click .future-movie-item-remove-image .future-movie-item-remove-image-short': 'onFutureMovieRemoveClick',
 				'click .movie-item-torrents-show-all': '_onShowAllClick',
 				'click .movie-item-torrents-collapse': '_onCollapseClick'
 			},
@@ -58,27 +58,15 @@ define([
 					collection: this.movieTorrentCollection
 				});
 
-				// count how many torrents are in not-viewed state
-				this.viewedTorrents = [];
-				var viewedCounter = 0;
-				this.notViewedTorrents = [];
-				this.notViewedCounter = 0;
-				var torrents = this.model.get('torrents');
-				for (var i = 0; i < torrents.length; ++i) {
-					if (!torrents[i].viewed) {
-						this.notViewedTorrents[this.notViewedCounter++] = torrents[i];
-					} else {
-						this.viewedTorrents[viewedCounter++] = torrents[i];
-					}
-				}
 				this._showNotViewedTorrents();
 			},
 
 			_showNotViewedTorrents: function() {
-				if (this.notViewedCounter <= 6) {
-					this.movieTorrentCollection.reset(this.notViewedTorrents);
+				var notViewedTorrents = this.model.get('notViewedTorrents');
+				if (notViewedTorrents.length <= MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY) {
+					this.movieTorrentCollection.reset(notViewedTorrents);
 				} else {
-					this.movieTorrentCollection.reset(this.notViewedTorrents.slice(0, MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY));
+					this.movieTorrentCollection.reset(notViewedTorrents.slice(0, MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY));
 				}
 			},
 
@@ -107,11 +95,12 @@ define([
 
 				this.torrentsListRegion.show(this.movieTorrentCollectionView);
 
-				if (this.model.get('torrents').length === 0) {
+				if (this._getAllTorrents().length === 0 ||
+					(this.model.get('notViewedTorrents').length <= MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY && this.model.get('viewedTorrents').length === 0)) {
 					this.ui.showAllLink.hide();
 				}
 
-				if (this.notViewedCounter > 0) {
+				if (this.model.get('notViewedTorrents').length > 0) {
 					this.ui.statusIconsContainer.addClass('movie-item-icon-wrapper-with-new-label');
 					this.ui.newTorrentsLabel.show();
 					this.ui.newTorrentsLabelShort.show();
@@ -120,11 +109,14 @@ define([
 				}
 			},
 
+			_getAllTorrents: function() {
+				return [].concat(this.model.get('notViewedTorrents'), this.model.get('viewedTorrents'));
+			},
+
 			_onShowAllClick: function() {
 				this.ui.collapseLink.show();
 				this.ui.showAllLink.hide();
-				var torrents = this.model.get('torrents');
-				this.movieTorrentCollection.reset(torrents);
+				this.movieTorrentCollection.reset(this._getAllTorrents());
 				this.movieTorrentCollectionView.$el.slideDown('slow');
 			},
 
@@ -167,16 +159,17 @@ define([
 			},
 
 			_getTorrentsStatus: function() {
-				if (this.model.get('torrents').length === 1) {
+				var torrents = this._getAllTorrents();
+				if (torrents.length === 1) {
 					return 'Total 1 torrent';
-				} else if (this.model.get('torrents').length === 0) {
+				} else if (torrents.length === 0) {
 					if (this.model.get('downloadStatus') === 'OLD') {
 						return 'No available torrents';
 					} else {
 						return 'No available torrents yet';
 					}
 				} else {
-					return 'Total ' + this.model.get('torrents').length + ' torrents';
+					return 'Total ' + torrents.length + ' torrents';
 				}
 			},
 
@@ -184,7 +177,7 @@ define([
 				return {
 					'escapedTitle': Utils.fixForTooltip(this.model.get('title')),
 					'torrentsLabel': this._getTorrentsStatus(),
-					'notViewedTorrentsCounter': this.notViewedCounter
+					'notViewedTorrentsCounter': this.model.get('notViewedTorrents').length
 				};
 			}
 		});
