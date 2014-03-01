@@ -42,7 +42,7 @@ define([
 
 			logout: function() {
 				// it is host:port/#logout here
-				window.parent.location = Utils.getBaseUrl().getBaseUrl() + "/rest/user/logout";
+				window.parent.location = Utils.getBaseUrl() + "/rest/user/logout";
 			},
 
 			_show: function(tabToSelect, tabParams) {
