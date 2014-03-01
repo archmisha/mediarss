@@ -27,15 +27,37 @@
 
 .section-collapse-icons {
   float: left;
-  height: 24px;
+  height: 19px;
   background-color: white;
   padding-right: 5px;
-  padding-top: 2px;
+  padding-top: 7px;
 }
 
 .section-collapsed-icon,
 .section-expanded-icon {
   display: none;
+}
+
+.section.collapsed {
+  .section-collapsible,
+  .section-expanded-icon {
+    display: none;
+  }
+
+  .section-collapsed-icon {
+    display: block;
+  }
+}
+
+.section.expanded {
+  .section-collapsible,
+  .section-expanded-icon {
+    display: block;
+  }
+
+  .section-collapsed-icon {
+    display: none;
+  }
 }
 
 @media screen and (max-width: 1090px) {

@@ -12,6 +12,5 @@
     </div>
 </div>
 <div class='section-collapsible'>
-
     <div class='section-content'></div>
 </div>

@@ -13,9 +13,6 @@ define([
 
 			ui: {
 				collapseIconsContainer: '.section-collapse-icons',
-				sectionHeader: '.section-header',
-				collapsedIcon: '.section-collapsed-icon',
-				expandedIcon: '.section-expanded-icon',
 				collapsibleContent: '.section-collapsible',
 				counter: '.tracked-shows-counter'
 			},
@@ -50,39 +47,35 @@ define([
 					this.contentRegion.show(this.contentView);
 				}
 				this.updateCounter();
+				this.setCollapsible(this.collapsible);
 			},
 
-			onShow: function() {
-				var that = this;
-				setTimeout(function() {
-					that.collapsible = that.collapsible && (that.ui.collapseIconsContainer.css('display') !== 'none'); //that.ui.collapseIconsContainer.is(':visible');
+			setCollapsible: function(collapsible) {
+				this.collapsible = collapsible;
+				if (this.collapsible) {
+					this.ui.collapseIconsContainer.show();
+					this.ui.collapsibleContent.hide();
 
-					if (that.collapsible) {
-						that.ui.sectionHeader.addClass('section-collapsible');
-
-						if (that.expanded) {
-							that.expand();
-						} else {
-							that.collapse();
-						}
+					if (this.expanded) {
+						this.expand();
 					} else {
-						that.ui.collapseIconsContainer.hide();
-						that.ui.collapsibleContent.show();
+						this.collapse();
 					}
-				}, 50);
+				} else {
+					this.ui.collapseIconsContainer.hide();
+					this.ui.collapsibleContent.show();
+				}
 			},
 
 			collapse: function() {
-				this.ui.expandedIcon.hide();
-				this.ui.collapsedIcon.show();
-				this.ui.collapsibleContent.hide();
+				this.$el.removeClass('expanded');
+				this.$el.addClass('collapsed');
 				this.expanded = false;
 			},
 
 			expand: function() {
-				this.ui.expandedIcon.show();
-				this.ui.collapsedIcon.hide();
-				this.ui.collapsibleContent.show();
+				this.$el.addClass('expanded');
+				this.$el.removeClass('collapsed');
 				this.expanded = true;
 			},
 
@@ -93,14 +86,10 @@ define([
 
 				var that = this;
 				if (this.expanded) {
-					// here change the icons only after the animation
 					this.ui.collapsibleContent.slideUp('slow', function() {
 						that.collapse();
 					});
 				} else {
-					// change the icons before the animation
-					this.ui.expandedIcon.show();
-					this.ui.collapsedIcon.hide();
 					this.ui.collapsibleContent.slideDown('slow', function() {
 						that.expand();
 					});

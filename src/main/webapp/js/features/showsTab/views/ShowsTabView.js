@@ -66,6 +66,10 @@ define([
 				this.vent.on('tracked-shows-change', function() {
 					that.trackedShowsSection.updateCounter();
 				}, this);
+
+				$(window).resize(function(event) {
+					that._onScreenResolutionChange(event);
+				});
 			},
 
 			onRender: function() {
@@ -88,6 +92,19 @@ define([
 						that.showsSearchView.setAdmin(res.isAdmin);
 					}, false); // no need loading here
 				}
+
+				// for the first time, if desktop - need to expand if collapsed
+				this._onScreenResolutionChange(null);
+			},
+
+			onClose: function() {
+				$(window).off("resize");
+			},
+
+			_onScreenResolutionChange: function(event) {
+				var scheduleSectionCollapsible = $(window).width() <= 480;
+				console.log('window width: ' + $(window).width());
+				this.showsScheduleSection.setCollapsible(scheduleSectionCollapsible);
 			}
 		});
 	});
