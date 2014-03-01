@@ -75,7 +75,7 @@ public class SearchResult {
 	public void addFailedSearchers(Map<String, SearcherFailedReason> failedSearchers) {
 		// smart overriding
 		for (Map.Entry<String, SearcherFailedReason> entry : failedSearchers.entrySet()) {
-			if (!this.failedSearchers.containsKey(entry.getKey())) {
+			if (!this.failedSearchers.containsKey(entry.getKey()) && !sources.contains(entry.getKey())) {
 				this.failedSearchers.put(entry.getKey(), entry.getValue());
 			}
 		}
@@ -119,6 +119,9 @@ public class SearchResult {
 
 	public void addSources(Collection<String> sources) {
 		this.sources.addAll(sources);
+		for (String source : sources) {
+			failedSearchers.remove(source);
+		}
 	}
 
 	public Collection<String> getSources() {
