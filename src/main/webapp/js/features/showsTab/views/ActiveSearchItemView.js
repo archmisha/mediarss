@@ -42,7 +42,7 @@ define([
 						if (results === 1) {
 							resultsPart = '1 result';
 						} else {
-							resultsPart = results + ' result';
+							resultsPart = results + ' results';
 						}
 						this.ui.status.html(resultsPart + ', completed in ' + Moment.duration(this.model.get('end') - this.model.get('start')).humanize());
 					}
