@@ -26,7 +26,7 @@ shows:
 
 2013-04-17 19:53:24,400 [INFO ] ThePirateBayEpisodeTorrentSearcher - Removing 'How I Met Your Mother Season 07 720p' cuz a bad match for 'How I Met Your Mother season 7 720p'
 
-if a show has ended and some user has it tracked - mark in the ui for him red alert
+
   when tracked show becomes ended - notify somehow to the user in the ui? (so he can remove it manually) - dont remove it for him
    cuz maybe he still not downloaded some episode from that show with the rss
 

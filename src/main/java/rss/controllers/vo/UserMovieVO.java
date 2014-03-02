@@ -15,6 +15,8 @@ public class UserMovieVO {
 	private String title;
 	private List<UserMovieTorrentVO> viewedTorrents;
 	private List<UserMovieTorrentVO> notViewedTorrents;
+	private int viewedTorrentsCount;
+	private int notViewedTorrentsCount;
 	private DownloadStatus downloadStatus;
 	private Date scheduledDate;
 	private Date added;
@@ -24,13 +26,17 @@ public class UserMovieVO {
 		viewedTorrents = new ArrayList<>();
 		notViewedTorrents = new ArrayList<>();
 		downloadStatus = DownloadStatus.NONE;
+		viewedTorrentsCount = 0;
+		notViewedTorrentsCount = 0;
 	}
 
 	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO/*, Date torrentUploadDate*/) {
 		if (userMovieTorrentVO.isViewed()) {
 			viewedTorrents.add(userMovieTorrentVO);
+			viewedTorrentsCount++;
 		} else {
 			notViewedTorrents.add(userMovieTorrentVO);
+			notViewedTorrentsCount++;
 		}
 
 		// if any torrent got downloaded status use it, otherwise the next in line is scheduled and if nothing else the default is none.
@@ -104,5 +110,41 @@ public class UserMovieVO {
 
 	public Date getReleaseDate() {
 		return releaseDate;
+	}
+
+	public int getViewedTorrentsCount() {
+		return viewedTorrentsCount;
+	}
+
+	public int getNotViewedTorrentsCount() {
+		return notViewedTorrentsCount;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public void setViewedTorrentsCount(int viewedTorrentsCount) {
+		this.viewedTorrentsCount = viewedTorrentsCount;
+	}
+
+	public void setNotViewedTorrentsCount(int notViewedTorrentsCount) {
+		this.notViewedTorrentsCount = notViewedTorrentsCount;
+	}
+
+	public void setScheduledDate(Date scheduledDate) {
+		this.scheduledDate = scheduledDate;
+	}
+
+	public void setAdded(Date added) {
+		this.added = added;
+	}
+
+	public void setReleaseDate(Date releaseDate) {
+		this.releaseDate = releaseDate;
 	}
 }

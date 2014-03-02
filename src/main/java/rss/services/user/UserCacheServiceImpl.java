@@ -17,6 +17,7 @@ import rss.util.DurationMeter;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -174,7 +175,7 @@ public class UserCacheServiceImpl implements UserCacheService {
 	@Override
 	public List<UserMovieVO> getUserMovies(User user) {
 		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return cacheEntry.getUserMovies();
+		return levelOneCopy(cacheEntry.getUserMovies());
 	}
 
 	@Override
@@ -208,13 +209,32 @@ public class UserCacheServiceImpl implements UserCacheService {
 	@Override
 	public List<UserMovieVO> getAvailableMovies(User user) {
 		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return cacheEntry.getAvailableMovies();
+		return levelOneCopy(cacheEntry.getAvailableMovies());
 	}
 
 	@Override
 	public int getAvailableMoviesCount(User user) {
 		UserCacheEntry cacheEntry = cache.get(user.getId());
 		return cacheEntry.getAvailableMovies().size();
+	}
+
+	private List<UserMovieVO> levelOneCopy(List<UserMovieVO> movies) {
+		List<UserMovieVO> result = new ArrayList<>();
+		for (UserMovieVO movie : movies) {
+			UserMovieVO copy = new UserMovieVO();
+			copy.setId(movie.getId());
+			copy.setTitle(movie.getTitle());
+			copy.getNotViewedTorrents().addAll(movie.getNotViewedTorrents());
+			copy.setNotViewedTorrentsCount(movie.getNotViewedTorrentsCount());
+			copy.getViewedTorrents().addAll(movie.getViewedTorrents());
+			copy.setViewedTorrentsCount(movie.getViewedTorrentsCount());
+			copy.setDownloadStatus(movie.getDownloadStatus());
+			copy.setAdded(movie.getAdded());
+			copy.setReleaseDate(movie.getReleaseDate());
+			result.add(copy);
+		}
+
+		return result;
 	}
 
 	private void performUserUpdate(long userId, AtomicUserUpdate update) {

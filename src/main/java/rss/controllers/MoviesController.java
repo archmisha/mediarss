@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
+import rss.controllers.vo.UserMovieVO;
 import rss.dao.JobStatusDao;
 import rss.dao.MovieDao;
 import rss.dao.UserTorrentDao;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -203,7 +205,7 @@ public class MoviesController extends BaseController {
 		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("movies", userCacheService.getUserMovies(user));
+		result.put("movies", trimMovieTorrents(userCacheService.getUserMovies(user)));
 		duration.stop();
 		logService.info(getClass(), "movies [userMovies] " + duration.getDuration() + " ms");
 		return result;
@@ -217,7 +219,7 @@ public class MoviesController extends BaseController {
 		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 
 		Map<String, Object> result = new HashMap<>();
-		result.put("movies", userCacheService.getAvailableMovies(user));
+		result.put("movies", trimMovieTorrents(userCacheService.getAvailableMovies(user)));
 		duration.stop();
 		logService.info(getClass(), "movies [availableMovies] " + duration.getDuration() + " ms");
 		return result;
@@ -232,10 +234,10 @@ public class MoviesController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		if (category.equals("availableMovies")) {
-			result.put("availableMovies", userCacheService.getAvailableMovies(user));
+			result.put("availableMovies", trimMovieTorrents(userCacheService.getAvailableMovies(user)));
 			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		} else {
-			result.put("userMovies", userCacheService.getUserMovies(user));
+			result.put("userMovies", trimMovieTorrents(userCacheService.getUserMovies(user)));
 			result.put("availableMoviesCount", userCacheService.getAvailableMoviesCount(user));
 		}
 		result.put("moviesLastUpdated", getMoviesLastUpdated());
@@ -244,6 +246,18 @@ public class MoviesController extends BaseController {
 		logService.info(getClass(), "movies [" + category + "] " + duration.getDuration() + " ms");
 
 		return result;
+	}
+
+	private List<UserMovieVO> trimMovieTorrents(List<UserMovieVO> movies) {
+		for (UserMovieVO movie : movies) {
+			while (movie.getViewedTorrents().size() > 3) {
+				movie.getViewedTorrents().remove(movie.getViewedTorrents().size() - 1);
+			}
+			while (movie.getNotViewedTorrents().size() > 3) {
+				movie.getNotViewedTorrents().remove(movie.getNotViewedTorrents().size() - 1);
+			}
+		}
+		return movies;
 	}
 
 	private Date getMoviesLastUpdated() {
