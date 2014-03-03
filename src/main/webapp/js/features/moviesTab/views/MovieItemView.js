@@ -18,6 +18,7 @@ define([
 			className: 'movie-item',
 
 			ui: {
+				movieItemRoot: '.movie-item-root',
 				scheduledImage: '.movie-item-scheduled-image',
 				downloadedImage: '.movie-item-downloaded-image',
 				searchingImage: '.movie-item-searching-image',
@@ -80,10 +81,6 @@ define([
 			},
 
 			onRender: function() {
-				if (!this.model.get('viewed')) {
-					this.$el.addClass('movie-item-not-viewed');
-				}
-
 				this.updateDownloadStatus();
 
 				Utils.addTooltip([this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage, this.ui.searchingImage]);
@@ -160,27 +157,28 @@ define([
 			},
 
 			updateDownloadStatus: function() {
-				this.ui.scheduledImage.hide();
-				this.ui.downloadedImage.hide();
-				this.ui.futureImage.hide();
-				this.ui.searchingImage.hide();
-				this.ui.statusIconsContainer.hide();
+				this.ui.movieItemRoot.addClass('download-status-' + this.model.get('downloadStatus'));
+//				this.ui.scheduledImage.hide();
+//				this.ui.downloadedImage.hide();
+//				this.ui.futureImage.hide();
+//				this.ui.searchingImage.hide();
+//				this.ui.statusIconsContainer.hide();
 
-				if (this.model.get('downloadStatus') == 'SCHEDULED') {
-					this.ui.scheduledImage.show();
-					this.ui.statusIconsContainer.show();
-				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
-					this.ui.downloadedImage.show();
-					this.ui.statusIconsContainer.show();
-				} else if (this.model.get('downloadStatus') == 'BEING_SEARCHED') {
-					this.ui.searchingImage.show();
-					this.ui.statusIconsContainer.show();
-				} else if (this.model.get('downloadStatus') == 'FUTURE') {
-					this.ui.futureImage.show();
-					this.ui.scheduledOn.show();
-					this.ui.subTitle.show();
-					this.ui.statusIconsContainer.show();
-				}
+//				if (this.model.get('downloadStatus') == 'SCHEDULED') {
+//					this.ui.scheduledImage.show();
+//					this.ui.statusIconsContainer.show();
+//				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
+//					this.ui.downloadedImage.show();
+//					this.ui.statusIconsContainer.show();
+//				} else if (this.model.get('downloadStatus') == 'BEING_SEARCHED') {
+//					this.ui.searchingImage.show();
+//					this.ui.statusIconsContainer.show();
+//				} else if (this.model.get('downloadStatus') == 'FUTURE') {
+//					this.ui.futureImage.show();
+//					this.ui.scheduledOn.show();
+//					this.ui.subTitle.show();
+//					this.ui.statusIconsContainer.show();
+//				}
 			},
 
 			onFutureMovieRemoveClick: function() {

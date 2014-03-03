@@ -149,9 +149,6 @@
   }
 }
 
-.movie-item-not-viewed {
-}
-
 .movie-item-scheduled-image {
   display: none;
   margin-right: 3px;
@@ -278,6 +275,52 @@
 
 .movies-search-result-title-wrapper {
   margin-left: 50px;
+}
+
+.movie-item-root .movie-item-icon-wrapper {
+  display: none;
+
+  .movie-item-scheduled-image,
+  .movie-item-downloaded-image,
+  .movie-item-searching-image,
+  .movie-item-future-image {
+    display: none;
+  }
+}
+
+.movie-item-root.download-status-SCHEDULED,
+.movie-item-root.download-status-DOWNLOADED,
+.movie-item-root.download-status-BEING_SEARCHED,
+.movie-item-root.download-status-FUTURE {
+  .movie-item-icon-wrapper {
+    display: block;
+  }
+}
+
+.movie-item-root.download-status-SCHEDULED {
+  .movie-item-scheduled-image {
+    display: block;
+  }
+}
+
+.movie-item-root.download-status-DOWNLOADED {
+  .movie-item-downloaded-image {
+    display: block;
+  }
+}
+
+.movie-item-root.download-status-BEING_SEARCHED {
+  .movie-item-searching-image {
+    display: block;
+  }
+}
+
+.movie-item-root.download-status-FUTURE {
+  .movie-item-future-image,
+  .movie-scheduled-on,
+  .movie-item-sub-title {
+    display: block;
+  }
 }
 
 @media screen and (max-width: 993px) {
