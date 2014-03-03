@@ -1,11 +1,8 @@
 package rss.entities;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-
-import javax.persistence.*;
-
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * User: Michael Dikman
@@ -43,5 +40,22 @@ public abstract class BaseEntity implements Serializable {
 
 	public void setCreated(Date created) {
 		this.created = created;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		BaseEntity that = (BaseEntity) o;
+
+		if (id != that.id) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) (id ^ (id >>> 32));
 	}
 }

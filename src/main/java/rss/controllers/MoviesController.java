@@ -111,12 +111,13 @@ public class MoviesController extends BaseController {
 											 @RequestParam("isUserMovies") boolean isUserMovies) {
 		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		movieService.addMovieDownload(user, movieId, torrentId);
-		userCacheService.invalidateUserMovies(user);
 
 		Map<String, Object> result = new HashMap<>();
 		if (isUserMovies) {
+			userCacheService.invalidateUserMovies(user);
 			result.put("movies", userCacheService.getUserMovies(user));
 		} else {
+			userCacheService.invalidateAvailableMovies(user);
 			result.put("movies", movieService.getAvailableMovies(user));
 			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		}
@@ -248,11 +249,32 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
+	@RequestMapping(value = "/torrents/{movieId}", method = RequestMethod.GET)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> getMovieTorrents(@PathVariable(value = "movieId") long movieId) {
+		DurationMeter duration = new DurationMeter();
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+
+		Map<String, Object> result = new HashMap<>();
+		List<UserMovieVO> movies = userCacheService.getAvailableMovies(user);
+		movies.addAll(userCacheService.getUserMovies(user));
+		for (UserMovieVO movie : movies) {
+			if (movie.getId() == movieId) {
+				result.put("viewedTorrents", movie.getViewedTorrents());
+				result.put("notViewedTorrents", movie.getNotViewedTorrents());
+				break;
+			}
+		}
+
+		duration.stop();
+		logService.info(getClass(), "movies [torrents] " + duration.getDuration() + " ms");
+		return result;
+	}
+
 	private List<UserMovieVO> trimMovieTorrents(List<UserMovieVO> movies) {
 		for (UserMovieVO movie : movies) {
-			while (movie.getViewedTorrents().size() > 3) {
-				movie.getViewedTorrents().remove(movie.getViewedTorrents().size() - 1);
-			}
+			movie.getViewedTorrents().clear();
 			while (movie.getNotViewedTorrents().size() > 3) {
 				movie.getNotViewedTorrents().remove(movie.getNotViewedTorrents().size() - 1);
 			}

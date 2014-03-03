@@ -1,5 +1,7 @@
 package rss.controllers.vo;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,8 +11,8 @@ import java.util.List;
  * Date: 06/12/12
  * Time: 00:12
  */
+@JsonIgnoreProperties({"added", "releaseDate"})
 public class UserMovieVO {
-
 	private long id;
 	private String title;
 	private List<UserMovieTorrentVO> viewedTorrents;
@@ -30,8 +32,8 @@ public class UserMovieVO {
 		notViewedTorrentsCount = 0;
 	}
 
-	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO/*, Date torrentUploadDate*/) {
-		if (userMovieTorrentVO.isViewed()) {
+	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO, boolean isViewed) {
+		if (isViewed) {
 			viewedTorrents.add(userMovieTorrentVO);
 			viewedTorrentsCount++;
 		} else {

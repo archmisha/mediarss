@@ -5,9 +5,10 @@ define([
 	'text!features/moviesTab/templates/movie-item.tpl',
 	'utils/Utils',
 	'components/search-result/views/SearchResultsCollectionView',
-	'features/collections/UserTorrentCollection'
+	'features/collections/UserTorrentCollection',
+	'utils/HttpUtils'
 ],
-	function($, Marionette, Handlebars, template, Utils, SearchResultsCollectionView, UserTorrentCollection) {
+	function($, Marionette, Handlebars, template, Utils, SearchResultsCollectionView, UserTorrentCollection, HttpUtils) {
 		"use strict";
 
 		var MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY = 3;
@@ -46,6 +47,7 @@ define([
 
 			constructor: function(options) {
 				this.vent = options.vent;
+				this.searchResultsVent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
 
 				var that = this;
@@ -55,16 +57,22 @@ define([
 
 				this.movieTorrentCollection = new UserTorrentCollection();
 				this.movieTorrentCollectionView = new SearchResultsCollectionView({
-					vent: this.vent,
+					vent: this.searchResultsVent,
 					collection: this.movieTorrentCollection
 				});
 
 				this._showNotViewedTorrents();
+
+				this.searchResultsVent.on('search-result-item-download', this._onMovieTorrentDownload, this);
+			},
+
+			_onMovieTorrentDownload: function(userTorrent) {
+				this.vent.trigger('movie-torrent-download', userTorrent, this.model.get('id'));
 			},
 
 			_showNotViewedTorrents: function() {
 				var notViewedTorrents = this.model.get('notViewedTorrents');
-				if (notViewedTorrents.length <= MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY) {
+				if (this.model.get('notViewedTorrentsCount') <= MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY) {
 					this.movieTorrentCollection.reset(notViewedTorrents);
 				} else {
 					this.movieTorrentCollection.reset(notViewedTorrents.slice(0, MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY));
@@ -96,12 +104,12 @@ define([
 
 				this.torrentsListRegion.show(this.movieTorrentCollectionView);
 
-				if (this._getAllTorrents().length === 0 ||
-					(this.model.get('notViewedTorrents').length <= MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY && this.model.get('viewedTorrents').length === 0)) {
+				if (this.model.get('notViewedTorrentsCount') + this.model.get('viewedTorrentsCount') === 0 ||
+					(this.model.get('notViewedTorrentsCount') <= MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY && this.model.get('viewedTorrentsCount') === 0)) {
 					this.ui.showAllLink.hide();
 				}
 
-				if (this.model.get('notViewedTorrents').length > 0) {
+				if (this.model.get('notViewedTorrentsCount') > 0) {
 					this.ui.statusIconsContainer.addClass('movie-item-icon-wrapper-with-new-label');
 					this.ui.newTorrentsLabel.show();
 					this.ui.newTorrentsLabelShort.show();
@@ -117,8 +125,23 @@ define([
 			_onShowAllClick: function() {
 				this.ui.collapseLink.show();
 				this.ui.showAllLink.hide();
-				this.movieTorrentCollection.reset(this._getAllTorrents());
-				this.movieTorrentCollectionView.$el.slideDown('slow');
+
+				var that = this;
+				var callback = function() {
+					that.movieTorrentCollection.reset(that._getAllTorrents());
+					that.movieTorrentCollectionView.$el.slideDown('slow');
+				};
+
+				if (this._fetchedAllTorrents) {
+					callback();
+				} else {
+					HttpUtils.get("rest/movies/torrents/" + this.model.get('id'), function(res) {
+						that._fetchedAllTorrents = true;
+						that.model.set('notViewedTorrents', res.notViewedTorrents);
+						that.model.set('viewedTorrents', res.viewedTorrents);
+						callback();
+					});
+				}
 			},
 
 			_onCollapseClick: function() {
@@ -165,17 +188,17 @@ define([
 			},
 
 			_getTorrentsStatus: function() {
-				var torrents = this._getAllTorrents();
-				if (torrents.length === 1) {
+				var totalTorrentsCount = this.model.get('notViewedTorrentsCount') + this.model.get('viewedTorrentsCount');
+				if (totalTorrentsCount === 1) {
 					return 'Total 1 torrent';
-				} else if (torrents.length === 0) {
+				} else if (totalTorrentsCount === 0) {
 					if (this.model.get('downloadStatus') === 'OLD') {
 						return 'No available torrents';
 					} else {
 						return 'No available torrents yet';
 					}
 				} else {
-					return 'Total ' + torrents.length + ' torrents';
+					return 'Total ' + totalTorrentsCount + ' torrents';
 				}
 			},
 
@@ -183,7 +206,7 @@ define([
 				return {
 					'escapedTitle': Utils.fixForTooltip(this.model.get('title')),
 					'torrentsLabel': this._getTorrentsStatus(),
-					'notViewedTorrentsCounter': this.model.get('notViewedTorrents').length
+					'notViewedTorrentsCounter': this.model.get('notViewedTorrentsCount')
 				};
 			}
 		});

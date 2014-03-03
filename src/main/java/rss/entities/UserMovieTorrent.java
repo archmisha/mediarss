@@ -10,11 +10,13 @@ import javax.persistence.*;
  */
 @SuppressWarnings("UnusedDeclaration")
 @Entity
-@Table(name = "user_movie_torrent")
 @org.hibernate.annotations.Table(appliesTo = "user_movie_torrent",
 		indexes = {
-				@Index(name = "umt_userId_downloadDate_idx", columnNames = {"user_id", "download_date"}),
-				@Index(name = "umt_userId_torrentId_idx", columnNames = {"user_id", "torrent_id"})
+				@Index(name = "umt_userId_downloadDate_idx", columnNames = {"user_id", "download_date"})
+		})
+@Table(name = "user_movie_torrent",
+		uniqueConstraints = {
+				@UniqueConstraint(name = "umt_userId_torrentId_idx", columnNames = {"user_id", "torrent_id"})
 		})
 @NamedQueries({
 		@NamedQuery(name = "UserMovieTorrent.findUserMoviesForUserFeed",

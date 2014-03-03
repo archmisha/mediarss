@@ -58,7 +58,7 @@ define([
 				this.moviesSearchView = new MoviesSearchView({vent: this.vent});
 
 				this.vent.on('future-movie-remove', this.onUserMovieRemove, this);
-				this.vent.on('search-result-item-download', this.onMovieTorrentDownload, this);
+				this.vent.on('movie-torrent-download', this.onMovieTorrentDownload, this);
 				this.vent.on('movie-search-add', this.onFutureMovieAddButtonClick, this);
 			},
 
@@ -87,12 +87,12 @@ define([
 				}, false); // no need loading here
 			},
 
-			onMovieTorrentDownload: function(userTorrent) {
+			onMovieTorrentDownload: function(userTorrent, movieId) {
 				var isUserMovies = this._isUserMoviesSelected();
 				var that = this;
 				HttpUtils.post('rest/movies/download', {
 					torrentId: userTorrent.get('torrentId'),
-					movieId: userTorrent.get('movieId'),
+					movieId: movieId,
 					isUserMovies: isUserMovies
 				}, function(res) {
 					if (isUserMovies) {

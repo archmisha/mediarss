@@ -229,7 +229,6 @@ public class UserCacheServiceImpl implements UserCacheService {
 			copy.getViewedTorrents().addAll(movie.getViewedTorrents());
 			copy.setViewedTorrentsCount(movie.getViewedTorrentsCount());
 			copy.setDownloadStatus(movie.getDownloadStatus());
-			copy.setAdded(movie.getAdded());
 			copy.setReleaseDate(movie.getReleaseDate());
 			result.add(copy);
 		}

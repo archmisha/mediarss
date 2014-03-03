@@ -133,7 +133,7 @@ public class MovieServiceImpl implements MovieService {
 			if (!moviesBeingSearched.containsKey(movie)) {
 				UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
-					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(false)/*, torrent.getDateUploaded()*/);
+					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent), false);
 					torrentsByIds.put(torrent.getId(), torrent);
 				}
 			}
@@ -242,7 +242,7 @@ public class MovieServiceImpl implements MovieService {
 			Movie movie = userTorrent.getUserMovie().getMovie();
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 			boolean isViewed = !DateUtils.isWithinDaysPast(userTorrent.getTorrent().getDateUploaded(), DAYS_TORRENT_CONSIDERED_NEW);
-			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent).withViewed(isViewed)/*, userTorrent.getTorrent().getDateUploaded()*/);
+			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent), isViewed);
 			torrentsByIds.put(userTorrent.getTorrent().getId(), userTorrent.getTorrent());
 		}
 
@@ -270,7 +270,7 @@ public class MovieServiceImpl implements MovieService {
 			for (Torrent torrent : torrentDao.find(org.apache.commons.collections.CollectionUtils.subtract(movie.getTorrentIds(), torrentsByIds.keySet()))) {
 				torrentsByIds.put(torrent.getId(), torrent);
 				boolean isViewed = !DateUtils.isWithinDaysPast(torrent.getDateUploaded(), DAYS_TORRENT_CONSIDERED_NEW);
-				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent, movie.getId()).withViewed(isViewed)/*, torrent.getDateUploaded()*/);
+				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent), isViewed);
 			}
 		}
 	}
