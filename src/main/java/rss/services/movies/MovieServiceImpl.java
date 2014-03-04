@@ -150,16 +150,6 @@ public class MovieServiceImpl implements MovieService {
 		return result;
 	}
 
-//	@Transactional(propagation = Propagation.REQUIRED)
-//	public int getUserMoviesCount(User user) {
-//		return movieDao.findUserMoviesCount(user, USER_MOVIES_DISPLAY_DAYS_HISTORY);
-//	}
-
-//	@Override
-//	public int getAvailableMoviesCount(User user) {
-//		return movieDao.findUploadedSinceCount(DateUtils.getPastDate(sessionService.getPrevLoginDate(), 7));
-//	}
-
 	@Transactional(propagation = Propagation.REQUIRED)
 	public List<UserMovieVO> getUserMovies(User user) {
 		Map<Long, Torrent> torrentsByIds = new HashMap<>();

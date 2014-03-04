@@ -112,12 +112,13 @@ public class MoviesController extends BaseController {
 		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 		movieService.addMovieDownload(user, movieId, torrentId);
 
+		userCacheService.invalidateUserMovies(user);
+		userCacheService.invalidateAvailableMovies(user);
+
 		Map<String, Object> result = new HashMap<>();
 		if (isUserMovies) {
-			userCacheService.invalidateUserMovies(user);
 			result.put("movies", userCacheService.getUserMovies(user));
 		} else {
-			userCacheService.invalidateAvailableMovies(user);
 			result.put("movies", movieService.getAvailableMovies(user));
 			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		}

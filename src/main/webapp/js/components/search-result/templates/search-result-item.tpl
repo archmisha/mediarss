@@ -9,9 +9,14 @@
 <div class='search-result-item-body' title='{{{escapedTitle}}}'>
 <div class='search-result-item-title'>{{{title}}}</div>
     <div class='search-result-item-sub-title'>Uploaded on {{dateFormat uploadedDate format="DD/MM/YYYY HH:mm"
-        default='never'}}<span class='search-result-item-size'><span
-                class='search-result-item-size-large'>, </span><span class='search-result-item-size-small'></span>Size: {{size}} MB</span><span
-                class='search-result-item-scheduled-on'>, Scheduled on <span
+        default='never'}}
+        {{#if size}}
+        <span class='search-result-item-size'><span
+                class='search-result-item-size-large'>, </span><span class='search-result-item-size-small'></span>Size: {{size}} MB</span>
+        {{/if}}
+        {{#if scheduledDate}}
+        <span class='search-result-item-scheduled-on'>, Scheduled on <span
                 class='search-result-item-scheduled-on-date'>{{dateFormat scheduledDate format="DD/MM/YYYY HH:mm" default='never'}}</span></span>
+        {{/if}}
     </div>
 </div>

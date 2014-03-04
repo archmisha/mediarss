@@ -2,9 +2,10 @@ define([
 	'marionette',
 	'handlebars',
 	'text!components/search-result/templates/search-result-item.tpl',
-	'utils/Utils'
+	'utils/Utils',
+	'moment'
 ],
-	function(Marionette, Handlebars, template, Utils) {
+	function(Marionette, Handlebars, template, Utils, Moment) {
 		"use strict";
 
 		return Marionette.ItemView.extend({
@@ -46,35 +47,25 @@ define([
 			onRender: function() {
 				this.updateDownloadStatus();
 
-				if (!this.model.get('size')) {
-					this.ui.size.hide();
-				}
-				if (this.model.get('scheduledDate') == null) {
-					this.ui.scheduledOn.hide();
-				}
 				if (this.model.get('viewed') === false) {
 					this.$el.addClass('search-result-item-not-viewed');
 				}
-
-				Utils.addTooltip([this.ui.downloadButton, this.ui.scheduledStatus, this.ui.downloadedStatus, this.ui.body])
 			},
 
 			onDownloadButtonClick: function() {
 				this.vent.trigger('search-result-item-download', this.model);
 			},
 
-			updateDownloadStatus: function() {
-				this.ui.downloadButton.hide();
-				this.ui.scheduledStatus.hide();
-				this.ui.downloadedStatus.hide();
+			onShow: function() {
+				Utils.addTooltip([this.ui.downloadButton, this.ui.scheduledStatus, this.ui.downloadedStatus, this.ui.body]);
+			},
 
-				if (this.model.get('downloadStatus') == 'SCHEDULED') {
-					this.ui.scheduledStatus.show();
-				} else if (this.model.get('downloadStatus') == 'DOWNLOADED') {
-					this.ui.downloadedStatus.show();
-				} else if (this.model.get('downloadStatus') == 'NONE') {
-					this.ui.downloadButton.show();
+			updateDownloadStatus: function() {
+				if (this._statusClass) {
+					this.$el.removeClass(this._statusClass);
 				}
+				this._statusClass = 'download-status-' + this.model.get('downloadStatus');
+				this.$el.addClass(this._statusClass);
 			},
 
 			templateHelpers: function() {

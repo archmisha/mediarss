@@ -7,6 +7,7 @@
   width: 100%;
 }
 
+@search-result-item-status-top: 8px;
 .search-result-item {
   position: relative;
   padding: @search-result-item-padding;
@@ -17,7 +18,7 @@
     background-color: #f5f5f5;
 
     .search-result-item-status {
-      top: -1px;
+      top: @search-result-item-status-top - 1px;
       left: 1px;
     }
   }
@@ -37,19 +38,9 @@
   width: @search-result-item-status-width;
   position: absolute;
   left: 2px;
-  top: 0px;
-  height: 39px;
-  line-height: 39px;
-}
-
-.search-result-item-status:hover {
-  .search-result-item-download-image {
-    display: inline !important;
-  }
-  .search-result-item-scheduled-image,
-  .search-result-item-downloaded-image {
-    display: none !important;
-  }
+  top: @search-result-item-status-top;
+  height: 31px;
+  line-height: 31px;
 }
 
 .search-result-item-body {
@@ -142,6 +133,32 @@
 
 .search-result-item-size-small {
   display: none;
+}
+
+.search-result-item {
+  .search-result-item-download-image,
+  .search-result-item-scheduled-image,
+  .search-result-item-downloaded-image {
+    display: none;
+  }
+}
+
+.search-result-item.download-status-DOWNLOADED {
+  .search-result-item-downloaded-image {
+    display: block;
+  }
+}
+
+.search-result-item.download-status-SCHEDULED {
+  .search-result-item-scheduled-image {
+    display: block;
+  }
+}
+
+.search-result-item.download-status-NONE {
+  .search-result-item-download-image {
+    display: block;
+  }
 }
 
 @media screen and (max-width: 480px) {

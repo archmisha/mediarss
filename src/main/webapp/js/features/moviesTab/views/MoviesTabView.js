@@ -130,6 +130,7 @@ define([
 			_updateUserMovies: function(movies) {
 				this.ui.userMoviesCounter.html(movies.length);
 				this.userMoviesCollection.reset(movies);
+				this.userMoviesCollectionView.render();
 
 				var moviesBeingSearched = this._getMoviesBeingSearched();
 				if (moviesBeingSearched.length > 0) {
@@ -150,6 +151,7 @@ define([
 			_updateAvailableMovies: function(movies) {
 				this.ui.availableMoviesCounter.html(movies.length);
 				this.availalbleMoviesCollection.reset(movies);
+				this.availableMoviesCollectionView.render();
 			},
 
 			_switchToUserMovies: function(movies) {
