@@ -2,9 +2,10 @@
 define([
 	'marionette',
 	'handlebars',
-	'text!features/home/templates/home-header-tabs.tpl'
+	'text!features/home/templates/home-header-tabs.tpl',
+	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template) {
+	function(Marionette, Handlebars, template, Utils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -74,12 +75,7 @@ define([
 			},
 
 			_tabNavHelper: function(nav) {
-				var url = window.parent.location.href;
-				var ind = url.lastIndexOf('#');
-				if (ind > -1) {
-					url = url.substring(0, url.lastIndexOf('#') + 1);
-				}
-				window.parent.location = url + nav;
+				window.parent.location = Utils.getBaseRouteUrl() + nav;
 			}
 		});
 	});

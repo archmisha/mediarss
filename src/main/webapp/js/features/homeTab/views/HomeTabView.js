@@ -7,9 +7,8 @@ define([
 	'chosen',
 	'utils/MessageBox',
 	'utils/Utils',
-	'utils/HttpUtils'
 ],
-	function(Marionette, Handlebars, template, ZeroClipboard, Chosen, MessageBox, Utils, HttpUtils) {
+	function(Marionette, Handlebars, template, ZeroClipboard, Chosen, MessageBox, Utils) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -18,14 +17,11 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.tabData = options.tabData;
 			},
 
 			onRender: function() {
 				this.setCopyToClipboard();
-			},
-
-			setTabData: function(tabData) {
-				this.tabData = tabData;
 			},
 
 			setCopyToClipboard: function() {

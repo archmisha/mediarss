@@ -14,6 +14,7 @@ define([
 				routes[RoutingPaths.SETTINGS] = 'showSettings';
 				routes[RoutingPaths.ADMIN] = 'showAdmin';
 				routes[RoutingPaths.LOGOUT] = 'logout';
+				routes[RoutingPaths.MOVIE_PREVIEW] = 'showMoviePreview';
 				routes['*path'] = 'showHomePage';
 				return routes;
 			}()

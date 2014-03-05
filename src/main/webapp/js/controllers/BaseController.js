@@ -40,6 +40,10 @@ define([
 				this._show(RoutingPaths.ADMIN);
 			},
 
+			showMoviePreview: function(movieId) {
+				this._show(RoutingPaths.MOVIE_PREVIEW, [movieId]);
+			},
+
 			logout: function() {
 				// it is host:port/#logout here
 				window.parent.location = Utils.getBaseUrl() + "/rest/user/logout";

@@ -1,5 +1,6 @@
 /*global define*/
 define([
+	'jquery',
 	'marionette',
 	'handlebars',
 	'text!features/settingsTab/templates/settings-tab.tpl',
@@ -13,7 +14,7 @@ define([
 	'features/settingsTab/views/SubtitlesCollectionView',
 	'features/settingsTab/collections/SubtitlesCollection'
 ],
-	function(Marionette, Handlebars, template, SectionView, ZeroClipboard, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView, SubtitlesCollectionView, SubtitlesCollection) {
+	function($, Marionette, Handlebars, template, SectionView, ZeroClipboard, Chosen, MessageBox, Utils, HttpUtils, TraktTvImportView, SubtitlesCollectionView, SubtitlesCollection) {
 		"use strict";
 
 		var SUBTITLES_NONE = 'None';
@@ -39,6 +40,7 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.tabData = options.tabData;
 
 				this.rssFeedsSection = new SectionView({
 					title: 'Your personalized RSS feeds',
@@ -52,11 +54,6 @@ define([
 
 				this.recentSubtitlesCollection = new SubtitlesCollection();
 				this.recentSubtitlesView = new SubtitlesCollectionView({collection: this.recentSubtitlesCollection});
-				this.tabData = {};
-			},
-
-			setTabData: function(tabData) {
-				$.extend(this.tabData, tabData);
 			},
 
 			onRender: function() {

@@ -39,7 +39,9 @@ define([
 				'click .future-movie-item-remove-image-short': 'onFutureMovieRemoveClick',
 				'click .future-movie-item-remove-image': 'onFutureMovieRemoveClick',
 				'click .movie-item-torrents-show-all': '_onShowAllClick',
-				'click .movie-item-torrents-collapse': '_onCollapseClick'
+				'click .movie-item-torrents-collapse': '_onCollapseClick',
+				'click .movie-show-preview': '_onPreviewClick',
+				'click .movie-show-preview-small': '_onPreviewMobileClick'
 			},
 
 			regions: {
@@ -101,9 +103,15 @@ define([
 
 			onShow: function() {
 				Utils.addTooltip([this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage, this.ui.searchingImage]);
+			},
 
+			_onPreviewClick: function() {
 				var that = this;
-				$('.movie-show-preview-' + this.model.get('id')).fancybox({
+				$.fancybox.open([
+					{
+						href: 'rest/movies/imdb/' + this.model.get('id')
+					}
+				], {
 					'width': '800',
 					'height': '75%',
 					'autoScale': false,
@@ -115,6 +123,10 @@ define([
 						return true;
 					}
 				});
+			},
+
+			_onPreviewMobileClick: function() {
+				window.parent.location = Utils.getBaseRouteUrl() + 'movies/preview/' + this.model.get('id');
 			},
 
 			_getAllTorrents: function() {

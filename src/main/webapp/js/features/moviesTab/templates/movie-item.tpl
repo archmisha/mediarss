@@ -20,8 +20,8 @@
                     class='movie-item-new-label-short'>{{notViewedTorrentsCounter}} new</span>
                 <span class='future-movie-item-remove-image-short'>remove</span>
             </span>
-            <a href='rest/movies/imdb/{{id}}' class='movie-show-preview-{{id}}'><img src='images/preview.gif'
-                                                                                     class='movie-show-preview-image'/></a>
+            <img src='images/preview.gif' class='movie-show-preview movie-show-preview-image'/>
+            <img src='images/preview.gif' class='movie-show-preview-small movie-show-preview-image'/>
         </div>
         <div class='movie-item-sub-title'>
             <span class='movie-scheduled-on'>Scheduled on {{dateFormat scheduledDate format="DD/MM/YYYY HH:mm" default='never'}}</span>

@@ -55,9 +55,19 @@ define([],
 			getBaseUrl: function() {
 				// first cut of up to # then find last index of '/'
 				// otherwise localhost:8080/#movies/userMovies screws stuff
-				var url = window.parent.location.href;
-				url = url.substring(0, url.lastIndexOf('#'));
+				var url = this.getBaseRouteUrl();
 				url = url.substring(0, url.lastIndexOf('/'));
+				return url;
+			},
+
+			getBaseRouteUrl: function() {
+				// first cut of up to # then find last index of '/'
+				// otherwise localhost:8080/#movies/userMovies screws stuff
+				var url = window.parent.location.href;
+				var ind = url.lastIndexOf('#');
+				if (ind > -1) {
+					url = url.substring(0, url.lastIndexOf('#') + 1);
+				}
 				return url;
 			}
 		};

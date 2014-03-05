@@ -14,9 +14,10 @@ define([
 	'features/adminTab/views/AdminTabView',
 	'features/settingsTab/views/SettingsTabView',
 	'utils/StringUtils',
-	'utils/Utils'
+	'utils/Utils',
+	'features/moviesTab/views/MoviePreviewView'
 ],
-	function(Marionette, Handlebars, template, HeaderView, HomeHeaderTabs, MastheadView, HttpUtils, RoutingPaths, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, SettingsTabView, StringUtils, Utils) {
+	function(Marionette, Handlebars, template, HeaderView, HomeHeaderTabs, MastheadView, HttpUtils, RoutingPaths, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, SettingsTabView, StringUtils, Utils, MoviePreviewView) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';
@@ -41,6 +42,10 @@ define([
 		tabs[RoutingPaths.ADMIN] = {
 			title: BASE_TITLE + ' - Admin',
 			view: AdminTabView
+		};
+		tabs[RoutingPaths.MOVIE_PREVIEW] = {
+			title: BASE_TITLE + ' - Movie preview',
+			view: MoviePreviewView
 		};
 
 		return Marionette.Layout.extend({
@@ -104,10 +109,10 @@ define([
 				Backbone.history.navigate(route, {trigger: false});
 				document.title = tabs[tabToSelect].title;
 
-				var tabView = new tabs[tabToSelect].view();
-				if (tabView.setTabData) {
-					tabView.setTabData(this.tabData);
-				}
+				var tabView = new tabs[tabToSelect].view({
+					tabData: this.tabData,
+					tabParams: tabParams
+				});
 				this.contentRegion.show(tabView);
 				this.homeHeaderTabs.selectTab(tabToSelect);
 			}

@@ -327,7 +327,8 @@ public class IMDBServiceImpl implements IMDBService {
 												 "br.clear", "#titleFAQ", "#bottom_ad_wrapper", "#top_ad_wrapper",
 												 "script", "noscript", "#boardsTeaser", "#prometer_container",
 												 "div[itemprop=keywords]", /*"#titleCast .see-more",*/ /*"#titleStoryLine .see-more",*/
-												 "#overview-bottom", "#maindetails_sidebar_top", ".yn", /*".user-comments .see-more",*/ ".see-more"};
+												 "#overview-bottom", "#maindetails_sidebar_top", ".yn", /*".user-comments .see-more",*/ ".see-more",
+												 ".pro-title-link.text-center"};
 
 		for (String selector : elementsToRemove) {
 			for (Element element : doc.select(selector)) {
@@ -372,8 +373,32 @@ public class IMDBServiceImpl implements IMDBService {
 		}
 
 
-		doc.head().append("<style>html {min-width:100px;} body {margin:0px; padding:0px;} .article.title-overview .star-box.giga-star {padding-bottom:0px; }" +
-						  ".giga-star.star-box .star-box-details { margin-top:10px; }</style>");
+		doc.head().append("<style>" +
+						  "html {min-width:100px;} body {margin:0px; padding:0px;} .article.title-overview .star-box.giga-star {padding-bottom:0px; } " +
+						  ".giga-star.star-box .star-box-details { margin-top:10px; } " +
+						  "@media screen and (max-width: 480px) {" +
+						  "  #img_primary img {" +
+						  "      width: 100px;" +
+						  "		 height: auto;" +
+						  "  }" +
+						  "  .star-box-giga-star {" +
+						  "      display: none;" +
+						  "  }" +
+						  "  .giga-star.star-box .star-box-details {" +
+						  "      margin-top: 0px;" +
+						  "      float: none;" +
+						  "      width: auto;" +
+						  "      margin-right: 0px;" +
+						  "      line-height: inherit;" +
+						  "  }" +
+						  "  div.infobar {" +
+						  "    margin-bottom: 4px;" +
+						  "  }" +
+						  "  table#title-overview-widget-layout td#overview-top .txt-block," +
+						  "  table#title-overview-widget-layout td#overview-top p {" +
+						  "    margin-left: -105px;" +
+						  "  }" +
+						  "}</style>");
 
 
 		// replace people images

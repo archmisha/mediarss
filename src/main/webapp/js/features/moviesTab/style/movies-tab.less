@@ -131,6 +131,12 @@
   position: absolute;
   top: 1px;
   right: 3px;
+
+  cursor: pointer;
+}
+
+.movie-show-preview-small {
+  display: none;
 }
 
 .future-movie-item-remove-image {
@@ -324,6 +330,12 @@
   }
 }
 
+.movie-preview-container {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
 @media screen and (max-width: 993px) {
   .movies-tab {
     margin-left: 100px;
@@ -337,6 +349,14 @@
 }
 
 @media screen and (max-width: 480px) {
+  .movie-show-preview-small {
+    display: block;
+  }
+
+  .movie-show-preview {
+    display: none;
+  }
+
   .movies-search-content {
     margin-left: 0px;
   }
