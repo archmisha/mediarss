@@ -304,8 +304,17 @@ public class MovieServiceImpl implements MovieService {
 
 		@Override
 		public int compare(UserMovieTorrentVO o1, UserMovieTorrentVO o2) {
-			Torrent o2Torrent = torrentsByIds.get(o2.getTorrentId());
 			Torrent o1Torrent = torrentsByIds.get(o1.getTorrentId());
+			Torrent o2Torrent = torrentsByIds.get(o2.getTorrentId());
+
+			if (o1.getScheduledDate() != null && o2.getScheduledDate() != null) {
+				return o2.getScheduledDate().compareTo(o1.getScheduledDate());
+			} else if (o1.getScheduledDate() != null) {
+				return -1;
+			} else if (o2.getScheduledDate() != null) {
+				return 1;
+			}
+
 			int i = o2Torrent.getDateUploaded().compareTo(o1Torrent.getDateUploaded());
 			if (i != 0) {
 				return i;

@@ -33,7 +33,8 @@ public class UserMovieVO {
 	}
 
 	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO, boolean isViewed) {
-		if (isViewed) {
+		// make added/scheduled torrents to be on top in the sort
+		if (isViewed && userMovieTorrentVO.getScheduledDate() == null) {
 			viewedTorrents.add(userMovieTorrentVO);
 			viewedTorrentsCount++;
 		} else {

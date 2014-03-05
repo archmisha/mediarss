@@ -14,29 +14,29 @@ import java.util.Date;
 @Entity
 @Table(name = "torrent")
 @org.hibernate.annotations.Table(appliesTo = "torrent",
-                                 indexes = {
-                                         @Index(name = "torrent_date_uploaded_idx", columnNames = {"date_uploaded"})
-                                 })
+		indexes = {
+				@Index(name = "torrent_date_uploaded_idx", columnNames = {"date_uploaded"})
+		})
 @NamedQueries({
 		@NamedQuery(name = "Torrent.findByUrl",
 				query = "select b from Torrent as b where b.url = :url")
 })
 public class Torrent extends BaseEntity implements Downloadable, Comparable<Torrent> {
 
-    private static final long serialVersionUID = -8358871423354442763L;
+	private static final long serialVersionUID = -8358871423354442763L;
 
-    @Column(name = "title")
-    private String title;
+	@Column(name = "title")
+	private String title;
 
-    @Column(name = "url", length = 4000, unique = true)
-    private String url;
+	@Column(name = "url", length = 4000, unique = true)
+	private String url;
 
-    @Column(name = "date_uploaded")
+	@Column(name = "date_uploaded")
 	@Index(name = "date_uploaded_idx")
-    private Date dateUploaded;
+	private Date dateUploaded;
 
-    @Column(name = "quality", nullable = false)
-    private MediaQuality quality;
+	@Column(name = "quality", nullable = false)
+	private MediaQuality quality;
 
 	@Column(name = "hash", unique = true)
 	private String hash;
@@ -44,53 +44,54 @@ public class Torrent extends BaseEntity implements Downloadable, Comparable<Torr
 	@Column(name = "size")
 	private int size;
 
-    // not stored in the database, because first it will become outdated and second it is only used while
-    // searching for a specific episode on the internet
-    @Transient
-    private int seeders;
+	// not stored in the database, because first it will become outdated and second it is only used while
+	// searching for a specific episode on the internet
+	@Transient
+	private int seeders;
 
-    @Transient
-    private String sourcePageUrl;
+	@Transient
+	private String sourcePageUrl;
 
 	@Transient
 	private String imdbId;
 
 	// for hibernate
 	@SuppressWarnings("UnusedDeclaration")
-	private Torrent() {}
+	private Torrent() {
+	}
 
-    public Torrent(String title, String url, Date dateUploaded, int seeders) {
-        this(title, url, dateUploaded, seeders, null);
-    }
+	public Torrent(String title, String url, Date dateUploaded, int seeders) {
+		this(title, url, dateUploaded, seeders, null);
+	}
 
-    public Torrent(String title, String url, Date dateUploaded, int seeders, String sourcePageUrl) {
+	public Torrent(String title, String url, Date dateUploaded, int seeders, String sourcePageUrl) {
 		// default quality is normal - must not be null
 		this.quality = MediaQuality.NORMAL;
-        this.title = title;
-        this.url = url;
-        this.dateUploaded = dateUploaded;
-        this.seeders = seeders;
-        this.sourcePageUrl = sourcePageUrl;
-    }
+		this.title = title;
+		this.url = url;
+		this.dateUploaded = dateUploaded;
+		this.seeders = seeders;
+		this.sourcePageUrl = sourcePageUrl;
+	}
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("Torrent");
-        sb.append("{title='").append(title).append('\'');
-        sb.append(", url='").append(url).append('\'');
-        sb.append(", dateUploaded=").append(dateUploaded);
-        sb.append('}');
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append("Torrent");
+		sb.append("{title='").append(title).append('\'');
+		sb.append(", url='").append(url).append('\'');
+		sb.append(", dateUploaded=").append(dateUploaded);
+		sb.append('}');
+		return sb.toString();
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
 	@Override
 	public String getName() {
@@ -98,38 +99,37 @@ public class Torrent extends BaseEntity implements Downloadable, Comparable<Torr
 	}
 
 	public String getUrl() {
-        return url;
-    }
+		return url;
+	}
 
-    public Date getDateUploaded() {
-        return dateUploaded;
-    }
+	public Date getDateUploaded() {
+		return dateUploaded;
+	}
 
-    public int getSeeders() {
-        return seeders;
-    }
+	public int getSeeders() {
+		return seeders;
+	}
 
-    public String getSourcePageUrl() {
-        return sourcePageUrl;
-    }
+	public String getSourcePageUrl() {
+		return sourcePageUrl;
+	}
 
-    public void setSourcePageUrl(String sourcePageUrl) {
-        this.sourcePageUrl = sourcePageUrl;
-    }
+	public void setSourcePageUrl(String sourcePageUrl) {
+		this.sourcePageUrl = sourcePageUrl;
+	}
 
-    @Override
-    public int compareTo(Torrent o) {
-        return title.compareTo(o.title);
-    }
+	@Override
+	public int compareTo(Torrent o) {
+		return title.compareTo(o.title);
+	}
 
+	public MediaQuality getQuality() {
+		return quality;
+	}
 
-    public MediaQuality getQuality() {
-        return quality;
-    }
-
-    public void setQuality(MediaQuality quality) {
-        this.quality = quality;
-    }
+	public void setQuality(MediaQuality quality) {
+		this.quality = quality;
+	}
 
 	public void setHash(String hash) {
 		this.hash = hash;
