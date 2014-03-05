@@ -2,8 +2,14 @@
  * Date: 06/01/13
  * Time: 14:23
  */
-define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
-	function($, Fancybox, Noty, JqueryMsgBox) {
+define([
+	'jquery',
+	'fancybox',
+	'noty',
+	'jqueryMsgBox',
+	'utils/Utils'
+],
+	function($, Fancybox, Noty, JqueryMsgBox, Utils) {
 		"use strict";
 
 		return {
@@ -49,9 +55,7 @@ define(['jquery', 'fancybox', 'noty', 'jqueryMsgBox'],
 					],
 					success: function(result) {
 						if (result == "Proceed") {
-							var url = window.parent.location.href;
-							url = url.substring(0, url.lastIndexOf('/'));
-							window.parent.location = url;
+							window.parent.location = Utils.getBaseUrl();
 						}
 					}
 				});
