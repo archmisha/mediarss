@@ -178,10 +178,11 @@ define([
 				}
 
 				this._stopPollingThread();
-				this._switchToUserMovies([]);
+//				this._switchToUserMovies([]);
 				var that = this;
 				HttpUtils.get('rest/movies/user-movies', function(res) {
-					that._updateUserMovies(res.movies);
+					that._switchToUserMovies(res.movies);
+//					that._updateUserMovies(res.movies);
 					that.moviesListRegion.show(that.userMoviesCollectionView);
 				});
 			},
@@ -196,10 +197,11 @@ define([
 
 			_showAvailableMovies: function() {
 				this._stopPollingThread();
-				this._switchToAvailableMovies([]);
+//				this._switchToAvailableMovies([]);
 				var that = this;
 				HttpUtils.get('rest/movies/available-movies', function(res) {
-					that._updateAvailableMovies(res.movies);
+					that._switchToAvailableMovies(res.movies);
+//					that._updateAvailableMovies(res.movies);
 					that.moviesListRegion.show(that.availableMoviesCollectionView);
 				});
 			},

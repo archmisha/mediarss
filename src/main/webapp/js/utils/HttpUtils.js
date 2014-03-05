@@ -3,12 +3,14 @@
  * Time: 14:23
  */
 define([
+	'jquery',
 	'utils/MessageBox',
 	'utils/Spinner'
 ],
-	function(MessageBox, Spinner) {
+	function($, MessageBox, Spinner) {
 		"use strict";
 
+		var TIMEOUT = 10;
 		return {
 			post: function(url, params, success, mask) {
 				if (mask === undefined || mask === true) {
@@ -16,11 +18,13 @@ define([
 				}
 
 				var that = this;
-				return $.post(url, params,function(data, textStatus, jqXHR) {
-					that._handleSuccess(data, success, mask);
-				}).fail(function(jqXHR, textStatus, errorThrown) {
+				setTimeout(function() {
+					return $.post(url, params,function(data, textStatus, jqXHR) {
+						that._handleSuccess(data, success, mask);
+					}).fail(function(jqXHR, textStatus, errorThrown) {
 						that._handleError(textStatus, errorThrown, mask);
 					});
+				}, TIMEOUT);
 			},
 
 			get: function(url, success, mask) {
@@ -29,11 +33,13 @@ define([
 				}
 
 				var that = this;
-				return $.get(url,function(data, textStatus, jqXHR) {
-					that._handleSuccess(data, success, mask);
-				}).fail(function(jqXHR, textStatus, errorThrown) {
+				setTimeout(function() {
+					return $.get(url,function(data, textStatus, jqXHR) {
+						that._handleSuccess(data, success, mask);
+					}).fail(function(jqXHR, textStatus, errorThrown) {
 						that._handleError(textStatus, errorThrown, mask);
 					});
+				}, TIMEOUT);
 			},
 
 			_handleError: function(textStatus, errorThrown, mask) {
