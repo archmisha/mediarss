@@ -2,21 +2,21 @@ require.config({
 	paths: {
 		underscore: 'lib/underscore-1.6.0-min',
 		backbone: 'lib/backbone-1.1.2.min',
-		marionette: 'lib/backbone.marionette.min-1.6.4',
+		marionette: 'lib/backbone.marionette-1.6.4.min',
 		jquery: 'lib/jquery-1.11.0.min',
 		text: 'lib/text',
-		handlebars: 'lib/handlebars-v1.3.0',
+		handlebars: 'lib/handlebars-1.3.0',
 		less: 'lib/less',
 		moment: 'lib/moment-2.0.0.min',
 		zeroClipboard: 'lib/ZeroClipboard-1.3.1.min',
-		'jquery.fancybox': 'lib/jquery.fancybox.pack',
+		'jquery.fancybox': 'lib/jquery.fancybox-2.1.4.min',
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
 		noty: 'lib/noty/jquery.noty',
 		qtip: 'lib/jquery.qtip-2.2.0.min',
+		'jquery.MsgBox': 'lib/jquery.msgBox',
 		ajaxChosen: 'lib/ajax-chosen.min',
-		select2: 'lib/select2.min',
-		'jquery.MsgBox': 'lib/jquery.msgBox'
+		select2: 'lib/select2.min'
 	},
 	shim: {
 		'lib/backbone-localStorage': ['backbone'],
