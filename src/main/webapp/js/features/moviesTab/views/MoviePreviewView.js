@@ -10,12 +10,11 @@ define([
 	'utils/HttpUtils',
 	'components/section/views/SectionView',
 	'utils/MessageBox',
-	'fancybox',
 	'moment',
 	'utils/StringUtils',
 	'routers/RoutingPaths'
 ],
-	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, HttpUtils, SectionView, MessageBox, Fancybox, Moment, StringUtils, RoutingPaths) {
+	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, HttpUtils, SectionView, MessageBox, Moment, StringUtils, RoutingPaths) {
 		"use strict";
 
 		return Marionette.Layout.extend({

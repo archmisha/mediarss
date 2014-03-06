@@ -4,12 +4,12 @@
  */
 define([
 	'jquery',
-	'fancybox',
+	'jquery.fancybox',
+	'jquery.MsgBox',
 	'noty',
-	'jqueryMsgBox',
 	'utils/Utils'
 ],
-	function($, Fancybox, Noty, JqueryMsgBox, Utils) {
+	function($, Fancybox, MsgBox, Noty, Utils) {
 		"use strict";
 
 		return {

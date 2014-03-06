@@ -1,5 +1,6 @@
 /*global define*/
 define([
+	'backbone',
 	'marionette',
 	'handlebars',
 	'text!features/home/templates/home.tpl',
@@ -17,7 +18,7 @@ define([
 	'utils/Utils',
 	'features/moviesTab/views/MoviePreviewView'
 ],
-	function(Marionette, Handlebars, template, HeaderView, HomeHeaderTabs, MastheadView, HttpUtils, RoutingPaths, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, SettingsTabView, StringUtils, Utils, MoviePreviewView) {
+	function(Backbone, Marionette, Handlebars, template, HeaderView, HomeHeaderTabs, MastheadView, HttpUtils, RoutingPaths, HomeTabView, ShowsTabView, MoviesTabView, AdminTabView, SettingsTabView, StringUtils, Utils, MoviePreviewView) {
 		"use strict";
 
 		var BASE_TITLE = 'Personalized Media RSS';

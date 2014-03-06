@@ -1,22 +1,22 @@
 require.config({
 	paths: {
 		underscore: 'lib/underscore-1.6.0-min',
-		backbone: 'lib/backbone-min-1.1.1',
-		marionette: 'lib/backbone.marionette-1.6.2.min',
+		backbone: 'lib/backbone-1.1.2.min',
+		marionette: 'lib/backbone.marionette.min-1.6.4',
 		jquery: 'lib/jquery-1.11.0.min',
 		text: 'lib/text',
 		handlebars: 'lib/handlebars-v1.3.0',
 		less: 'lib/less',
 		moment: 'lib/moment-2.0.0.min',
 		zeroClipboard: 'lib/ZeroClipboard-1.3.1.min',
-		fancybox: 'lib/jquery.fancybox.pack',
+		'jquery.fancybox': 'lib/jquery.fancybox.pack',
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
 		noty: 'lib/noty/jquery.noty',
 		qtip: 'lib/jquery.qtip-2.2.0.min',
 		ajaxChosen: 'lib/ajax-chosen.min',
 		select2: 'lib/select2.min',
-		jqueryMsgBox: 'lib/jquery.msgBox'
+		'jquery.MsgBox': 'lib/jquery.msgBox'
 	},
 	shim: {
 		'lib/backbone-localStorage': ['backbone'],
@@ -40,9 +40,7 @@ require.config({
 		zeroClipboard: {
 			exports: 'ZeroClipboard'
 		},
-		fancybox: {
-			exports: 'Fancybox'
-		},
+		'jquery.fancybox': ['jquery'],
 		chosen: {
 			exports: 'Chosen'
 		},
@@ -62,9 +60,7 @@ require.config({
 		select2: {
 			exports: 'Select2'
 		},
-		jqueryMsgBox: {
-			exports: 'jqueryMsgBox'
-		}
+		'jquery.MsgBox': ['jquery']
 	},
 	deps: ['jquery', 'underscore']
 });
@@ -77,7 +73,7 @@ require([
 	'controllers/BaseController',
 	'moment',
 	'qtip',
-	'zeroClipboard'
+	'zeroClipboard',
 ],
 	function($, Backbone, Handlebars, MainRouter, BaseController, Moment, qtip, ZeroClipboard) {
 		"use strict";

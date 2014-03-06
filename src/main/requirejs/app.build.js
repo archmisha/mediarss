@@ -8,5 +8,6 @@
 
 	name: "main",
 	optimizeCss: 'none',
-	mainConfigFile: '../webapp/js/main.js'
+	mainConfigFile: '../webapp/js/main.js',
+	wrapShim: true
 })

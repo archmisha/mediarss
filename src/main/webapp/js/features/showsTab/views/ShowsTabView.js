@@ -1,6 +1,7 @@
 /*global define*/
 define([
 	'jquery',
+	'backbone',
 	'marionette',
 	'handlebars',
 	'features/showsTab/views/TrackedShowsComponentView',
@@ -12,7 +13,7 @@ define([
 	'features/showsTab/views/ShowsScheduleView',
 	'utils/HttpUtils'
 ],
-	function($, Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, ShowsSearchView, MessageBox, ShowsScheduleView, HttpUtils) {
+	function($, Backbone, Marionette, Handlebars, TrackedShowsComponentView, template, ShowsCollection, SectionView, ShowsSearchView, MessageBox, ShowsScheduleView, HttpUtils) {
 		"use strict";
 
 		return Marionette.Layout.extend({

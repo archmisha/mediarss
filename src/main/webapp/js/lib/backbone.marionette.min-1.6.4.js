@@ -1,6 +1,6 @@
 // MarionetteJS (Backbone.Marionette)
 // ----------------------------------
-// v1.6.2
+// v1.6.4
 //
 // Copyright (c)2014 Derick Bailey, Muted Solutions, LLC.
 // Distributed under MIT license
@@ -21,7 +21,7 @@ Backbone.ChildViewContainer = function(a, b) {
 	};
 	b.extend(c.prototype, {add: function(a, b) {
 		var c = a.cid;
-		this._views[c] = a, a.model && (this._indexByModel[a.model.cid] = c), b && (this._indexByCustom[b] = c), this._updateLength()
+		return this._views[c] = a, a.model && (this._indexByModel[a.model.cid] = c), b && (this._indexByCustom[b] = c), this._updateLength(), this
 	}, findByModel: function(a) {
 		return this.findByModelCid(a.cid)
 	}, findByModelCid: function(a) {
@@ -36,9 +36,9 @@ Backbone.ChildViewContainer = function(a, b) {
 		return this._views[a]
 	}, remove: function(a) {
 		var c = a.cid;
-		a.model && delete this._indexByModel[a.model.cid], b.any(this._indexByCustom, function(a, b) {
+		return a.model && delete this._indexByModel[a.model.cid], b.any(this._indexByCustom, function(a, b) {
 			return a === c ? (delete this._indexByCustom[b], !0) : void 0
-		}, this), delete this._views[c], this._updateLength()
+		}, this), delete this._views[c], this._updateLength(), this
 	}, call: function(a) {
 		this.apply(a, b.tail(arguments))
 	}, apply: function(a, c) {
@@ -127,29 +127,25 @@ Backbone.ChildViewContainer = function(a, b) {
 }(Backbone, Backbone.Marionette, _);
 var Marionette = function(a, b, c) {
 	"use strict";
-	function d(a) {
-		return g.call(a)
-	}
-
-	function e(a, b) {
+	function d(a, b) {
 		var c = new Error(a);
 		throw c.name = b || "Error", c
 	}
 
-	var f = {};
-	b.Marionette = f, f.$ = b.$;
-	var g = Array.prototype.slice;
-	return f.extend = b.Model.extend, f.getOption = function(a, b) {
+	var e = {};
+	b.Marionette = e, e.$ = b.$;
+	var f = Array.prototype.slice;
+	return e.extend = b.Model.extend, e.getOption = function(a, b) {
 		if (a && b) {
 			var c;
 			return c = a.options && b in a.options && void 0 !== a.options[b] ? a.options[b] : a[b]
 		}
-	}, f.normalizeMethods = function(a) {
+	}, e.normalizeMethods = function(a) {
 		var b, d = {};
 		return c.each(a, function(a, e) {
 			b = a, c.isFunction(b) || (b = this[b]), b && (d[e] = b)
 		}, this), d
-	}, f.triggerMethod = function() {
+	}, e.triggerMethod = function() {
 		function a(a, b, c) {
 			return c.toUpperCase()
 		}
@@ -159,7 +155,7 @@ var Marionette = function(a, b, c) {
 			return c.isFunction(this.trigger) && this.trigger.apply(this, arguments), c.isFunction(f) ? f.apply(this, c.tail(arguments)) : void 0
 		};
 		return d
-	}(), f.MonitorDOMRefresh = function(a) {
+	}(), e.MonitorDOMRefresh = function(a) {
 		function b(a) {
 			a._isShown = !0, e(a)
 		}
@@ -184,28 +180,28 @@ var Marionette = function(a, b, c) {
 			})
 		}
 	}(document.documentElement), function(a) {
-		function b(a, b, d, f) {
+		function b(a, b, e, f) {
 			var g = f.split(/\s+/);
 			c.each(g, function(c) {
 				var f = a[c];
-				f || e("Method '" + c + "' was configured as an event handler, but does not exist."), a.listenTo(b, d, f, a)
+				f || d("Method '" + c + "' was configured as an event handler, but does not exist."), a.listenTo(b, e, f)
 			})
 		}
 
-		function d(a, b, c, d) {
-			a.listenTo(b, c, d, a)
+		function e(a, b, c, d) {
+			a.listenTo(b, c, d)
 		}
 
 		function f(a, b, d, e) {
 			var f = e.split(/\s+/);
 			c.each(f, function(c) {
 				var e = a[c];
-				a.stopListening(b, d, e, a)
+				a.stopListening(b, d, e)
 			})
 		}
 
 		function g(a, b, c, d) {
-			a.stopListening(b, c, d, a)
+			a.stopListening(b, c, d)
 		}
 
 		function h(a, b, d, e, f) {
@@ -214,14 +210,14 @@ var Marionette = function(a, b, c) {
 			}))
 		}
 
-		a.bindEntityEvents = function(a, c, e) {
-			h(a, c, e, d, b)
+		a.bindEntityEvents = function(a, c, d) {
+			h(a, c, d, e, b)
 		}, a.unbindEntityEvents = function(a, b, c) {
 			h(a, b, c, g, f)
 		}
-	}(f), f.Callbacks = function() {
-		this._deferred = f.$.Deferred(), this._callbacks = []
-	}, c.extend(f.Callbacks.prototype, {add: function(a, b) {
+	}(e), e.Callbacks = function() {
+		this._deferred = e.$.Deferred(), this._callbacks = []
+	}, c.extend(e.Callbacks.prototype, {add: function(a, b) {
 		this._callbacks.push({cb: a, ctx: b}), this._deferred.done(function(c, d) {
 			b && (c = b), a.call(c, d)
 		})
@@ -229,56 +225,52 @@ var Marionette = function(a, b, c) {
 		this._deferred.resolve(b, a)
 	}, reset: function() {
 		var a = this._callbacks;
-		this._deferred = f.$.Deferred(), this._callbacks = [], c.each(a, function(a) {
+		this._deferred = e.$.Deferred(), this._callbacks = [], c.each(a, function(a) {
 			this.add(a.cb, a.ctx)
 		}, this)
-	}}), f.Controller = function(a) {
-		this.triggerMethod = f.triggerMethod, this.options = a || {}, c.isFunction(this.initialize) && this.initialize(this.options)
-	}, f.Controller.extend = f.extend, c.extend(f.Controller.prototype, b.Events, {close: function() {
+	}}), e.Controller = function(a) {
+		this.triggerMethod = e.triggerMethod, this.options = a || {}, c.isFunction(this.initialize) && this.initialize(this.options)
+	}, e.Controller.extend = e.extend, c.extend(e.Controller.prototype, b.Events, {close: function() {
 		this.stopListening(), this.triggerMethod("close"), this.unbind()
-	}}), f.Region = function(a) {
-		if (this.options = a || {}, this.el = f.getOption(this, "el"), !this.el) {
-			var b = new Error("An 'el' must be specified for a region.");
-			throw b.name = "NoElError", b
+	}}), e.Region = function(a) {
+		if (this.options = a || {}, this.el = e.getOption(this, "el"), this.el || d("An 'el' must be specified for a region.", "NoElError"), this.initialize) {
+			var b = Array.prototype.slice.apply(arguments);
+			this.initialize.apply(this, b)
 		}
-		if (this.initialize) {
-			var c = Array.prototype.slice.apply(arguments);
-			this.initialize.apply(this, c)
-		}
-	}, c.extend(f.Region, {buildRegion: function(a, b) {
-		var d = "string" == typeof a, e = "string" == typeof a.selector, f = "undefined" == typeof a.regionType, g = "function" == typeof a;
-		if (!g && !d && !e)throw new Error("Region must be specified as a Region type, a selector string or an object with selector property");
-		var h, i;
-		d && (h = a), a.selector && (h = a.selector, delete a.selector), g && (i = a), !g && f && (i = b), a.regionType && (i = a.regionType, delete a.regionType), (d || g) && (a = {}), a.el = h;
-		var j = new i(a);
-		return a.parentEl && (j.getEl = function(b) {
+	}, c.extend(e.Region, {buildRegion: function(a, b) {
+		var e = c.isString(a), f = c.isString(a.selector), g = c.isUndefined(a.regionType), h = c.isFunction(a);
+		h || e || f || d("Region must be specified as a Region type, a selector string or an object with selector property");
+		var i, j;
+		e && (i = a), a.selector && (i = a.selector, delete a.selector), h && (j = a), !h && g && (j = b), a.regionType && (j = a.regionType, delete a.regionType), (e || h) && (a = {}), a.el = i;
+		var k = new j(a);
+		return a.parentEl && (k.getEl = function(b) {
 			var d = a.parentEl;
 			return c.isFunction(d) && (d = d()), d.find(b)
-		}), j
-	}}), c.extend(f.Region.prototype, b.Events, {show: function(a) {
+		}), k
+	}}), c.extend(e.Region.prototype, b.Events, {show: function(a) {
 		this.ensureEl();
 		var b = a.isClosed || c.isUndefined(a.$el), d = a !== this.currentView;
-		d && this.close(), a.render(), (d || b) && this.open(a), this.currentView = a, f.triggerMethod.call(this, "show", a), f.triggerMethod.call(a, "show")
+		d && this.close(), a.render(), (d || b) && this.open(a), this.currentView = a, e.triggerMethod.call(this, "show", a), e.triggerMethod.call(a, "show")
 	}, ensureEl: function() {
 		this.$el && 0 !== this.$el.length || (this.$el = this.getEl(this.el))
 	}, getEl: function(a) {
-		return f.$(a)
+		return e.$(a)
 	}, open: function(a) {
 		this.$el.empty().append(a.el)
 	}, close: function() {
 		var a = this.currentView;
-		a && !a.isClosed && (a.close ? a.close() : a.remove && a.remove(), f.triggerMethod.call(this, "close", a), delete this.currentView)
+		a && !a.isClosed && (a.close ? a.close() : a.remove && a.remove(), e.triggerMethod.call(this, "close", a), delete this.currentView)
 	}, attachView: function(a) {
 		this.currentView = a
 	}, reset: function() {
 		this.close(), delete this.$el
-	}}), f.Region.extend = f.extend, f.RegionManager = function(a) {
+	}}), e.Region.extend = e.extend, e.RegionManager = function(a) {
 		var b = a.Controller.extend({constructor: function(b) {
 			this._regions = {}, a.Controller.prototype.constructor.call(this, b)
 		}, addRegions: function(a, b) {
 			var d = {};
 			return c.each(a, function(a, e) {
-				"string" == typeof a && (a = {selector: a}), a.selector && (a = c.defaults({}, a, b));
+				c.isString(a) && (a = {selector: a}), a.selector && (a = c.defaults({}, a, b));
 				var f = this.addRegion(e, a);
 				d[e] = f
 			}, this), d
@@ -299,9 +291,7 @@ var Marionette = function(a, b, c) {
 				a.close()
 			}, this)
 		}, close: function() {
-			this.removeRegions();
-			var b = Array.prototype.slice.call(arguments);
-			a.Controller.prototype.close.apply(this, b)
+			this.removeRegions(), a.Controller.prototype.close.apply(this, arguments)
 		}, _store: function(a, b) {
 			this._regions[a] = b, this._setLength()
 		}, _remove: function(a, b) {
@@ -315,45 +305,43 @@ var Marionette = function(a, b, c) {
 				return c[a].apply(c, d)
 			}
 		}), b
-	}(f), f.TemplateCache = function(a) {
+	}(e), e.TemplateCache = function(a) {
 		this.templateId = a
-	}, c.extend(f.TemplateCache, {templateCaches: {}, get: function(a) {
+	}, c.extend(e.TemplateCache, {templateCaches: {}, get: function(a) {
 		var b = this.templateCaches[a];
-		return b || (b = new f.TemplateCache(a), this.templateCaches[a] = b), b.load()
+		return b || (b = new e.TemplateCache(a), this.templateCaches[a] = b), b.load()
 	}, clear: function() {
-		var a, b = d(arguments), c = b.length;
+		var a, b = f.call(arguments), c = b.length;
 		if (c > 0)for (a = 0; c > a; a++)delete this.templateCaches[b[a]]; else this.templateCaches = {}
-	}}), c.extend(f.TemplateCache.prototype, {load: function() {
+	}}), c.extend(e.TemplateCache.prototype, {load: function() {
 		if (this.compiledTemplate)return this.compiledTemplate;
 		var a = this.loadTemplate(this.templateId);
 		return this.compiledTemplate = this.compileTemplate(a), this.compiledTemplate
 	}, loadTemplate: function(a) {
-		var b = f.$(a).html();
-		return b && 0 !== b.length || e("Could not find template: '" + a + "'", "NoTemplateError"), b
+		var b = e.$(a).html();
+		return b && 0 !== b.length || d("Could not find template: '" + a + "'", "NoTemplateError"), b
 	}, compileTemplate: function(a) {
 		return c.template(a)
-	}}), f.Renderer = {render: function(a, b) {
-		if (!a) {
-			var c = new Error("Cannot render the template since it's false, null or undefined.");
-			throw c.name = "TemplateNotFoundError", c
-		}
-		var d;
-		return d = "function" == typeof a ? a : f.TemplateCache.get(a), d(b)
-	}}, f.View = b.View.extend({constructor: function(a) {
-		c.bindAll(this, "render");
-		var d = Array.prototype.slice.apply(arguments);
-		this.options = c.extend({}, c.result(this, "options"), c.isFunction(a) ? a.call(this) : a), this.events = this.normalizeUIKeys(c.result(this, "events")), b.View.prototype.constructor.apply(this, d), f.MonitorDOMRefresh(this), this.listenTo(this, "show", this.onShowCalled, this)
-	}, triggerMethod: f.triggerMethod, normalizeMethods: f.normalizeMethods, getTemplate: function() {
-		return f.getOption(this, "template")
+	}}), e.Renderer = {render: function(a, b) {
+		a || d("Cannot render the template since it's false, null or undefined.", "TemplateNotFoundError");
+		var c;
+		return(c = "function" == typeof a ? a : e.TemplateCache.get(a))(b)
+	}}, e.View = b.View.extend({constructor: function(a) {
+		c.bindAll(this, "render"), this.options = c.extend({}, c.result(this, "options"), c.isFunction(a) ? a.call(this) : a), this.events = this.normalizeUIKeys(c.result(this, "events")), b.View.prototype.constructor.apply(this, arguments), e.MonitorDOMRefresh(this), this.listenTo(this, "show", this.onShowCalled)
+	}, triggerMethod: e.triggerMethod, normalizeMethods: e.normalizeMethods, getTemplate: function() {
+		return e.getOption(this, "template")
 	}, mixinTemplateHelpers: function(a) {
 		a = a || {};
-		var b = f.getOption(this, "templateHelpers");
+		var b = e.getOption(this, "templateHelpers");
 		return c.isFunction(b) && (b = b.call(this)), c.extend(a, b)
 	}, normalizeUIKeys: function(a) {
-		return"undefined" != typeof a ? (c.each(c.keys(a), function(b) {
-			var c = b.split("@ui.");
-			2 === c.length && (a[c[0] + this.ui[c[1]]] = a[b], delete a[b])
-		}, this), a) : void 0
+		var b = this;
+		if ("undefined" != typeof a)return c.each(c.keys(a), function(d) {
+			var e = /@ui.[a-zA-Z_$0-9]*/g;
+			d.match(e) && (a[d.replace(e, function(a) {
+				return c.result(b, "ui")[a.slice(4)]
+			})] = a[d], delete a[d])
+		}), a
 	}, configureTriggers: function() {
 		if (this.triggers) {
 			var a = {}, b = this.normalizeUIKeys(c.result(this, "triggers"));
@@ -370,14 +358,14 @@ var Marionette = function(a, b, c) {
 			}, this), a
 		}
 	}, delegateEvents: function(a) {
-		this._delegateDOMEvents(a), f.bindEntityEvents(this, this.model, f.getOption(this, "modelEvents")), f.bindEntityEvents(this, this.collection, f.getOption(this, "collectionEvents"))
+		this._delegateDOMEvents(a), e.bindEntityEvents(this, this.model, e.getOption(this, "modelEvents")), e.bindEntityEvents(this, this.collection, e.getOption(this, "collectionEvents"))
 	}, _delegateDOMEvents: function(a) {
 		a = a || this.events, c.isFunction(a) && (a = a.call(this));
 		var d = {}, e = this.configureTriggers();
 		c.extend(d, a, e), b.View.prototype.delegateEvents.call(this, d)
 	}, undelegateEvents: function() {
 		var a = Array.prototype.slice.call(arguments);
-		b.View.prototype.undelegateEvents.apply(this, a), f.unbindEntityEvents(this, this.model, f.getOption(this, "modelEvents")), f.unbindEntityEvents(this, this.collection, f.getOption(this, "collectionEvents"))
+		b.View.prototype.undelegateEvents.apply(this, a), e.unbindEntityEvents(this, this.model, e.getOption(this, "modelEvents")), e.unbindEntityEvents(this, this.collection, e.getOption(this, "collectionEvents"))
 	}, onShowCalled: function() {
 	}, close: function() {
 		if (!this.isClosed) {
@@ -397,8 +385,8 @@ var Marionette = function(a, b, c) {
 		this.ui && this._uiBindings && (c.each(this.ui, function(a, b) {
 			delete this.ui[b]
 		}, this), this.ui = this._uiBindings, delete this._uiBindings)
-	}}), f.ItemView = f.View.extend({constructor: function() {
-		f.View.prototype.constructor.apply(this, d(arguments))
+	}}), e.ItemView = e.View.extend({constructor: function() {
+		e.View.prototype.constructor.apply(this, arguments)
 	}, serializeData: function() {
 		var a = {};
 		return this.model ? a = this.model.toJSON() : this.collection && (a = {items: this.collection.toJSON()}), a
@@ -406,12 +394,12 @@ var Marionette = function(a, b, c) {
 		this.isClosed = !1, this.triggerMethod("before:render", this), this.triggerMethod("item:before:render", this);
 		var a = this.serializeData();
 		a = this.mixinTemplateHelpers(a);
-		var b = this.getTemplate(), c = f.Renderer.render(b, a);
+		var b = this.getTemplate(), c = e.Renderer.render(b, a);
 		return this.$el.html(c), this.bindUIElements(), this.triggerMethod("render", this), this.triggerMethod("item:rendered", this), this
 	}, close: function() {
-		this.isClosed || (this.triggerMethod("item:before:close"), f.View.prototype.close.apply(this, d(arguments)), this.triggerMethod("item:closed"))
-	}}), f.CollectionView = f.View.extend({itemViewEventPrefix: "itemview", constructor: function() {
-		this._initChildViewStorage(), f.View.prototype.constructor.apply(this, d(arguments)), this._initialEvents(), this.initRenderBuffer()
+		this.isClosed || (this.triggerMethod("item:before:close"), e.View.prototype.close.apply(this, arguments), this.triggerMethod("item:closed"))
+	}}), e.CollectionView = e.View.extend({itemViewEventPrefix: "itemview", constructor: function() {
+		this._initChildViewStorage(), e.View.prototype.constructor.apply(this, arguments), this._initialEvents(), this.initRenderBuffer()
 	}, initRenderBuffer: function() {
 		this.elBuffer = document.createDocumentFragment(), this._bufferedChildren = []
 	}, startBuffering: function() {
@@ -420,17 +408,17 @@ var Marionette = function(a, b, c) {
 		this.isBuffering = !1, this.appendBuffer(this, this.elBuffer), this._triggerShowBufferedChildren(), this.initRenderBuffer()
 	}, _triggerShowBufferedChildren: function() {
 		this._isShown && (c.each(this._bufferedChildren, function(a) {
-			f.triggerMethod.call(a, "show")
+			e.triggerMethod.call(a, "show")
 		}), this._bufferedChildren = [])
 	}, _initialEvents: function() {
-		this.collection && (this.listenTo(this.collection, "add", this.addChildView, this), this.listenTo(this.collection, "remove", this.removeItemView, this), this.listenTo(this.collection, "reset", this.render, this))
+		this.collection && (this.listenTo(this.collection, "add", this.addChildView), this.listenTo(this.collection, "remove", this.removeItemView), this.listenTo(this.collection, "reset", this.render))
 	}, addChildView: function(a) {
 		this.closeEmptyView();
 		var b = this.getItemView(a), c = this.collection.indexOf(a);
 		this.addItemView(a, b, c)
 	}, onShowCalled: function() {
 		this.children.each(function(a) {
-			f.triggerMethod.call(a, "show")
+			e.triggerMethod.call(a, "show")
 		})
 	}, triggerBeforeRender: function() {
 		this.triggerMethod("before:render", this), this.triggerMethod("collection:before:render", this)
@@ -455,20 +443,20 @@ var Marionette = function(a, b, c) {
 	}, closeEmptyView: function() {
 		this._showingEmptyView && (this.closeChildren(), delete this._showingEmptyView)
 	}, getEmptyView: function() {
-		return f.getOption(this, "emptyView")
+		return e.getOption(this, "emptyView")
 	}, getItemView: function() {
-		var a = f.getOption(this, "itemView");
-		return a || e("An `itemView` must be specified", "NoItemViewError"), a
+		var a = e.getOption(this, "itemView");
+		return a || d("An `itemView` must be specified", "NoItemViewError"), a
 	}, addItemView: function(a, b, d) {
-		var e = f.getOption(this, "itemViewOptions");
-		c.isFunction(e) && (e = e.call(this, a, d));
-		var g = this.buildItemView(a, b, e);
-		return this.addChildViewEventForwarding(g), this.triggerMethod("before:item:added", g), this.children.add(g), this.renderItemView(g, d), this._isShown && !this.isBuffering && f.triggerMethod.call(g, "show"), this.triggerMethod("after:item:added", g), g
+		var f = e.getOption(this, "itemViewOptions");
+		c.isFunction(f) && (f = f.call(this, a, d));
+		var g = this.buildItemView(a, b, f);
+		return this.addChildViewEventForwarding(g), this.triggerMethod("before:item:added", g), this.children.add(g), this.renderItemView(g, d), this._isShown && !this.isBuffering && e.triggerMethod.call(g, "show"), this.triggerMethod("after:item:added", g), g
 	}, addChildViewEventForwarding: function(a) {
-		var b = f.getOption(this, "itemViewEventPrefix");
+		var b = e.getOption(this, "itemViewEventPrefix");
 		this.listenTo(a, "all", function() {
-			var e = d(arguments), g = e[0], h = this.normalizeMethods(this.getItemEvents());
-			e[0] = b + ":" + g, e.splice(1, 0, a), "undefined" != typeof h && c.isFunction(h[g]) && h[g].apply(this, e), f.triggerMethod.apply(this, e)
+			var d = f.call(arguments), g = d[0], h = this.normalizeMethods(this.getItemEvents());
+			d[0] = b + ":" + g, d.splice(1, 0, a), "undefined" != typeof h && c.isFunction(h[g]) && h[g].apply(this, d), e.triggerMethod.apply(this, d)
 		}, this)
 	}, getItemEvents: function() {
 		return c.isFunction(this.itemEvents) ? this.itemEvents.call(this) : this.itemEvents
@@ -493,20 +481,20 @@ var Marionette = function(a, b, c) {
 	}, _initChildViewStorage: function() {
 		this.children = new b.ChildViewContainer
 	}, close: function() {
-		this.isClosed || (this.triggerMethod("collection:before:close"), this.closeChildren(), this.triggerMethod("collection:closed"), f.View.prototype.close.apply(this, d(arguments)))
+		this.isClosed || (this.triggerMethod("collection:before:close"), this.closeChildren(), this.triggerMethod("collection:closed"), e.View.prototype.close.apply(this, arguments))
 	}, closeChildren: function() {
 		this.children.each(function(a) {
 			this.removeChildView(a)
 		}, this), this.checkEmpty()
-	}}), f.CompositeView = f.CollectionView.extend({constructor: function() {
-		f.CollectionView.prototype.constructor.apply(this, d(arguments))
+	}}), e.CompositeView = e.CollectionView.extend({constructor: function() {
+		e.CollectionView.prototype.constructor.apply(this, arguments)
 	}, _initialEvents: function() {
 		this.once("render", function() {
-			this.collection && (this.listenTo(this.collection, "add", this.addChildView, this), this.listenTo(this.collection, "remove", this.removeItemView, this), this.listenTo(this.collection, "reset", this._renderChildren, this))
+			this.collection && (this.listenTo(this.collection, "add", this.addChildView), this.listenTo(this.collection, "remove", this.removeItemView), this.listenTo(this.collection, "reset", this._renderChildren))
 		})
 	}, getItemView: function() {
-		var a = f.getOption(this, "itemView") || this.constructor;
-		return a || e("An `itemView` must be specified", "NoItemViewError"), a
+		var a = e.getOption(this, "itemView") || this.constructor;
+		return a || d("An `itemView` must be specified", "NoItemViewError"), a
 	}, serializeData: function() {
 		var a = {};
 		return this.model && (a = this.model.toJSON()), a
@@ -515,12 +503,12 @@ var Marionette = function(a, b, c) {
 		var a = this.renderModel();
 		return this.$el.html(a), this.bindUIElements(), this.triggerMethod("composite:model:rendered"), this._renderChildren(), this.triggerMethod("composite:rendered"), this.triggerRendered(), this
 	}, _renderChildren: function() {
-		this.isRendered && (this.triggerMethod("composite:collection:before:render"), f.CollectionView.prototype._renderChildren.call(this), this.triggerMethod("composite:collection:rendered"))
+		this.isRendered && (this.triggerMethod("composite:collection:before:render"), e.CollectionView.prototype._renderChildren.call(this), this.triggerMethod("composite:collection:rendered"))
 	}, renderModel: function() {
 		var a = {};
 		a = this.serializeData(), a = this.mixinTemplateHelpers(a);
 		var b = this.getTemplate();
-		return f.Renderer.render(b, a)
+		return e.Renderer.render(b, a)
 	}, appendBuffer: function(a, b) {
 		var c = this.getItemViewContainer(a);
 		c.append(b)
@@ -531,26 +519,20 @@ var Marionette = function(a, b, c) {
 		}
 	}, getItemViewContainer: function(a) {
 		if ("$itemViewContainer"in a)return a.$itemViewContainer;
-		var b, d = f.getOption(a, "itemViewContainer");
-		if (d) {
-			var g = c.isFunction(d) ? d.call(this) : d;
-			b = a.$(g), b.length <= 0 && e("The specified `itemViewContainer` was not found: " + a.itemViewContainer, "ItemViewContainerMissingError")
+		var b, f = e.getOption(a, "itemViewContainer");
+		if (f) {
+			var g = c.isFunction(f) ? f.call(this) : f;
+			b = a.$(g), b.length <= 0 && d("The specified `itemViewContainer` was not found: " + a.itemViewContainer, "ItemViewContainerMissingError")
 		} else b = a.$el;
 		return a.$itemViewContainer = b, b
 	}, resetItemViewContainer: function() {
 		this.$itemViewContainer && delete this.$itemViewContainer
-	}}), f.Layout = f.ItemView.extend({regionType: f.Region, constructor: function(a) {
-		a = a || {}, this._firstRender = !0, this._initializeRegions(a), f.ItemView.prototype.constructor.call(this, a)
+	}}), e.Layout = e.ItemView.extend({regionType: e.Region, constructor: function(a) {
+		a = a || {}, this._firstRender = !0, this._initializeRegions(a), e.ItemView.prototype.constructor.call(this, a)
 	}, render: function() {
-		this.isClosed && this._initializeRegions(), this._firstRender ? this._firstRender = !1 : this.isClosed || this._reInitializeRegions();
-		var a = Array.prototype.slice.apply(arguments), b = f.ItemView.prototype.render.apply(this, a);
-		return b
+		return this.isClosed && this._initializeRegions(), this._firstRender ? this._firstRender = !1 : this.isClosed || this._reInitializeRegions(), e.ItemView.prototype.render.apply(this, arguments)
 	}, close: function() {
-		if (!this.isClosed) {
-			this.regionManager.close();
-			var a = Array.prototype.slice.apply(arguments);
-			f.ItemView.prototype.close.apply(this, a)
-		}
+		this.isClosed || (this.regionManager.close(), e.ItemView.prototype.close.apply(this, arguments))
 	}, addRegion: function(a, b) {
 		var c = {};
 		return c[a] = b, this._buildRegions(c)[a]
@@ -559,7 +541,7 @@ var Marionette = function(a, b, c) {
 	}, removeRegion: function(a) {
 		return delete this.regions[a], this.regionManager.removeRegion(a)
 	}, _buildRegions: function(a) {
-		var b = this, c = {regionType: f.getOption(this, "regionType"), parentEl: function() {
+		var b = this, c = {regionType: e.getOption(this, "regionType"), parentEl: function() {
 			return b.$el
 		}};
 		return this.regionManager.addRegions(a, c)
@@ -571,15 +553,15 @@ var Marionette = function(a, b, c) {
 			a.reset()
 		})
 	}, _initRegionManager: function() {
-		this.regionManager = new f.RegionManager, this.listenTo(this.regionManager, "region:add", function(a, b) {
+		this.regionManager = new e.RegionManager, this.listenTo(this.regionManager, "region:add", function(a, b) {
 			this[a] = b, this.trigger("region:add", a, b)
 		}), this.listenTo(this.regionManager, "region:remove", function(a, b) {
 			delete this[a], this.trigger("region:remove", a, b)
 		})
-	}}), f.AppRouter = b.Router.extend({constructor: function(a) {
-		b.Router.prototype.constructor.apply(this, d(arguments)), this.options = a || {};
-		var c = f.getOption(this, "appRoutes"), e = this._getController();
-		this.processAppRoutes(e, c)
+	}}), e.AppRouter = b.Router.extend({constructor: function(a) {
+		b.Router.prototype.constructor.apply(this, arguments), this.options = a || {};
+		var c = e.getOption(this, "appRoutes"), d = this._getController();
+		this.processAppRoutes(d, c)
 	}, appRoute: function(a, b) {
 		var c = this._getController();
 		this._addAppRoute(c, a, b)
@@ -591,19 +573,16 @@ var Marionette = function(a, b, c) {
 			}, this)
 		}
 	}, _getController: function() {
-		return f.getOption(this, "controller")
-	}, _addAppRoute: function(a, b, d) {
-		var e = a[d];
-		if (!e)throw new Error("Method '" + d + "' was not found on the controller");
-		this.route(b, d, c.bind(e, a))
-	}}), f.Application = function(a) {
-		this._initRegionManager(), this._initCallbacks = new f.Callbacks, this.vent = new b.Wreqr.EventAggregator, this.commands = new b.Wreqr.Commands, this.reqres = new b.Wreqr.RequestResponse, this.submodules = {}, c.extend(this, a), this.triggerMethod = f.triggerMethod
-	}, c.extend(f.Application.prototype, b.Events, {execute: function() {
-		var a = Array.prototype.slice.apply(arguments);
-		this.commands.execute.apply(this.commands, a)
+		return e.getOption(this, "controller")
+	}, _addAppRoute: function(a, b, e) {
+		var f = a[e];
+		f || d("Method '" + e + "' was not found on the controller"), this.route(b, e, c.bind(f, a))
+	}}), e.Application = function(a) {
+		this._initRegionManager(), this._initCallbacks = new e.Callbacks, this.vent = new b.Wreqr.EventAggregator, this.commands = new b.Wreqr.Commands, this.reqres = new b.Wreqr.RequestResponse, this.submodules = {}, c.extend(this, a), this.triggerMethod = e.triggerMethod
+	}, c.extend(e.Application.prototype, b.Events, {execute: function() {
+		this.commands.execute.apply(this.commands, arguments)
 	}, request: function() {
-		var a = Array.prototype.slice.apply(arguments);
-		return this.reqres.request.apply(this.reqres, a)
+		return this.reqres.request.apply(this.reqres, arguments)
 	}, addInitializer: function(a) {
 		this._initCallbacks.add(a)
 	}, start: function(a) {
@@ -617,19 +596,17 @@ var Marionette = function(a, b, c) {
 	}, getRegion: function(a) {
 		return this._regionManager.get(a)
 	}, module: function(a, b) {
-		var c = f.Module;
-		b && (c = b.moduleClass || c);
-		var e = d(arguments);
-		return e.unshift(this), c.create.apply(c, e)
+		var c = e.Module.getClass(b), d = f.call(arguments);
+		return d.unshift(this), c.create.apply(c, d)
 	}, _initRegionManager: function() {
-		this._regionManager = new f.RegionManager, this.listenTo(this._regionManager, "region:add", function(a, b) {
+		this._regionManager = new e.RegionManager, this.listenTo(this._regionManager, "region:add", function(a, b) {
 			this[a] = b
 		}), this.listenTo(this._regionManager, "region:remove", function(a) {
 			delete this[a]
 		})
-	}}), f.Application.extend = f.extend, f.Module = function(a, b, d) {
-		this.moduleName = a, this.options = c.extend({}, this.options, d), this.initialize = d.initialize || this.initialize, this.submodules = {}, this._setupInitializersAndFinalizers(), this.app = b, this.startWithParent = !0, this.triggerMethod = f.triggerMethod, c.isFunction(this.initialize) && this.initialize(this.options, a, b)
-	}, f.Module.extend = f.extend, c.extend(f.Module.prototype, b.Events, {initialize: function() {
+	}}), e.Application.extend = e.extend, e.Module = function(a, b, d) {
+		this.moduleName = a, this.options = c.extend({}, this.options, d), this.initialize = d.initialize || this.initialize, this.submodules = {}, this._setupInitializersAndFinalizers(), this.app = b, this.startWithParent = !0, this.triggerMethod = e.triggerMethod, c.isFunction(this.initialize) && this.initialize(this.options, a, b)
+	}, e.Module.extend = e.extend, c.extend(e.Module.prototype, b.Events, {initialize: function() {
 	}, addInitializer: function(a) {
 		this._initializerCallbacks.add(a)
 	}, addFinalizer: function(a) {
@@ -639,36 +616,37 @@ var Marionette = function(a, b, c) {
 			b.startWithParent && b.start(a)
 		}), this.triggerMethod("before:start", a), this._initializerCallbacks.run(a, this), this._isInitialized = !0, this.triggerMethod("start", a))
 	}, stop: function() {
-		this._isInitialized && (this._isInitialized = !1, f.triggerMethod.call(this, "before:stop"), c.each(this.submodules, function(a) {
+		this._isInitialized && (this._isInitialized = !1, e.triggerMethod.call(this, "before:stop"), c.each(this.submodules, function(a) {
 			a.stop()
-		}), this._finalizerCallbacks.run(void 0, this), this._initializerCallbacks.reset(), this._finalizerCallbacks.reset(), f.triggerMethod.call(this, "stop"))
+		}), this._finalizerCallbacks.run(void 0, this), this._initializerCallbacks.reset(), this._finalizerCallbacks.reset(), e.triggerMethod.call(this, "stop"))
 	}, addDefinition: function(a, b) {
 		this._runModuleDefinition(a, b)
 	}, _runModuleDefinition: function(a, d) {
 		if (a) {
-			var e = c.flatten([this, this.app, b, f, f.$, c, d]);
-			a.apply(this, e)
+			var f = c.flatten([this, this.app, b, e, e.$, c, d]);
+			a.apply(this, f)
 		}
 	}, _setupInitializersAndFinalizers: function() {
-		this._initializerCallbacks = new f.Callbacks, this._finalizerCallbacks = new f.Callbacks
-	}}), c.extend(f.Module, {create: function(a, b, e) {
-		var f = a, g = d(arguments);
+		this._initializerCallbacks = new e.Callbacks, this._finalizerCallbacks = new e.Callbacks
+	}}), c.extend(e.Module, {create: function(a, b, d) {
+		var e = a, g = f.call(arguments);
 		g.splice(0, 3), b = b.split(".");
 		var h = b.length, i = [];
-		return i[h - 1] = e, c.each(b, function(b, c) {
-			var d = f;
-			f = this._getModule(d, b, a, e), this._addModuleDefinition(d, f, i[c], g)
-		}, this), f
+		return i[h - 1] = d, c.each(b, function(b, c) {
+			var f = e;
+			e = this._getModule(f, b, a, d), this._addModuleDefinition(f, e, i[c], g)
+		}, this), e
 	}, _getModule: function(a, b, d, e) {
-		var g = f.Module, h = c.extend({}, e);
-		e && (g = e.moduleClass || g);
-		var i = a[b];
-		return i || (i = new g(b, d, h), a[b] = i, a.submodules[b] = i), i
-	}, _addModuleDefinition: function(a, b, d, e) {
-		var f, g;
-		c.isFunction(d) ? (f = d, g = !0) : c.isObject(d) ? (f = d.define, g = "undefined" != typeof d.startWithParent ? d.startWithParent : !0) : g = !0, f && b.addDefinition(f, e), b.startWithParent = b.startWithParent && g, b.startWithParent && !b.startWithParentIsConfigured && (b.startWithParentIsConfigured = !0, a.addInitializer(function(a) {
+		var f = c.extend({}, e), g = this.getClass(e), h = a[b];
+		return h || (h = new g(b, d, f), a[b] = h, a.submodules[b] = h), h
+	}, getClass: function(a) {
+		var b = e.Module;
+		return a ? a.prototype instanceof b ? a : a.moduleClass || b : b
+	}, _addModuleDefinition: function(a, b, d, f) {
+		var g, h;
+		!c.isFunction(d) || d.prototype instanceof e.Module ? c.isObject(d) ? (g = d.define, h = c.isUndefined(d.startWithParent) ? !0 : d.startWithParent) : h = !0 : (g = d, h = !0), g && b.addDefinition(g, f), b.startWithParent = b.startWithParent && h, b.startWithParent && !b.startWithParentIsConfigured && (b.startWithParentIsConfigured = !0, a.addInitializer(function(a) {
 			b.startWithParent && b.start(a)
 		}))
-	}}), f
+	}}), e
 }(this, Backbone, _);
 //# sourceMappingURL=backbone.marionette.map

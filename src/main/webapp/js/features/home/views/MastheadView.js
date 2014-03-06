@@ -1,5 +1,7 @@
 /*global define*/
 define([
+	'jquery',
+	'jquery.fancybox',
 	'marionette',
 	'handlebars',
 	'text!features/home/templates/masthead.tpl',
@@ -7,7 +9,7 @@ define([
 	'utils/HttpUtils',
 	'utils/Utils'
 ],
-	function(Marionette, Handlebars, template, MessageBox, HttpUtils, Utils) {
+	function($, Fancybox, Marionette, Handlebars, template, MessageBox, HttpUtils, Utils) {
 		"use strict";
 
 		var SUPPORT_DIALOG_SELECTOR = '.masthead-support-box';
@@ -32,16 +34,9 @@ define([
 				this.tabData = tabData;
 			},
 
-			onShow: function() {
-				var that = this;
-				Utils.waitForDisplayAndCreate(SUPPORT_DIALOG_SELECTOR, function() {
-					that.createSupportDialog();
-				});
-			},
-
 			createSupportDialog: function() {
 				var that = this;
-				this._supportDialog = MessageBox.createDialog($(SUPPORT_DIALOG_SELECTOR), {
+				return MessageBox.createDialog($(SUPPORT_DIALOG_SELECTOR), {
 					hideOnContentClick: false,
 					closeBtn: false,
 					afterShow: function() {
@@ -69,7 +64,7 @@ define([
 			},
 
 			onSupportClick: function() {
-				this._supportDialog.show();
+				this.createSupportDialog().show();
 			},
 
 			onSubmitButtonClick: function() {

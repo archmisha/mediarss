@@ -1,6 +1,7 @@
 /*global define*/
 define([
 	'marionette',
+	'backbone',
 	'handlebars',
 	'text!features/showsTab/templates/shows-search.tpl',
 	'features/collections/UserTorrentCollection',
@@ -12,7 +13,7 @@ define([
 	'features/showsTab/collections/ActiveSearchCollection',
 	'components/search-result/models/SearchResult'
 ],
-	function(Marionette, Handlebars, template, UserTorrentCollection, SearchResultsCollectionView, HttpUtils, SearchResultsView, MessageBox, ActiveSearchCollectionView, ActiveSearchCollection, SearchResult) {
+	function(Marionette, Backbone, Handlebars, template, UserTorrentCollection, SearchResultsCollectionView, HttpUtils, SearchResultsView, MessageBox, ActiveSearchCollectionView, ActiveSearchCollection, SearchResult) {
 		"use strict";
 
 		return Marionette.Layout.extend({

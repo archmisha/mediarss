@@ -1,6 +1,8 @@
 define([
 	'jquery',
+	'backbone',
 	'marionette',
+	'jquery.fancybox',
 	'handlebars',
 	'text!features/moviesTab/templates/movie-item.tpl',
 	'utils/Utils',
@@ -8,7 +10,7 @@ define([
 	'features/collections/UserTorrentCollection',
 	'utils/HttpUtils'
 ],
-	function($, Marionette, Handlebars, template, Utils, SearchResultsCollectionView, UserTorrentCollection, HttpUtils) {
+	function($, Backbone, Marionette, Fancybox, Handlebars, template, Utils, SearchResultsCollectionView, UserTorrentCollection, HttpUtils) {
 		"use strict";
 
 		var MAX_NOT_VIEWED_TORRENTS_TO_DISPLAY = 3;
