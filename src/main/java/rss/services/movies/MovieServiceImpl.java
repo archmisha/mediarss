@@ -200,6 +200,13 @@ public class MovieServiceImpl implements MovieService {
 
 		ArrayList<UserMovieVO> result = populateUserMovieTorrents(user, torrentsByIds, movies, userMoviesVOContainer);
 
+		// remove movies without torrents
+		for (UserMovieVO userMovieVO : new ArrayList<>(result)) {
+			if (userMovieVO.getViewedTorrents().isEmpty() && userMovieVO.getNotViewedTorrents().isEmpty()) {
+				result.remove(userMovieVO);
+			}
+		}
+
 		Collections.sort(result, new Comparator<UserMovieVO>() {
 			@Override
 			public int compare(UserMovieVO o1, UserMovieVO o2) {
