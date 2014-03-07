@@ -9,12 +9,12 @@ require.config({
 		less: 'lib/less',
 		moment: 'lib/moment-2.0.0.min',
 		zeroClipboard: 'lib/ZeroClipboard-1.3.1.min',
-		'jquery.fancybox': 'lib/jquery.fancybox-2.1.4.min',
 		chosen: 'lib/chosen.jquery.min',
 		blockUI: 'lib/jquery.blockUI',
-		noty: 'lib/noty/jquery.noty',
-		qtip: 'lib/jquery.qtip-2.2.0.min',
+		'jquery.fancybox': 'lib/jquery.fancybox-2.1.4.min',
+		'jquery.noty': 'lib/noty/jquery.noty',
 		'jquery.MsgBox': 'lib/jquery.msgBox',
+		qtip: 'lib/jquery.qtip-2.2.0.min',
 		ajaxChosen: 'lib/ajax-chosen.min',
 		select2: 'lib/select2.min'
 	},
@@ -41,14 +41,13 @@ require.config({
 			exports: 'ZeroClipboard'
 		},
 		'jquery.fancybox': ['jquery'],
+		'jquery.noty': ['jquery'],
+		'jquery.MsgBox': ['jquery'],
 		chosen: {
 			exports: 'Chosen'
 		},
 		blockUI: {
 			exports: 'BlockUI'
-		},
-		noty: {
-			exports: 'Noty'
 		},
 		qtip: {
 			exports: 'qTip',
@@ -59,8 +58,7 @@ require.config({
 		},
 		select2: {
 			exports: 'Select2'
-		},
-		'jquery.MsgBox': ['jquery']
+		}
 	},
 	deps: ['jquery', 'underscore']
 });

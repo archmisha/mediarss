@@ -6,7 +6,7 @@ define([
 	'jquery',
 	'jquery.fancybox',
 	'jquery.MsgBox',
-	'noty',
+	'jquery.noty',
 	'utils/Utils'
 ],
 	function($, Fancybox, MsgBox, Noty, Utils) {
@@ -62,7 +62,7 @@ define([
 			},
 
 			info: function(message) {
-				noty({
+				$.notyHelper({
 					layout: 'topCenter',
 					text: message,
 					timeout: 5000,

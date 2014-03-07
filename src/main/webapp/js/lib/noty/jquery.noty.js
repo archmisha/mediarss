@@ -415,6 +415,8 @@ if (typeof Object.create !== 'function') {
 
 })(jQuery);
 
+;
+(function($) {
 // Helpers
 function noty(options) {
 
@@ -431,8 +433,8 @@ function noty(options) {
             'onClosed':'callback.afterClose'
         };
 
-    jQuery.each(options, function (key, value) {
-        if (old_to_new[key]) {
+	$.each(options, function(key, value) {
+		if (old_to_new[key]) {
             using_old++;
             var _new = old_to_new[key].split('.');
 
@@ -486,8 +488,8 @@ function noty(options) {
     }
 
     if (options.buttons) {
-        jQuery.each(options.buttons, function (i, button) {
-            if (button.click) {
+	    $.each(options.buttons, function(i, button) {
+		    if (button.click) {
                 using_old++;
                 button.onClick = button.click;
                 delete button.click;
@@ -509,11 +511,11 @@ function noty(options) {
     // console.log(options);
     // End of the BC
 
-    return jQuery.notyRenderer.init(options);
+	return $.notyRenderer.init(options);
 }
 
-
-
+	$.notyHelper = noty;
+})(jQuery);
 
 ;(function($) {
 
