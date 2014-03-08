@@ -5,6 +5,7 @@
 @filters-height: 20px;
 @movie-item-new-label-width: 50px;
 @movie-item-icon-wrapper-width: 24px;
+@movies-search-result-item-status-top: 19px;
 
 .movies-tab {
   margin-left: 142px;
@@ -121,12 +122,6 @@
   color: #808080;
 }
 
-.future-movies-list .movie-item:hover {
-  .future-movie-item-remove-image {
-    display: inline !important;
-  }
-}
-
 .movie-show-preview-image {
   position: absolute;
   top: 1px;
@@ -139,10 +134,6 @@
   display: none;
 }
 
-.future-movie-item-remove-image {
-  display: none;
-}
-
 .future-movie-item-remove-image-short,
 .future-movie-item-remove-image {
   cursor: pointer;
@@ -152,6 +143,22 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+.future-movie-item-remove-image,
+.future-movie-item-remove-image-short {
+  display: none;
+}
+
+.future-movies-list {
+  .movie-item:hover {
+    .future-movie-item-remove-image {
+      display: inline;
+    }
+  }
+  .future-movie-item-remove-image-short {
+    display: inline;
   }
 }
 
@@ -231,7 +238,7 @@
 .movies-search-result-item-status {
   position: absolute;
   right: @movie-item-padding;
-  top: 19px;
+  top: @movies-search-result-item-status-top;
 }
 
 .movie-search-result-item {
@@ -250,7 +257,7 @@
 
     .movies-search-result-item-status {
       right: @movie-item-padding - 1px;
-      top: 18px;
+      top: @movies-search-result-item-status-top - 1px;
     }
 
     .movies-search-result-item-icon {
@@ -264,10 +271,10 @@
 .movies-search-result-item-added {
   margin-top: 6px;
   margin-right: 5px;
-}
 
-.movies-search-result-item-added:hover {
-  cursor: default;
+  &:hover {
+    cursor: default;
+  }
 }
 
 .movies-search-result-wrapper {
@@ -388,5 +395,24 @@
   // when small resolution, we remove the height and the float and let the text wrap itself multiple lines
   .movie-item-title {
     height: auto;
+  }
+
+  .movie-search-result-item {
+    &:hover {
+      border: 0px;
+      background-color: inherit;
+      padding: @movie-item-padding;
+
+      .movies-search-result-item-status {
+        right: @movie-item-padding;
+        top: @movies-search-result-item-status-top;
+      }
+
+      .movies-search-result-item-icon {
+        position: absolute;
+        left: @movie-item-padding-left;
+        top: @movie-item-padding;
+      }
+    }
   }
 }

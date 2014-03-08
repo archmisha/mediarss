@@ -20,7 +20,7 @@ define([
 
 			events: {
 				'click .active-search-remove': 'onActiveSearchRemove',
-				'click .active-search-view': 'onActiveSearchView'
+				'click .active-search-view-link': 'onActiveSearchView'
 			},
 
 			constructor: function(options) {

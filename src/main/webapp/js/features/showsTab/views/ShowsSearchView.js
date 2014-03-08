@@ -236,6 +236,7 @@ define([
 			},
 
 			onActiveSearchView: function(activeSearchModel) {
+				this.searchResultsView.$el.slideDown('slow');
 				this.searchResultsView.setSearchResults(activeSearchModel);
 			}
 		});
