@@ -4,17 +4,14 @@ define([
 	'marionette',
 	'handlebars',
 	'text!features/moviesTab/templates/movie-preview.tpl',
-	'features/moviesTab/views/MovieCollectionView',
-	'features/moviesTab/views/MoviesSearchView',
-	'features/moviesTab/collections/MoviesCollection',
 	'utils/HttpUtils',
-	'components/section/views/SectionView',
 	'utils/MessageBox',
 	'moment',
 	'utils/StringUtils',
-	'routers/RoutingPaths'
+	'routers/RoutingPaths',
+	'utils/Spinner'
 ],
-	function($, Marionette, Handlebars, template, MovieCollectionView, MoviesSearchView, MoviesCollection, HttpUtils, SectionView, MessageBox, Moment, StringUtils, RoutingPaths) {
+	function($, Marionette, Handlebars, template, HttpUtils, MessageBox, Moment, StringUtils, RoutingPaths, Spinner) {
 		"use strict";
 
 		return Marionette.Layout.extend({
@@ -36,8 +33,10 @@ define([
 			},
 
 			onRender: function() {
+				Spinner.mask();
 				var that = this;
 				this.ui.moviePreviewContainer.load(function() {
+					Spinner.unmask();
 					that.ui.moviePreviewContainer.contents().css({
 						margin: '0px',
 						padding: '0px',
