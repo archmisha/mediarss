@@ -124,7 +124,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 					return searchResult;
 				}
 			} catch (PageDownloadException e) {
-				logService.error(getClass(), "Request: " + mediaRequest + " Error: " + e.getMessage());
+				logService.warn(getClass(), "Request: " + mediaRequest + " Error: " + e.getMessage());
 			}
 		}
 
