@@ -38,4 +38,6 @@ public interface UserCacheService {
 	List<UserMovieVO> getAvailableMovies(User user);
 
 	int getAvailableMoviesCount(User user);
+
+	void invalidateMovies();
 }

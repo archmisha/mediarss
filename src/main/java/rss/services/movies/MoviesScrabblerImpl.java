@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import rss.entities.Movie;
 import rss.services.JobRunner;
-import rss.services.downloader.DownloadResult;
-import rss.services.requests.movies.MovieRequest;
+import rss.services.user.UserCacheService;
 import rss.util.QuartzJob;
 
 /**
@@ -19,14 +17,14 @@ import rss.util.QuartzJob;
 @QuartzJob(name = "MoviesScrabbler", cronExp = "0 0 0/6 * * ?")
 public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 
-//	@Autowired
-//	private EmailService emailService;
-
 	@Autowired
 	private MovieService movieService;
 
 	@Autowired
 	private TopMoviesService topMoviesService;
+
+	@Autowired
+	private UserCacheService userCacheService;
 
 	public MoviesScrabblerImpl() {
 		super(JOB_NAME);
@@ -37,11 +35,7 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			public void doInTransactionWithoutResult(TransactionStatus arg0) {
-				DownloadResult<Movie, MovieRequest> downloadResult = movieService.downloadLatestMovies();
-
-				// no need to send emails here, we didn't search by name for something specific
-				// if one of the movies in the latest list is not found, it means maybe was no IMDB ID on the page
-//				emailService.notifyOfMissingMovies(downloadResult.getMissing());
+				movieService.downloadLatestMovies();
 			}
 		});
 
@@ -56,6 +50,13 @@ public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
 			@Override
 			public void doInTransactionWithoutResult(TransactionStatus arg0) {
 				topMoviesService.downloadTopMovies();
+			}
+		});
+
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			public void doInTransactionWithoutResult(TransactionStatus arg0) {
+				userCacheService.invalidateMovies();
 			}
 		});
 

@@ -97,15 +97,15 @@ public class UserCacheServiceImpl implements UserCacheService {
 	}
 
 	private void reloadUser(final User user) {
-		performUserUpdate(user.getId(), new AtomicUserUpdate() {
-			@Override
-			public void run(UserCacheEntry cacheEntry) {
-				invalidateSchedule(user);
+//		performUserUpdate(user.getId(), new AtomicUserUpdate() {
+//			@Override
+//			public void run(UserCacheEntry cacheEntry) {
+		invalidateSchedule(user);
 				invalidateTrackedShows(user);
 				invalidateUserMovies(user);
 				invalidateAvailableMovies(user);
-			}
-		});
+//			}
+//		});
 	}
 
 	@Override
@@ -216,6 +216,15 @@ public class UserCacheServiceImpl implements UserCacheService {
 	public int getAvailableMoviesCount(User user) {
 		UserCacheEntry cacheEntry = cache.get(user.getId());
 		return cacheEntry.getAvailableMovies().size();
+	}
+
+	@Override
+	public void invalidateMovies() {
+		for (UserCacheEntry userCacheEntry : cache.values()) {
+			User user = userCacheEntry.getUser();
+			invalidateAvailableMovies(user);
+			invalidateUserMovies(user);
+		}
 	}
 
 	private List<UserMovieVO> levelOneCopy(List<UserMovieVO> movies) {
