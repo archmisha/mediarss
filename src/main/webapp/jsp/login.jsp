@@ -1,5 +1,5 @@
 <%@ include file="prefix.jsp" %>
-<script src="../js/lib/jquery.fancybox.pack.js"></script>
+<script src="../js/lib/jquery.fancybox-2.1.4.min.js"></script>
 <script src="../js/login.js"></script>
 
 <div class='login-form-container'>
