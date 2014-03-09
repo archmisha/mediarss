@@ -8,7 +8,6 @@ import java.util.Date;
  */
 public class IMDBParseResult {
 	private boolean found;
-	private String imdbUrl;
 	private String name;
 	private int year;
 	private boolean comingSoon;
@@ -20,12 +19,12 @@ public class IMDBParseResult {
 		return found;
 	}
 
-	public static IMDBParseResult createNotFound(String imdbUrl) {
-		return new IMDBParseResult().withFound(false).widthImdbUrl(imdbUrl);
+	public static IMDBParseResult createNotFound() {
+		return new IMDBParseResult().withFound(false);
 	}
 
-	public static IMDBParseResult createFound(String imdbUrl, String name, int year, boolean comingSoon, int viewers, Date releaseDate, String page) {
-		return new IMDBParseResult().withFound(true).widthImdbUrl(imdbUrl).withName(name).withYear(year)
+	public static IMDBParseResult createFound(String name, int year, boolean comingSoon, int viewers, Date releaseDate, String page) {
+		return new IMDBParseResult().withFound(true).withName(name).withYear(year)
 				.withComingSoon(comingSoon).withViewers(viewers).withReleaseDate(releaseDate).withPage(page);
 	}
 
@@ -56,11 +55,6 @@ public class IMDBParseResult {
 
 	private IMDBParseResult withName(String name) {
 		this.name = name;
-		return this;
-	}
-
-	private IMDBParseResult widthImdbUrl(String imdbUrl) {
-		this.imdbUrl = imdbUrl;
 		return this;
 	}
 

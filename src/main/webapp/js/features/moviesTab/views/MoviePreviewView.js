@@ -49,9 +49,9 @@ define([
 					var f = function() {
 						var newHeight = that.ui.moviePreviewContainer.contents().find("html").height() + delta;
 						var curHeight = that.ui.moviePreviewContainer.attr("height");
-						console.log('curHeight ' + curHeight + ' ' + newHeight);
+//						console.log('curHeight ' + curHeight + ' ' + newHeight);
 						if (curHeight < newHeight) {
-							console.log('in');
+//							console.log('in');
 							that.ui.moviePreviewContainer.attr("height", newHeight);
 							setTimeout(f, 10);
 						}

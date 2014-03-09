@@ -466,14 +466,16 @@ public class MovieServiceImpl implements MovieService {
 
 	@Override
 	public DownloadResult<Movie, MovieRequest> downloadLatestMovies() {
-		logService.info(getClass(), "Downloading '" + TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d" + "'");
+		String url = TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d";
+		logService.info(getClass(), "Downloading '" + url + "'");
 		DurationMeter duration = new DurationMeter();
-		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "1d");
+		Collection<TorrentzResult> torrentzResults = torrentzParser.downloadByUrl(url);
 
 		// retry with 7 days
 		if (torrentzResults.isEmpty()) {
-			logService.info(getClass(), "Nothing found, downloading '" + TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "7d" + "'");
-			torrentzResults = torrentzParser.downloadByUrl(TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "7d");
+			url = TorrentzParserImpl.TORRENTZ_LATEST_MOVIES_URL + "7d";
+			logService.info(getClass(), "Nothing found, downloading '" + url + "'");
+			torrentzResults = torrentzParser.downloadByUrl(url);
 		}
 
 		Set<MovieRequest> movieRequests = new HashSet<>();

@@ -18,17 +18,11 @@ public interface MovieService {
 
 	List<UserMovieVO> getSearchCompletedMovies(long[] ids);
 
-//	int getUserMoviesCount(User user);
-
-//	int getAvailableMoviesCount(User user);
-
 	List<UserMovieVO> getUserMovies(User user);
 
 	List<UserMovieVO> getAvailableMovies(User loggedInUser);
 
 	Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId);
-
-//	void markMovieViewed(User user, long movieId);
 
 	void addMovieDownload(User user, long movieId, long torrentId);
 

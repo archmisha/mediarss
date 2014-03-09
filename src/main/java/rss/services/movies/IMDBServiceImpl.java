@@ -103,17 +103,19 @@ public class IMDBServiceImpl implements IMDBService {
 			logService.debug(getClass(), String.format("Downloading title for movie '%s' took %d ms", name, (System.currentTimeMillis() - from)));
 
 			// check for release date
+			Date releaseDate = null;
 			// <meta itemprop="datePublished" content="1999-03-31">
 			Matcher releaseDateMatcher = RELEASE_DATE_PATTERN.matcher(page);
-			releaseDateMatcher.find();
-			String releaseDateStr = releaseDateMatcher.group(1);
-			Date releaseDate;
-			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-				releaseDate = sdf.parse(releaseDateStr);
-			} catch (ParseException e) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-				releaseDate = sdf.parse(releaseDateStr);
+			if (releaseDateMatcher.find()) {
+				String releaseDateStr = releaseDateMatcher.group(1);
+
+				try {
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+					releaseDate = sdf.parse(releaseDateStr);
+				} catch (ParseException e) {
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+					releaseDate = sdf.parse(releaseDateStr);
+				}
 			}
 
 			Matcher comingSoonMatcher = COMING_SOON_PATTERN.matcher(page);
@@ -143,7 +145,7 @@ public class IMDBServiceImpl implements IMDBService {
 			page = cleanImdbPage(name, page);
 			downloadImages(page, imdbUrl, imagesAsync);
 
-			return IMDBParseResult.createFound(imdbUrl, name, parseMovieYear(name), isComingSoon, viewers, releaseDate, page);
+			return IMDBParseResult.createFound(name, parseMovieYear(name), isComingSoon, viewers, releaseDate, page);
 		} catch (Exception e) {
 			// for any reason, regexp might fail or something else
 			// usually it is HTTP/1.1 404 Not Found
@@ -151,7 +153,7 @@ public class IMDBServiceImpl implements IMDBService {
 				logService.error(getClass(), "Failed downloading or parsing IMDB page " + imdbUrl + ": " + e.getMessage() + ". Page: " + page, e);
 			}
 
-			return IMDBParseResult.createNotFound(imdbUrl);
+			return IMDBParseResult.createNotFound();
 		}
 	}
 

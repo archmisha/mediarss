@@ -8,7 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.dao.MovieDao;
 import rss.entities.Movie;
 import rss.services.SettingsService;
+import rss.services.downloader.DownloadConfig;
+import rss.services.downloader.MovieTorrentsDownloader;
 import rss.services.log.LogService;
+import rss.services.requests.movies.MovieRequest;
 import rss.util.DurationMeter;
 
 import java.util.Collection;
@@ -24,6 +27,7 @@ import java.util.Set;
 public class TopMoviesServiceImpl implements TopMoviesService {
 
 	private static final int TOP_MOVIES_COUNT = 20;
+	public static final String TOP_MOVIES_KEY = "topMovies";
 
 	@Autowired
 	private TopMoviesDownloader movieFoneTopMoviesDownloader;
@@ -37,18 +41,30 @@ public class TopMoviesServiceImpl implements TopMoviesService {
 	@Autowired
 	private LogService logService;
 
+	@Autowired
+	private MovieTorrentsDownloader movieTorrentsDownloader;
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void downloadTopMovies() {
 		logService.info(getClass(), "Downloading top movies");
 		DurationMeter duration = new DurationMeter();
 
-		Set<Movie> topMovies = movieFoneTopMoviesDownloader.getTopMovies(TOP_MOVIES_COUNT);
+		Set<Movie> movies = movieFoneTopMoviesDownloader.getTopMovies(TOP_MOVIES_COUNT);
+
+		Set<MovieRequest> movieRequests = new HashSet<>();
+		for (Movie movie : movies) {
+			MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
+			movieRequest.setImdbId(movie.getImdbUrl());
+			movieRequests.add(movieRequest);
+		}
+		movieTorrentsDownloader.download(movieRequests, new DownloadConfig());
+
 		Set<Long> ids = new HashSet<>();
-		for (Movie movie : topMovies) {
+		for (Movie movie : movies) {
 			ids.add(movie.getId());
 		}
-		settingsService.setPersistentSetting("topMovies", StringUtils.join(ids, ","));
+		settingsService.setPersistentSetting(TOP_MOVIES_KEY, StringUtils.join(ids, ","));
 
 		duration.stop();
 		logService.info(getClass(), "Downloading top movies took " + duration.getDuration() + " ms");
@@ -57,7 +73,7 @@ public class TopMoviesServiceImpl implements TopMoviesService {
 	@Override
 	public Collection<Movie> getTopMovies() {
 		Set<Long> ids = new HashSet<>();
-		String val = settingsService.getPersistentSetting("topMovies");
+		String val = settingsService.getPersistentSetting(TOP_MOVIES_KEY);
 		if (StringUtils.isBlank(val)) {
 			return Collections.emptySet();
 		}
