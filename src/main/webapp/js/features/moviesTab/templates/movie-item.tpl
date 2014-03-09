@@ -24,7 +24,9 @@
             <img src='images/preview.gif' class='movie-show-preview-small movie-show-preview-image'/>
         </div>
         <div class='movie-item-sub-title'>
+            {{#if scheduledDate}}
             <span class='movie-scheduled-on'>Scheduled on {{dateFormat scheduledDate format="DD/MM/YYYY HH:mm" default='never'}}</span>
+            {{/if}}
         </div>
     </div>
 </div>
