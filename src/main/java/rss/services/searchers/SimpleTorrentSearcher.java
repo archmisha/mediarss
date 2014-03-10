@@ -45,7 +45,7 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 		try {
 			searchUrls = getSearchUrl(mediaRequest);
 		} catch (Exception e) {
-			logService.error(getClass(), "Failed searching for: " + mediaRequest + ". Error: " + e.getMessage(), e);
+			logService.warn(getClass(), "Failed searching for: " + mediaRequest + ". Error: " + e.getMessage(), e);
 			return SearchResult.createNotFound();
 		}
 
