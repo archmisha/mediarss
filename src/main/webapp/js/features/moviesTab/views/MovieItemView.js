@@ -85,7 +85,6 @@ define([
 			},
 
 			onRender: function() {
-				console.log('render');
 				this.updateDownloadStatus();
 
 				this.torrentsListRegion.show(this.movieTorrentCollectionView);
@@ -173,13 +172,16 @@ define([
 				this.vent.trigger('movie-selected', this.model);
 			},
 
+			// for some reason, when called from event of movies being searched, in MoviesTabView, the ui element is not rendered
+			// so falling back to jquery
 			updateDownloadStatus: function() {
-				console.log('updateDownloadStatus');
 				if (this._statusClass) {
-					this.ui.movieItemRoot.removeClass(this._statusClass);
+					this.$el.find('.movie-item-root').removeClass(this._statusClass);
+//					this.ui.movieItemRoot.removeClass(this._statusClass);
 				}
 				this._statusClass = 'download-status-' + this.model.get('downloadStatus');
-				this.ui.movieItemRoot.addClass(this._statusClass);
+				this.$el.find('.movie-item-root').addClass(this._statusClass);
+//				this.ui.movieItemRoot.addClass(this._statusClass);
 			},
 
 			onFutureMovieRemoveClick: function() {
