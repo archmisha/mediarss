@@ -16,7 +16,7 @@ require.config({
 		'jquery.MsgBox': 'lib/jquery.msgBox',
 		qtip: 'lib/jquery.qtip-2.2.0.min',
 		ajaxChosen: 'lib/ajax-chosen.min',
-		select2: 'lib/select2.min'
+		select2: 'lib/select2-3.4.5.min'
 	},
 	shim: {
 		'lib/backbone-localStorage': ['backbone'],
