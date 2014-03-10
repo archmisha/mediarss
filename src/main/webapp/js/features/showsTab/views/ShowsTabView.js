@@ -86,7 +86,7 @@ define([
 					HttpUtils.get("rest/shows/tracked-shows", function(res) {
 						that.trackedShowsView.setTrackedShows(res.trackedShows);
 						that.showsSearchView.setAdmin(res.isAdmin);
-						that.vent.trigger('tracked-shows-change');
+						that.trackedShowsSection.updateCounter();
 					}, false); // no need loading here
 					HttpUtils.get("rest/shows/schedule", function(res) {
 						that.showsScheduleView.setSchedule(res.schedule);
@@ -104,7 +104,7 @@ define([
 
 			_onScreenResolutionChange: function(event) {
 				var scheduleSectionCollapsible = $(window).width() <= 480;
-				console.log('window width: ' + $(window).width());
+//				console.log('window width: ' + $(window).width());
 				this.showsScheduleSection.setCollapsible(scheduleSectionCollapsible);
 			}
 		});

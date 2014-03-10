@@ -85,6 +85,7 @@ define([
 			},
 
 			onRender: function() {
+				console.log('render');
 				this.updateDownloadStatus();
 
 				this.torrentsListRegion.show(this.movieTorrentCollectionView);
@@ -173,6 +174,7 @@ define([
 			},
 
 			updateDownloadStatus: function() {
+				console.log('updateDownloadStatus');
 				if (this._statusClass) {
 					this.ui.movieItemRoot.removeClass(this._statusClass);
 				}

@@ -3,8 +3,8 @@
  * Time: 14:23
  */
 
-define([],
-	function() {
+define(['utils/Spinner'],
+	function(Spinner) {
 		"use strict";
 
 		return {
@@ -69,6 +69,14 @@ define([],
 					url = url.substring(0, url.lastIndexOf('#') + 1);
 				}
 				return url;
+			},
+
+			withLoading: function(callback) {
+				Spinner.mask();
+				setTimeout(function() {
+					callback();
+					Spinner.unmask();
+				}, 200);
 			}
 		};
 	});
