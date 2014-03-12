@@ -47,7 +47,9 @@ define([
 			},
 
 			onClose: function() {
-				this.clip.off('complete', this._onCopyComplete);
+				if (this.clip) {
+					this.clip.off('complete', this._onCopyComplete);
+				}
 			},
 
 			_onCopyComplete: function(client, args) {
