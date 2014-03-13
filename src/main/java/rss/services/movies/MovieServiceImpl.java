@@ -395,22 +395,7 @@ public class MovieServiceImpl implements MovieService {
 			}
 
 			if (movie.getTorrentIds().isEmpty()) {
-				ExecutorService executorService = Executors.newSingleThreadExecutor();
-				final Movie finalMovie = movie;
-				moviesBeingSearched.put(movie, movie);
-				executorService.submit(new Runnable() {
-					@Override
-					public void run() {
-						MovieRequest movieRequest = new MovieRequest(finalMovie.getName(), null);
-						movieRequest.setImdbId(imdbUrl);
-						DownloadConfig downloadConfig = new DownloadConfig();
-						downloadConfig.setAsyncHeavy(false);
-						downloadConfig.setForceDownload(false);
-						movieTorrentsDownloader.download(new HashSet<>(Arrays.asList(movieRequest)), downloadConfig);
-						moviesBeingSearched.remove(finalMovie);
-					}
-				});
-				executorService.shutdown();
+				downloadMovie(movie);
 
 				// re-fetch the movie in this transaction after it got torrents
 //				movie = movieDao.find(movie.getId());
@@ -435,6 +420,25 @@ public class MovieServiceImpl implements MovieService {
 		} catch (InterruptedException | ExecutionException | UnsupportedEncodingException e) {
 			throw new MediaRSSException(e.getMessage(), e);
 		}
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void downloadMovie(final Movie movie) {
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		moviesBeingSearched.put(movie, movie);
+		executorService.submit(new Runnable() {
+			@Override
+			public void run() {
+				MovieRequest movieRequest = new MovieRequest(movie.getName(), null);
+				movieRequest.setImdbId(movie.getImdbUrl());
+				DownloadConfig downloadConfig = new DownloadConfig();
+				downloadConfig.setAsyncHeavy(false);
+				downloadConfig.setForceDownload(false);
+				movieTorrentsDownloader.download(new HashSet<>(Arrays.asList(movieRequest)), downloadConfig);
+				moviesBeingSearched.remove(movie);
+			}
+		});
+		executorService.shutdown();
 	}
 
 	private boolean isOldMovie(Movie movie) {

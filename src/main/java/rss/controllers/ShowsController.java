@@ -169,7 +169,6 @@ public class ShowsController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("trackedShows", shows);
-		result.put("isAdmin", isAdmin(user));
 		duration.stop();
 		logService.info(getClass(), "Tracked shows " + duration.getDuration() + " ms");
 
@@ -186,7 +185,6 @@ public class ShowsController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("schedule", schedule);
-		result.put("isAdmin", isAdmin(user));
 		duration.stop();
 		logService.info(getClass(), "Schedule " + duration.getDuration() + " ms");
 

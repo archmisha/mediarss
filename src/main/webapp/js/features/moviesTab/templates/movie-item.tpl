@@ -15,10 +15,16 @@
                 <div class='movie-item-title-text' title="{{{escapedTitle}}}">{{{title}}}</div>
                 <span class='movie-item-new-label'>{{notViewedTorrentsCounter}} new</span>
                 <span class='future-movie-item-remove-image'>remove</span>
+                {{#if isAdmin}}
+                <span class='movie-item-redownload-action'>redownload</span>
+                {{/if}}
             </div>
             <span class='movie-item-title-text-short' title="{{{escapedTitle}}}">{{{title}}}<span
                     class='movie-item-new-label-short'>{{notViewedTorrentsCounter}} new</span>
                 <span class='future-movie-item-remove-image-short'>remove</span>
+                 {{#if isAdmin}}
+                <span class='movie-item-redownload-action-short'>redownload</span>
+                {{/if}}
             </span>
             <img src='images/preview.gif' class='movie-show-preview movie-show-preview-image'/>
             <img src='images/preview.gif' class='movie-show-preview-small movie-show-preview-image'/>

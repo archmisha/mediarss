@@ -33,8 +33,6 @@ define([
 			},
 
 			onRender: function() {
-//				this._getTabEl(this.selectedTab).addClass('home-selected-tab');
-
 				if (this.isAdmin) {
 					this.ui.adminTab.show();
 				}

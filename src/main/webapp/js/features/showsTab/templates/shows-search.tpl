@@ -9,10 +9,12 @@
     <label for="shows-search-episode" class='shows-search-episode-label'>Episode: </label>
     <input class='shows-search-episode' type='text' id='shows-search-episode' size="2" tabindex="0"/>
 
+    {{#if isAdmin}}
     <div class='shows-search-admin-force-download'>
         <input class='shows-search-admin-force-download-checkbox' type="checkbox" name="forceDownload" value="true">
         <span class='shows-search-admin-force-download-label'>Force episodes download</span>
     </div>
+    {{/if}}
 </div>
 <div class='shows-search-active-searches'>
     <div>Active searches:</div>

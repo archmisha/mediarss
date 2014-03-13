@@ -24,6 +24,8 @@ public interface MovieService {
 
 	Pair<Movie, Boolean> addFutureMovieDownload(User user, String imdbId);
 
+	void downloadMovie(Movie movie);
+
 	void addMovieDownload(User user, long movieId, long torrentId);
 
 	DownloadResult<Movie, MovieRequest> downloadLatestMovies();

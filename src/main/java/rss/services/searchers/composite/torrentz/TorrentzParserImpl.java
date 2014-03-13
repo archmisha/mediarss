@@ -40,7 +40,7 @@ public class TorrentzParserImpl implements TorrentzParser {
 
 	// no need in that already doing it in the search url
 	public static final String[] TYPES_TO_SKIP = new String[]{"xxx", "porn"};
-	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam", "ts", "dvdscr", "webrip", "hdrip", "brrip", "web dl"};
+	private static final String[] KEYWORDS_TO_SKIP = new String[]{"cam", "hdcam", "ts", "dvdscr", "webrip", "hdrip", "brrip", "web dl"};
 
 	private static final Pattern VERIFY_PATTERN = Pattern.compile("(\\d+)");
 

@@ -37,13 +37,14 @@ define([
 				this.isDataLoaded = false;
 				this.vent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.tabData = options.tabData;
 
 				this.searchShowsSection = new SectionView({
 					title: 'Search TV Shows',
 					description: 'Search for older episodes'
 				});
 
-				this.showsSearchView = new ShowsSearchView();
+				this.showsSearchView = new ShowsSearchView({isAdmin: this.tabData.isAdmin});
 
 				this.trackedShowsView = new TrackedShowsComponentView({vent: this.vent});
 				this.trackedShowsSection = new SectionView({
@@ -85,12 +86,10 @@ define([
 					this.isDataLoaded = true;
 					HttpUtils.get("rest/shows/tracked-shows", function(res) {
 						that.trackedShowsView.setTrackedShows(res.trackedShows);
-						that.showsSearchView.setAdmin(res.isAdmin);
 						that.trackedShowsSection.updateCounter();
 					}, false); // no need loading here
 					HttpUtils.get("rest/shows/schedule", function(res) {
 						that.showsScheduleView.setSchedule(res.schedule);
-						that.showsSearchView.setAdmin(res.isAdmin);
 					}, false); // no need loading here
 				}
 

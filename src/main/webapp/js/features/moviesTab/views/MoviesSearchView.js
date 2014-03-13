@@ -17,7 +17,9 @@ define([
 //			className: 'movies-tab',
 
 			ui: {
-				imdbIdInput: '.future-movies-imdb-id-input'
+				imdbIdInput: '.future-movies-imdb-id-input',
+				adminForceDownload: '.shows-search-admin-force-download',
+				adminForceDownloadCheckbox: '.shows-search-admin-force-download-checkbox'
 			},
 
 			events: {
@@ -33,6 +35,7 @@ define([
 			constructor: function(options) {
 				this.vent = options.vent;
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.isAdmin = options.isAdmin;
 
 				this.moviesSearchHeader = new SectionView({
 					title: 'Search Movies',
@@ -81,6 +84,12 @@ define([
 					model.set('added', true);
 					that.vent.trigger('movie-search-add', res);
 				});
+			},
+
+			templateHelpers: function() {
+				return {
+					'isAdmin': this.isAdmin
+				};
 			}
 		});
 	});

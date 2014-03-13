@@ -40,6 +40,8 @@ define([
 				'click': 'onMovieClick',
 				'click .future-movie-item-remove-image-short': 'onFutureMovieRemoveClick',
 				'click .future-movie-item-remove-image': 'onFutureMovieRemoveClick',
+				'click .movie-item-redownload-action-short': 'onMovieRedownloadClick',
+				'click .movie-item-redownload-action': 'onMovieRedownloadClick',
 				'click .movie-item-torrents-show-all': '_onShowAllClick',
 				'click .movie-item-torrents-collapse': '_onCollapseClick',
 				'click .movie-show-preview': '_onPreviewClick',
@@ -54,6 +56,7 @@ define([
 				this.vent = options.vent;
 				this.searchResultsVent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.isAdmin = options.isAdmin;
 
 				var that = this;
 				this.model.on('change:downloadStatus', function() {
@@ -177,15 +180,17 @@ define([
 			updateDownloadStatus: function() {
 				if (this._statusClass) {
 					this.$el.find('.movie-item-root').removeClass(this._statusClass);
-//					this.ui.movieItemRoot.removeClass(this._statusClass);
 				}
 				this._statusClass = 'download-status-' + this.model.get('downloadStatus');
 				this.$el.find('.movie-item-root').addClass(this._statusClass);
-//				this.ui.movieItemRoot.addClass(this._statusClass);
 			},
 
 			onFutureMovieRemoveClick: function() {
 				this.vent.trigger('future-movie-remove', this.model);
+			},
+
+			onMovieRedownloadClick: function() {
+				this.vent.trigger('movie-redownload', this.model);
 			},
 
 			_getTorrentsStatus: function() {
@@ -205,6 +210,7 @@ define([
 
 			templateHelpers: function() {
 				return {
+					'isAdmin': this.isAdmin,
 					'escapedTitle': Utils.fixForTooltip(this.model.get('title')),
 					'torrentsLabel': this._getTorrentsStatus(),
 					'notViewedTorrentsCounter': this.model.get('notViewedTorrentsCount')

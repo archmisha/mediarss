@@ -25,7 +25,6 @@ define([
 				titleInput: '.shows-search-title',
 				seasonInput: '.shows-search-season',
 				episodeInput: '.shows-search-episode',
-				adminForceDownload: '.shows-search-admin-force-download',
 				adminForceDownloadCheckbox: '.shows-search-admin-force-download-checkbox',
 				activeSearchesContainer: '.shows-search-active-searches'
 			},
@@ -46,6 +45,7 @@ define([
 
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.isAdmin = options.isAdmin;
 				this.vent = new Backbone.Wreqr.EventAggregator();
 				this.vent.on('search-result-item-download', this.onEpisodeDownload, this);
 				this.vent.on('did-you-mean-click', this.onDidYouMeanClick, this);
@@ -94,12 +94,6 @@ define([
 				}, function(res) {
 					userTorrent.set('downloadStatus', 'SCHEDULED');
 				});
-			},
-
-			setAdmin: function(isAdmin) {
-				if (isAdmin) {
-					this.ui.adminForceDownload.show();
-				}
 			},
 
 			onKeyPress: function(event) {
@@ -238,6 +232,12 @@ define([
 			onActiveSearchView: function(activeSearchModel) {
 				this.searchResultsView.$el.slideDown('slow');
 				this.searchResultsView.setSearchResults(activeSearchModel);
+			},
+
+			templateHelpers: function() {
+				return {
+					'isAdmin': this.isAdmin
+				};
 			}
 		});
 	});

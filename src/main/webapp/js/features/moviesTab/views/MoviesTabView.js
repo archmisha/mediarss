@@ -49,11 +49,20 @@ define([
 			constructor: function(options) {
 				this.vent = new Backbone.Wreqr.EventAggregator();
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
+				this.tabData = options.tabData;
 
 				this.availalbleMoviesCollection = new MoviesCollection();
 				this.userMoviesCollection = new MoviesCollection();
-				this.availableMoviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.availalbleMoviesCollection});
-				this.userMoviesCollectionView = new MovieCollectionView({vent: this.vent, collection: this.userMoviesCollection});
+				this.availableMoviesCollectionView = new MovieCollectionView({
+					vent: this.vent,
+					collection: this.availalbleMoviesCollection,
+					isAdmin: this.tabData.isAdmin
+				});
+				this.userMoviesCollectionView = new MovieCollectionView({
+					vent: this.vent,
+					collection: this.userMoviesCollection,
+					isAdmin: this.tabData.isAdmin
+				});
 
 				this.moviesSection = new SectionView({
 					title: 'Latest Movies',
@@ -64,6 +73,7 @@ define([
 				this.moviesSearchView = new MoviesSearchView({vent: this.vent});
 
 				this.vent.on('future-movie-remove', this.onUserMovieRemove, this);
+				this.vent.on('movie-redownload', this.onMovieRedownload, this);
 				this.vent.on('movie-torrent-download', this.onMovieTorrentDownload, this);
 				this.vent.on('movie-search-add', this.onFutureMovieAddButtonClick, this);
 			},
@@ -118,24 +128,43 @@ define([
 					movieId: movieId,
 					isUserMovies: isUserMovies
 				}, function(res) {
-					if (isUserMovies) {
-						userMovies = res.movies;
-						that._updateUserMovies(res.movies);
+					that._downloadMovieCallback(res);
 
+					if (isUserMovies) {
 						// userMovies are sorted from latest downloaded to oldest, so need to scroll to top just in case
 						that.moviesListRegion.$el.scrollTop(0);
-					} else {
-						availableMovies = res.movies;
-						userMoviesCount = res.userMoviesCount;
-						that._updateAvailableMovies(res.movies);
-						that.ui.userMoviesCounter.html(res.userMoviesCount);
 					}
 				});
+			},
+
+			_downloadMovieCallback: function(res) {
+				var isUserMovies = this._isUserMoviesSelected();
+				if (isUserMovies) {
+					userMovies = res.movies;
+					this._updateUserMovies(res.movies);
+				} else {
+					availableMovies = res.movies;
+					userMoviesCount = res.userMoviesCount;
+					this._updateAvailableMovies(res.movies);
+					this.ui.userMoviesCounter.html(res.userMoviesCount);
+				}
 			},
 
 			onFutureMovieAddButtonClick: function(res) {
 				userMovies = res.movies;
 				this._switchToUserMovies(res.movies);
+			},
+
+			onMovieRedownload: function(movieModel) {
+				var isUserMovies = this._isUserMoviesSelected();
+				var that = this;
+				HttpUtils.post("rest/movies/redownload", {
+					movieId: movieModel.get('id'),
+					isUserMovies: isUserMovies
+				}, function(res) {
+					that._downloadMovieCallback(res);
+					that._startPollingThread([movieModel.get('id')]);
+				});
 			},
 
 			onUserMovieRemove: function(movieModel) {
@@ -163,15 +192,15 @@ define([
 				this.userMoviesCollection.reset(movies);
 				this.userMoviesCollectionView.render();
 
-				var moviesBeingSearched = this._getMoviesBeingSearched();
+				var moviesBeingSearched = this._getMoviesBeingSearched(this.userMoviesCollection);
 				if (moviesBeingSearched.length > 0) {
 					this._startPollingThread(moviesBeingSearched);
 				}
 			},
 
-			_getMoviesBeingSearched: function() {
+			_getMoviesBeingSearched: function(collection) {
 				var moviesBeingSearched = [];
-				this.userMoviesCollection.forEach(function(movieModel) {
+				collection.forEach(function(movieModel) {
 					if (movieModel.get('downloadStatus') === 'BEING_SEARCHED') {
 						moviesBeingSearched.push(movieModel.get('id'));
 					}
@@ -183,6 +212,11 @@ define([
 				this.ui.availableMoviesCounter.html(movies.length);
 				this.availalbleMoviesCollection.reset(movies);
 				this.availableMoviesCollectionView.render();
+
+				var moviesBeingSearched = this._getMoviesBeingSearched(this.availalbleMoviesCollection);
+				if (moviesBeingSearched.length > 0) {
+					this._startPollingThread(moviesBeingSearched);
+				}
 			},
 
 			_switchToUserMovies: function(movies) {
@@ -210,7 +244,7 @@ define([
 					return;
 				}
 
-				this._stopPollingThread();
+//				this._stopPollingThread();
 
 				var that = this;
 				if (userMovies != null) {
@@ -236,7 +270,7 @@ define([
 			},
 
 			_showAvailableMovies: function() {
-				this._stopPollingThread();
+//				this._stopPollingThread();
 
 				var that = this;
 				if (availableMovies != null) {
@@ -269,21 +303,31 @@ define([
 						ids: moviesBeingSearched
 					}).success(function(res) {
 						if (that.timer !== null) {
-							if (!that._isUserMoviesSelected()) {
-								return;
+							var collection;
+							var isUserMovies = that._isUserMoviesSelected();
+							if (isUserMovies) {
+								collection = that.userMoviesCollection;
+							} else {
+								collection = that.availalbleMoviesCollection;
 							}
 
 							for (var i = 0; i < res.completed.length; ++i) {
 								var el = res.completed[i];
-								var movieModel = that.userMoviesCollection.get(el.id);
+								var movieModel = collection.get(el.id);
 								if (movieModel.get('downloadStatus') !== el.downloadStatus) {
-									movieModel.set('torrents', el.torrents);
+									movieModel.set('notViewedTorrents', el.notViewedTorrents);
+									movieModel.set('notViewedTorrentsCount', el.notViewedTorrentsCount);
+									movieModel.set('viewedTorrents', el.viewedTorrents);
+									movieModel.set('viewedTorrentsCount', el.viewedTorrentsCount);
 									movieModel.set('downloadStatus', el.downloadStatus);
 								}
 							}
 
-							userMovies = that.userMoviesCollection.toArray();
-							userMoviesCount = userMovies.length;
+							if (isUserMovies) {
+								that.userMoviesCollectionView.render();
+							} else {
+								that.availableMoviesCollectionView.render();
+							}
 
 							if (res.completed.length === moviesBeingSearched.length) {
 								that._stopPollingThread();

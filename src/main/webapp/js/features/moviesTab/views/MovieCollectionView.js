@@ -13,7 +13,7 @@ define([
 			emptyView: MovieCollectionLoadingView,
 
 			constructor: function(options) {
-				this.itemViewOptions = { vent: options.vent };
+				this.itemViewOptions = { vent: options.vent, isAdmin: options.isAdmin };
 
 				Marionette.CollectionView.prototype.constructor.apply(this, arguments);
 

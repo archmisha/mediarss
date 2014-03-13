@@ -125,6 +125,33 @@ public class MoviesController extends BaseController {
 		return result;
 	}
 
+	@RequestMapping(value = "/redownload", method = RequestMethod.POST)
+	@ResponseBody
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> redownload(@RequestParam("movieId") long movieId,
+										  @RequestParam("isUserMovies") boolean isUserMovies) {
+		DurationMeter duration = new DurationMeter();
+		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+		verifyAdminPermissions(user);
+
+		movieService.downloadMovie(movieDao.find(movieId));
+
+		userCacheService.invalidateUserMovies(user);
+		userCacheService.invalidateAvailableMovies(user);
+
+		Map<String, Object> result = new HashMap<>();
+		if (isUserMovies) {
+			result.put("movies", userCacheService.getUserMovies(user));
+		} else {
+			result.put("movies", movieService.getAvailableMovies(user));
+			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
+		}
+
+		duration.stop();
+		logService.info(getClass(), "movie " + movieId + " redownload took " + duration.getDuration() + " ms");
+		return result;
+	}
+
 	@RequestMapping(value = "/future/add", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
