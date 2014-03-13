@@ -17,6 +17,14 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   padding-right: 20px;
 }
 
+.home-header-tabs > span:hover {
+  background-color: lightblue;
+  margin-bottom: 2px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  cursor: pointer;
+}
+
 // the hover overrides unselected hover styling
 .home-header-tabs > span.home-selected-tab,
 .home-header-tabs > span.home-selected-tab:hover {
@@ -114,18 +122,6 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   margin-bottom: 10px;
 }
 
-.home-header-tabs > span:hover {
-  background-color: lightblue;
-  margin-bottom: 2px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  cursor: pointer;
-}
-
-.home-header-tabs > span {
-  padding-bottom: 6px;
-}
-
 .home-admin-tab-small {
   display: none;
 }
@@ -135,20 +131,29 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
     font-size: 20px;
   }
 
-  .home-header-tabs {
-    font-size: 22px;
-    height: 36px;
-  }
-
   .home-header-tabs > span {
     padding-left: 15px;
     padding-right: 15px;
   }
+
+  .home-content {
+    margin-top: 20px;
+    margin-right: 10px;
+    margin-left: 10px;
+  }
 }
 
 @media screen and (max-width: 480px) {
+  .home-header-tabs {
+    font-size: 14px;
+    height: 26px;
+    margin-top: 30px;
+  }
+
   .home-header-tabs > span {
     padding-bottom: 7px;
+    padding-left: 3px;
+    padding-right: 3px;
   }
 
   .home-header-tabs > span:hover {
@@ -159,23 +164,6 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
     margin-top: -27px;
     margin-right: 3px;
     margin-left: 3px;
-  }
-
-  .home-content {
-    margin-top: 20px;
-    margin-right: 10px;
-    margin-left: 10px;
-  }
-
-  .home-header-tabs {
-    font-size: 14px;
-    height: 26px;
-    margin-top: 30px;
-  }
-
-  .home-header-tabs > span {
-    padding-left: 3px;
-    padding-right: 3px;
   }
 
   .masthead-separator {
@@ -193,11 +181,5 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 
   .home-admin-tab-large {
     display: none;
-  }
-}
-
-@media screen and (max-width: 320px) {
-  .home-header-tabs > span {
-    padding-bottom: 7px;
   }
 }

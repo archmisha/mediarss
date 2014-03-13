@@ -1,5 +1,9 @@
 @shows-tab-width: 810px;
 @shows-schedules-width: 240px;
+@tracked-show-padding: 5px;
+@tracked-show-padding-left: 10px;
+@tracked-show-image-top: 9px;
+@tracked-show-image-right: 7px;
 
 .tvshows-tab {
   position: relative;
@@ -71,8 +75,6 @@
   border-radius: 5px;
 }
 
-@tracked-show-padding: 5px;
-@tracked-show-padding-left: 10px;
 .tracked-show {
   //  font-size: @font-size-body;
   padding: @tracked-show-padding;
@@ -80,8 +82,6 @@
   position: relative;
 }
 
-@tracked-show-image-top: 9px;
-@tracked-show-image-right: 7px;
 .tracked-show-image {
   display: none;
   position: absolute;
@@ -108,13 +108,8 @@
   vertical-align: top;
 }
 
-.shows-combobo-item {
-  //  font-size: @font-size-body;
-}
-
 .search-shows {
   margin-left: @section-left-margin;
-  //  font-size: @font-size-body;
   position: relative;
 }
 
@@ -218,7 +213,6 @@
 
 .shows-schedule-show-item {
   margin-left: 20px;
-  //  font-size: @font-size-body;
 }
 
 .shows-schedule-list {
@@ -278,48 +272,17 @@
 
 @media screen and (max-width: 970px) {
   .shows-schedule-container {
-    width: 503px;
-    margin-left: 0px;
-  }
-
-  .search-shows-section {
-    margin-top: 50px;
-  }
-
-  .shows-left-side {
-    position: inherit;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .tvshows-tab {
-    margin-left: 0px;
-    margin-right: 0px;
-  }
-
-  .shows-schedule-container {
     width: auto;
     margin-left: 0px;
   }
 
-  .search-shows {
-    margin-left: 0px;
-  }
-
-  .tracked-shows {
-    margin-left: 0px;
-  }
-
-  .search-shows-section {
-    margin-top: 20px;
-  }
-
+  .search-shows-section,
   .tracked-shows-section {
     margin-top: 20px;
   }
 
-  .shows-search-title {
-    width: auto;
+  .shows-left-side {
+    position: inherit;
   }
 
   .search-shows-container,
@@ -329,13 +292,39 @@
     width: auto;
   }
 
-  .admin-all-shows-combo, .select2-container {
-    width: 225px;
-  }
-
   .tracked-shows-list {
     width: auto;
     max-height: inherit;
+  }
+
+  .tvshows-tab {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .tracked-show-image {
+    display: block;
+    cursor: pointer;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .tvshows-tab {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
+  .search-shows,
+  .tracked-shows {
+    margin-left: 0px;
+  }
+
+  .shows-search-title {
+    width: auto;
+  }
+
+  .admin-all-shows-combo, .select2-container {
+    width: 225px;
   }
 
   .select2-drop {
@@ -348,10 +337,5 @@
 
   .shows-schedule-section .section-collapse-icons {
     display: block;
-  }
-
-  .tracked-show-image {
-    display: block;
-    cursor: pointer;
   }
 }

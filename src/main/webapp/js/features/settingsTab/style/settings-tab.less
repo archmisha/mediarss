@@ -1,3 +1,9 @@
+@subtitle-combo-width: 160px;
+@recent-subtitles-item-badge-width: 50px;
+@recent-subtitles-item-language-width: 45px;
+@recent-subtitles-item-download-direct-width: 25px;
+@recent-subtitles-item-name-width: 300px;
+
 .settings-tab {
   margin-left: 142px;
 }
@@ -10,14 +16,12 @@
 
 .subtitle-settings {
   margin-top: 5px;
-  //  height: 30px;
 }
 
 .subtitles-settings-container {
   height: 40px;
 }
 
-@subtitle-combo-width: 160px;
 .subtitles-settings-combobox-container {
   margin-left: 15px;
   width: @subtitle-combo-width;
@@ -34,7 +38,6 @@
 }
 
 .subtitles-settings-combobox-container .chzn-search {
-  //  font-size: 13px;
   display: none;
 }
 
@@ -81,11 +84,6 @@
   margin-top: 7px;
 }
 
-@recent-subtitles-item-badge-width: 50px;
-@recent-subtitles-item-language-width: 45px;
-@recent-subtitles-item-download-direct-width: 25px;
-@recent-subtitles-item-name-width: 300px;
-
 .recent-subtitles-item-badge {
   background-color: #097fe3;
   color: yellow;
@@ -122,6 +120,13 @@
   width: @recent-subtitles-item-name-width;
   margin-right: @recent-subtitles-item-download-direct-width;
   text-overflow: ellipsis;
+}
+
+@media screen and (max-width: 970px) {
+  .settings-tab {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
 }
 
 @media screen and (max-width: 480px) {

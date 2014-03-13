@@ -1,7 +1,9 @@
-//@job-font-size: 15px;
 @job-label-width: 200px;
 @admin-searcher-conf-domain-add-button-width: 60px;
 @admin-searcher-conf-domain-list-margin: 20px;
+@admin-searcher-conf-domain-item-padding: 4px;
+@admin-searcher-conf-domain-list-width: 193px;
+@admin-searcher-conf-name-width: 110px;
 
 .admin-tab {
   margin-left: 142px;
@@ -12,18 +14,13 @@
   margin-left: 25px;
 }
 
-.access-stats-list-container {
-  //  font-size: @font-size-body;
-  //  margin-top: 20px;
-}
-
 .admin-job {
   margin: 0px;
   margin-top: 10px;
-}
 
-.admin-job li {
-  display: inline-block;
+  li {
+    display: inline-block;
+  }
 }
 
 .job-status {
@@ -36,38 +33,20 @@
   font-weight: bold;
 }
 
-.job {
-  //  font-size: @job-font-size;
-  //  width: @job-label-width;
-}
-
-.job-running {
-  display: none;
-  //  font-size: @font-size-body;
-}
-
-.job-not-running {
-  display: none;
-  //  font-size: @font-size-body;
-}
-
-.job-starting {
-  display: none;
-  //  font-size: @font-size-body;
-}
-
+.job-running,
+.job-not-running,
+.job-starting,
 .job-never-run {
   display: none;
-  //  font-size: @font-size-body;
 }
 
 .job-start {
   color: @theme-color;
-}
 
-.job-start:hover {
-  text-decoration: underline;
-  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }
 
 .job-error-status {
@@ -79,10 +58,6 @@
 .admin-access-stats-section,
 .admin-notifications-section {
   margin-top: 50px;
-}
-
-.admin-access-stats {
-  //  width: 680px;
 }
 
 .admin-notifications {
@@ -99,14 +74,9 @@
   float: right;
 }
 
-.notificationsField {
-
-}
-
 .notifications-textarea {
   width: 99%; /* due to the thick border */
   min-height: 150px;
-  //  min-width: 500px;
   padding: 0px;
 }
 
@@ -163,13 +133,6 @@
   margin-top: 2px;
   margin-bottom: 2px;
 }
-
-//.access-stats-last-login-column-header,
-//.access-stats-last-shows-feed-access-column-header,
-//.access-stats-last-movies-feed-access-column-header {
-//  width: 105px;
-//  white-space: nowrap;
-//}
 
 .access-stats-list {
   max-height: 150px;
@@ -230,15 +193,11 @@
 .admin-download-show-schedule-title {
   float: left;
   margin-top: 5px;
-  width: @job-label-width;
+  width: 165px;
 }
 
 .chzn-container .chzn-results .group-result {
   display: list-item;
-}
-
-.select2-no-results {
-  //  font-size: @font-size-body;
 }
 
 .select2-drop .select2-results li:first-child {
@@ -266,22 +225,20 @@
   display: none;
 }
 
-@admin-searcher-conf-domain-item-padding: 4px;
 .admin-searcher-conf-domain-item {
   padding: @admin-searcher-conf-domain-item-padding;
-}
 
-.admin-searcher-conf-domain-item:hover {
-  padding: @admin-searcher-conf-domain-item-padding - 1;
-  background-color: #f5f5f5;
-  border: 1px solid #dcdcdc;
+  &:hover {
+    padding: @admin-searcher-conf-domain-item-padding - 1;
+    background-color: #f5f5f5;
+    border: 1px solid #dcdcdc;
 
-  .admin-searcher-conf-remove-domain-image {
-    display: inline;
+    .admin-searcher-conf-remove-domain-image {
+      display: inline;
+    }
   }
 }
 
-@admin-searcher-conf-domain-list-width: 193px;
 .admin-searcher-conf-domain-list {
   border: 1px solid #CCCCCC;
   border-radius: 5px;
@@ -291,7 +248,6 @@
   padding: 5px;
 }
 
-@admin-searcher-conf-name-width: 110px;
 .admin-searcher-conf-name {
   width: @admin-searcher-conf-name-width;
   position: absolute;
@@ -351,6 +307,12 @@
 }
 
 @media screen and (max-width: 1090px) {
+  .admin-searcher-configurations-section,
+  .admin-access-stats-section,
+  .admin-notifications-section {
+    margin-top: 20px;
+  }
+
   .access-stats-name-column-header,
   .username-column {
     width: 200px;
@@ -368,17 +330,29 @@
   }
 
   .admin-delete-show-title {
-    width: 325px;
+    width: 260px;
+  }
+
+  .admin-tab {
+    margin-left: 10px;
+  }
+
+  .access-stats-item-small {
+    display: block;
+  }
+
+  .access-stats-list-header,
+  .access-stats-item-large {
+    display: none;
+  }
+
+  .access-stats-list {
+    max-height: inherit;
+    overflow-y: auto;
   }
 
   .access-stats-item {
-    height: 22px;
-  }
-}
-
-@media screen and (max-width: 791px) {
-  .admin-tab {
-    margin-left: 10px;
+    height: inherit;
   }
 }
 
@@ -421,24 +395,6 @@
     max-width: inherit;
   }
 
-  .access-stats-item-small {
-    display: block;
-  }
-
-  .access-stats-list-header,
-  .access-stats-item-large {
-    display: none;
-  }
-
-  .access-stats-list {
-    max-height: inherit;
-    overflow-y: auto;
-  }
-
-  .access-stats-item {
-    height: inherit;
-  }
-
   .admin-searcher-conf-domain-list {
     margin-right: @admin-searcher-conf-domain-list-margin;
     width: inherit;
@@ -450,9 +406,5 @@
 
   .admin-searcher-conf-domain-add-button {
     right: @admin-searcher-conf-domain-list-margin - 2px; // some border
-  }
-
-  .admin-delete-show-title {
-    width: auto;
   }
 }
