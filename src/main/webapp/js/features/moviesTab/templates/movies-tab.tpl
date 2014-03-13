@@ -5,6 +5,6 @@
     <span class='movies-filter filter-selected'>Available Movies (<span class='movies-counter'>0</span>)</span>
         <span class='future-movies-filter'>My Movies (<span class='future-movies-counter'>0</span>)</span>
 
-        <div class='movies-list-container'></div>
+        <div class='movies-list-container'><span class="shows-schedule-loading">loading ...</span></div>
     </div>
 </div>

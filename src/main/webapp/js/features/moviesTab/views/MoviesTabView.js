@@ -71,39 +71,43 @@ define([
 			onRender: function() {
 				this.moviesSectionRegion.show(this.moviesSection);
 				this.moviesSearchRegion.show(this.moviesSearchView);
+			},
 
-				var isAvailableMovies = window.location.href.indexOf('userMovies') === -1;
-				if (isAvailableMovies && availableMovies != null) {
-					this._switchToAvailableMovies(availableMovies);
-					if (userMovies != null) {
-						this.ui.userMoviesCounter.html(userMovies.length);
-					} else {
-						this.ui.userMoviesCounter.html(userMoviesCount);
-					}
-				} else if (!isAvailableMovies && userMovies != null) {
-					this._switchToUserMovies(userMovies);
-					if (availableMovies != null) {
-						this.ui.availableMoviesCounter.html(availableMovies.length);
-					} else {
-						this.ui.availableMoviesCounter.html(availableMoviesCount);
-					}
-				} else {
-					var that = this;
-					HttpUtils.get('rest/movies/initial-data/' + (isAvailableMovies ? 'availableMovies' : 'userMovies'), function(res) {
-						if (isAvailableMovies) {
-							availableMovies = res.availableMovies;
-							userMoviesCount = res.userMoviesCount;
-							that._switchToAvailableMovies(res.availableMovies);
-							that.ui.userMoviesCounter.html(res.userMoviesCount);
+			onShow: function() {
+				var that = this;
+				setTimeout(function() {
+					var isAvailableMovies = window.location.href.indexOf('userMovies') === -1;
+					if (isAvailableMovies && availableMovies != null) {
+						that._switchToAvailableMovies(availableMovies);
+						if (userMovies != null) {
+							that.ui.userMoviesCounter.html(userMovies.length);
 						} else {
-							userMovies = res.userMovies;
-							availableMoviesCount = res.availableMoviesCount;
-							that._switchToUserMovies(res.userMovies);
-							that.ui.availableMoviesCounter.html(res.availableMoviesCount);
+							that.ui.userMoviesCounter.html(userMoviesCount);
 						}
-						$('.movies-updated-on').html(Moment(new Date(res.moviesLastUpdated)).format('DD/MM/YYYY HH:mm '));
-					}, false); // no need loading here
-				}
+					} else if (!isAvailableMovies && userMovies != null) {
+						that._switchToUserMovies(userMovies);
+						if (availableMovies != null) {
+							that.ui.availableMoviesCounter.html(availableMovies.length);
+						} else {
+							that.ui.availableMoviesCounter.html(availableMoviesCount);
+						}
+					} else {
+						HttpUtils.get('rest/movies/initial-data/' + (isAvailableMovies ? 'availableMovies' : 'userMovies'), function(res) {
+							if (isAvailableMovies) {
+								availableMovies = res.availableMovies;
+								userMoviesCount = res.userMoviesCount;
+								that._switchToAvailableMovies(res.availableMovies);
+								that.ui.userMoviesCounter.html(res.userMoviesCount);
+							} else {
+								userMovies = res.userMovies;
+								availableMoviesCount = res.availableMoviesCount;
+								that._switchToUserMovies(res.userMovies);
+								that.ui.availableMoviesCounter.html(res.availableMoviesCount);
+							}
+							$('.movies-updated-on').html(Moment(new Date(res.moviesLastUpdated)).format('DD/MM/YYYY HH:mm '));
+						}, false); // no need loading here
+					}
+				}, 50);
 			},
 
 			onMovieTorrentDownload: function(userTorrent, movieId) {
