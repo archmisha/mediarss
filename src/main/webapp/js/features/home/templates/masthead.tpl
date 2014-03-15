@@ -11,7 +11,7 @@ Welcome <span class='masthead-username'>{{username}}</span>
     <div class='masthead-support-title'>Submit a Feature request or a Defect</div>
     <div class='masthead-support-subtitle'>Help us improve MediaRSS !</div>
     <div class='masthead-support-type-container'>
-        <span>Type: </span>
+        Type:&nbsp;
         <input type="radio" name="type" value="Feature" checked/> Feature
         <input type="radio" name="type" value="Defect"/> Defect
     </div>

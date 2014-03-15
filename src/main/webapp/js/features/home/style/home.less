@@ -85,7 +85,6 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 }
 
 .masthead-support-box-content {
-  //  font-size: @font-size-body;
   display: none;
 }
 
@@ -115,6 +114,7 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 
 .masthead-support-button-bar {
   margin-top: 20px;
+  height: 25px;
 }
 
 .masthead-support-type-container {
@@ -127,8 +127,16 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 }
 
 @media screen and (max-width: 1090px) {
+  .masthead-support-box-content {
+    font-size: 12px;
+  }
+
   .masthead-support-title {
-    font-size: 20px;
+    font-size: 17px;
+  }
+
+  .masthead-support-type-container {
+    margin-top: 10px;
   }
 
   .home-header-tabs > span {
@@ -181,5 +189,9 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
 
   .home-admin-tab-large {
     display: none;
+  }
+
+  .masthead-support-content {
+    width: 96%;
   }
 }
