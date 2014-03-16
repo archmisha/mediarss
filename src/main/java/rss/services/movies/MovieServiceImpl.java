@@ -341,14 +341,18 @@ public class MovieServiceImpl implements MovieService {
 			userMovie = createUserMovie(user, movie);
 		}
 
-		UserMovieTorrent userTorrent = new UserMovieTorrent();
-		userTorrent.setUser(user);
-		userTorrent.setAdded(new Date());
-		userTorrent.setTorrent(torrent);
-		userTorrentDao.persist(userTorrent);
+		UserMovieTorrent userTorrent = userTorrentDao.findUserMovieTorrent(user, torrent.getId());
+		if (userTorrent == null) {
+			userTorrent = new UserMovieTorrent();
+			userTorrent.setUser(user);
+			userTorrent.setAdded(new Date());
+			userTorrent.setTorrent(torrent);
+			userTorrentDao.persist(userTorrent);
 
-		userMovie.getUserMovieTorrents().add(userTorrent);
-		userTorrent.setUserMovie(userMovie);
+			userMovie.getUserMovieTorrents().add(userTorrent);
+			userTorrent.setUserMovie(userMovie);
+		}
+
 		userMovie.setUpdated(new Date()); // update user movie so it keeps being in the user movies list
 
 		if (user.getSubtitles() != null) {

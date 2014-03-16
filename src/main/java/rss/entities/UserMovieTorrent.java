@@ -24,7 +24,9 @@ import javax.persistence.*;
 						"where ut.user.id = :userId and (ut.torrent.dateUploaded > :dateUploaded or downloadDate is null)"),
 		@NamedQuery(name = "UserMovieTorrent.findUserMovieTorrents",
 				query = "select ut from UserMovieTorrent as ut " +
-						"where ut.user.id = :userId and ut.userMovie.movie.id in (:movieIds)")
+						"where ut.user.id = :userId and ut.userMovie.movie.id in (:movieIds)"),
+		@NamedQuery(name = "UserMovieTorrent.findUserMovieTorrentsByTorrentIds",
+				query = "select ut from UserMovieTorrent as ut where ut.user.id = :userId and ut.torrent.id in (:torrentIds)")
 })
 public class UserMovieTorrent extends UserTorrent {
 	private static final long serialVersionUID = -6736397044745416876L;
