@@ -121,6 +121,16 @@ define([
 			},
 
 			onMovieTorrentDownload: function(userTorrent, movieId) {
+				function scrollToElement(element, time, verticalOffset) {
+					time = typeof(time) != 'undefined' ? time : 1000;
+					verticalOffset = typeof(verticalOffset) != 'undefined' ? verticalOffset : 0;
+					var offset = element.offset();
+					var offsetTop = offset.top + verticalOffset;
+					$('html, body').animate({
+						scrollTop: offsetTop
+					}, time);
+				}
+
 				var isUserMovies = this._isUserMoviesSelected();
 				var that = this;
 				HttpUtils.post('rest/movies/download', {
@@ -128,11 +138,35 @@ define([
 					movieId: movieId,
 					isUserMovies: isUserMovies
 				}, function(res) {
-					that._downloadMovieCallback(res);
-
+					// available movies - order doesn't change, only update status of torrent, user movies cache and counter
+					// user movies - move movie model and movie view to top and scroll to it, keeping collapsed/expanded state
 					if (isUserMovies) {
-						// userMovies are sorted from latest downloaded to oldest, so need to scroll to top just in case
-						that.moviesListRegion.$el.scrollTop(0);
+						var movieModel = that.userMoviesCollection.get(movieId);
+						var movieView = that.userMoviesCollectionView.children.findByModel(movieModel);
+						var isCollapsed = movieView.getCollapsed();
+						movieModel.set('collapsed', isCollapsed);
+						console.log('before: collapsed');
+						movieView.setTorrentStatus(userTorrent.get('torrentId'), 'SCHEDULED');
+						that.userMoviesCollection.remove(movieModel);
+						that.userMoviesCollection.add(movieModel, {at: 0});
+						var func = function() {
+							// userMovies are sorted from latest downloaded to oldest, so need to scroll to top just in case
+							scrollToElement(that.moviesListRegion.$el);
+							that.userMoviesCollectionView.off('render', func);
+						};
+						that.userMoviesCollectionView.on('render', func);
+						that.userMoviesCollectionView.render();
+					} else {
+						var movieModel = that.availalbleMoviesCollection.get(movieId);
+						var movieView = that.availableMoviesCollectionView.children.findByModel(movieModel);
+						movieView.setTorrentStatus(userTorrent.get('torrentId'), 'SCHEDULED');
+
+						that.ui.userMoviesCounter.html(res.userMoviesCount);
+
+						// update caches
+						userMoviesCount = res.userMoviesCount;
+						availableMovies = that.availalbleMoviesCollection.toArray();
+						availableMoviesCount = availableMovies.length;
 					}
 				});
 			},

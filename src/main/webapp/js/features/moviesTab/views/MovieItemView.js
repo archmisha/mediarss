@@ -106,8 +106,24 @@ define([
 				}
 			},
 
+			setTorrentStatus: function(torrentId, status) {
+				var arr = this.movieTorrentCollection.where({torrentId: torrentId});
+				if (arr.length === 1) {
+					arr[0].set('downloadStatus', status)
+				}
+			},
+
+			getCollapsed: function() {
+				return this.ui.showAllLink.is(":visible");
+			},
+
 			onShow: function() {
 				Utils.addTooltip([this.ui.scheduledImage, this.ui.downloadedImage, this.ui.movieTitle, this.ui.futureImage, this.ui.searchingImage]);
+
+				// if undefined - leave collapsed
+				if (this.model.get('collapsed') === false) {
+					this._onShowAllClick();
+				}
 			},
 
 			_onPreviewClick: function() {
@@ -139,6 +155,7 @@ define([
 			},
 
 			_onShowAllClick: function() {
+				this.model.set('collapsed', false);
 				this.ui.collapseLink.show();
 				this.ui.showAllLink.hide();
 
@@ -161,6 +178,7 @@ define([
 			},
 
 			_onCollapseClick: function() {
+				this.model.set('collapsed', true);
 				this.ui.collapseLink.hide();
 				this.ui.showAllLink.show();
 				this._showNotViewedTorrents();
@@ -219,3 +237,4 @@ define([
 		});
 	});
 
+;

@@ -117,9 +117,9 @@ public class MoviesController extends BaseController {
 
 		Map<String, Object> result = new HashMap<>();
 		if (isUserMovies) {
-			result.put("movies", userCacheService.getUserMovies(user));
+//			result.put("movies", userCacheService.getUserMovies(user));
 		} else {
-			result.put("movies", movieService.getAvailableMovies(user));
+//			result.put("movies", movieService.getAvailableMovies(user));
 			result.put("userMoviesCount", userCacheService.getUserMoviesCount(user));
 		}
 		return result;
