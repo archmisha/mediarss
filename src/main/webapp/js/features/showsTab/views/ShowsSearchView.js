@@ -108,7 +108,7 @@ define([
 				var title = this.ui.titleInput.val();
 				var season = this.ui.seasonInput.val();
 				var episode = this.ui.episodeInput.val();
-				var forceDownload = this.ui.adminForceDownloadCheckbox.attr('checked') ? true : false;
+				var forceDownload = this.ui.adminForceDownloadCheckbox.is(':checked') ? true : false;
 
 				if (!title || title.trim().length == 0) {
 					return;
