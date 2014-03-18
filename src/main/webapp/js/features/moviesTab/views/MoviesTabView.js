@@ -140,13 +140,12 @@ define([
 				}, function(res) {
 					// available movies - order doesn't change, only update status of torrent, user movies cache and counter
 					// user movies - move movie model and movie view to top and scroll to it, keeping collapsed/expanded state
+					var movieModel, movieView;
 					if (isUserMovies) {
-						var movieModel = that.userMoviesCollection.get(movieId);
-						var movieView = that.userMoviesCollectionView.children.findByModel(movieModel);
-						var isCollapsed = movieView.getCollapsed();
-						movieModel.set('collapsed', isCollapsed);
-						console.log('before: collapsed');
+						movieModel = that.userMoviesCollection.get(movieId);
+						movieView = that.userMoviesCollectionView.children.findByModel(movieModel);
 						movieView.setTorrentStatus(userTorrent.get('torrentId'), 'SCHEDULED');
+
 						that.userMoviesCollection.remove(movieModel);
 						that.userMoviesCollection.add(movieModel, {at: 0});
 						var func = function() {
@@ -157,8 +156,8 @@ define([
 						that.userMoviesCollectionView.on('render', func);
 						that.userMoviesCollectionView.render();
 					} else {
-						var movieModel = that.availalbleMoviesCollection.get(movieId);
-						var movieView = that.availableMoviesCollectionView.children.findByModel(movieModel);
+						movieModel = that.availalbleMoviesCollection.get(movieId);
+						movieView = that.availableMoviesCollectionView.children.findByModel(movieModel);
 						movieView.setTorrentStatus(userTorrent.get('torrentId'), 'SCHEDULED');
 
 						that.ui.userMoviesCounter.html(res.userMoviesCount);
@@ -169,19 +168,6 @@ define([
 						availableMoviesCount = availableMovies.length;
 					}
 				});
-			},
-
-			_downloadMovieCallback: function(res) {
-				var isUserMovies = this._isUserMoviesSelected();
-				if (isUserMovies) {
-					userMovies = res.movies;
-					this._updateUserMovies(res.movies);
-				} else {
-					availableMovies = res.movies;
-					userMoviesCount = res.userMoviesCount;
-					this._updateAvailableMovies(res.movies);
-					this.ui.userMoviesCounter.html(res.userMoviesCount);
-				}
 			},
 
 			onFutureMovieAddButtonClick: function(res) {
@@ -196,8 +182,14 @@ define([
 					movieId: movieModel.get('id'),
 					isUserMovies: isUserMovies
 				}, function(res) {
-					that._downloadMovieCallback(res);
-					that._startPollingThread([movieModel.get('id')]);
+					var movieId = movieModel.get('id');
+					if (isUserMovies) {
+						movieModel = that.userMoviesCollection.get(movieId);
+					} else {
+						movieModel = that.availalbleMoviesCollection.get(movieId);
+					}
+					movieModel.set('downloadStatus', 'BEING_SEARCHED');
+					that._startPollingThread([movieId]);
 				});
 			},
 
@@ -278,8 +270,6 @@ define([
 					return;
 				}
 
-//				this._stopPollingThread();
-
 				var that = this;
 				if (userMovies != null) {
 					Utils.withLoading(function() {
@@ -304,8 +294,6 @@ define([
 			},
 
 			_showAvailableMovies: function() {
-//				this._stopPollingThread();
-
 				var that = this;
 				if (availableMovies != null) {
 					Utils.withLoading(function() {
@@ -337,31 +325,44 @@ define([
 						ids: moviesBeingSearched
 					}).success(function(res) {
 						if (that.timer !== null) {
-							var collection;
 							var isUserMovies = that._isUserMoviesSelected();
-							if (isUserMovies) {
-								collection = that.userMoviesCollection;
-							} else {
-								collection = that.availalbleMoviesCollection;
-							}
 
-							for (var i = 0; i < res.completed.length; ++i) {
-								var el = res.completed[i];
-								var movieModel = collection.get(el.id);
+							var updateMovieModel = function(movieModel, el) {
 								if (movieModel.get('downloadStatus') !== el.downloadStatus) {
 									movieModel.set('notViewedTorrents', el.notViewedTorrents);
 									movieModel.set('notViewedTorrentsCount', el.notViewedTorrentsCount);
 									movieModel.set('viewedTorrents', el.viewedTorrents);
 									movieModel.set('viewedTorrentsCount', el.viewedTorrentsCount);
 									movieModel.set('downloadStatus', el.downloadStatus);
+
+									// render only if visible
+									var movieView;
+									if (isUserMovies) {
+										movieView = that.userMoviesCollectionView.children.findByModel(movieModel);
+									} else {
+										movieView = that.availableMoviesCollectionView.children.findByModel(movieModel);
+									}
+									movieView.render();
+								}
+							};
+
+							// search in both tabs - user movies and available movies
+							for (var i = 0; i < res.completed.length; ++i) {
+								var el = res.completed[i];
+								var movieModel = that.userMoviesCollection.get(el.id);
+								if (movieModel) {
+									updateMovieModel(movieModel, el);
+								} else {
+									movieModel = that.availalbleMoviesCollection.get(el.id);
+									updateMovieModel(movieModel, el);
 								}
 							}
 
-							if (isUserMovies) {
-								that.userMoviesCollectionView.render();
-							} else {
-								that.availableMoviesCollectionView.render();
-							}
+							// update caches
+							userMovies = that.userMoviesCollection.toArray();
+							userMoviesCount = userMovies.length;
+							availableMovies = that.availalbleMoviesCollection.toArray();
+							availableMoviesCount = availableMovies.length;
 
 							if (res.completed.length === moviesBeingSearched.length) {
 								that._stopPollingThread();

@@ -69,8 +69,6 @@ define([
 					collection: this.movieTorrentCollection
 				});
 
-				this._showNotViewedTorrents();
-
 				this.searchResultsVent.on('search-result-item-download', this._onMovieTorrentDownload, this);
 			},
 
@@ -89,7 +87,7 @@ define([
 
 			onRender: function() {
 				this.updateDownloadStatus();
-
+				this._showNotViewedTorrents();
 				this.torrentsListRegion.show(this.movieTorrentCollectionView);
 
 				if (this.model.get('notViewedTorrentsCount') + this.model.get('viewedTorrentsCount') === 0 ||
@@ -111,10 +109,6 @@ define([
 				if (arr.length === 1) {
 					arr[0].set('downloadStatus', status)
 				}
-			},
-
-			getCollapsed: function() {
-				return this.ui.showAllLink.is(":visible");
 			},
 
 			onShow: function() {
