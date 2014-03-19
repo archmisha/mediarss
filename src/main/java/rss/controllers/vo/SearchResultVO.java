@@ -14,6 +14,7 @@ public class SearchResultVO {
 	private Date end;
 	private String originalSearchTerm;
 	private String actualSearchTerm;
+	private String displayLabel;
 	private Collection<ShowVO> didYouMean;
 
 	public SearchResultVO(String originalSearchTerm, String actualSearchTerm, Collection<UserTorrentVO> episodes) {
@@ -62,6 +63,14 @@ public class SearchResultVO {
 		return id;
 	}
 
+	public String getDisplayLabel() {
+		return displayLabel;
+	}
+
+	public void setDisplayLabel(String displayLabel) {
+		this.displayLabel = displayLabel;
+	}
+
 	public void setEpisodes(Collection<UserTorrentVO> episodes) {
 		this.episodes = episodes;
 	}
@@ -83,9 +92,10 @@ public class SearchResultVO {
 		return esr;
 	}
 
-	public static SearchResultVO createWithResult(String originalSearchTerm, String actualSearchTerm,
+	public static SearchResultVO createWithResult(String originalSearchTerm, String actualSearchTerm, String displayLabel,
 												  Collection<ShowVO> shows) {
 		SearchResultVO esr = new SearchResultVO(originalSearchTerm, actualSearchTerm);
+		esr.setDisplayLabel(displayLabel);
 		esr.didYouMean.addAll(shows);
 		esr.setEnd(null); // in progress
 		return esr;

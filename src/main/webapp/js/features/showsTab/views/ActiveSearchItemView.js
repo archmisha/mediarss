@@ -9,7 +9,6 @@ define([
 
 		return Marionette.ItemView.extend({
 			template: Handlebars.compile(template),
-//			className: 'tracked-show',
 
 			ui: {
 				runningStatus: '.active-search-searching',

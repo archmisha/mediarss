@@ -119,17 +119,14 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
 		downloadConfig.setAsyncHeavy(true);
 		DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Arrays.asList(episodeRequest)), downloadConfig);
 
-		SearchResultVO searchResultVO = SearchResultVO.createWithResult(originalSearchTerm, actualSearchTerm, entityConverter.toThinShows(didYouMeanShows));
+		SearchResultVO searchResultVO = SearchResultVO.createWithResult(originalSearchTerm, actualSearchTerm,
+				episodeRequest.toQueryString(), entityConverter.toThinShows(didYouMeanShows));
 		if (downloadResult.getCompleteDate() != null) {
 			downloadResultToSearchResultVO(userId, downloadResult, searchResultVO);
-//			searchResultVO.setEpisodes(downloadResultToResults(userId, downloadResult));
-//			searchResultVO.setEnd(downloadResult.getCompleteDate());
 		} else {
 			sessionService.getUsersSearchesCache().addSearch(new UserActiveSearch(searchResultVO, downloadResult));
 		}
 		return searchResultVO;
-
-//		return downloadResultToSearchResultVO(userId, originalSearchTerm, actualSearchTerm, didYouMeanShows, downloadResult);
 	}
 
 	@Override

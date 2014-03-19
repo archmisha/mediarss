@@ -210,9 +210,9 @@ define([
 							that._stopPollingThread();
 						});
 
-					that.timer = setTimeout(f, 1000);
+					that.timer = setTimeout(f, 5000);
 				};
-				that.timer = setTimeout(f, 1000);
+				that.timer = setTimeout(f, 5000);
 				f();
 			},
 

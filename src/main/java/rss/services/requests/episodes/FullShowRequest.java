@@ -21,10 +21,6 @@ public class FullShowRequest extends ShowRequest {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getSeasonEpisode() {
-		throw new UnsupportedOperationException();
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
