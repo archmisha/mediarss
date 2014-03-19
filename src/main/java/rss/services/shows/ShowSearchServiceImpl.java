@@ -132,6 +132,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
 	@Override
 	public void downloadResultToSearchResultVO(long userId, DownloadResult<Episode, ShowRequest> downloadResult, SearchResultVO searchResultVO) {
 		if (downloadResult.getCompleteDate() != null) {
+			searchResultVO.setEpisodesCount(downloadResult.getDownloaded().size());
 			searchResultVO.setEpisodes(downloadResultToResults(userId, downloadResult));
 			searchResultVO.setEnd(downloadResult.getCompleteDate());
 		}

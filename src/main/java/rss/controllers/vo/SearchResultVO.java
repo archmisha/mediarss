@@ -16,6 +16,7 @@ public class SearchResultVO {
 	private String actualSearchTerm;
 	private String displayLabel;
 	private Collection<ShowVO> didYouMean;
+	private int episodesCount;
 
 	public SearchResultVO(String originalSearchTerm, String actualSearchTerm, Collection<UserTorrentVO> episodes) {
 		this.episodes = episodes;
@@ -99,5 +100,13 @@ public class SearchResultVO {
 		esr.didYouMean.addAll(shows);
 		esr.setEnd(null); // in progress
 		return esr;
+	}
+
+	public void setEpisodesCount(int episodesCount) {
+		this.episodesCount = episodesCount;
+	}
+
+	public int getEpisodesCount() {
+		return episodesCount;
 	}
 }

@@ -14,7 +14,8 @@ define([
 				runningStatus: '.active-search-searching',
 				status: '.active-search-status',
 				viewLink: '.active-search-view',
-				noResultsStatus: '.active-search-no-results'
+				noResultsStatus: '.active-search-no-results',
+				unavailableStatus: '.active-search-unavailable'
 			},
 
 			events: {
@@ -32,10 +33,17 @@ define([
 				if (this.model.get('end')) {
 					this.ui.runningStatus.hide();
 					if (results === 0) {
-						this.ui.noResultsStatus.show();
+						if (this.model.get('episodesCount') !== 0) {
+							this.ui.unavailableStatus.show();
+							this.ui.noResultsStatus.hide();
+						} else {
+							this.ui.unavailableStatus.hide();
+							this.ui.noResultsStatus.show();
+						}
 						this.ui.status.hide();
 					} else {
 						this.ui.noResultsStatus.hide();
+						this.ui.unavailableStatus.hide();
 						this.ui.status.show();
 						var resultsPart;
 						if (results === 1) {
@@ -50,6 +58,7 @@ define([
 					this.ui.runningStatus.show();
 					this.ui.status.hide();
 					this.ui.noResultsStatus.hide();
+					this.ui.unavailableStatus.hide();
 				}
 
 				if (results === 0) {
