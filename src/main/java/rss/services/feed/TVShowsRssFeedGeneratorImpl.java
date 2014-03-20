@@ -79,8 +79,18 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 	}
 
 	private Set<Torrent> getFeedTorrents(User user, int backlogDays, Date downloadDate) {
-		// extract torrent entries - take best by quality
 		Set<Torrent> torrentEntries = new HashSet<>();
+
+		// Add user episodes
+		// add everything added since last feed generated with 'backlogDays' days buffer
+		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(user, DateUtils.getPastDate(user.getLastShowsFeedGenerated(), backlogDays))) {
+			if (downloadDate != null) {
+				userTorrent.setDownloadDate(downloadDate);
+			}
+			torrentEntries.add(userTorrent.getTorrent());
+		}
+
+		// Extract torrent entries - take best by quality
 		for (Episode episode : userDao.getEpisodesToDownload(user)) {
 			Map<MediaQuality, List<Torrent>> qualityMap = new HashMap<>();
 			for (Long torrentId : episode.getTorrentIds()) {
@@ -90,19 +100,21 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 
 			for (MediaQuality quality : Arrays.asList(MediaQuality.HD1080P, MediaQuality.HD720P, MediaQuality.NORMAL)) {
 				if (qualityMap.containsKey(quality)) {
-					torrentEntries.addAll(qualityMap.get(quality));
-					break;
+					List<Torrent> torrents = qualityMap.get(quality);
+					for (Torrent torrent : torrents) {
+						if (!torrentEntries.contains(torrent)) {
+							UserEpisodeTorrent userTorrent = new UserEpisodeTorrent();
+							userTorrent.setUser(user);
+							userTorrent.setTorrent(torrent);
+							userTorrent.setAdded(new Date());
+							userTorrent.setDownloadDate(downloadDate);
+							userTorrentDao.persist(userTorrent);
+							torrentEntries.add(torrent);
+						}
+					}
+					break; // first that is found, we quit
 				}
 			}
-		}
-
-		// also add user episodes
-		// add everything added since last feed generated with 'backlogDays' days buffer
-		for (UserTorrent userTorrent : userTorrentDao.findEpisodesAddedSince(user, DateUtils.getPastDate(user.getLastShowsFeedGenerated(), backlogDays))) {
-			if (downloadDate != null) {
-				userTorrent.setDownloadDate(downloadDate);
-			}
-			torrentEntries.add(userTorrent.getTorrent());
 		}
 
 		return torrentEntries;
