@@ -103,12 +103,15 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 					List<Torrent> torrents = qualityMap.get(quality);
 					for (Torrent torrent : torrents) {
 						if (!torrentEntries.contains(torrent)) {
-							UserEpisodeTorrent userTorrent = new UserEpisodeTorrent();
-							userTorrent.setUser(user);
-							userTorrent.setTorrent(torrent);
-							userTorrent.setAdded(new Date());
-							userTorrent.setDownloadDate(downloadDate);
-							userTorrentDao.persist(userTorrent);
+							UserTorrent userTorrent = userTorrentDao.findUserEpisodeTorrent(user, torrent.getId());
+							if (userTorrent == null) {
+								userTorrent = new UserEpisodeTorrent();
+								userTorrent.setUser(user);
+								userTorrent.setTorrent(torrent);
+								userTorrent.setAdded(new Date());
+								userTorrent.setDownloadDate(downloadDate);
+								userTorrentDao.persist(userTorrent);
+							}
 							torrentEntries.add(torrent);
 						}
 					}
