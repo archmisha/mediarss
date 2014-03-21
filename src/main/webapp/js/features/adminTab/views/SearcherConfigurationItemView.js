@@ -13,7 +13,7 @@ define([
 			className: 'admin-searcher-conf-item',
 
 			ui: {
-				domainInput: '.admin-searcher-conf-domain-input',
+				domainInput: '.admin-searcher-conf-domain-input input',
 				domainList: '.admin-searcher-conf-domain-list'
 			},
 
