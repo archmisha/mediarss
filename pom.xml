@@ -11,7 +11,7 @@
     <name>rss-feed</name>
 
     <properties>
-        <prod.server>172.245.61.149/</prod.server>
+        <prod.server>172.245.61.149</prod.server>
         <prod.username>root</prod.username>
         <prod.password>ASDqwe123</prod.password>
 
