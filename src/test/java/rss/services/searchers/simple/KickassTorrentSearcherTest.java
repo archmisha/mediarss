@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
  * Date: 25/01/13 01:35
  */
 @RunWith(MockitoJUnitRunner.class)
-public class KickAssTorrentSearcherTest extends BaseTest {
+public class KickassTorrentSearcherTest extends BaseTest {
 
 	@Mock
 	private PageDownloader pageDownloader;
