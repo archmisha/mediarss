@@ -293,8 +293,11 @@ public class SettingsServiceImpl implements SettingsService {
 			this.prop = prop;
 
 			adminEmails = new HashSet<>();
-			adminEmails.addAll(Arrays.asList(prop.getProperty("admins").split(",")));
 			adminEmails.add(ADMIN_DEFAULT_EMAIL);
+			String admins = prop.getProperty("admins");
+			if (admins != null) {
+				adminEmails.addAll(Arrays.asList(admins.split(",")));
+			}
 			logMemory = "true".equals(prop.getProperty("log.memory"));
 			tvComPagesToDownload = Integer.parseInt(prop.getProperty("tvcom.pages.to.download"));
 			webPort = Integer.parseInt(prop.getProperty("web.port"));
