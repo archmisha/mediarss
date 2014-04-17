@@ -27,11 +27,22 @@ make rtorrent start on boot
 configure rtorrent log file
 
 
+sudo apt-get update
+sudo apt-get install build-essential
+sudo apt-get install apache2-dev
+
+http://edwardaux.wordpress.com/2006/09/20/3/#comment-487
+http://archive.apache.org/dist/jakarta/tomcat-connectors/jk/source/jk-1.2.14/ - didnt work
+http://tomcat.apache.org/download-connectors.cgi
 
 
 setup apache2 to forward port 80 to tomcat 8080
 -----------------------------------------------
 http://blog.eventloud.com/2011/04/20/how-to-setup-apache-forwarding-to-tomcat-run-tomcat-on-port-80/
+commands:
+a2enmod proxy
+a2enmod proxy_http
+
 changed /var/www/index.html to redirect to /index.jsp
 /etc/apache2/httpd.conf
 
