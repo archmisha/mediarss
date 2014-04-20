@@ -7,6 +7,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import rss.dao.UserDao;
 import rss.entities.User;
 import rss.services.UrlService;
 import rss.services.log.LogService;
@@ -41,6 +42,9 @@ public class RegisterServlet extends HttpServlet {
 	@Autowired
 	private UrlService urlService;
 
+	@Autowired
+	private UserDao userDao;
+
 	@Override
 	public void init() throws ServletException {
 		super.init();
@@ -65,7 +69,7 @@ public class RegisterServlet extends HttpServlet {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override
 				protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-					User user = userCacheService.getUser(finalUserId);
+					User user = userDao.find(finalUserId);
 					if (user == null) {
 						logService.error(getClass(), "Invalid user parameter: " + finalUserId);
 						out.println("Invalid url. Please contact support for assistance");
@@ -75,7 +79,7 @@ public class RegisterServlet extends HttpServlet {
 					// maybe user clicked twice the same link so validation hash is already null
 					if (user.getValidationHash() == null || user.getValidationHash().equals(hash)) {
 						user.setValidationHash(null);
-
+						userCacheService.invalidateUser(user);
 						response.setHeader("Refresh", "5;url=" + urlService.getApplicationUrl());
 						out.println("<html><body>Account validated. Click <a href=\"" + urlService.getApplicationUrl() +
 									"\">here</a> to proceed or wait to be automatically redirected</body></html>");
