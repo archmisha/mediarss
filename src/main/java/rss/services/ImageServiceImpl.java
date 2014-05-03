@@ -7,13 +7,10 @@ import rss.entities.Image;
 import rss.services.log.LogService;
 
 import javax.imageio.IIOException;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * User: dikmanm
@@ -31,10 +28,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public Image getImage(String name) {
 		try {
-			BufferedImage bufferedImage = ImageIO.read(new File(getFullImagePath(name)));
-			WritableRaster raster = bufferedImage.getRaster();
-			DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-			return new Image(name, data.getData());
+			return new Image(name, Files.readAllBytes(new File(getFullImagePath(name)).toPath()));
 		} catch (IIOException e) {
 			if (e.getMessage().equals("Can't read input file!")) {
 				return null;
