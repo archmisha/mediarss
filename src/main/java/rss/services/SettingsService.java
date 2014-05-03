@@ -22,9 +22,9 @@ public interface SettingsService {
 
 	String getTorrentDownloadedPath();
 
-	int getTVComPagesToDownload();
-
 	String getTorrentWatchPath();
+
+	int getTVComPagesToDownload();
 
 	Set<String> getAdministratorEmails();
 
@@ -55,6 +55,8 @@ public interface SettingsService {
 	void removeUpdateListener(SettingsUpdateListener listener);
 
 	String getTrackerUrl();
+
+	String getImagesPath();
 
 	public interface SettingsUpdateListener {
 		void onSettingsUpdated();

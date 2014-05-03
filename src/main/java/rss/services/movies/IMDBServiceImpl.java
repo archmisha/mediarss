@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
-import rss.dao.ImageDao;
 import rss.entities.Image;
+import rss.services.ImageService;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
 import rss.util.DurationMeter;
@@ -70,7 +70,7 @@ public class IMDBServiceImpl implements IMDBService {
 	private LogService logService;
 
 	@Autowired
-	private ImageDao imageDao;
+	private ImageService imageService;
 
 	@Autowired
 	private TransactionTemplate transactionTemplate;
@@ -227,10 +227,10 @@ public class IMDBServiceImpl implements IMDBService {
 				if (imdbImageUrl.equals(defaultImage)) {
 					imageInputStream = new ClassPathResource(defaultImage, this.getClass().getClassLoader()).getInputStream();
 				} else {
-					Image image = imageDao.find(imdbImageUrl);
+					Image image = imageService.getImage(imdbImageUrl);
 					if (image == null) {
 						image = new Image(imdbImageUrl, pageDownloader.downloadData(IMDB_IMAGE_URL_PREFIX + imdbImageUrl));
-						imageDao.persist(image);
+						imageService.saveImage(image);
 						logService.info(getClass(), "Storing a new image into the DB: " + imdbImageUrl);
 					}
 

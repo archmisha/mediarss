@@ -204,6 +204,11 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
+	public String getImagesPath() {
+		return settingsBean.getImagesPath();
+	}
+
+	@Override
 	public boolean isLogMemory() {
 		return settingsBean.isLogMemory();
 	}
@@ -288,6 +293,7 @@ public class SettingsServiceImpl implements SettingsService {
 		private String webRootContext;
 		private String torrentWatchPath;
 		private String alternativeResourcesPath;
+		private String imagesPath;
 
 		public SettingsBean(Properties prop) {
 			this.prop = prop;
@@ -309,6 +315,7 @@ public class SettingsServiceImpl implements SettingsService {
 			webRootContext = prop.getProperty("web.root.context");
 			torrentWatchPath = prop.getProperty("torrent.watch.path");
 			alternativeResourcesPath = prop.getProperty("alternative.resources.path");
+			imagesPath = prop.getProperty("images.path");
 		}
 
 		public Set<String> getAdminEmails() {
@@ -393,6 +400,10 @@ public class SettingsServiceImpl implements SettingsService {
 				}
 			}
 			return season;
+		}
+
+		public String getImagesPath() {
+			return imagesPath;
 		}
 	}
 }
