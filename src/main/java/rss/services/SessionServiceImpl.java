@@ -22,7 +22,7 @@ public class SessionServiceImpl implements SessionService {
 	private Long loggedInUserId;
 	private Long impersonatedUserId;
 	private Date prevLoginDate;
-	private UsersSearchesCache usersSearchesCache;
+	private UsersSearchesCache usersSearchesCache = new UsersSearchesCache(); // if for some reason there is no logged in user ...
 
 	public void setLoggedInUser(User user) {
 		loggedInUserId = user.getId();
