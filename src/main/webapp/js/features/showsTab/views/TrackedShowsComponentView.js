@@ -1,18 +1,18 @@
 /*global define*/
 define([
-	'jquery',
-	'marionette',
-	'handlebars',
-	'features/showsTab/views/TrackedShowsCollectionView',
-	'text!features/showsTab/templates/tracked-shows-component.tpl',
-	'features/showsTab/collections/ShowsCollection',
-	'utils/HttpUtils',
-	'select2',
-	'utils/Spinner',
-	'utils/Utils',
-	'features/showsTab/models/Show',
-	'utils/MessageBox'
-],
+		'jquery',
+		'marionette',
+		'handlebars',
+		'features/showsTab/views/TrackedShowsCollectionView',
+		'text!features/showsTab/templates/tracked-shows-component.tpl',
+		'features/showsTab/collections/ShowsCollection',
+		'utils/HttpUtils',
+		'select2',
+		'utils/Spinner',
+		'utils/Utils',
+		'features/showsTab/models/Show',
+		'utils/MessageBox'
+	],
 	function($, Marionette, Handlebars, TrackedShowsCollectionView, template, ShowsCollection, HttpUtils, select2, Spinner, Utils, Show, MessageBox) {
 		"use strict";
 
@@ -121,7 +121,7 @@ define([
 			createChosen: function(selector) {
 				$(selector).select2({
 					placeholder: "Select a Show",
-					minimumInputLength: 3,
+					minimumInputLength: 2,
 					ajax: {
 						url: 'rest/shows/tracked/autocomplete',
 						dataType: 'jsonp',
