@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 
 /**
  * User: dikmanm
@@ -29,6 +30,8 @@ public class ImageServiceImpl implements ImageService {
 	public Image getImage(String name) {
 		try {
 			return new Image(name, Files.readAllBytes(new File(getFullImagePath(name)).toPath()));
+		} catch (NoSuchFileException e) {
+			return null;
 		} catch (IIOException e) {
 			if (e.getMessage().equals("Can't read input file!")) {
 				return null;
