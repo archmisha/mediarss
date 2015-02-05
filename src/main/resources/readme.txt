@@ -31,6 +31,9 @@ sudo apt-get update
 sudo apt-get install build-essential
 sudo apt-get install apache2-dev
 
+
+
+
 http://edwardaux.wordpress.com/2006/09/20/3/#comment-487
 http://archive.apache.org/dist/jakarta/tomcat-connectors/jk/source/jk-1.2.14/ - didnt work
 http://tomcat.apache.org/download-connectors.cgi

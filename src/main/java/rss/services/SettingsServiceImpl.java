@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 public class SettingsServiceImpl implements SettingsService {
 
 	public static final String SETTINGS_FILENAME = "settings.properties";
+	public static final String SETTINGS_FILE_PATH = "settings_file_path";
 	public static final String ADMIN_DEFAULT_EMAIL = "archmisha@gmail.com";
 
 	@Autowired
@@ -56,7 +57,7 @@ public class SettingsServiceImpl implements SettingsService {
 			@Override
 			public void run() {
 				try {
-					watchFile(new File(System.getProperty("user.home")).getAbsolutePath(), SETTINGS_FILENAME);
+					watchFile(new File(getSettingsFilePath()).getAbsolutePath(), SETTINGS_FILENAME);
 				} catch (Exception e) {
 					if (shouldRun) {
 						logService.error(getClass(), String.format("Failed setting up file watcher for %s: %s", SETTINGS_FILENAME, e.getMessage()), e);
@@ -64,6 +65,10 @@ public class SettingsServiceImpl implements SettingsService {
 				}
 			}
 		});
+	}
+
+	private String getSettingsFilePath() {
+		return System.getProperty(SETTINGS_FILE_PATH, System.getProperty("user.home"));
 	}
 
 	@PreDestroy
@@ -81,10 +86,11 @@ public class SettingsServiceImpl implements SettingsService {
 	private void loadSettingsFile() {
 		logService.info(getClass(), "Loading " + SETTINGS_FILENAME + " file");
 		try {
-			File settingsFile = new File(System.getProperty("user.home") + File.separator + SETTINGS_FILENAME);
+			File settingsFile = new File(getSettingsFilePath() + File.separator + SETTINGS_FILENAME);
 			if (settingsFile.exists()) {
 				logService.info(getClass(), "Loading " + SETTINGS_FILENAME + " file from " + settingsFile.getAbsolutePath());
 			} else {
+				logService.info(getClass(), "Custom settings file not found on path: " + settingsFile.getAbsolutePath());
 				logService.info(getClass(), "Loading default " + SETTINGS_FILENAME + " file from classpath");
 				settingsFile = new ClassPathResource(SETTINGS_FILENAME, SettingsServiceImpl.class.getClassLoader()).getFile();
 			}

@@ -1,0 +1,44 @@
+0. to make locate work:
+>sudo updatedb 
+1. For ubuntu setup shell:
+>sudo chsh -s /bin/bash
+That probably means that the new user account was created with /bin/sh as its login shell (which symlinks to the dash shell by default) instead of /bin/bash - you can change a user's login shell with the 'chsh' command
+
+2. install java:
+sudo apt-get update
+sudo apt-get install default-jre
+java -version
+
+3. install tomcat:
+sudo apt-get install tomcat7
+install tomcat and creates user tomcat7
+to start and stop:
+> sudo service tomcat7 start|stop
+installed at /var/lib/tomcat7
+
+4. install h2:
+> unzip h2-2014-01-18.zip
+> cd /usr/local
+> mv ~/installations/h2 .
+copy /etc/init.d/h2 script and chmod and to all rc*.d
+to start and stop:
+> sudo service h2 start|stop
+
+5. copy the database to /usr/local/h2/mem
+
+6. configure tomcat
+create a folder with all the jars of the webapp - lib-media-rss and mapping it in catalina.properties to lower the size of the war file copied each time - catalina.properties file
+
+enable tomcat compression - server.xml
+
+set the settings.properties file path by setenv.sh file in tomcat/bin folder
+
+7. change timezone on the machine
+http://www.thegeekstuff.com/2010/09/change-timezone-in-linux/
+and set JAVA_OPTS="-Duser.timezone=Asia/Jerusalem" for the logs to be in correct time in setenv.sh
+
+8. copy alternative_resources, movie_images folders
+
+9. configure apache reverse proxy to forward port 80 to 8080
+>sudo apt-get install build-essential
+>sudo apt-get install apache2-dev

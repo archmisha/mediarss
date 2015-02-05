@@ -13,7 +13,7 @@
     <mvc:annotation-driven />
     <mvc:resources location="/" mapping="/**"/>
 
-    <bean name="EmbeddedTracker" class="com.turn.ttorrent.tracker.EmbeddedTracker" />
+    <!--<bean name="EmbeddedTracker" class="com.turn.ttorrent.tracker.EmbeddedTracker" />-->
 
     <!--<bean name="myApplicationListener" class="rss.AppStartupListener" />-->
 
