@@ -84,7 +84,7 @@ public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearc
 		Matcher matcher = PATTERN.matcher(page);
 		if (!matcher.find()) {
 			if (!page.contains("Bad ID!")) { // in that case just id not found - not a parsing problem
-				logService.error(getClass(), "Failed parsing page of " + mediaRequest.toString() + ": " + page);
+				logService.error(getClass(), "Failed parsing page of '" + mediaRequest.toString() + "': " + page);
 			}
 			return null;
 		}

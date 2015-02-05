@@ -126,19 +126,13 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 	@Override
 	protected Torrent parseTorrentPage(T mediaRequest, String page) {
 		try {
-			int idx = page.indexOf("<div class=\"topHead\">");
-			String titlePrefix = "<h2>";
+			int idx = page.indexOf("<div class=\"top-row");
+			String titlePrefix = "<strong>";
 			idx = page.indexOf(titlePrefix, idx) + titlePrefix.length();
-			String title = page.substring(idx, page.indexOf("</h2>", idx));
+			String title = page.substring(idx, page.indexOf("</strong>", idx));
 			title = StringEscapeUtils.unescapeHtml4(title);
 
-			String dateUploadedPrefix = "date uploaded</span>";
-			idx = page.indexOf(dateUploadedPrefix, idx) + dateUploadedPrefix.length();
-			idx = page.indexOf(">", idx) + ">".length();
-			String dateUploadedAgoString = page.substring(idx, page.indexOf("</span>", idx));
-			Date dateUploadedAgo = StringUtils2.parseDateUploaded(dateUploadedAgoString);
-
-			String sizePrefix = "Total Size</span>";
+			String sizePrefix = "Total size</strong>";
 			idx = page.indexOf(sizePrefix, idx) + sizePrefix.length();
 			idx = page.indexOf(">", idx) + ">".length();
 			String[] arr = page.substring(idx, page.indexOf("</span>", idx)).split(" ");
@@ -147,13 +141,18 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 				size *= 1024;
 			}
 
-			String seedersPrefix = "seeders</span>";
-			idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();
+			String dateUploadedPrefix = "Date uploaded</strong>";
+			idx = page.indexOf(dateUploadedPrefix, idx) + dateUploadedPrefix.length();
 			idx = page.indexOf(">", idx) + ">".length();
+			String dateUploadedAgoString = page.substring(idx, page.indexOf("</span>", idx));
+			Date dateUploadedAgo = StringUtils2.parseDateUploaded(dateUploadedAgoString);
+
+			String seedersPrefix = "Seeders</strong>";
+			idx = page.indexOf(seedersPrefix, idx) + seedersPrefix.length();
 			idx = page.indexOf(">", idx) + ">".length();
 			int seeders = Integer.parseInt(page.substring(idx, page.indexOf("</span>", idx)));
 
-			idx = page.indexOf("<div class=\"torrentInfoBtn\">", idx);
+			idx = page.indexOf("<ul class=\"download-links\">", idx);
 			String urlPrefix = "<a href=\"";
 			idx = page.indexOf(urlPrefix, idx) + urlPrefix.length();
 			String url = page.substring(idx, page.indexOf("\"", idx));
