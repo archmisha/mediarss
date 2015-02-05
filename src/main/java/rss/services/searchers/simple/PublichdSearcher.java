@@ -36,7 +36,7 @@ public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearc
 
 	@Override
 	public int getPriority() {
-		return 4;
+		return -1;
 	}
 
 	@Override
