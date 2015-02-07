@@ -30,7 +30,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
 	private static final String SEARCH_URL_PREFIX = "/search";
 	private static final String SEARCH_URL_SUFFIX = "/%s/0/7/0";
 
-	private static final Pattern PIRATE_BAY_ID = Pattern.compile("http://thepiratebay[^/]+/torrent/([^\"/]+)");
+	private static final Pattern PIRATE_BAY_ID = Pattern.compile("https?://thepiratebay[^/]+/torrent/([^\"/]+)");
 
 	@Autowired
 	protected LogService logService;

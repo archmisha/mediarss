@@ -60,7 +60,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
 		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			Pattern pattern = Pattern.compile("http://" + domain + "/([^\"/]+)");
+			Pattern pattern = Pattern.compile("https?://" + domain + "/([^\"/]+)");
 			Matcher matcher = pattern.matcher(page);
 			if (matcher.find()) {
 				return matcher.group(1);
