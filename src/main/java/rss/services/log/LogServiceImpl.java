@@ -83,7 +83,7 @@ public class LogServiceImpl implements LogService {
 	private String prepareMessage(String msg) {
 		try {
 			SessionService sessionService = applicationContext.getBean(SessionService.class);
-			if (!sessionService.isUserLogged()) {
+			if (!sessionService.isUserLoggedIn()) {
 				return msg;
 			}
 			User user = userCacheService.getUser(sessionService.getLoggedInUserId());
