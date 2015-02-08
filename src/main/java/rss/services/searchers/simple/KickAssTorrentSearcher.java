@@ -119,9 +119,9 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 			SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
 			Date uploaded = sdf.parse(uploadedStr/*.replaceAll("\\p{Cntrl}", "")*/);
 
-			String hashPrefix = "hash: '";
+			String hashPrefix = "Torrent hash: ";
 			idx = page.indexOf(hashPrefix) + hashPrefix.length();
-			String hash = page.substring(idx, page.indexOf("'", idx)).trim();
+			String hash = page.substring(idx, page.indexOf("</span", idx)).trim();
 
 			Torrent torrent = new Torrent(title, torrentUrl, uploaded, seeders);
 			torrent.setHash(hash);
