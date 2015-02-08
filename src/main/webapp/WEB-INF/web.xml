@@ -36,14 +36,14 @@
         <url-pattern>/generate/*</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>TorrentTrackerServlet</servlet-name>
-        <servlet-class>rss.servlets.TorrentTrackerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>TorrentTrackerServlet</servlet-name>
-        <url-pattern>/announce</url-pattern>
-    </servlet-mapping>
+    <!--<servlet>-->
+    <!--<servlet-name>TorrentTrackerServlet</servlet-name>-->
+    <!--<servlet-class>rss.servlets.TorrentTrackerServlet</servlet-class>-->
+    <!--</servlet>-->
+    <!--<servlet-mapping>-->
+    <!--<servlet-name>TorrentTrackerServlet</servlet-name>-->
+    <!--<url-pattern>/announce</url-pattern>-->
+    <!--</servlet-mapping>-->
 
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
@@ -81,10 +81,18 @@
     <listener>
         <listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
     </listener>
-
     <listener>
         <listener-class>rss.AppConfigListener</listener-class>
     </listener>
+
+    <filter>
+        <filter-name>RememberMeCookieFilter</filter-name>
+        <filter-class>rss.RememberMeCookieFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>RememberMeCookieFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <!-- Default page to serve -->
     <welcome-file-list>

@@ -3,6 +3,8 @@ package rss.services;
 import rss.entities.User;
 import rss.services.shows.UsersSearchesCache;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 /**
@@ -12,19 +14,21 @@ import java.util.Date;
  */
 public interface SessionService {
 
-	void setLoggedInUser(User user);
+	void setLoggedInUser(User user, HttpServletResponse response, boolean rememberMe);
 
 	Long getLoggedInUserId();
 
-	Date getPrevLoginDate();
+	boolean isUserLoggedIn();
 
-	void clearLoggedInUser();
+	void restoreUserDataFromCookie(HttpServletRequest request, HttpServletResponse response);
 
-	boolean isUserLogged();
+	void clearLoggedInUser(HttpServletRequest request, HttpServletResponse response);
 
 	public Long getImpersonatedUserId();
 
+	void impersonate(Long userId);
+
 	UsersSearchesCache getUsersSearchesCache();
 
-	void impersonate(Long userId);
+	Date getPrevLoginDate();
 }

@@ -24,20 +24,15 @@ import rss.services.subtitles.SubtitleLanguage;
 import rss.services.user.UserService;
 import rss.services.user.UserServiceImpl;
 import rss.util.DurationMeter;
-import rss.util.StringUtils2;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.security.InvalidParameterException;
 import java.util.*;
 
 @Controller
 @RequestMapping("/user")
 public class UserController extends BaseController {
-
-	public static final String REMEMBER_ME_COOKIE_NAME = "media-rss";
 
 	@Autowired
 	private UserDao userDao;
@@ -55,9 +50,6 @@ public class UserController extends BaseController {
 	private UserService userService;
 
 	@Autowired
-	private HttpSession session;
-
-	@Autowired
 	private SubtitlesDao subtitlesDao;
 
 	@Autowired
@@ -67,29 +59,8 @@ public class UserController extends BaseController {
 	@RequestMapping(value = "/pre-login", method = RequestMethod.GET)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> getPreLoginData(HttpServletRequest request) {
-		boolean loggedIn = false;
-		if (sessionService.isUserLogged()) {
-			loggedIn = true;
-		} else {
-			Cookie cookie = getLoginCookie(request);
-			if (cookie != null) {
-				String[] arr = cookie.getValue().split(",");
-				String email = arr[0];
-				String series = arr[1];
-				String token = arr[2];
-				User user = userDao.findByEmail(email);
-				if (user != null && user.getLoginSeries().equals(series)) {
-					if (user.getLoginToken().equals(token)) {
-						loggedIn = true;
-						sessionService.setLoggedInUser(user);
-					} else {
-						// theft is assumed
-						loggedIn = false;
-					}
-				}
-			}
-		}
+	public Map<String, Object> getPreLoginData() {
+		boolean loggedIn = sessionService.isUserLoggedIn();
 
 		Map<String, Object> result = new HashMap<>();
 		if (loggedIn) {
@@ -121,16 +92,7 @@ public class UserController extends BaseController {
 			throw new InvalidParameterException("Account email is not validated. Please validate before logging in");
 		}
 
-		if (rememberMe) {
-			user.setLoginSeries(StringUtils2.generateUniqueHash());
-			user.setLoginToken(StringUtils2.generateUniqueHash());
-			Cookie cookie = new Cookie(REMEMBER_ME_COOKIE_NAME, user.getEmail() + "," + user.getLoginSeries() + "," + user.getLoginToken());
-			cookie.setMaxAge(Integer.MAX_VALUE);
-			cookie.setPath("/");
-			response.addCookie(cookie);
-		}
-
-		sessionService.setLoggedInUser(user);
+		sessionService.setLoggedInUser(user, response, rememberMe);
 		// important to be after setting the logged in user. session service saves the previous
 		user.setLastLogin(new Date());
 
@@ -176,23 +138,7 @@ public class UserController extends BaseController {
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
 	@ResponseBody
 	public void logout(HttpServletRequest request, HttpServletResponse response) {
-		sessionService.clearLoggedInUser();
-		session.invalidate();
-		try {
-			// invalidate cookie
-			Cookie cookie = getLoginCookie(request);
-			if (cookie != null) {
-				cookie = new Cookie(REMEMBER_ME_COOKIE_NAME, null);
-				cookie.setMaxAge(0);
-				cookie.setValue(null);
-				cookie.setPath("/");
-				response.addCookie(cookie);
-			}
-
-			response.sendRedirect("/");
-		} catch (Exception e) {
-			throw new RuntimeException(e.getMessage(), e);
-		}
+		sessionService.clearLoggedInUser(request, response);
 	}
 
 	@RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
@@ -235,17 +181,6 @@ public class UserController extends BaseController {
 		logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
 
 		return result;
-	}
-
-	private Cookie getLoginCookie(HttpServletRequest request) {
-		if (request.getCookies() != null) {
-			for (Cookie cookie : request.getCookies()) {
-				if (cookie.getName().equals(REMEMBER_ME_COOKIE_NAME)) {
-					return cookie;
-				}
-			}
-		}
-		return null;
 	}
 
 	private Map<String, Object> createTabData(User user) {
