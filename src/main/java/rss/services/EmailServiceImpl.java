@@ -193,6 +193,6 @@ public class EmailServiceImpl implements EmailService {
 
 	// "gabayshiran", "ahri24986", lan4ear, 84ad17ad!, personal.media.rss, 83md16md
 	private void sendEmail(List<String> recipients, String title, String message) throws MessagingException, UnsupportedEncodingException {
-		GoogleMail.Send(new InternetAddress("personal.media.rss@gmail.com", "Media-RSS Team"), "lan4ear", "83md16md", null, StringUtils.join(recipients, " "), title, message);
-	}
+        GoogleMail.Send(new InternetAddress("personal.media.rss@gmail.com", "Media-RSS Team"), "lan4ear", "84ad17ad!", null, StringUtils.join(recipients, " "), title, message);
+    }
 }

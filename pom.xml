@@ -631,11 +631,10 @@
                                         ./tomcat stop;sleep 10;rm -rf webapps/media-rss*;cp media-rss.war webapps/;
                                         ./t.sh;sleep 200;./maintenance.sh stop
                                     -->
-                                    <!--<command>cp -f webapps/ROOT.war backups/;./maintenance.sh start;sudo service tomcat7 stop;sleep 10;rm -rf webapps/*;sudo cp media-rss.war webapps/ROOT.war;sudo service tomcat7 start;sleep 200;./maintenance.sh stop-->
+                                    <!--<command>cp -f webapps/ROOT.war backups/;./maintenance.sh start;sudo service tomcat7 stop;sleep 10;rm -rf webapps/*;sudo cp media-rss.war webapps/ROOT.war;sudo service tomcat7 start;sleep 10;./maintenance.sh stop-->
                                     <!--</command>-->
                                     <command>cp -f webapps/ROOT.war backups/;sudo service tomcat7 stop;sleep 10;sudo rm
-                                        -rf webapps/*;sudo cp media-rss.war webapps/ROOT.war;sudo service tomcat7
-                                        start;sleep 200;
+                                        -rf webapps/*;sudo cp media-rss.war webapps/ROOT.war;sudo service tomcat7 start;
                                     </command>
                                     <echoCommands>true</echoCommands>
                                     <verbose>true</verbose>
