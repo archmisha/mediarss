@@ -9,12 +9,13 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.*;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.shows.TVRageServiceImpl;
 import rss.util.Utils;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,8 +63,8 @@ public class PageDownloaderImpl implements PageDownloader {
 		// download 1000 chars first and then advance by 50
 		ResponseStreamExtractor<String> streamExtractor = new ResponseStreamExtractor<String>() {
 			@Override
-			public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
-				InputStream is = extractInputStreamFromResponse(httpResponse);
+            public String extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
+                InputStream is = extractInputStreamFromResponse(httpResponse);
 				BufferedInputStream bis = new BufferedInputStream(is);
 				byte[] arr = new byte[1000];
 				int read = bis.read(arr);
@@ -90,8 +93,8 @@ public class PageDownloaderImpl implements PageDownloader {
 	public byte[] downloadData(String url) {
 		return downloadPage(url, Collections.<String, String>emptyMap(), new ResponseStreamExtractor<byte[]>() {
 			@Override
-			public byte[] extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
-				byte[] res = IOUtils.toByteArray(httpResponse.getEntity().getContent());
+            public byte[] extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
+                byte[] res = IOUtils.toByteArray(httpResponse.getEntity().getContent());
 				return res;
 			}
 		});
@@ -108,8 +111,8 @@ public class PageDownloaderImpl implements PageDownloader {
 			try {
 				return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
 					@Override
-					public String extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
-						return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
+                    public String extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
+                        return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
 					}
 				});
 			} catch (PageDownloadException e) {
@@ -127,8 +130,8 @@ public class PageDownloaderImpl implements PageDownloader {
 	public Pair<String, String> downloadPageWithRedirect(String url) {
 		return downloadPage(url, Collections.<String, String>emptyMap(), new ResponseStreamExtractor<Pair<String, String>>() {
 			@Override
-			public Pair<String, String> extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
-				String lastRedirectUrl = (String) context.getAttribute(LAST_REDIRECT_URL);
+            public Pair<String, String> extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
+                String lastRedirectUrl = (String) context.getAttribute(LAST_REDIRECT_URL);
 				return new ImmutablePair<>(IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8"), lastRedirectUrl);
 			}
 		});
@@ -161,19 +164,21 @@ public class PageDownloaderImpl implements PageDownloader {
 			HttpPost httpPost = new HttpPost(url);
 
 			if (url.contains("?")) {
-				for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
+                ArrayList<NameValuePair> postParameters = new ArrayList<>();
+                for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
 					String[] arr = str.split("=");
-					httpPost.getParams().setParameter(arr[0], arr[1]);
-				}
-			}
+                    postParameters.add(new BasicNameValuePair(arr[0], arr[1]));
+                }
+                httpPost.setEntity(new UrlEncodedFormEntity(postParameters));
+            }
 
 			HttpEntity httpEntity = new UrlEncodedFormEntity(parameters);
 			httpPost.setEntity(httpEntity);
 			return sendRequest(httpPost, new ResponseStreamExtractor<List<Cookie>>() {
 				@Override
-				public List<Cookie> extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception {
-					return httpClient.getCookieStore().getCookies();
-				}
+                public List<Cookie> extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
+                    return context.getCookieStore().getCookies();
+                }
 			});
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -182,9 +187,9 @@ public class PageDownloaderImpl implements PageDownloader {
 
 	private <T> T sendRequest(HttpRequestBase httpRequest, ResponseStreamExtractor<T> streamExtractor) {
 		long from = System.currentTimeMillis();
-		HttpClient httpClient = null;
 		String url = httpRequest.getURI().toString();
-		try {
+        CloseableHttpClient httpClient = null;
+        try {
 			coolDownStatus.authorizeAccess(url); // blocks until authorized
 
 			if ("true".equalsIgnoreCase(System.getProperty("webproxy")) || settingsService.useWebProxy()) {
@@ -193,55 +198,41 @@ public class PageDownloaderImpl implements PageDownloader {
 				}
 			}
 
-			DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
-			httpClient = new DecompressingHttpClient(defaultHttpClient); // ContentEncodingHttpClient
+            // prevent error: hostname in certificate didn't match: <thepiratebay.se> != <ssl2000.cloudflare.com> OR <ssl2000.cloudflare.com> OR <cloudflare.com> OR <*.cloudflare.com>
+            HttpsURLConnection.setDefaultHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(SSLContext.getDefault(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
-			// inverted for easy null handling
-			if ("true".equalsIgnoreCase(System.getProperty("proxy"))) {
-				HttpHost proxy = new HttpHost("rhvwebcachevip.bastion.europe.hp.com", 8080);
-				httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-			}
-
-			defaultHttpClient.addResponseInterceptor(new HttpResponseInterceptor() {
-				@Override
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            httpClientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
+            HttpClientContext context = HttpClientContext.create();
+            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+            httpClientBuilder.addInterceptorFirst(new HttpResponseInterceptor() {
+                @Override
 				public void process(HttpResponse response, HttpContext context)
 						throws HttpException, IOException {
 					if (response.containsHeader("Location")) {
 						Header[] locations = response.getHeaders("Location");
-						if (locations.length > 0)
-							context.setAttribute(LAST_REDIRECT_URL, locations[0].getValue());
-					}
+                        if (locations.length > 0) {
+                            context.setAttribute(LAST_REDIRECT_URL, locations[0].getValue());
+                        }
+                    }
 				}
 			});
 
-			defaultHttpClient.setRedirectStrategy(new LaxRedirectStrategy()/* {
-				protected URI createLocationURI(final String location) throws ProtocolException {
-					try {
-						return new URI(location).normalize();
-					} catch (URISyntaxException ex) {
-						log.info(getClass(), "orig: " + location);
-						try {
-							try {
-								log.info(getClass(), "encoded: " + URLEncoder.encode(location, "UTF-8"));
-							} catch (UnsupportedEncodingException e) {
-								e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-							}
+            // inverted for easy null handling
+            if ("true".equalsIgnoreCase(System.getProperty("proxy"))) {
+                HttpHost proxy = new HttpHost("rhvwebcachevip.bastion.europe.hp.com", 8080);
+                DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+                httpClientBuilder.setRoutePlanner(routePlanner);
+            }
 
-							return new URI(URLEncoder.encode(location, "UTF-8")).normalize();
-						} catch (URISyntaxException | UnsupportedEncodingException ex2) {
-
-
-							throw new ProtocolException("Invalid redirect URI: " + location, ex2);
-						}
-					}
-				}
-			}*/);
+            httpClient = httpClientBuilder.build(); //new DefaultHttpClient();
+//			httpClient = new DecompressingHttpClient(defaultHttpClient); // ContentEncodingHttpClient
 
 			HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 30 * 1000); // 130 secs
 			HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 30 secs
 			AutoRetryHttpClient retryClient = new AutoRetryHttpClient(httpClient, new DefaultServiceUnavailableRetryStrategy(3, 100));
 
-			HttpContext context = new BasicHttpContext();
 			HttpResponse httpResponse = retryClient.execute(httpRequest, context);
 
 			if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK /*&&
@@ -250,8 +241,8 @@ public class PageDownloaderImpl implements PageDownloader {
 				throw new PageDownloadException("Url " + url + ": " + httpResponse.getStatusLine());
 			}
 
-			return streamExtractor.extractResponseStream(defaultHttpClient, httpResponse, context);
-		} catch (TruncatedChunkException e) {
+            return streamExtractor.extractResponseStream(httpClient, httpResponse, context);
+        } catch (TruncatedChunkException e) {
 			throw new PageDownloadException("Truncated chunk for url: " + url + ". " + e.getMessage());
 		} catch (Exception e) {
 			if (Utils.isRootCauseMessageContains(e, "timed out")) {
@@ -275,13 +266,17 @@ public class PageDownloaderImpl implements PageDownloader {
 			// shut down the connection manager to ensure
 			// immediate de-allocation of all system resources
 			if (httpClient != null) {
-				httpClient.getConnectionManager().shutdown();
-			}
+                try {
+                    httpClient.close(); //getConnectionManager().shutdown();
+                } catch (IOException e) {
+                    log.error(getClass(), e.getMessage(), e);
+                }
+            }
 			log.debug(getClass(), String.format("Download page %s took %d ms", url, System.currentTimeMillis() - from));
 		}
 	}
 
 	private interface ResponseStreamExtractor<T> {
-		public T extractResponseStream(AbstractHttpClient httpClient, HttpResponse httpResponse, HttpContext context) throws Exception;
-	}
+        public T extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception;
+    }
 }

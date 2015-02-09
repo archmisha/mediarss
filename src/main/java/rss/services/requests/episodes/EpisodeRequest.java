@@ -35,9 +35,6 @@ public abstract class EpisodeRequest extends ShowRequest {
 		// brothers and sisters vs brothers sisters give different results
 		StringBuilder sb = new StringBuilder().append(ShowServiceImpl.normalizeForQueryString(getTitle()));
 		sb.append(" ").append(getSeasonEpisode());
-//		if (getQuality() != MediaQuality.NORMAL) {
-//			sb.append(" ").append(getQuality());
-//		}
 		return sb.toString();
 	}
 
