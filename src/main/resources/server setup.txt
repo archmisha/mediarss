@@ -40,5 +40,19 @@ and set JAVA_OPTS="-Duser.timezone=Asia/Jerusalem" for the logs to be in correct
 8. copy alternative_resources, movie_images folders
 
 9. configure apache reverse proxy to forward port 80 to 8080
->sudo apt-get install build-essential
->sudo apt-get install apache2-dev
+>sudo apt-get install build-essential - didnt run?
+>sudo apt-get install apache2-dev - didnt run?
+http://blog.eventloud.com/2011/04/20/how-to-setup-apache-forwarding-to-tomcat-run-tomcat-on-port-80/
+>sudo a2enmod proxy
+>sudo a2enmod proxy_http
+write into /etc/apache2/sites-available/000-default.conf
+ProxyPass / http://50.62.57.127:8080/
+ProxyPassReverse / http://50.62.57.127:8080/
+ProxyPassReverseCookieDomain localhost 50.62.57.127
+#ProxyPassReverseCookiePath /media-rss /
+
+#<Location "/">
+#Order allow,deny
+#Allow from all
+#</Location>
+and restart the apache2 server: sudo /etc/init.d/apache2 restart
