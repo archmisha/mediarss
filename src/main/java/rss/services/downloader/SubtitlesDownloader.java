@@ -40,13 +40,8 @@ public class SubtitlesDownloader extends BaseDownloader<SubtitlesRequest, Subtit
 	@Autowired
 	private ShowDao showDao;
 
-	@Override
-	protected boolean isSingleTransaction() {
-		return false;
-	}
-
-	@Override
-	protected void processSingleMissingRequest(SubtitlesRequest missing) {
+    @Override
+    protected void processSingleMissingRequest(SubtitlesRequest missing) {
 		updateScanDate(missing);
 
 		if (missing instanceof SubtitlesEpisodeRequest) {

@@ -33,13 +33,8 @@ public abstract class MoviesDownloader extends BaseDownloader<MovieRequest, Movi
 	@Autowired
 	private IMDBService imdbService;
 
-	@Override
-	protected boolean isSingleTransaction() {
-		return true;
-	}
-
-	@Override
-	protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult searchResult) {
+    @Override
+    protected boolean validateSearchResult(MovieRequest movieRequest, SearchResult searchResult) {
 		// if there is no IMDB ID - skip this movie
 		if (getImdbId(searchResult) == null) {
 			logService.info(this.getClass(), String.format("Skipping movie '%s' because no IMDB url found", movieRequest.getTitle()));

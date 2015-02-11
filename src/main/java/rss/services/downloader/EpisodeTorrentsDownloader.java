@@ -70,13 +70,8 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	@Autowired
 	private UserCacheService userCacheService;
 
-	@Override
-	protected boolean isSingleTransaction() {
-		return false;
-	}
-
-	@Override
-	protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
+    @Override
+    protected SearchResult downloadTorrent(ShowRequest episodeRequest) {
 		return episodeSearcher.search(episodeRequest);
 	}
 

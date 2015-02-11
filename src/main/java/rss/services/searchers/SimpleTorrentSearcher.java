@@ -1,9 +1,11 @@
 package rss.services.searchers;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.PageDownloadException;
 import rss.RecoverableConnectionException;
+import rss.dao.SearchLogDao;
 import rss.entities.Torrent;
 import rss.services.PageDownloader;
 import rss.services.log.LogService;
@@ -36,6 +38,9 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 	@Autowired
 	private ShowService showService;
 
+    @Autowired
+    private SearchLogDao searchLogDao;
+
 	@Autowired
 	protected SearcherConfigurationService searcherConfigurationService;
 
@@ -50,12 +55,14 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 		}
 
 		for (String url : searchUrls) {
-			try {
-				String page = pageDownloader.downloadPage(url);
+            String page = null;
+            try {
+                page = pageDownloader.downloadPage(url);
+                SearchResult searchResult = parseSearchResults(url, mediaRequest, page);
 
-				SearchResult searchResult = parseSearchResults(url, mediaRequest, page);
 				if (searchResult.getSearchStatus() == SearchResult.SearchStatus.NOT_FOUND) {
-					return searchResult;
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, page, null);
+                    return searchResult;
 				}
 
 				// verify torrent name
@@ -83,23 +90,33 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 					searchResult.getDownloadables().clear();
 					searchResult.getDownloadables().addAll(readyTorrents);
 					searchResult.setSearchStatus(SearchResult.SearchStatus.FOUND);
-					return searchResult;
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.FOUND, url);
+                    return searchResult;
 				}
 
-				searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
+                searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.AWAITING_AGING, url);
+                searchResult.setSearchStatus(SearchResult.SearchStatus.AWAITING_AGING);
 				return searchResult;
 			} catch (RecoverableConnectionException e) {
 				// don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
 				// will retry to update show status in the next job run - warn level not send to email
 				logService.warn(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
-			} catch (PageDownloadException e) {
+                searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, null,
+                        String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
+            } catch (PageDownloadException e) {
 				logService.error(getClass(), String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
-			} catch (Exception e) {
+                searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, page,
+                        String.format("Failed retrieving \"%s\": %s", mediaRequest, e.getMessage()));
+            } catch (Exception e) {
 				if (Utils.isRootCauseMessageContains(e, "404 Not Found")) {
-					logService.debug(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage());
-				} else {
-					logService.error(getClass(), "Page for the url " + url + " could not be retrieved: " + e.getMessage(), e);
-				}
+                    logService.debug(getClass(), String.format("Page for the url \"%s\" could not be retrieved: %s", url, e.getMessage()));
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, null,
+                            String.format("Page for the url \"%s\" could not be retrieved: %s", url, e.getMessage()));
+                } else {
+                    logService.error(getClass(), String.format("Page for the url \"%s\" could not be retrieved: %s", url, e.getMessage()), e);
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, page,
+                            String.format("Page for the url \"%s\" could not be retrieved: %s", url, ExceptionUtils.getRootCauseMessage(e)));
+                }
 			}
 		}
 
@@ -114,18 +131,28 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 		}
 
 		for (String entryUrl : this.getEntryUrl()) {
-			try {
-				String url = entryUrl + searcherId;
-				String page = pageDownloader.downloadPage(url);
-				Torrent torrent = parseTorrentPage(mediaRequest, page);
+            String url = entryUrl + searcherId;
+            String page = null;
+            try {
+                page = pageDownloader.downloadPage(url);
+                Torrent torrent = parseTorrentPage(mediaRequest, page);
 				if (torrent != null) {
 					SearchResult searchResult = new SearchResult(getName());
 					searchResult.addDownloadable(torrent);
-					return searchResult;
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.FOUND, url);
+                    return searchResult;
 				}
 			} catch (PageDownloadException e) {
-				logService.warn(getClass(), "Request: " + mediaRequest + " Error: " + e.getMessage());
-			}
+                if (Utils.isRootCauseMessageContains(e, "404 Not Found")) {
+                    logService.debug(getClass(), String.format("Page for the url \"%s\" could not be retrieved: %s", url, e.getMessage()));
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, null,
+                            String.format("Page for the url \"%s\" could not be retrieved: %s", url, e.getMessage()));
+                } else {
+                    logService.warn(getClass(), "Request: " + mediaRequest + " Error: " + e.getMessage());
+                    searchLogDao.logSearch(mediaRequest, getName(), SearchResult.SearchStatus.NOT_FOUND, url, page,
+                            String.format("Failed retrieving \"%s\": %s", mediaRequest, ExceptionUtils.getRootCauseMessage(e)));
+                }
+            }
 		}
 
 		return SearchResult.createNotFound();
