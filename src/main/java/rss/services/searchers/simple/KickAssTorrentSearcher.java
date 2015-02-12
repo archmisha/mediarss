@@ -54,8 +54,8 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 	@Override
 	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
-		return mediaRequest.visit(new SearchURLVisitor(), null);
-	}
+        return new ArrayList<>(); //mediaRequest.visit(new SearchURLVisitor(), null);
+    }
 
 	@Override
 	public String parseId(MediaRequest mediaRequest, String page) {
