@@ -22,10 +22,10 @@ public class SearchLog extends BaseEntity {
     @Column(name = "source")
     private String source;
 
-    @Column(name = "url")
+    @Column(name = "url", length = 4000)
     private String url;
 
-    @Column(name = "page")
+    @Column(name = "page", length = 4000)
     private String page;
 
     @Column(name = "exception", length = 4000)
