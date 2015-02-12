@@ -30,10 +30,10 @@ public class SearchLogDaoImpl extends BaseDaoJPA<SearchLog> implements SearchLog
         searchLog.setSource(name);
         searchLog.setUrl(url);
         if (page != null) {
-            searchLog.setPage(page);
+            searchLog.setPage(page.getBytes());
         }
         if (exception != null) {
-            searchLog.setException(exception);
+            searchLog.setException(exception.getBytes());
         }
         em.persist(searchLog);
     }

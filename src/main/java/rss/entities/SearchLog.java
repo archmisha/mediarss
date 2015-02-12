@@ -4,6 +4,7 @@ import rss.services.searchers.SearchResult;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 /**
@@ -25,11 +26,13 @@ public class SearchLog extends BaseEntity {
     @Column(name = "url", length = 4000)
     private String url;
 
-    @Column(name = "page", length = 4000)
-    private String page;
+    @Column(name = "page")
+    @Lob
+    private byte[] page;
 
-    @Column(name = "exception", length = 4000)
-    private String exception;
+    @Column(name = "exception")
+    @Lob
+    private byte[] exception;
 
     @Column(name = "name")
     private String name;
@@ -67,19 +70,19 @@ public class SearchLog extends BaseEntity {
         this.url = url;
     }
 
-    public String getPage() {
+    public byte[] getPage() {
         return page;
     }
 
-    public void setPage(String page) {
+    public void setPage(byte[] page) {
         this.page = page;
     }
 
-    public String getException() {
+    public byte[] getException() {
         return exception;
     }
 
-    public void setException(String exception) {
+    public void setException(byte[] exception) {
         this.exception = exception;
     }
 
