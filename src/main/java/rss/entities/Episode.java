@@ -63,9 +63,13 @@ public class Episode extends Media {
 	@Column(name = "scan_date")
 	private Date scanDate;
 
+    @Column(name = "last_updated")
+    private Date lastUpdated;
+
 	@SuppressWarnings("UnusedDeclaration")
 	public Episode() {
-	}
+        lastUpdated = new Date();
+    }
 
 	public Episode(int season, int episode) {
 		this();
@@ -94,8 +98,16 @@ public class Episode extends Media {
 		this.episode = episode;
 	}
 
-	@Override
-	public String toString() {
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
+    @Override
+    public String toString() {
 		StringBuilder sb = new StringBuilder().append(getName()).append(" ").append(getSeasonEpisode());
 		if (airDate != null) {
 			sb.append(" air date ").append(new SimpleDateFormat("yyyy/MM/dd").format(airDate));

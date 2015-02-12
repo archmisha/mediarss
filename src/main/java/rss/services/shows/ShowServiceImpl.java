@@ -483,7 +483,8 @@ public class ShowServiceImpl implements ShowService {
 				persistedEpisode = episode;
 			}
 			persistedEpisode.setAirDate(episode.getAirDate());
-		}
+            persistedEpisode.setLastUpdated(Calendar.getInstance().getTime());
+        }
 
 		// create full season episode if needed. Take all episodes, sort them and look at the last one
 		// all season before the season of the last episode should exist
