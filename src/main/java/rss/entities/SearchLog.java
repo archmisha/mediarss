@@ -28,7 +28,7 @@ public class SearchLog extends BaseEntity {
     @Column(name = "page")
     private String page;
 
-    @Column(name = "exception")
+    @Column(name = "exception", length = 4000)
     private String exception;
 
     @Column(name = "name")
