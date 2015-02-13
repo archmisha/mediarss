@@ -111,8 +111,8 @@ public class BaseController {
 	}
 
 	protected boolean isAdmin(User user) {
-		return settingsService.getAdministratorEmails().contains(user.getEmail()) || sessionService.getImpersonatedUserId() != null;
-	}
+        return settingsService.getAdministratorEmails().contains(user.getEmail()) || sessionService.getImpersonatedUserId() != null || user.isAdmin();
+    }
 
 	// note: getters, setters and empty ctor are needed for spring to json serialization
 	protected static class ExceptionResponse {

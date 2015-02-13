@@ -222,7 +222,13 @@ public class SettingsServiceImpl implements SettingsService {
 
     @Override
     public ServerMode getServerMode() {
-        return settingsBean.getServerMode();
+        // if there is a system property use it, fallback to settings
+        String value = System.getProperty("server.mode");
+        try {
+            return ServerMode.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            return settingsBean.getServerMode();
+        }
     }
 
     @Override

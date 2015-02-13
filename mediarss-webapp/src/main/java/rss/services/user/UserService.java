@@ -9,7 +9,7 @@ import rss.entities.User;
  */
 public interface UserService {
 
-	String register(String firstName, String lastName, final String email, final String password);
+    String register(String firstName, String lastName, final String email, final String password, boolean isAdmin);
 
 	String getMoviesRssFeed(User user);
 

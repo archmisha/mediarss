@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
+import rss.ServerMode;
 import rss.dao.SubtitlesDao;
 import rss.dao.UserDao;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
 import rss.entities.User;
 import rss.services.EmailService;
+import rss.services.NewsService;
 import rss.services.SettingsService;
 import rss.services.feed.RssFeedGenerator;
 import rss.services.log.LogService;
@@ -34,162 +36,170 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController extends BaseController {
 
-	@Autowired
-	private UserDao userDao;
+    @Autowired
+    private UserDao userDao;
 
-	@Autowired
-	private EmailService emailService;
+    @Autowired
+    private EmailService emailService;
 
-	@Autowired
-	private SettingsService settingsService;
+    @Autowired
+    private SettingsService settingsService;
 
-	@Autowired
-	private LogService logService;
+    @Autowired
+    private LogService logService;
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@Autowired
-	private SubtitlesDao subtitlesDao;
+    @Autowired
+    private SubtitlesDao subtitlesDao;
 
-	@Autowired
-	@Qualifier("tVShowsRssFeedGeneratorImpl")
-	private RssFeedGenerator tvShowsRssFeedGenerator;
+    @Autowired
+    private NewsService newsService;
 
-	@RequestMapping(value = "/pre-login", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> getPreLoginData() {
-		boolean loggedIn = sessionService.isUserLoggedIn();
+    @Autowired
+    @Qualifier("tVShowsRssFeedGeneratorImpl")
+    private RssFeedGenerator tvShowsRssFeedGenerator;
 
-		Map<String, Object> result = new HashMap<>();
-		if (loggedIn) {
-			User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-			result = createTabData(user);
-		}
-		result.put("isLoggedIn", loggedIn);
-		return result;
-	}
+    @RequestMapping(value = "/pre-login", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Map<String, Object> getPreLoginData() {
+        boolean loggedIn = sessionService.isUserLoggedIn();
 
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> login(@RequestParam("username") String email,
-									 @RequestParam("password") String password,
-									 @RequestParam(value = "rememberMe", required = false, defaultValue = "false") boolean rememberMe,
-									 HttpServletResponse response) {
-		email = email.trim();
-		password = password.trim();
+        Map<String, Object> result = new HashMap<>();
+        if (loggedIn) {
+            User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+            result = createTabData(user);
+        }
+        result.put("isLoggedIn", loggedIn);
+        return result;
+    }
 
-		User user = userDao.findByEmail(email);
-		if (user == null || !user.getPassword().equals(password)) {
-			throw new InvalidParameterException("Username or password are incorrect");
-		}
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Map<String, Object> login(@RequestParam("username") String email,
+                                     @RequestParam("password") String password,
+                                     @RequestParam(value = "rememberMe", required = false, defaultValue = "false") boolean rememberMe,
+                                     HttpServletResponse response) {
+        email = email.trim();
+        password = password.trim();
 
-		if (!user.isValidated()) {
-			// resend account validation link
-			emailService.sendAccountValidationLink(user);
-			throw new InvalidParameterException("Account email is not validated. Please validate before logging in");
-		}
+        User user = userDao.findByEmail(email);
+        if (user == null || !user.getPassword().equals(password)) {
+            throw new InvalidParameterException("Username or password are incorrect");
+        }
 
-		sessionService.setLoggedInUser(user, response, rememberMe);
-		// important to be after setting the logged in user. session service saves the previous
-		user.setLastLogin(new Date());
+        if (!user.isValidated() && settingsService.getServerMode() != ServerMode.TEST) {
+            // resend account validation link
+            emailService.sendAccountValidationLink(user);
+            throw new InvalidParameterException("Account email is not validated. Please validate before logging in");
+        }
 
-		userCacheService.invalidateUser(user);
+        sessionService.setLoggedInUser(user, response, rememberMe);
+        // important to be after setting the logged in user. session service saves the previous
+        user.setLastLogin(new Date());
 
-		return createTabData(user);
-	}
+        userCacheService.invalidateUser(user);
 
-	@RequestMapping(value = "/register", method = RequestMethod.POST)
-	@ResponseBody
-	public Map<String, Object> register(HttpServletRequest request) {
-		String firstName = extractString(request, "firstName", true);
-		String lastName = extractString(request, "lastName", true);
-		String email = extractString(request, "username", true);
-		String password = extractString(request, "password", true);
+        return createTabData(user);
+    }
 
-		Map<String, Object> result = new HashMap<>();
-		try {
-			String response = userService.register(firstName, lastName, email, password);
-			result.put("success", true);
-			result.put("message", response);
-		} catch (EmailAlreadyRegisteredException e) {
-			// no need to write to log file in that case
-			result.put("success", false);
-			result.put("message", e.getMessage());
-		} catch (RegisterException e) {
-			logService.warn(getClass(), e.getMessage(), e);
-			result.put("success", false);
-			result.put("message", e.getMessage());
-		}
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> register(HttpServletRequest request) {
+        String firstName = extractString(request, "firstName", true);
+        String lastName = extractString(request, "lastName", true);
+        String email = extractString(request, "username", true);
+        String password = extractString(request, "password", true);
+        boolean isAdmin = false;
+        if (settingsService.getServerMode() == ServerMode.TEST) {
+            isAdmin = Boolean.parseBoolean(extractString(request, "admin", false));
+        }
 
-		return result;
-	}
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String response = userService.register(firstName, lastName, email, password, isAdmin);
+            result.put("success", true);
+            result.put("message", response);
+        } catch (EmailAlreadyRegisteredException e) {
+            // no need to write to log file in that case
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        } catch (RegisterException e) {
+            logService.warn(getClass(), e.getMessage(), e);
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
 
-	@RequestMapping(value = "/subtitles", method = RequestMethod.POST)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void subtitles(@RequestParam("subtitles") String subtitles) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		user.setSubtitles(SubtitleLanguage.fromString(subtitles));
-	}
+        return result;
+    }
 
-	@RequestMapping(value = "/logout", method = RequestMethod.GET)
-	@ResponseBody
-	public void logout(HttpServletRequest request, HttpServletResponse response) {
-		sessionService.clearLoggedInUser(request, response);
-	}
+    @RequestMapping(value = "/subtitles", method = RequestMethod.POST)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void subtitles(@RequestParam("subtitles") String subtitles) {
+        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        user.setSubtitles(SubtitleLanguage.fromString(subtitles));
+    }
 
-	@RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
-	@ResponseBody
-	public Map<String, Object> forgotPassword(HttpServletRequest request) {
-		String email = extractString(request, "email", true);
-		User user = userDao.findByEmail(email);
-		if (user == null) {
-			throw new InvalidParameterException("Email does not exist");
-		}
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    @ResponseBody
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        sessionService.clearLoggedInUser(request, response);
+    }
 
-		Map<String, Object> result = new HashMap<>();
-		if (user.isValidated()) {
-			emailService.sendPasswordRecoveryEmail(user);
-			result.put("message", "Password recovery email was sent to your email account");
-		} else {
-			emailService.sendAccountValidationLink(user);
-			result.put("message", UserServiceImpl.ACCOUNT_VALIDATION_LINK_SENT_MESSAGE);
-		}
-		result.put("success", true);
-		return result;
-	}
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> forgotPassword(HttpServletRequest request) {
+        String email = extractString(request, "email", true);
+        User user = userDao.findByEmail(email);
+        if (user == null) {
+            throw new InvalidParameterException("Email does not exist");
+        }
 
-	@RequestMapping(value = "/initial-data", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public Map<String, Object> initialData() {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        Map<String, Object> result = new HashMap<>();
+        if (user.isValidated()) {
+            emailService.sendPasswordRecoveryEmail(user);
+            result.put("message", "Password recovery email was sent to your email account");
+        } else {
+            emailService.sendAccountValidationLink(user);
+            result.put("message", UserServiceImpl.ACCOUNT_VALIDATION_LINK_SENT_MESSAGE);
+        }
+        result.put("success", true);
+        return result;
+    }
 
-		DurationMeter duration = new DurationMeter();
-		Map<String, Object> result = new HashMap<>();
-		result.put("subtitles", SubtitleLanguage.getValues());
-		result.put("userSubtitles", user.getSubtitles() == null ? null : user.getSubtitles().toString());
+    @RequestMapping(value = "/initial-data", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Map<String, Object> initialData() {
+        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
 
-		Set<Torrent> torrents = tvShowsRssFeedGenerator.getFeedTorrents(user);
-		Collection<Subtitles> subtitles = subtitlesDao.find(torrents, user.getSubtitles());
-		result.put("recentSubtitles", entityConverter.toThinSubtitles(subtitles, torrents));
+        DurationMeter duration = new DurationMeter();
+        Map<String, Object> result = new HashMap<>();
+        result.put("subtitles", SubtitleLanguage.getValues());
+        result.put("userSubtitles", user.getSubtitles() == null ? null : user.getSubtitles().toString());
 
-		duration.stop();
-		logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
+        Set<Torrent> torrents = tvShowsRssFeedGenerator.getFeedTorrents(user);
+        Collection<Subtitles> subtitles = subtitlesDao.find(torrents, user.getSubtitles());
+        result.put("recentSubtitles", entityConverter.toThinSubtitles(subtitles, torrents));
 
-		return result;
-	}
+        duration.stop();
+        logService.info(getClass(), "initialData " + duration.getDuration() + " ms");
 
-	private Map<String, Object> createTabData(User user) {
-		Map<String, Object> result = new HashMap<>();
-		result.put("isAdmin", isAdmin(user));
-		result.put("deploymentDate", settingsService.getDeploymentDate());
-		result.put("firstName", user.getFirstName());
-		result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
-		result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
-		return result;
-	}
+        return result;
+    }
+
+    private Map<String, Object> createTabData(User user) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("isAdmin", isAdmin(user));
+        result.put("deploymentDate", settingsService.getDeploymentDate());
+        result.put("firstName", user.getFirstName());
+        result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
+        result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
+        result.put("news", newsService.getNews(user));
+        return result;
+    }
 }

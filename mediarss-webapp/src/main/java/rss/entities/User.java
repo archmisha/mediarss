@@ -64,6 +64,12 @@ public class User extends BaseEntity {
 	@Column(name = "last_login")
 	private Date lastLogin;
 
+    @Column(name = "news_dismiss")
+    private Date newsDismiss;
+
+    @Column(name = "admin")
+    private boolean isAdmin;
+
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "user_shows",
 			joinColumns = {@JoinColumn(name = "user_id")},
@@ -187,8 +193,24 @@ public class User extends BaseEntity {
 		this.loginSeries = loginSeries;
 	}
 
-	@Override
-	public boolean equals(Object o) {
+    public Date getNewsDismiss() {
+        return newsDismiss;
+    }
+
+    public void setNewsDismiss(Date newsDismiss) {
+        this.newsDismiss = newsDismiss;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    @Override
+    public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 

@@ -164,17 +164,14 @@ public class PageDownloaderImpl implements PageDownloader {
 			HttpPost httpPost = new HttpPost(url);
 
 			if (url.contains("?")) {
-                ArrayList<NameValuePair> postParameters = new ArrayList<>();
                 for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
 					String[] arr = str.split("=");
-                    postParameters.add(new BasicNameValuePair(arr[0], arr[1]));
+                    parameters.add(new BasicNameValuePair(arr[0], arr[1]));
                 }
-                httpPost.setEntity(new UrlEncodedFormEntity(postParameters));
             }
 
-			HttpEntity httpEntity = new UrlEncodedFormEntity(parameters);
-			httpPost.setEntity(httpEntity);
-			return sendRequest(httpPost, new ResponseStreamExtractor<List<Cookie>>() {
+            httpPost.setEntity(new UrlEncodedFormEntity(parameters));
+            return sendRequest(httpPost, new ResponseStreamExtractor<List<Cookie>>() {
 				@Override
                 public List<Cookie> extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
                     return context.getCookieStore().getCookies();

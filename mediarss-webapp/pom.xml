@@ -42,7 +42,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
         </dependency>
 
         <dependency>
@@ -115,7 +114,6 @@
             <version>${commons-collections.version}</version>
         </dependency>
 
-        <!-- Quarts -->
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>

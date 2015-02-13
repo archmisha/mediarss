@@ -10,6 +10,7 @@ import rss.controllers.vo.UserVO;
 import rss.dao.*;
 import rss.entities.*;
 import rss.services.EmailService;
+import rss.services.NewsService;
 import rss.services.SessionService;
 import rss.services.searchers.SearcherConfigurationService;
 
@@ -51,6 +52,9 @@ public class AdminController extends BaseController {
 
 	@Autowired
 	private SubtitlesDao subtitlesDao;
+
+    @Autowired
+    private NewsService newsService;
 
 	@Autowired
 	private SearcherConfigurationService searcherConfigurationService;
@@ -205,4 +209,27 @@ public class AdminController extends BaseController {
 
 		searcherConfigurationService.removeDomain(name, domain);
 	}
+
+    @RequestMapping(value = "/news", method = RequestMethod.POST)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public long createNews(HttpServletRequest request) {
+        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        verifyAdminPermissions(user);
+
+        String text = extractString(request, "text", true);
+        News news = new News();
+        news.setMessage(text);
+        newsService.createNews(news);
+        return news.getId();
+    }
+
+    @RequestMapping(value = "/news/dismiss", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void dismissNews() {
+        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        verifyAdminPermissions(user);
+        newsService.dismissNews(user);
+    }
 }
