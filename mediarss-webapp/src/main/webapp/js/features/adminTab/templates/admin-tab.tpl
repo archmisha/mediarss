@@ -20,3 +20,5 @@
 <div class='admin-searcher-configurations-section'></div>
 <div class='admin-notifications-section'></div>
 <div class='admin-notifications'></div>
+<div class='admin-news-section'></div>
+<div class='admin-news'></div>
