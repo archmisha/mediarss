@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>mediarss</groupId>
+    <artifactId>automation-run</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <parent>
+        <groupId>mediarss</groupId>
+        <artifactId>automation</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>automation-tests</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-webapp</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/test/resources</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>setup</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Unzip tomcat"/>
+                                        <unzip src="src/test/resources/tomcat.zip" dest="target/tomcat"/>
+
+                                        <echo message="Reset automation test database"/>
+                                        <java classname="org.h2.tools.RunScript" failonerror="true">
+                                            <classpath>
+                                                <pathelement location="G:/runtimes/h2/bin/h2.jar"/>
+                                            </classpath>
+                                            <arg value="-url"/>
+                                            <arg value="jdbc:h2:tcp://localhost/mem/automation;MVCC=TRUE;LOCK_TIMEOUT=2000"/>
+                                            <arg value="-user"/>
+                                            <arg value="test"/>
+                                            <arg value="-password"/>
+                                            <arg value="test"/>
+                                            <arg value="-script"/>
+                                            <arg value="${basedir}/src/test/resources/automation.sql"/>
+                                        </java>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>start-tomcat</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Start Tomcat"/>
+                                        <exec dir="target/tomcat/bin" executable="cmd">
+                                            <arg value="/c"/>
+                                            <arg line="startup.bat"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>stop-tomcat</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Stop Tomcat"/>
+                                        <exec dir="target/tomcat/bin" executable="cmd">
+                                            <arg value="/c"/>
+                                            <arg line="shutdown.bat"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>2.3</version>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/tomcat/webapps/ROOT/WEB-INF/classes
+                                    </outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/src/test/resources</directory>
+                                            <includes>
+                                                <include>database.properties</include>
+                                                <include>settings.properties</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-war</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>mediarss</groupId>
+                                            <artifactId>mediarss-webapp</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>war</type>
+                                            <outputDirectory>${project.build.directory}/tomcat/webapps/ROOT
+                                            </outputDirectory>
+                                            <excludes>**\/database.properties,**\/settings.properties</excludes>
+                                            <!--<destFileName>ROOT.war</destFileName>-->
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>unpack-tests</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>mediarss</groupId>
+                                            <artifactId>automation-tests</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>test-jar</type>
+                                            <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <argLine>-Dfile.encoding=UTF-8</argLine>
+                                    <includes>
+                                        <group></group>
+                                        <include>mediarss/test/**/*Test.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
