@@ -14,6 +14,10 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <tomcat.port>9065</tomcat.port>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
@@ -69,6 +73,27 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>com.google.code.maven-replacer-plugin</groupId>
+                        <artifactId>replacer</artifactId>
+                        <executions>
+                            <execution>
+                                <id>set-tomcat-port</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>replace</goal>
+                                </goals>
+                                <configuration>
+                                    <filesToInclude>
+                                        ${basedir}/target/tomcat/conf/server.xml,
+                                        ${basedir}/target/tomcat/webapps/ROOT/WEB-INF/classes/settings.properties
+                                    </filesToInclude>
+                                    <token>\$\{TOMCAT-PORT\}</token>
+                                    <value>${tomcat.port}</value>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>properties-maven-plugin</artifactId>
                         <executions>
@@ -102,6 +127,11 @@
                                         <echo message="Unzip tomcat"/>
                                         <unzip src="${basedir}/src/test/resources/tomcat.zip"
                                                dest="${basedir}/target/tomcat"/>
+
+                                        <echo message="Copy external mediarss jars"/>
+                                        <copy todir="${basedir}/target/tomcat/lib-mediarss">
+                                            <fileset dir="${basedir}/src/test/resources/lib-mediarss" includes="**"/>
+                                        </copy>
 
                                         <echo message="Reset automation test database"/>
                                         <java classname="org.h2.tools.RunScript" failonerror="true">
@@ -235,7 +265,7 @@
                                     <goal>verify</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Dfile.encoding=UTF-8</argLine>
+                                    <argLine>-Dfile.encoding=UTF-8 -DserverPort=${tomcat.port}</argLine>
                                     <includes>
                                         <group></group>
                                         <include>mediarss/test/**/*Test.java</include>
