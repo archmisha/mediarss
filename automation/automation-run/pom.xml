@@ -64,38 +64,59 @@
         <profile>
             <id>run-tests</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>properties-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Associate the read-project-properties goal with the initialize phase, to read the properties file. -->
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>read-project-properties</goal>
+                                </goals>
+                                <configuration>
+                                    <files>
+                                        <file>${basedir}/src/test/resources/database.properties</file>
+                                        <!--<file>${basedir}/src/test/resources/settings.properties</file>-->
+                                    </files>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>setup</id>
-                                <phase>validate</phase>
+                                <phase>initialize</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <target>
                                         <echo message="Unzip tomcat"/>
-                                        <unzip src="src/test/resources/tomcat.zip" dest="target/tomcat"/>
+                                        <unzip src="${basedir}/src/test/resources/tomcat.zip"
+                                               dest="${basedir}/target/tomcat"/>
 
                                         <echo message="Reset automation test database"/>
                                         <java classname="org.h2.tools.RunScript" failonerror="true">
                                             <classpath>
-                                                <pathelement location="G:/runtimes/h2/bin/h2.jar"/>
+                                                <pathelement location="${basedir}/src/test/resources/h2.jar"/>
                                             </classpath>
                                             <arg value="-url"/>
-                                            <arg value="jdbc:h2:tcp://localhost/mem/automation;MVCC=TRUE;LOCK_TIMEOUT=2000"/>
+                                            <arg value="${jdbc.url}"/>
                                             <arg value="-user"/>
-                                            <arg value="test"/>
+                                            <arg value="${jdbc.username}"/>
                                             <arg value="-password"/>
-                                            <arg value="test"/>
+                                            <arg value="${jdbc.password}"/>
                                             <arg value="-script"/>
                                             <arg value="${basedir}/src/test/resources/automation.sql"/>
+                                            <arg value="-showResults"/>
                                         </java>
                                     </target>
                                 </configuration>
@@ -109,7 +130,7 @@
                                 <configuration>
                                     <target>
                                         <echo message="Start Tomcat"/>
-                                        <exec dir="target/tomcat/bin" executable="cmd">
+                                        <exec dir="${basedir}/target/tomcat/bin" executable="cmd">
                                             <arg value="/c"/>
                                             <arg line="startup.bat"/>
                                         </exec>
@@ -125,7 +146,7 @@
                                 <configuration>
                                     <target>
                                         <echo message="Stop Tomcat"/>
-                                        <exec dir="target/tomcat/bin" executable="cmd">
+                                        <exec dir="${basedir}/target/tomcat/bin" executable="cmd">
                                             <arg value="/c"/>
                                             <arg line="shutdown.bat"/>
                                         </exec>
@@ -137,7 +158,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>2.3</version>
                         <executions>
                             <execution>
                                 <id>copy-resources</id>
@@ -181,7 +201,6 @@
                                             <outputDirectory>${project.build.directory}/tomcat/webapps/ROOT
                                             </outputDirectory>
                                             <excludes>**\/database.properties,**\/settings.properties</excludes>
-                                            <!--<destFileName>ROOT.war</destFileName>-->
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
