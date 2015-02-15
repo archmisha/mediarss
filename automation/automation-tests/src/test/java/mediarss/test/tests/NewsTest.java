@@ -39,8 +39,8 @@ public class NewsTest extends BaseTest {
         long news2 = adminService.createNews("news2");
         assertTrue(AssertUtils.contains(Arrays.asList(userService.login(adminUser).getNews()), news1, news2));
 
-        reporter.info("Dismiss previous news entity, login and see only the new news entity");
-        adminService.dismissNews(news1);
-        assertTrue(AssertUtils.contains(Arrays.asList(userService.login(adminUser).getNews()), news2));
+        reporter.info("Dismiss all news entities, login and have no news");
+        adminService.dismissNews();
+        assertTrue(userService.login(adminUser).getNews().length == 0);
     }
 }

@@ -210,7 +210,7 @@ public class AdminController extends BaseController {
 		searcherConfigurationService.removeDomain(name, domain);
 	}
 
-    @RequestMapping(value = "/searcher-configuration/torrentz/enable/{isEnabled}", method = RequestMethod.POST)
+    @RequestMapping(value = "/searcher-configuration/torrentz/enable", method = RequestMethod.POST)
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public void enableTorrentzSearcher(@RequestParam boolean isEnabled) {

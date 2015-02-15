@@ -33,12 +33,9 @@ define([
             onToggleTorrentzSearcherCheckboxClick: function () {
                 var value = this.ui.torrentzSearcherToggle.is(':checked') ? true : false;
                 var that = this;
-                HttpUtils.post('rest/admin/searcher-configuration/torrentz/domain/add',
-                    {domain: domain},
-                    function (res) {
-                        that._addDomainToList(domain);
-                        that.ui.domainInput.val('');
-                        that.ui.domainList.show();
+                HttpUtils.post('rest/admin/searcher-configuration/torrentz/enable',
+                    {isEnabled: value},
+                    function () {
                     });
             }
 		});

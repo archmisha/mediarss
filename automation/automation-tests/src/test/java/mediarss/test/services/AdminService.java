@@ -17,7 +17,7 @@ public class AdminService extends BaseService {
         return Long.parseLong(response);
     }
 
-    public void dismissNews(long newsId) {
+    public void dismissNews() {
         reporter.info("Dismissing news");
         String result = sendGetRequest("rest/admin/news/dismiss");
     }
