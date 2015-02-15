@@ -26,6 +26,10 @@ define([
 			onRender: function() {
 				this.descriptionRegion.show(this.descriptionView);
                 this.newsRegion.show(this.newsView);
-			}
+            },
+
+            setNews: function (news) {
+                this.newsView.setNews(news);
+            }
 		});
 	});

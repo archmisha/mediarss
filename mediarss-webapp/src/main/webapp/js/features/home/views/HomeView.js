@@ -80,6 +80,7 @@ define([
 					that.tabData = res;
 					that.mastheadView.setTabData(that.tabData);
 					that.homeHeaderTabs.setAdmin(that.tabData.isAdmin);
+                    that.headerView.setNews(that.tabData.news);
 					that.mastheadRegion.show(that.mastheadView);
 					that.headerRegion.show(that.headerView);
 
