@@ -151,17 +151,29 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   }
 }
 
+@media screen and (max-width: 570px) {
+  .home-admin-tab-small {
+    display: inline;
+  }
+
+  .home-admin-tab-large {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 510px) {
+  .home-header-tabs > span {
+    padding-bottom: 7px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+}
+
 @media screen and (max-width: 480px) {
   .home-header-tabs {
     font-size: 14px;
     height: 26px;
     margin-top: 30px;
-  }
-
-  .home-header-tabs > span {
-    padding-bottom: 7px;
-    padding-left: 3px;
-    padding-right: 3px;
   }
 
   .home-header-tabs > span:hover {
@@ -180,14 +192,6 @@ body:not(:-moz-handler-blocked) .home-header-tabs {
   }
 
   .masthead-updated-on-prefix {
-    display: none;
-  }
-
-  .home-admin-tab-small {
-    display: inline;
-  }
-
-  .home-admin-tab-large {
     display: none;
   }
 
