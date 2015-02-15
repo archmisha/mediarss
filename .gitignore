@@ -1,0 +1,18 @@
+#ignore versions:set backup
+pom.xml.versionsBackup
+
+#Ignore intellij files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+#Ignore output folder
+out/
+target/
+
+#Ignore logs
+logs/
+
+#ignore thumbnails created by windows
+Thumbs.db

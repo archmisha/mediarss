@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: dikmanm
@@ -115,7 +115,6 @@ public class BaseService {
         Header[] headers = httpResponse.getHeaders("Set-Cookie");
         if (headers == null || headers.length == 0) {
             return;
-//            throw new RuntimeException("No JSESSIONID header found");
         }
         String value = headers[0].getValue();
         for (String s : value.split(";")) {
