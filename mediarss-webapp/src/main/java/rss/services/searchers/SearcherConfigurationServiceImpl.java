@@ -10,6 +10,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.dao.SearcherConfigurationDao;
 import rss.entities.SearcherConfiguration;
+import rss.services.SettingsService;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ public class SearcherConfigurationServiceImpl implements SearcherConfigurationSe
 
 	@Autowired
 	protected TransactionTemplate transactionTemplate;
+
+    @Autowired
+    private SettingsService settingsService;
 
 	@PostConstruct
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -115,4 +119,14 @@ public class SearcherConfigurationServiceImpl implements SearcherConfigurationSe
 		searcherConfiguration.setName(name);
 		searcherConfigurationDao.persist(searcherConfiguration);
 	}
+
+    @Override
+    public void torrentzSetEnabled(boolean isEnabled) {
+        settingsService.setPersistentSetting("torrentz.enabled", String.valueOf(isEnabled));
+    }
+
+    @Override
+    public boolean torrentzIsEnabled() {
+        return "true".equals(settingsService.getPersistentSetting("torrentz.enabled"));
+    }
 }

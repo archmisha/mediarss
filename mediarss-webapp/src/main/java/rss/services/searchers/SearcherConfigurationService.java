@@ -19,4 +19,8 @@ public interface SearcherConfigurationService {
 	void addDomain(String name, String domain);
 
 	void removeDomain(String name, String domain);
+
+    void torrentzSetEnabled(boolean isEnabled);
+
+    boolean torrentzIsEnabled();
 }
