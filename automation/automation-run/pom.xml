@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <tomcat.port>9065</tomcat.port>
+        <server.port>9065</server.port>
     </properties>
 
     <dependencies>
@@ -265,7 +265,7 @@
                                     <goal>verify</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Dfile.encoding=UTF-8 -DserverPort=${tomcat.port}</argLine>
+                                    <argLine>-Dfile.encoding=UTF-8 -DserverPort=${server.port}</argLine>
                                     <includes>
                                         <group></group>
                                         <include>mediarss/test/**/*Test.java</include>

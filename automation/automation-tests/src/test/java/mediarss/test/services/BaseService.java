@@ -133,7 +133,7 @@ public class BaseService {
     }
 
     private int getServerPort() {
-        return Integer.parseInt(System.getProperty("serverPort", "9066"));
+        return Integer.parseInt(System.getProperty("server.port", "9066"));
     }
 
     private String getServerHost() {
