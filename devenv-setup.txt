@@ -1,0 +1,11 @@
+- install java
+  set JAVA_HOME system variable
+  run java -version from cmd to verify installation
+- install intellij
+- Create folder 'Dev' on your system
+- install maven
+  extract into the Dev folder
+  add bin folder to windows path system variable
+  run mvn --version to verify installation  
+- install git + git extensions
+- checkout code using git extensions - https://github.com/mediarss/mediarss.git
