@@ -1,11 +1,11 @@
-package mediarss.test.services;
+package rss.test.services;
 
-import mediarss.test.entities.UserData;
-import mediarss.test.entities.UserLoginResult;
-import mediarss.test.entities.UserRegisterResult;
-import mediarss.test.util.JsonTranslation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import rss.test.entities.UserData;
+import rss.test.entities.UserLoginResult;
+import rss.test.entities.UserRegisterResult;
+import rss.test.util.JsonTranslation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +40,12 @@ public class UserService extends BaseService {
         params.put("username", user.getUsername());
         params.put("password", user.getPassword());
         String response = sendPostRequest("rest/user/login", params);
+        return JsonTranslation.jsonString2Object(response, UserLoginResult.class);
+    }
+
+    public UserLoginResult preLogin(UserData user) {
+        reporter.info("Call pre-login with user '" + user.getUsername() + "'");
+        String response = sendGetRequest("rest/user/pre-login");
         return JsonTranslation.jsonString2Object(response, UserLoginResult.class);
     }
 }

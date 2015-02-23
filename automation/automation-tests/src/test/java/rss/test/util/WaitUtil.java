@@ -1,4 +1,4 @@
-package mediarss.test.util;
+package rss.test.util;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

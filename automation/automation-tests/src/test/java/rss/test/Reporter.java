@@ -1,4 +1,4 @@
-package mediarss.test;
+package rss.test;
 
 import com.google.common.base.CaseFormat;
 import org.springframework.stereotype.Component;

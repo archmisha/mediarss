@@ -1,7 +1,5 @@
-package mediarss.test.services;
+package rss.test.services;
 
-import mediarss.test.Reporter;
-import mediarss.test.util.WaitUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -20,6 +18,8 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import rss.test.Reporter;
+import rss.test.util.WaitUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;

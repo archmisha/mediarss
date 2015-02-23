@@ -1,4 +1,4 @@
-package mediarss.test;
+package rss.test;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

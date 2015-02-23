@@ -1,6 +1,6 @@
-package mediarss.test.util;
+package rss.test.util;
 
-import mediarss.test.entities.News;
+import rss.test.entities.News;
 
 import java.util.List;
 

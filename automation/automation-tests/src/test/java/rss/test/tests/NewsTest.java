@@ -1,11 +1,11 @@
-package mediarss.test.tests;
+package rss.test.tests;
 
-import mediarss.test.entities.UserData;
-import mediarss.test.services.AdminService;
-import mediarss.test.services.UserService;
-import mediarss.test.util.AssertUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import rss.test.entities.UserData;
+import rss.test.services.AdminService;
+import rss.test.services.UserService;
+import rss.test.util.AssertUtils;
 
 import java.util.Arrays;
 

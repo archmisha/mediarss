@@ -1,4 +1,4 @@
-package mediarss.test.entities;
+package rss.test.entities;
 
 /**
  * User: dikmanm
@@ -11,6 +11,8 @@ public class UserLoginResult {
     private String tvShowsRssFeed;
     private String moviesRssFeed;
     private News[] news;
+    private String traktClientId;
+    private boolean isConnectedToTrakt;
 
     public boolean isAdmin() {
         return isAdmin;
@@ -58,5 +60,21 @@ public class UserLoginResult {
 
     public void setNews(News[] news) {
         this.news = news;
+    }
+
+    public String getTraktClientId() {
+        return traktClientId;
+    }
+
+    public void setTraktClientId(String traktClientId) {
+        this.traktClientId = traktClientId;
+    }
+
+    public boolean isConnectedToTrakt() {
+        return isConnectedToTrakt;
+    }
+
+    public void setConnectedToTrakt(boolean isConnectedToTrakt) {
+        this.isConnectedToTrakt = isConnectedToTrakt;
     }
 }

@@ -1,4 +1,4 @@
-package mediarss.test.services;
+package rss.test.services;
 
 import org.springframework.stereotype.Component;
 

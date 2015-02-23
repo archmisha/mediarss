@@ -3,7 +3,6 @@ package rss.services.trakt;
 import com.google.gson.annotations.SerializedName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.configuration.SettingsService;
 import rss.context.UserContextHolder;
 import rss.entities.User;
 import rss.environment.Environment;
@@ -12,7 +11,6 @@ import rss.log.LogService;
 import rss.rms.ResourceManagementService;
 import rss.rms.query.RmsQueryInformation;
 import rss.services.PageDownloader;
-import rss.services.SessionService;
 import rss.services.user.UserCacheService;
 import rss.util.JsonTranslation;
 
@@ -39,13 +37,7 @@ public class TraktServiceImpl implements TraktService {
     private PageDownloader pageDownloader;
 
     @Autowired
-    private SettingsService settingsService;
-
-    @Autowired
     private ResourceManagementService rmsService;
-
-    @Autowired
-    private SessionService sessionService;
 
     @Autowired
     private LogService logService;
@@ -65,8 +57,19 @@ public class TraktServiceImpl implements TraktService {
         params.put("redirect_uri", Environment.getInstance().getServerHostUrl() + "/main");
         params.put("grant_type", "authorization_code");
 
-        String response = pageDownloader.sendPostRequest("https://api-v2launch.trakt.tv/oauth/token", JsonTranslation.object2JsonString(params));
-        TraktAuthTokenResponse traktAuthTokenResponse = JsonTranslation.jsonString2Object(response, TraktAuthTokenResponse.class);
+        TraktAuthTokenResponse traktAuthTokenResponse;
+        if (Environment.getInstance().getServerMode() != ServerMode.TEST) {
+            String response = pageDownloader.sendPostRequest("https://api-v2launch.trakt.tv/oauth/token", JsonTranslation.object2JsonString(params));
+            traktAuthTokenResponse = JsonTranslation.jsonString2Object(response, TraktAuthTokenResponse.class);
+        } else {
+            traktAuthTokenResponse = new TraktAuthTokenResponse();
+            traktAuthTokenResponse.setRefreshToken("testRefreshToken");
+            traktAuthTokenResponse.setAccessToken("testAccessToken");
+            traktAuthTokenResponse.setExpiresIn(999);
+            traktAuthTokenResponse.setScope("public");
+            traktAuthTokenResponse.setTokenType("bearer");
+        }
+
         TraktAuthJson traktAuthJson = getTraktAuthJson(user);
         if (traktAuthJson == null) {
             traktAuthJson = new TraktAuthJson();
@@ -92,7 +95,7 @@ public class TraktServiceImpl implements TraktService {
     public boolean isConnected(User user) {
         TraktAuthJson traktAuthJson = getTraktAuthJson(user);
         if (traktAuthJson == null) {
-            return true;
+            return false;
         }
 
         // todo: check if expired and then try to renew

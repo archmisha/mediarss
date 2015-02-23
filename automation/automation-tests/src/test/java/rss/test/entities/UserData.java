@@ -1,4 +1,4 @@
-package mediarss.test.entities;
+package rss.test.entities;
 
 /**
  * User: dikmanm

@@ -1,7 +1,5 @@
-package mediarss.test.tests;
+package rss.test.tests;
 
-import mediarss.test.Reporter;
-import mediarss.test.services.BaseService;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
@@ -10,6 +8,8 @@ import org.junit.runners.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import rss.test.Reporter;
+import rss.test.services.BaseService;
 
 /**
  * User: dikmanm
