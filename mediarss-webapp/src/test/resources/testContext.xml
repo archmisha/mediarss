@@ -8,8 +8,8 @@
         >
 
     <context:component-scan base-package="rss">
-        <context:exclude-filter type="aspectj" expression="rss.services.UrlServiceImpl"/>
-        <context:exclude-filter type="aspectj" expression="rss.services.log.Log*"/>
+        <context:exclude-filter type="aspectj" expression="rss.url.UrlServiceImpl"/>
+        <context:exclude-filter type="aspectj" expression="rss.log.Log*"/>
     </context:component-scan>
 
     <tx:annotation-driven/>
@@ -19,7 +19,7 @@
     <bean name="urlService" class="rss.services.UrlServiceTest"/>
 
     <!-- Make error log to fail the test - like when scrabbling a movie in multi threaded -->
-    <bean name="logService" class="rss.services.log.LogServiceTest"/>
+    <bean name="logService" class="rss.log.LogServiceTest"/>
 
     <!-- also dont need in tests -->
     <!--<bean name="myApplicationListener" class="rssFeed.mediaRssss.AppStartupListener"/>-->
@@ -28,7 +28,7 @@
           p:transactionManager-ref="transactionManager"/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="test-database.properties"/>
+        <property name="location" value="test-path-locator.txt"/>
     </bean>
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

@@ -1,6 +1,7 @@
 package rss.dao;
 
 import org.springframework.stereotype.Repository;
+import rss.ems.dao.BaseDaoJPA;
 import rss.entities.User;
 import rss.entities.View;
 

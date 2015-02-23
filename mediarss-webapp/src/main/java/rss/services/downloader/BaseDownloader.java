@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.PageDownloadException;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.services.requests.SearchRequest;
 import rss.services.searchers.Downloadable;
 import rss.services.searchers.SearchResult;

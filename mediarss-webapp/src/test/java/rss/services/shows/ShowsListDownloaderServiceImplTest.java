@@ -1,21 +1,22 @@
 package rss.services.shows;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
+import rss.configuration.SettingsService;
 import rss.dao.ShowDao;
 import rss.entities.Show;
+import rss.environment.Environment;
+import rss.environment.EnvironmentTestUtils;
 import rss.services.PageDownloader;
-import rss.services.SettingsService;
 
 import java.util.Collection;
 
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 /**
  * User: dikmanm
@@ -42,7 +43,9 @@ public class ShowsListDownloaderServiceImplTest extends BaseTest {
 	public void testFirstPageParsing() {
 		String page = loadPage("tvcom-page1");
 		doReturn(page).when(pageDownloader).downloadPage(anyString());
-		doReturn(PAGES_TO_DOWNLOAD).when(settingsService).getTVComPagesToDownload();
+        Environment env = mock(Environment.class);
+        doReturn(PAGES_TO_DOWNLOAD).when(env).getTVComPagesToDownload();
+        EnvironmentTestUtils.inject(env);
 
 		Collection<Show> shows = tvComService.downloadShowList();
 
@@ -62,7 +65,9 @@ public class ShowsListDownloaderServiceImplTest extends BaseTest {
 	public void testSecondPageParsing() {
 		String page2 = loadPage("tvcom-page2");
 		doReturn(page2).when(pageDownloader).downloadPage(anyString());
-		doReturn(1).when(settingsService).getTVComPagesToDownload();
+        Environment env = mock(Environment.class);
+        doReturn(1).when(env).getTVComPagesToDownload();
+        EnvironmentTestUtils.inject(env);
 
 		Collection<Show> shows = tvComService.downloadShowList();
 

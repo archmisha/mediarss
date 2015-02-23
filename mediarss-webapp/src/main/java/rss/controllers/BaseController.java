@@ -6,12 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.MediaRSSException;
-import rss.NoPermissionsException;
 import rss.UserNotLoggedInException;
-import rss.entities.User;
+import rss.configuration.SettingsService;
+import rss.log.LogService;
+import rss.permissions.NoPermissionsException;
 import rss.services.SessionService;
-import rss.services.SettingsService;
-import rss.services.log.LogService;
 import rss.services.shows.ShowAutoCompleteItem;
 import rss.services.shows.ShowService;
 import rss.services.user.UserCacheService;
@@ -102,17 +101,7 @@ public class BaseController {
 		return new ExceptionResponse().withMessage("Oops. We've got some error.");
 	}
 
-	protected void verifyAdminPermissions(User user) {
-		if (!isAdmin(user)) {
-			String msg = "Detected impersonation of admin user. User: " + user.getEmail();
-			logService.error(getClass(), msg);
-			throw new NoPermissionsException(msg);
-		}
-	}
 
-	protected boolean isAdmin(User user) {
-        return settingsService.getAdministratorEmails().contains(user.getEmail()) || sessionService.getImpersonatedUserId() != null || user.isAdmin();
-    }
 
 	// note: getters, setters and empty ctor are needed for spring to json serialization
 	protected static class ExceptionResponse {

@@ -1,5 +1,6 @@
 package rss.entities;
 
+import rss.ems.entities.BaseEntity;
 import rss.services.searchers.SearchResult;
 
 import javax.persistence.Column;

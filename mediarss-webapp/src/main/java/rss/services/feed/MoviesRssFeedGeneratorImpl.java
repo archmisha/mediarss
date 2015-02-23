@@ -11,7 +11,7 @@ import rss.entities.Subtitles;
 import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserTorrent;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.services.user.UserCacheService;
 import rss.util.DateUtils;
 

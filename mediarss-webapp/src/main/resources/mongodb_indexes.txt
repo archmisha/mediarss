@@ -1,0 +1,1 @@
+db.TraktAuthJson.ensureIndex({"userId":1}, {unique:true})

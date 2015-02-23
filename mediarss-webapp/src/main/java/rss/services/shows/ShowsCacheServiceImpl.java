@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.dao.ShowDao;
 import rss.entities.Show;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.util.DurationMeter;
 
 import javax.annotation.PostConstruct;

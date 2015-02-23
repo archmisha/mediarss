@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.configuration.SettingsService;
 import rss.entities.Episode;
 import rss.entities.Show;
+import rss.environment.Environment;
+import rss.log.LogService;
 import rss.services.PageDownloader;
-import rss.services.SettingsService;
-import rss.services.log.LogService;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -155,8 +156,8 @@ public class TVComServiceImpl implements ShowsProvider {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Collection<Show> downloadShowList() {
 		Collection<Show> result = new ArrayList<>();
-		int pagesToDownload = settingsService.getTVComPagesToDownload();
-		for (int i = 0; i < pagesToDownload; ++i) {
+        int pagesToDownload = Environment.getInstance().getTVComPagesToDownload();
+        for (int i = 0; i < pagesToDownload; ++i) {
 			log.info(getClass(), "downloadShowList - page=" + (i+1));
 			String page = pageDownloader.downloadPage(String.format(SHOWS_LIST_PAGED_URL, i + 1));
 			Matcher matcher = PATTERN.matcher(page);

@@ -15,7 +15,7 @@ import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.entities.Movie;
 import rss.entities.Torrent;
-import rss.services.EmailService;
+import rss.mail.EmailService;
 import rss.services.PageDownloader;
 import rss.services.PageDownloaderImpl;
 import rss.services.requests.movies.MovieRequest;

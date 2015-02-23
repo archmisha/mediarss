@@ -8,10 +8,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.dao.JobStatusDao;
 import rss.entities.JobStatus;
-import rss.entities.User;
+import rss.environment.Environment;
+import rss.permissions.PermissionsService;
 import rss.services.JobRunner;
-import rss.services.SessionService;
-import rss.services.SettingsService;
 import rss.services.movies.MoviesScrabbler;
 import rss.services.shows.ShowsListDownloaderService;
 import rss.services.shows.ShowsScheduleDownloaderService;
@@ -33,8 +32,8 @@ public class JobsController extends BaseController {
 	@Autowired
 	private JobStatusDao jobStatusDao;
 
-	@Autowired
-	private SessionService sessionService;
+    @Autowired
+    private PermissionsService permissionsService;
 
 	@Autowired
 	private MoviesScrabbler moviesScrabbler;
@@ -44,9 +43,6 @@ public class JobsController extends BaseController {
 
 	@Autowired
 	private ShowsScheduleDownloaderService showsScheduleDownloaderService;
-
-	@Autowired
-	private SettingsService settingsService;
 
 	private Map<String, JobRunner> jobRunners = new HashMap<>();
 
@@ -65,16 +61,15 @@ public class JobsController extends BaseController {
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	@ResponseBody
 	public Collection<JobStatus> getAll() {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
 
 		List<JobStatus> jobs = jobStatusDao.findAll();
 
 		// if a job started before the server was up, then was a problem with a job and should mark it as stopped
 		for (JobStatus job : jobs) {
-			if (job.getEnd() == null && job.getStart() != null && job.getStart().before(settingsService.getStartupDate())) {
-				job.setEnd(settingsService.getStartupDate());
-			}
+            if (job.getEnd() == null && job.getStart() != null && job.getStart().before(Environment.getInstance().getStartupDate())) {
+                job.setEnd(Environment.getInstance().getStartupDate());
+            }
 		}
 
 		// so that jobs appear in the same order in the ui every time
@@ -91,8 +86,7 @@ public class JobsController extends BaseController {
 	@RequestMapping(value = "/start", method = RequestMethod.POST)
 	@ResponseBody
 	public JobStatus start(HttpServletRequest request) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
 
 		String name = extractString(request, "name", true);
 		if (!jobRunners.containsKey(name)) {
@@ -105,8 +99,7 @@ public class JobsController extends BaseController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
 	public JobStatus get(@PathVariable long id) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
 
 		JobStatus jobStatus = jobStatusDao.find(id);
 		return jobStatus;

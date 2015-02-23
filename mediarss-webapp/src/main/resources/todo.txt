@@ -1,3 +1,9 @@
+session service remove
+make generic cache interface - in emory
+put in the cache service the user searcehs
+
+
+
 timeout dilaog singleton!
 
 an email when scheduled movie is out (need an option to disable emails then)

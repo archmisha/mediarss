@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.entities.Torrent;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;

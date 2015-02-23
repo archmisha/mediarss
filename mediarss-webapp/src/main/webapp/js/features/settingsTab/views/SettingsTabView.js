@@ -50,7 +50,7 @@ define([
 					title: 'Subtitles (in construction)',
 					description: 'Subtitles could be added to your rss feeds (both movies and tv shows)'
 				});
-				this.traktTvImport = new TraktTvImportView();
+                this.traktTvImport = new TraktTvImportView({clientId: this.tabData.traktClientId});
 
 				this.recentSubtitlesCollection = new SubtitlesCollection();
 				this.recentSubtitlesView = new SubtitlesCollectionView({collection: this.recentSubtitlesCollection});

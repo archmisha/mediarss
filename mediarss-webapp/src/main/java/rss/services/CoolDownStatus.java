@@ -1,7 +1,7 @@
 package rss.services;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -18,8 +18,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CoolDownStatus {
 
-	private static Log log = LogFactory.getLog(CoolDownStatus.class);
-	private static final int COOL_DOWN_THRESH_HOLD = 100;
+    private static Logger log = LoggerFactory.getLogger(CoolDownStatus.class);
+    private static final int COOL_DOWN_THRESH_HOLD = 100;
 	private static final int COOL_DOWN_TIMEOUT = 30 * 1000;
 
 	private final Map<String, CoolDownEntry> entries;

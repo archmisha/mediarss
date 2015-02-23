@@ -10,7 +10,7 @@ import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.services.user.UserCacheService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;

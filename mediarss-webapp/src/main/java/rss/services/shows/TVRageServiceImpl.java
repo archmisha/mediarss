@@ -8,8 +8,8 @@ import rss.MediaRSSException;
 import rss.RecoverableConnectionException;
 import rss.entities.Episode;
 import rss.entities.Show;
+import rss.log.LogService;
 import rss.services.PageDownloader;
-import rss.services.log.LogService;
 import rss.util.DurationMeter;
 
 import java.text.ParseException;

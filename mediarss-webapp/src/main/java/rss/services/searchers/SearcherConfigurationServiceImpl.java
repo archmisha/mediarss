@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.configuration.SettingsService;
 import rss.dao.SearcherConfigurationDao;
 import rss.entities.SearcherConfiguration;
-import rss.services.SettingsService;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;

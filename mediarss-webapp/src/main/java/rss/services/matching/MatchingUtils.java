@@ -4,7 +4,7 @@ import com.google.common.primitives.Ints;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.services.shows.ShowServiceImpl;
 
 import java.util.*;

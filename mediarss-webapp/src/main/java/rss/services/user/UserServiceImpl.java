@@ -9,15 +9,19 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.EmailAlreadyRegisteredException;
-import rss.ServerMode;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.EmailService;
-import rss.services.SettingsService;
-import rss.services.UrlService;
+import rss.environment.Environment;
+import rss.environment.ServerMode;
+import rss.environment.UrlService;
+import rss.mail.EmailClassification;
+import rss.mail.EmailConsts;
+import rss.mail.EmailService;
 import rss.util.StringUtils2;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * User: Michael Dikman
@@ -29,7 +33,9 @@ public class UserServiceImpl implements UserService {
 
     private static final Object registerSync = new Object();
 
-    public static final String ACCOUNT_VALIDATION_LINK_SENT_MESSAGE = "Account validation link was sent to your email address";
+    private static final String ACCOUNT_VALIDATION_LINK_SENT_MESSAGE = "Account validation link was sent to your email address";
+    private static final String PASSWORD_RECOVERY_SENT_MESSAGE = "Password recovery email was sent to your email account";
+    private static final String USER_CREATED_WITHOUT_VALIDATION_MESSAGE = "User created without email notification and validation";
 
     @Autowired
     private UserDao userDao;
@@ -45,9 +51,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserCacheService userCacheService;
-
-    @Autowired
-    private SettingsService settingsService;
 
     // no need for a transaction here, but inside creating a new transaction
     @Override
@@ -92,10 +95,12 @@ public class UserServiceImpl implements UserService {
 
         userCacheService.addUser(user);
 
-        if (settingsService.getServerMode() != ServerMode.TEST) {
+        if (Environment.getInstance().getServerMode() != ServerMode.TEST) {
             try {
-                emailService.notifyNewUserRegistered(user);
-                emailService.sendAccountValidationLink(user);
+                emailService.notifyToAdmins(EmailClassification.NEW_USER,
+                        "New user subscribed: " + user.getEmail(),
+                        "Failed sending email about a new user");
+                sendAccountValidationLink(user);
                 return ACCOUNT_VALIDATION_LINK_SENT_MESSAGE;
             } catch (Exception e) {
                 transactionTemplate.execute(new TransactionCallbackWithoutResult() {
@@ -109,8 +114,44 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Failed sending emails on user registration: " + e.getMessage(), e);
             }
         } else {
-            return "User created without email notification and validation";
+            return USER_CREATED_WITHOUT_VALIDATION_MESSAGE;
         }
+    }
+
+    @Override
+    public ForgotPasswordResult forgotPassword(User user) {
+        if (user.isValidated()) {
+            emailService.sendEmail(user.getEmail(), EmailClassification.PASSWORD_RECOVERY,
+                    "You password is: " + user.getPassword() + "\r\n\r\n" +
+                            "If you never requested password recovery please ignore this email. We are sorry for the inconvenience\r\n\r\n" +
+                            "For support or questions you can reply to this email.");
+            return new ForgotPasswordResult(PASSWORD_RECOVERY_SENT_MESSAGE);
+        } else {
+            sendAccountValidationLink(user);
+            return new ForgotPasswordResult(ACCOUNT_VALIDATION_LINK_SENT_MESSAGE);
+        }
+    }
+
+    @Override
+    public void sendAccountValidationLink(User user) {
+        emailService.sendEmail(user.getEmail(), EmailClassification.NONE,
+                "We are really happy you decided to use " + EmailConsts.APP_NAME + ".\r\n\r\n" +
+                        "To activate your account follow this link: " +
+                        urlService.getApplicationUrl() + "register/?" + UrlService.USER_ID_URL_PARAMETER + "=" + user.getId() +
+                        "&" + UrlService.HASH_URL_PARAMETER + "=" + user.getValidationHash() + "\r\n\r\n" +
+                        "If you never registered to " + EmailConsts.APP_NAME + " please ignore this email. We are sorry for the inconvenience\r\n\r\n" +
+                        "For support or questions you can reply to this email.",
+                "Failed sending account validation email to user");
+    }
+
+    @Override
+    public void sendEmailToAllUsers(String message) {
+        List<String> emails = new ArrayList<>();
+        for (User user : userDao.findAll()) {
+            emails.add(user.getEmail());
+        }
+
+        emailService.sendEmail(emails, EmailClassification.ANNOUNCEMENT, message);
     }
 
     public String getMoviesRssFeed(User user) {

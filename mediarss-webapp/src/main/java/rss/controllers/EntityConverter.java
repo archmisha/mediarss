@@ -2,6 +2,8 @@ package rss.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.configuration.SettingsService;
+import rss.context.UserContextHolder;
 import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.SubtitlesVO;
 import rss.controllers.vo.UserVO;
@@ -9,8 +11,8 @@ import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
 import rss.entities.User;
+import rss.environment.Environment;
 import rss.services.SessionService;
-import rss.services.SettingsService;
 
 import java.util.*;
 
@@ -52,15 +54,15 @@ public class EntityConverter {
 	public UserVO toThinUser(User user) {
 		UserVO userVO = new UserVO()
 				.withId(user.getId())
-				.withLoggedIn(sessionService.getLoggedInUserId() == user.getId())
-				.withEmail(user.getEmail())
+                .withLoggedIn(UserContextHolder.getCurrentUserContext().getUserId() == user.getId())
+                .withEmail(user.getEmail())
 				.withFirstName(user.getFirstName())
 				.withLastName(user.getLastName())
 				.withLastLogin(user.getLastLogin())
 				.withLastShowsFeedAccess(user.getLastShowsFeedGenerated())
 				.withLastMoviesFeedAccess(user.getLastMoviesFeedGenerated())
-				.withAdmin(settingsService.getAdministratorEmails().contains(user.getEmail()));
-		if (user.getSubtitles() == null) {
+                .withAdmin(Environment.getInstance().getAdministratorEmails().contains(user.getEmail()));
+        if (user.getSubtitles() == null) {
 			userVO.setSubtitles(null);
 		} else {
 			userVO.setSubtitles(user.getSubtitles().toString());

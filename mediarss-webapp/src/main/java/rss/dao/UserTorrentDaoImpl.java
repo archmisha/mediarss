@@ -3,6 +3,7 @@ package rss.dao;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.springframework.stereotype.Repository;
+import rss.ems.dao.BaseDaoJPA;
 import rss.entities.*;
 
 import java.util.*;

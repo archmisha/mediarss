@@ -5,16 +5,15 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,9 @@ import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.PageDownloadException;
 import rss.RecoverableConnectionException;
-import rss.services.log.LogService;
+import rss.configuration.SettingsService;
+import rss.environment.Environment;
+import rss.log.LogService;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.shows.TVRageServiceImpl;
 import rss.util.Utils;
@@ -32,11 +33,8 @@ import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -154,33 +152,37 @@ public class PageDownloaderImpl implements PageDownloader {
 		return sendRequest(httpGet, streamExtractor);
 	}
 
-	public List<Cookie> sendPostRequest(String url, Map<String, String> params) {
-		try {
-			List<NameValuePair> parameters = new ArrayList<>();
-			for (Map.Entry<String, String> entry : params.entrySet()) {
-				parameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-			}
+    public String sendPostRequest(String url, String body) {
+//		try {
+//			List<NameValuePair> parameters = new ArrayList<>();
+//			for (Map.Entry<String, String> entry : params.entrySet()) {
+//				parameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+//			}
 
 			HttpPost httpPost = new HttpPost(url);
 
-			if (url.contains("?")) {
-                for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
-					String[] arr = str.split("=");
-                    parameters.add(new BasicNameValuePair(arr[0], arr[1]));
-                }
-            }
+//			if (url.contains("?")) {
+//                for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
+//					String[] arr = str.split("=");
+//                    parameters.add(new BasicNameValuePair(arr[0], arr[1]));
+//                }
+//            }
 
-            httpPost.setEntity(new UrlEncodedFormEntity(parameters));
-            return sendRequest(httpPost, new ResponseStreamExtractor<List<Cookie>>() {
-				@Override
-                public List<Cookie> extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
-                    return context.getCookieStore().getCookies();
+//            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(parameters);
+
+        StringEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);
+        httpPost.setEntity(entity);
+        return sendRequest(httpPost, new ResponseStreamExtractor<String>() {
+            @Override
+                public String extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
+                    return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
+//                    return context.getCookieStore().getCookies();
                 }
 			});
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		}
-	}
+//		} catch (UnsupportedEncodingException e) {
+//			throw new RuntimeException(e.getMessage(), e);
+//		}
+    }
 
 	private <T> T sendRequest(HttpRequestBase httpRequest, ResponseStreamExtractor<T> streamExtractor) {
 		long from = System.currentTimeMillis();
@@ -189,8 +191,8 @@ public class PageDownloaderImpl implements PageDownloader {
         try {
 			coolDownStatus.authorizeAccess(url); // blocks until authorized
 
-			if ("true".equalsIgnoreCase(System.getProperty("webproxy")) || settingsService.useWebProxy()) {
-				if (url.contains(TorrentzParserImpl.NAME)) {
+            if ("true".equalsIgnoreCase(System.getProperty("webproxy")) || Environment.getInstance().useWebProxy()) {
+                if (url.contains(TorrentzParserImpl.NAME)) {
 					httpRequest.setURI(new URL("http://anonymouse.org/cgi-bin/anon-www.cgi/" + url).toURI());
 				}
 			}

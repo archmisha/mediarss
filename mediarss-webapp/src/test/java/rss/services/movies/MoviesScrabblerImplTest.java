@@ -1,7 +1,7 @@
 package rss.services.movies;
 
-import junit.framework.Assert;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

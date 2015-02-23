@@ -1,8 +1,8 @@
 package rss;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -14,10 +14,13 @@ import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import rss.configuration.SettingsService;
 import rss.dao.EpisodeDao;
+import rss.environment.Environment;
+import rss.environment.ServerMode;
+import rss.environment.SettingsUpdateListener;
+import rss.log.LogService;
 import rss.services.OOTBContentLoader;
-import rss.services.SettingsService;
-import rss.services.log.LogService;
 import rss.util.QuartzJob;
 
 import javax.servlet.ServletContext;
@@ -73,7 +76,7 @@ public class AppConfigListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        final Log log = LogFactory.getLog(AppConfigListener.class);
+        final Logger log = getLogger();
         try {
             // no need for /WEB-INF/classes/ prefix
             File log4jPropsFile = new ClassPathResource("log4j.properties", AppConfigListener.class.getClassLoader()).getFile();
@@ -91,9 +94,9 @@ public class AppConfigListener implements ServletContextListener {
         AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
         autowireCapableBeanFactory.autowireBean(this);
 
-        log.info("Server is started in " + settingsService.getServerMode() + " mode");
+        log.info("Server is started in " + Environment.getInstance().getServerMode() + " mode");
 
-        if (settingsService.getServerMode() != ServerMode.TEST) {
+        if (Environment.getInstance().getServerMode() != ServerMode.TEST) {
             try {
                 ootbContentLoader.loadTVRageShows();
             } catch (Exception e) {
@@ -107,22 +110,19 @@ public class AppConfigListener implements ServletContextListener {
             log.error("Failed starting quartz scheduler: " + e.getMessage(), e);
         }
 
-        // track deployment date
-        Date deployedDate = getDeploymentDate();
-        settingsService.setDeploymentDate(deployedDate);
+        Environment.getInstance().setDeploymentDate(getDeploymentDate());
+        Environment.getInstance().setStartupDate(new Date());
 
-        settingsService.setStartupDate(new Date());
-
-        if (settingsService.isLogMemory()) {
+        if (Environment.getInstance().isLogMemory()) {
             startMemoryPrinter();
         }
 
-        settingsService.addUpdateListener(new SettingsService.SettingsUpdateListener() {
+        Environment.getInstance().addUpdateListener(new SettingsUpdateListener() {
             @Override
             public void onSettingsUpdated() {
-                if (settingsService.isLogMemory() && logMemoryExecutorService == null) {
+                if (Environment.getInstance().isLogMemory() && logMemoryExecutorService == null) {
                     startMemoryPrinter();
-                } else if (!settingsService.isLogMemory() && logMemoryExecutorService != null) {
+                } else if (!Environment.getInstance().isLogMemory() && logMemoryExecutorService != null) {
                     stopMemoryPrinter();
                 }
             }
@@ -130,14 +130,18 @@ public class AppConfigListener implements ServletContextListener {
     }
 
     private void stopMemoryPrinter() {
-        Log log = LogFactory.getLog(AppConfigListener.class);
+        final Logger log = getLogger();
         log.info("Stopping memory printer task");
         logMemoryExecutorService.shutdown();
         logMemoryExecutorService = null;
     }
 
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(AppConfigListener.class);
+    }
+
     private void startMemoryPrinter() {
-        Log log = LogFactory.getLog(AppConfigListener.class);
+        final Logger log = getLogger();
         log.info("Starting memory printer task");
         logMemoryExecutorService = Executors.newSingleThreadScheduledExecutor();
         logMemoryExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -176,7 +180,7 @@ public class AppConfigListener implements ServletContextListener {
 
     @SuppressWarnings("unchecked")
     private void loadCronTriggerBeans(ApplicationContext applicationContext) {
-        Log log = LogFactory.getLog(AppConfigListener.class);
+        final Logger log = getLogger();
 
         // using parent because we are here with the dispatcher context - it wont find anything on itself
         Map<String, Object> quartzJobBeans = applicationContext.getBeansWithAnnotation(QuartzJob.class);
@@ -196,9 +200,9 @@ public class AppConfigListener implements ServletContextListener {
 //                jobDetail.setJobClass(job.getClass());
 //                trigger.setJobDetail(jobDetail);
 
-				JobDetail jobDetail = JobBuilder.newJob((Class<? extends Job>) job.getClass()).withIdentity(quartzJobAnnotation.name()).build();
-				Trigger trigger = TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(quartzJobAnnotation.name() + "_trigger")
-						.withSchedule(CronScheduleBuilder.cronSchedule(quartzJobAnnotation.cronExp())).build();
+                JobDetail jobDetail = JobBuilder.newJob((Class<? extends Job>) job.getClass()).withIdentity(quartzJobAnnotation.name()).build();
+                Trigger trigger = TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(quartzJobAnnotation.name() + "_trigger")
+                        .withSchedule(CronScheduleBuilder.cronSchedule(quartzJobAnnotation.cronExp())).build();
 
                 scheduler.scheduleJob(jobDetail, trigger);
                 log.info("Loading quartz Job: " + entry.getValue());
@@ -209,12 +213,12 @@ public class AppConfigListener implements ServletContextListener {
     }
 
     private Date getDeploymentDate() {
-        Log log = LogFactory.getLog(AppConfigListener.class);
+        final Logger log = getLogger();
         Date deployedDate = new Date(); // better than null, even if wrong
         try {
-            String databaseProperties = System.getProperty("database.properties");
+            String databaseProperties = System.getProperty("path-locator.txt");
             if (databaseProperties == null) {
-                databaseProperties = "database.properties";
+                databaseProperties = "path-locator.txt";
             }
 
             // use existing file to locate the real path
@@ -245,7 +249,7 @@ public class AppConfigListener implements ServletContextListener {
             stopMemoryPrinter();
         }
 
-        Log log = LogFactory.getLog(AppConfigListener.class);
+        final Logger log = getLogger();
 
         try {
             log.info("Shutting down quartz scheduler");
@@ -264,7 +268,7 @@ public class AppConfigListener implements ServletContextListener {
         }
 
         // shutdown jdbc drivers
-        // This manually uregisters JDBC driver, which prevents Tomcat 7 from complaining about memory leaks wrto this class
+        // This manually unregisters JDBC driver, which prevents Tomcat 7 from complaining about memory leaks wrto this class
         Enumeration<Driver> drivers = DriverManager.getDrivers();
         while (drivers.hasMoreElements()) {
             Driver driver = drivers.nextElement();
@@ -275,6 +279,8 @@ public class AppConfigListener implements ServletContextListener {
                 log.error(String.format("Error De-Registering driver %s", driver), e);
             }
         }
+
+        Environment.getInstance().shutdown();
 
         try {
             log.info("Sleeping 1000ms to finish shutting down");

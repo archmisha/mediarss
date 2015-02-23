@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import rss.EpisodesComparator;
 import rss.MediaRSSException;
 import rss.ShowNotFoundException;
+import rss.context.UserContextHolder;
 import rss.dao.EpisodeDao;
 import rss.dao.ShowDao;
 import rss.dao.SubtitlesDao;
@@ -550,9 +551,9 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 	private List<SubtitleLanguage> getSubtitleLanguagesForShow(Map<Show, List<SubtitleLanguage>> languagesPerShow, Show show, Long userId) {
 		if (!languagesPerShow.containsKey(show)) {
 			try {
-				if (sessionService.isUserLoggedIn()) {
-					getSubtitleLanguagesForShowHelper(sessionService.getLoggedInUserId(), languagesPerShow, show);
-				} else {
+                if (!UserContextHolder.isUserContextEmpty()) {
+                    getSubtitleLanguagesForShowHelper(UserContextHolder.getCurrentUserContext().getUserId(), languagesPerShow, show);
+                } else {
 					languagesPerShow.put(show, subtitlesDao.getSubtitlesLanguages(show));
 				}
 			} catch (BeansException e) {

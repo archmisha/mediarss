@@ -14,7 +14,7 @@ import rss.dao.TorrentDao;
 import rss.entities.Episode;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.services.EmailService;
+import rss.mail.EmailService;
 import rss.services.PageDownloader;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;

@@ -1,5 +1,7 @@
 package rss.entities;
 
+import rss.ems.entities.BaseEntity;
+
 import javax.persistence.*;
 import java.util.Date;
 

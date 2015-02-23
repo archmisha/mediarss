@@ -16,4 +16,10 @@ public interface UserService {
 	String getTvShowsRssFeed(User user);
 
 	User getUser(long userId);
+
+    ForgotPasswordResult forgotPassword(User user);
+
+    void sendEmailToAllUsers(String message);
+
+    void sendAccountValidationLink(User user);
 }

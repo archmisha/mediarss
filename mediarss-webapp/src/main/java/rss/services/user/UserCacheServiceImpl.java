@@ -10,7 +10,7 @@ import rss.controllers.vo.ShowsScheduleVO;
 import rss.controllers.vo.UserMovieVO;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.log.LogService;
+import rss.log.LogService;
 import rss.services.movies.MovieService;
 import rss.services.shows.ShowService;
 import rss.util.DurationMeter;

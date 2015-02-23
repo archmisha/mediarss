@@ -11,20 +11,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.EmailAlreadyRegisteredException;
 import rss.RegisterException;
-import rss.ServerMode;
+import rss.context.UserContextHolder;
+import rss.context.UserContextImpl;
 import rss.dao.SubtitlesDao;
 import rss.dao.UserDao;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
 import rss.entities.User;
-import rss.services.EmailService;
+import rss.environment.Environment;
+import rss.environment.ServerMode;
+import rss.log.LogService;
+import rss.permissions.PermissionsService;
 import rss.services.NewsService;
-import rss.services.SettingsService;
 import rss.services.feed.RssFeedGenerator;
-import rss.services.log.LogService;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.services.trakt.TraktService;
+import rss.services.user.ForgotPasswordResult;
 import rss.services.user.UserService;
-import rss.services.user.UserServiceImpl;
+import rss.util.CookieUtils;
 import rss.util.DurationMeter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,14 +40,13 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController extends BaseController {
 
+    public static final String SESSION_USER_CONTEXT_ATTR = "UserContext";
+
     @Autowired
     private UserDao userDao;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private SettingsService settingsService;
+    private PermissionsService permissionsService;
 
     @Autowired
     private LogService logService;
@@ -58,6 +61,9 @@ public class UserController extends BaseController {
     private NewsService newsService;
 
     @Autowired
+    private TraktService traktService;
+
+    @Autowired
     @Qualifier("tVShowsRssFeedGeneratorImpl")
     private RssFeedGenerator tvShowsRssFeedGenerator;
 
@@ -65,11 +71,11 @@ public class UserController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> getPreLoginData() {
-        boolean loggedIn = sessionService.isUserLoggedIn();
+        boolean loggedIn = !UserContextHolder.isUserContextEmpty();
 
         Map<String, Object> result = new HashMap<>();
         if (loggedIn) {
-            User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+            User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
             result = createTabData(user);
         }
         result.put("isLoggedIn", loggedIn);
@@ -82,7 +88,7 @@ public class UserController extends BaseController {
     public Map<String, Object> login(@RequestParam("username") String email,
                                      @RequestParam("password") String password,
                                      @RequestParam(value = "rememberMe", required = false, defaultValue = "false") boolean rememberMe,
-                                     HttpServletResponse response) {
+                                     HttpServletRequest request, HttpServletResponse response) {
         email = email.trim();
         password = password.trim();
 
@@ -91,19 +97,38 @@ public class UserController extends BaseController {
             throw new InvalidParameterException("Username or password are incorrect");
         }
 
-        if (!user.isValidated() && settingsService.getServerMode() != ServerMode.TEST) {
+        if (!user.isValidated() && Environment.getInstance().getServerMode() != ServerMode.TEST) {
             // resend account validation link
-            emailService.sendAccountValidationLink(user);
+            userService.sendAccountValidationLink(user);
             throw new InvalidParameterException("Account email is not validated. Please validate before logging in");
         }
 
+        UserContextImpl userContext = new UserContextImpl(user.getId(), user.getEmail(), user.isAdmin());
+        request.getSession().setAttribute(SESSION_USER_CONTEXT_ATTR, userContext);
+        UserContextHolder.pushUserContext(userContext);
+        if (rememberMe) {
+            CookieUtils.createRememberMeCookie(user, response);
+        }
         sessionService.setLoggedInUser(user, response, rememberMe);
-        // important to be after setting the logged in user. session service saves the previous
         user.setLastLogin(new Date());
 
         userCacheService.invalidateUser(user);
 
         return createTabData(user);
+    }
+
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    @ResponseBody
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        UserContextHolder.cleanUserContext();
+        CookieUtils.invalidateRememberMeCookie(request, response);
+
+        sessionService.clearLoggedInUser(request, response);
+        try {
+            response.sendRedirect("/");
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -114,7 +139,7 @@ public class UserController extends BaseController {
         String email = extractString(request, "username", true);
         String password = extractString(request, "password", true);
         boolean isAdmin = false;
-        if (settingsService.getServerMode() == ServerMode.TEST) {
+        if (Environment.getInstance().getServerMode() == ServerMode.TEST) {
             isAdmin = Boolean.parseBoolean(extractString(request, "admin", false));
         }
 
@@ -140,14 +165,15 @@ public class UserController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public void subtitles(@RequestParam("subtitles") String subtitles) {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         user.setSubtitles(SubtitleLanguage.fromString(subtitles));
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    @RequestMapping(value = "/trakt/disconnect", method = RequestMethod.GET)
     @ResponseBody
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
-        sessionService.clearLoggedInUser(request, response);
+    public void traktDisconnect(HttpServletRequest request, HttpServletResponse response) {
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        traktService.disconnectUser(user);
     }
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
@@ -159,14 +185,10 @@ public class UserController extends BaseController {
             throw new InvalidParameterException("Email does not exist");
         }
 
+        ForgotPasswordResult forgotPasswordResult = userService.forgotPassword(user);
+
         Map<String, Object> result = new HashMap<>();
-        if (user.isValidated()) {
-            emailService.sendPasswordRecoveryEmail(user);
-            result.put("message", "Password recovery email was sent to your email account");
-        } else {
-            emailService.sendAccountValidationLink(user);
-            result.put("message", UserServiceImpl.ACCOUNT_VALIDATION_LINK_SENT_MESSAGE);
-        }
+        result.put("message", forgotPasswordResult.getMsg());
         result.put("success", true);
         return result;
     }
@@ -175,7 +197,7 @@ public class UserController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> initialData() {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
 
         DurationMeter duration = new DurationMeter();
         Map<String, Object> result = new HashMap<>();
@@ -194,12 +216,14 @@ public class UserController extends BaseController {
 
     private Map<String, Object> createTabData(User user) {
         Map<String, Object> result = new HashMap<>();
-        result.put("isAdmin", isAdmin(user));
-        result.put("deploymentDate", settingsService.getDeploymentDate());
+        result.put("isAdmin", permissionsService.isAdmin());
+        result.put("deploymentDate", Environment.getInstance().getDeploymentDate());
         result.put("firstName", user.getFirstName());
         result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
         result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
         result.put("news", newsService.getNews(user));
+        result.put("traktClientId", traktService.getClientId());
+        result.put("isConnectedToTrakt", traktService.isConnected(user));
         return result;
     }
 }

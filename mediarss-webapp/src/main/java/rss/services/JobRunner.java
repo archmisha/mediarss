@@ -10,7 +10,8 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.dao.JobStatusDao;
 import rss.entities.JobStatus;
-import rss.services.log.LogService;
+import rss.log.LogService;
+import rss.mail.EmailService;
 import rss.util.DurationMeter;
 import rss.util.Utils;
 

@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.entities.Movie;
+import rss.log.LogService;
 import rss.services.PageDownloader;
-import rss.services.log.LogService;
 import rss.util.DurationMeter;
 
 import java.util.HashMap;

@@ -8,12 +8,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
+import rss.context.UserContextHolder;
 import rss.controllers.vo.UserMovieVO;
 import rss.dao.JobStatusDao;
 import rss.dao.MovieDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.*;
-import rss.services.SessionService;
+import rss.permissions.PermissionsService;
 import rss.services.movies.IMDBPreviewCacheService;
 import rss.services.movies.IMDBService;
 import rss.services.movies.MovieService;
@@ -34,7 +35,7 @@ import java.util.Map;
 public class MoviesController extends BaseController {
 
     @Autowired
-    private SessionService sessionService;
+    private PermissionsService permissionsService;
 
     @Autowired
     private MovieDao movieDao;
@@ -112,7 +113,7 @@ public class MoviesController extends BaseController {
     public Map<String, Object> downloadMovie(@RequestParam("torrentId") long torrentId,
                                              @RequestParam("movieId") long movieId,
                                              @RequestParam("isUserMovies") boolean isUserMovies) {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         movieService.addMovieDownload(user, movieId, torrentId);
 
         userCacheService.invalidateUserMovies(user);
@@ -134,11 +135,11 @@ public class MoviesController extends BaseController {
     public Map<String, Object> redownload(@RequestParam("movieId") long movieId,
                                           @RequestParam("isUserMovies") boolean isUserMovies) {
         DurationMeter duration = new DurationMeter();
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-        verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
 
         movieService.downloadMovie(movieDao.find(movieId));
 
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         userCacheService.invalidateUserMovies(user);
         userCacheService.invalidateAvailableMovies(user);
 
@@ -159,7 +160,7 @@ public class MoviesController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> addMovieFromSearch(@RequestParam("imdbId") String imdbId) {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         Pair<Movie, Boolean> futureMovieResult = movieService.addFutureMovieDownload(user, imdbId);
         if (futureMovieResult == null) {
             throw new MediaRSSException("Movie ID was not found in IMDB").doNotLog();
@@ -190,7 +191,7 @@ public class MoviesController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> search(@RequestParam("query") String query) {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         Map<String, Object> result = new HashMap<>();
         result.put("searchResults", movieService.search(user, query));
         return result;
@@ -201,7 +202,7 @@ public class MoviesController extends BaseController {
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> removeFutureMovie(@RequestParam("movieId") long movieId) {
         DurationMeter duration = new DurationMeter();
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         UserMovie userMovie = movieDao.findUserMovie(user, movieId);
         // no idea how can happen, dima had it
         if (userMovie != null) {
@@ -234,7 +235,7 @@ public class MoviesController extends BaseController {
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> getUserMovies() {
         DurationMeter duration = new DurationMeter();
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("movies", trimMovieTorrents(userCacheService.getUserMovies(user)));
@@ -248,7 +249,7 @@ public class MoviesController extends BaseController {
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> getAvailableMovies() {
         DurationMeter duration = new DurationMeter();
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("movies", trimMovieTorrents(userCacheService.getAvailableMovies(user)));
@@ -262,7 +263,7 @@ public class MoviesController extends BaseController {
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> initialData(@PathVariable(value = "category") String category) {
         DurationMeter duration = new DurationMeter();
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
 
         Map<String, Object> result = new HashMap<>();
         if (category.equals("availableMovies")) {
@@ -273,7 +274,7 @@ public class MoviesController extends BaseController {
             result.put("availableMoviesCount", userCacheService.getAvailableMoviesCount(user));
         }
         result.put("moviesLastUpdated", getMoviesLastUpdated());
-        result.put("isAdmin", isAdmin(user));
+        result.put("isAdmin", UserContextHolder.getCurrentUserContext().isAdmin());
         duration.stop();
         logService.info(getClass(), "movies [" + category + "] " + duration.getDuration() + " ms");
 
@@ -285,7 +286,7 @@ public class MoviesController extends BaseController {
     @Transactional(propagation = Propagation.REQUIRED)
     public Map<String, Object> getMovieTorrents(@PathVariable(value = "movieId") long movieId) {
         DurationMeter duration = new DurationMeter();
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
 
         Map<String, Object> result = new HashMap<>();
         List<UserMovieVO> movies = userCacheService.getAvailableMovies(user);

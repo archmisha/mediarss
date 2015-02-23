@@ -2,6 +2,7 @@ package rss.dao;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
+import rss.ems.dao.BaseDaoJPA;
 import rss.entities.SearcherConfiguration;
 import rss.entities.SearcherConfigurationEntity;
 

@@ -1,6 +1,7 @@
 package rss.entities;
 
 import org.hibernate.annotations.Index;
+import rss.ems.entities.BaseEntity;
 
 import javax.persistence.*;
 import java.util.Date;

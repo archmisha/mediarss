@@ -1,7 +1,7 @@
 package rss.services.feed;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import rss.entities.Subtitles;
 import rss.entities.Torrent;
@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 @Service
 public class RssFeedBuilderImpl implements RssFeedBuilder {
 
-	private static Log log = LogFactory.getLog(RssFeedBuilderImpl.class);
+    private static Logger log = LoggerFactory.getLogger(RssFeedBuilderImpl.class);
 
 	public static final Pattern MAGNET_LINK_PATTERN = Pattern.compile("(magnet:\\?xt=urn:btih:[^&]+)(&dn=([^&]+))?");
 

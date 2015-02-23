@@ -6,13 +6,15 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
+import rss.context.UserContextHolder;
+import rss.context.UserContextImpl;
 import rss.controllers.vo.UserVO;
 import rss.dao.*;
 import rss.entities.*;
-import rss.services.EmailService;
+import rss.permissions.PermissionsService;
 import rss.services.NewsService;
-import rss.services.SessionService;
 import rss.services.searchers.SearcherConfigurationService;
+import rss.services.user.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,196 +28,192 @@ import java.util.*;
 @RequestMapping("/admin")
 public class AdminController extends BaseController {
 
-	@Autowired
-	private SessionService sessionService;
+    @Autowired
+    private UserDao userDao;
 
-	@Autowired
-	private UserDao userDao;
+    @Autowired
+    private PermissionsService permissionsService;
 
-	@Autowired
-	private EmailService emailService;
+    @Autowired
+    private EntityConverter entityConverter;
 
-	@Autowired
-	private EntityConverter entityConverter;
+    @Autowired
+    private ShowDao showDao;
 
-	@Autowired
-	private ShowDao showDao;
+    @Autowired
+    private EpisodeDao episodeDao;
 
-	@Autowired
-	private EpisodeDao episodeDao;
+    @Autowired
+    private TorrentDao torrentDao;
 
-	@Autowired
-	private TorrentDao torrentDao;
+    @Autowired
+    private MovieDao movieDao;
 
-	@Autowired
-	private MovieDao movieDao;
-
-	@Autowired
-	private SubtitlesDao subtitlesDao;
+    @Autowired
+    private SubtitlesDao subtitlesDao;
 
     @Autowired
     private NewsService newsService;
 
-	@Autowired
-	private SearcherConfigurationService searcherConfigurationService;
+    @Autowired
+    private UserService userService;
 
-	@RequestMapping(value = "/notification", method = RequestMethod.POST)
-	@ResponseBody
-	public void sendNotification(HttpServletRequest request) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+    @Autowired
+    private SearcherConfigurationService searcherConfigurationService;
 
-		String text = extractString(request, "text", true);
-		emailService.sendEmailToAllUsers(text);
-	}
+    @RequestMapping(value = "/notification", method = RequestMethod.POST)
+    @ResponseBody
+    public void sendNotification(HttpServletRequest request) {
+        permissionsService.verifyAdminPermissions();
 
-	@RequestMapping(value = "/users", method = RequestMethod.GET)
-	@ResponseBody
-	public Collection<UserVO> getAllUsers() {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        String text = extractString(request, "text", true);
+        userService.sendEmailToAllUsers(text);
+    }
 
-		List<UserVO> users = entityConverter.toThinUser(userDao.findAll());
-		Collections.sort(users, new Comparator<UserVO>() {
-			@Override
-			public int compare(UserVO o1, UserVO o2) {
-				if (o2.getLastLogin() == null) {
-					return -1;
-				} else if (o1.getLastLogin() == null) {
-					return 1;
-				}
-				return o2.getLastLogin().compareTo(o1.getLastLogin());
-			}
-		});
-		return users;
-	}
+    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    @ResponseBody
+    public Collection<UserVO> getAllUsers() {
+        permissionsService.verifyAdminPermissions();
 
-	@RequestMapping(value = "/downloadSchedule/{showId}", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public String downloadSchedule(@PathVariable Long showId) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        List<UserVO> users = entityConverter.toThinUser(userDao.findAll());
+        Collections.sort(users, new Comparator<UserVO>() {
+            @Override
+            public int compare(UserVO o1, UserVO o2) {
+                if (o2.getLastLogin() == null) {
+                    return -1;
+                } else if (o1.getLastLogin() == null) {
+                    return 1;
+                }
+                return o2.getLastLogin().compareTo(o1.getLastLogin());
+            }
+        });
+        return users;
+    }
 
-		Show show = showDao.find(showId);
-		showService.downloadFullScheduleWithTorrents(show, false);
+    @RequestMapping(value = "/downloadSchedule/{showId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String downloadSchedule(@PathVariable Long showId) {
+        permissionsService.verifyAdminPermissions();
 
-		return "Downloaded schedule for '" + show.getName() + "'";
-	}
+        Show show = showDao.find(showId);
+        showService.downloadFullScheduleWithTorrents(show, false);
 
-	@RequestMapping(value = "/shows/autocomplete", method = RequestMethod.GET)
-	@ResponseBody
-	public Map<String, Object> autoCompleteShows(HttpServletRequest request, HttpServletResponse response) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
-		return autoCompleteShowNames(request, response, true, null);
-	}
+        return "Downloaded schedule for '" + show.getName() + "'";
+    }
 
-	@RequestMapping(value = "/shows/delete/{showId}", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public String deleteShow(@PathVariable Long showId) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+    @RequestMapping(value = "/shows/autocomplete", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> autoCompleteShows(HttpServletRequest request, HttpServletResponse response) {
+        permissionsService.verifyAdminPermissions();
+        return autoCompleteShowNames(request, response, true, null);
+    }
 
-		Show show = showDao.find(showId);
-		if (show == null) {
-			return "Show with id " + showId + " is not found";
-		}
+    @RequestMapping(value = "/shows/delete/{showId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String deleteShow(@PathVariable Long showId) {
+        permissionsService.verifyAdminPermissions();
 
-		// allow deletion only if no one is tracking this show
-		if (userDao.isShowBeingTracked(show)) {
-			throw new MediaRSSException("Show is being tracked. Unable to delete").doNotLog();
-		}
+        Show show = showDao.find(showId);
+        if (show == null) {
+            return "Show with id " + showId + " is not found";
+        }
 
-		for (Episode episode : show.getEpisodes()) {
-			showService.disconnectTorrentsFromEpisode(episode);
-			episodeDao.delete(episode);
-		}
+        // allow deletion only if no one is tracking this show
+        if (userDao.isShowBeingTracked(show)) {
+            throw new MediaRSSException("Show is being tracked. Unable to delete").doNotLog();
+        }
 
-		showDao.delete(show);
+        for (Episode episode : show.getEpisodes()) {
+            showService.disconnectTorrentsFromEpisode(episode);
+            episodeDao.delete(episode);
+        }
 
-		return "Show '" + show.getName() + "' (id=" + show.getId() + ") was deleted";
-	}
+        showDao.delete(show);
 
-	@RequestMapping(value = "/movies/delete/{movieId}", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public String deleteMovie(@PathVariable Long movieId) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        return "Show '" + show.getName() + "' (id=" + show.getId() + ") was deleted";
+    }
 
-		Movie movie = movieDao.find(movieId);
-		if (movie == null) {
-			return "Movie with id " + movieId + " is not found";
-		}
+    @RequestMapping(value = "/movies/delete/{movieId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String deleteMovie(@PathVariable Long movieId) {
+        permissionsService.verifyAdminPermissions();
 
-		// allow deletion only if no one is tracking this movie
-		if (!movieDao.findUserMoviesByMovieId(movieId).isEmpty()) {
-			throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
-		}
+        Movie movie = movieDao.find(movieId);
+        if (movie == null) {
+            return "Movie with id " + movieId + " is not found";
+        }
 
-		for (Long torrentId : movie.getTorrentIds()) {
-			Torrent torrent = torrentDao.find(torrentId);
-			// happens when erasing a movie that has a commons torrent with other movie that also been erased
-			if (torrent != null) {
-				for (Subtitles subtitles : subtitlesDao.findByTorrent(torrent)) {
-					subtitlesDao.delete(subtitles);
-				}
-				torrentDao.delete(torrent);
-			}
-		}
-		movie.getTorrentIds().clear();
-		movieDao.delete(movie);
+        // allow deletion only if no one is tracking this movie
+        if (!movieDao.findUserMoviesByMovieId(movieId).isEmpty()) {
+            throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
+        }
 
-		return "Movie '" + movie.getName() + "' (id=" + movie.getId() + ") was deleted";
-	}
+        for (Long torrentId : movie.getTorrentIds()) {
+            Torrent torrent = torrentDao.find(torrentId);
+            // happens when erasing a movie that has a commons torrent with other movie that also been erased
+            if (torrent != null) {
+                for (Subtitles subtitles : subtitlesDao.findByTorrent(torrent)) {
+                    subtitlesDao.delete(subtitles);
+                }
+                torrentDao.delete(torrent);
+            }
+        }
+        movie.getTorrentIds().clear();
+        movieDao.delete(movie);
 
-	@RequestMapping(value = "/impersonate/{userId}", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void impersonate(@PathVariable Long userId) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        return "Movie '" + movie.getName() + "' (id=" + movie.getId() + ") was deleted";
+    }
 
-		sessionService.impersonate(userId);
-	}
+    @RequestMapping(value = "/impersonate/{userId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void impersonate(@PathVariable Long userId) {
+        permissionsService.verifyAdminPermissions();
 
-	@RequestMapping(value = "/searcher-configurations", method = RequestMethod.GET)
-	@ResponseBody
-	public Collection<SearcherConfiguration> getSearcherConfigurations() {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+        // remove previous impersonations
+        UserContextHolder.popOnBehalfUserContexts();
 
-		return searcherConfigurationService.getSearcherConfigurations();
-	}
+        // if not impersonating back to myself
+        if (UserContextHolder.getActualUserContext().getUserId() != userId) {
+            User user = userCacheService.getUser(userId);
+            UserContextHolder.pushUserContext(new UserContextImpl(user.getId(), user.getEmail(), user.isAdmin()));
+        }
+    }
 
-	@RequestMapping(value = "/searcher-configuration/{name}/domain/add", method = RequestMethod.POST)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void addDomainToSearcherConfiguration(@PathVariable String name, @RequestParam("domain") String domain) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+    @RequestMapping(value = "/searcher-configurations", method = RequestMethod.GET)
+    @ResponseBody
+    public Collection<SearcherConfiguration> getSearcherConfigurations() {
+        permissionsService.verifyAdminPermissions();
 
-		searcherConfigurationService.addDomain(name, domain);
-	}
+        return searcherConfigurationService.getSearcherConfigurations();
+    }
 
-	@RequestMapping(value = "/searcher-configuration/{name}/domain/remove/{domain}", method = RequestMethod.GET)
-	@ResponseBody
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void removeDomainToSearcherConfiguration(@PathVariable String name, @PathVariable String domain) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		verifyAdminPermissions(user);
+    @RequestMapping(value = "/searcher-configuration/{name}/domain/add", method = RequestMethod.POST)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void addDomainToSearcherConfiguration(@PathVariable String name, @RequestParam("domain") String domain) {
+        permissionsService.verifyAdminPermissions();
 
-		searcherConfigurationService.removeDomain(name, domain);
-	}
+        searcherConfigurationService.addDomain(name, domain);
+    }
+
+    @RequestMapping(value = "/searcher-configuration/{name}/domain/remove/{domain}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void removeDomainToSearcherConfiguration(@PathVariable String name, @PathVariable String domain) {
+        permissionsService.verifyAdminPermissions();
+
+        searcherConfigurationService.removeDomain(name, domain);
+    }
 
     @RequestMapping(value = "/searcher-configuration/torrentz/enable", method = RequestMethod.POST)
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public void enableTorrentzSearcher(@RequestParam boolean isEnabled) {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-        verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
 
         searcherConfigurationService.torrentzSetEnabled(isEnabled);
     }
@@ -224,8 +222,7 @@ public class AdminController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public long createNews(HttpServletRequest request) {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-        verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
 
         String text = extractString(request, "text", true);
         News news = new News();
@@ -238,8 +235,10 @@ public class AdminController extends BaseController {
     @ResponseBody
     @Transactional(propagation = Propagation.REQUIRED)
     public void dismissNews() {
-        User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-        verifyAdminPermissions(user);
+        permissionsService.verifyAdminPermissions();
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         newsService.dismissNews(user);
     }
+
+
 }

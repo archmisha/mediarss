@@ -3,8 +3,10 @@ package rss.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
+import rss.configuration.SettingsService;
 import rss.entities.Image;
-import rss.services.log.LogService;
+import rss.environment.Environment;
+import rss.log.LogService;
 
 import javax.imageio.IIOException;
 import java.io.File;
@@ -54,8 +56,8 @@ public class ImageServiceImpl implements ImageService {
 	}
 
 	private String getFullImagePath(String name) {
-		String path = settingsService.getImagesPath();
-		int i = name.lastIndexOf("/");
+        String path = Environment.getInstance().getImagesPath();
+        int i = name.lastIndexOf("/");
 		if (i > -1) {
 			name = name.substring(i + 1);
 		}

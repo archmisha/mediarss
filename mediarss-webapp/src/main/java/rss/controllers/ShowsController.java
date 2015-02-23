@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.ShowNotFoundException;
+import rss.context.UserContextHolder;
 import rss.controllers.vo.SearchResultVO;
 import rss.controllers.vo.ShowVO;
 import rss.controllers.vo.ShowsScheduleVO;
@@ -15,6 +16,7 @@ import rss.dao.UserDao;
 import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.entities.User;
+import rss.permissions.PermissionsService;
 import rss.services.SessionService;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.FullShowRequest;
@@ -39,6 +41,9 @@ public class ShowsController extends BaseController {
 	@Autowired
 	private SessionService sessionService;
 
+    @Autowired
+    private PermissionsService permissionsService;
+
 	@Autowired
 	private ShowDao showDao;
 
@@ -49,8 +54,8 @@ public class ShowsController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> addTracked(@PathVariable final long showId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
-		final Show show = showDao.find(showId);
+        User user = userDao.find(UserContextHolder.getCurrentUserContext().getUserId());
+        final Show show = showDao.find(showId);
 		// if show was not being tracked before (becoming tracked now) - download its schedule
 		boolean downloadSchedule = !userDao.isShowBeingTracked(show);
 		user.getShows().add(show);
@@ -75,8 +80,8 @@ public class ShowsController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> removeTracked(@PathVariable long showId) {
-		User user = userDao.find(sessionService.getLoggedInUserId());
-		Show show = showDao.find(showId);
+        User user = userDao.find(UserContextHolder.getCurrentUserContext().getUserId());
+        Show show = showDao.find(showId);
 		user.getShows().remove(show);
 
 		// invalidate schedule to be regenerated next request
@@ -93,8 +98,8 @@ public class ShowsController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> autoCompleteTracked(HttpServletRequest request, HttpServletResponse response) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		final Set<Long> trackedShowsIds = new HashSet<>();
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        final Set<Long> trackedShowsIds = new HashSet<>();
 		for (ShowVO show : userCacheService.getTrackedShows(user)) {
 			trackedShowsIds.add(show.getId());
 		}
@@ -111,16 +116,16 @@ public class ShowsController extends BaseController {
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void episodeDownload(@RequestParam("torrentId") long torrentId) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		showService.downloadEpisode(user, torrentId);
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        showService.downloadEpisode(user, torrentId);
 	}
 
 	@RequestMapping(value = "/episode/download-all", method = RequestMethod.POST)
 	@ResponseBody
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void episodeDownloadAll(@RequestParam("torrentIds[]") long[] torrentIds) {
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		for (long torrentId : torrentIds) {
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        for (long torrentId : torrentIds) {
 			showService.downloadEpisode(user, torrentId);
 		}
 	}
@@ -136,12 +141,12 @@ public class ShowsController extends BaseController {
 		season = applyDefaultValue(season, -1);
 		episode = applyDefaultValue(episode, -1);
 		showId = applyDefaultValue(showId, -1l);
-		Long userId = sessionService.getLoggedInUserId();
+        Long userId = UserContextHolder.getCurrentUserContext().getUserId();
 
 		// only admin is allowed to use forceDownload option
 		if (forceDownload) {
-			verifyAdminPermissions(userCacheService.getUser(userId));
-		}
+            permissionsService.verifyAdminPermissions();
+        }
 
 		try {
 			Show show = showDao.find(showId);
@@ -153,8 +158,8 @@ public class ShowsController extends BaseController {
 			} else {
 				showRequest = new SingleEpisodeRequest(userId, title, show, MediaQuality.HD720P, season, episode);
 			}
-			return showSearchService.search(showRequest, sessionService.getLoggedInUserId(), forceDownload);
-		} catch (ShowNotFoundException e) {
+            return showSearchService.search(showRequest, UserContextHolder.getCurrentUserContext().getUserId(), forceDownload);
+        } catch (ShowNotFoundException e) {
 			return SearchResultVO.createNoResults(title);
 		}
 	}
@@ -164,8 +169,8 @@ public class ShowsController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getTrackedShows() {
 		DurationMeter duration = new DurationMeter();
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		List<ShowVO> shows = userCacheService.getTrackedShows(user);
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        List<ShowVO> shows = userCacheService.getTrackedShows(user);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("trackedShows", shows);
@@ -180,8 +185,8 @@ public class ShowsController extends BaseController {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Map<String, Object> getSchedule() {
 		DurationMeter duration = new DurationMeter();
-		User user = userCacheService.getUser(sessionService.getLoggedInUserId());
-		ShowsScheduleVO schedule = userCacheService.getSchedule(user);
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        ShowsScheduleVO schedule = userCacheService.getSchedule(user);
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("schedule", schedule);
@@ -199,8 +204,8 @@ public class ShowsController extends BaseController {
 		List<UserActiveSearch> searches = sessionService.getUsersSearchesCache().getSearches();
 		List<SearchResultVO> searchResults = new ArrayList<>();
 		for (UserActiveSearch search : searches) {
-			showSearchService.downloadResultToSearchResultVO(sessionService.getLoggedInUserId(),
-					search.getDownloadResult(), search.getSearchResultVO());
+            showSearchService.downloadResultToSearchResultVO(UserContextHolder.getCurrentUserContext().getUserId(),
+                    search.getDownloadResult(), search.getSearchResultVO());
 			searchResults.add(search.getSearchResultVO());
 		}
 		result.put("activeSearches", searchResults);

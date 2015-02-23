@@ -8,6 +8,7 @@ import rss.dao.NewsDao;
 import rss.dao.UserDao;
 import rss.entities.News;
 import rss.entities.User;
+import rss.services.user.UserCacheService;
 import rss.util.DateUtils;
 
 import java.util.Collection;
@@ -26,6 +27,9 @@ public class NewsServiceImpl implements NewsService {
     @Autowired
     private UserDao userDao;
 
+    @Autowired
+    protected UserCacheService userCacheService;
+
     @Override
     public Collection<News> getNews(User user) {
         Date newsDismiss = user.getNewsDismiss() == null ? DateUtils.getPastDate(9999) : user.getNewsDismiss();
@@ -42,5 +46,6 @@ public class NewsServiceImpl implements NewsService {
     public void dismissNews(User user) {
         user.setNewsDismiss(new Date());
         userDao.merge(user);
+        userCacheService.invalidateUser(user);
     }
 }

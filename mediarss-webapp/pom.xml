@@ -16,40 +16,76 @@
 
     <dependencies>
         <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>environment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>environment</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>logging</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mail</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>rms</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>ems</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>commons-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>permission-service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>configuration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
             <version>${unirest-java.version}</version>
         </dependency>
-
-        <dependency>
-        <groupId>c3p0</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>${c3p0.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>com.googlecode.combinatoricslib</groupId>
             <artifactId>combinatoricslib</artifactId>
             <version>${combinatoricslib.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>${jsoup.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.asual.lesscss</groupId>
             <artifactId>lesscss-engine</artifactId>
@@ -85,13 +121,6 @@
             <artifactId>xmlrpc-client</artifactId>
             <version>3.1.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.4</version>
-        </dependency>
-
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
@@ -119,30 +148,27 @@
             <artifactId>quartz</artifactId>
             <version>${quartz.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
 
         <!-- Testing dependencies -->
@@ -160,7 +186,6 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <!-- 3rd parties -->
@@ -168,7 +193,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -178,7 +202,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -216,16 +239,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
         <dependency>
@@ -248,44 +261,10 @@
             <artifactId>cglib-nodep</artifactId>
             <version>${cglib.version}</version>
         </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>4.0.2.GA</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-        </dependency>
-
+        <!--<dependency>-->
+        <!--<groupId>commons-logging</groupId>-->
+        <!--<artifactId>commons-logging</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -293,24 +272,32 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>4.0.2.GA</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+        </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
             <version>${hibernate.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
             <version>3.3.2.GA</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -491,8 +478,8 @@
                                 js/components/**,js/controllers/**,js/features/**,js/routers/**,js/utils/**,style/*.less,*_*.jsp
                             </warSourceExcludes>
                             <!-- only leaving ttorent in the folder, cuz using its stuff with package permissions -->
-                            <!--<packagingExcludes>%regex[WEB-INF/lib/(?!ttorrent).*.jar]</packagingExcludes>-->
-                            <packagingExcludes>%regex[WEB-INF/lib/.*.jar]</packagingExcludes>
+                            <packagingExcludes>%regex[WEB-INF/lib/(?!mediarss).*.jar]</packagingExcludes>
+                            <!--<packagingExcludes>%regex[WEB-INF/lib/.*.jar]</packagingExcludes>-->
                         </configuration>
                     </plugin>
                 </plugins>

@@ -8,8 +8,10 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             <![CDATA[
-    				/WEB-INF/*Context.xml
+    				/WEB-INF/*-context.xml
+                    classpath:META-INF/spring/*-context.xml
     			]]>
+
         </param-value>
     </context-param>
 
@@ -86,13 +88,28 @@
     </listener>
 
     <filter>
-        <filter-name>RememberMeCookieFilter</filter-name>
-        <filter-class>rss.RememberMeCookieFilter</filter-class>
+        <filter-name>UserContextFilter</filter-name>
+        <filter-class>rss.UserContextFilter</filter-class>
+        <init-param>
+            <param-name>urlWhiteList</param-name>
+            <param-value>/rest/user/login,/rest/user/register</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
-        <filter-name>RememberMeCookieFilter</filter-name>
+        <filter-name>UserContextFilter</filter-name>
+        <!-- /generate is not mapped cuz no need context -->
+        <url-pattern>/rest/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>TraktFilter</filter-name>
+        <filter-class>rss.services.trakt.TraktFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>TraktFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
 
     <!-- Default page to serve -->
     <welcome-file-list>

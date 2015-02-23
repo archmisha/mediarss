@@ -1,6 +1,7 @@
 package rss.entities;
 
 import org.hibernate.annotations.Index;
+import rss.ems.entities.BaseEntity;
 import rss.services.subtitles.SubtitleLanguage;
 
 import javax.persistence.*;
@@ -216,7 +217,7 @@ public class User extends BaseEntity {
 
 		BaseEntity that = (BaseEntity) o;
 
-		if (id != that.id) return false;
+        if (id != that.getId()) return false;
 
 		return true;
 	}

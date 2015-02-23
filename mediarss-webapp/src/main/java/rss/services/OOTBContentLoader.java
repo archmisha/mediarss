@@ -2,7 +2,6 @@ package rss.services;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.cookie.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -12,10 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
+import rss.configuration.SettingsService;
 import rss.dao.ShowDao;
 import rss.entities.Episode;
 import rss.entities.Show;
-import rss.services.log.LogService;
+import rss.environment.Environment;
+import rss.log.LogService;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowsCacheService;
 import rss.services.shows.TVRageServiceImpl;
@@ -28,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -187,8 +187,8 @@ public class OOTBContentLoader {
 					String str = url.substring(url.indexOf('=') + 1, url.length());
 					int tvRageShowId = Integer.parseInt(str);
 
-					File file = new File(settingsService.getAlternativeResourcesPath() + File.separator +
-										 "ootb" + File.separator + "tvrage-shows-info" + File.separator + "tvrage-shows-info-2013-02-25.zip");
+                    File file = new File(Environment.getInstance().getAlternativeResourcesPath() + File.separator +
+                            "ootb" + File.separator + "tvrage-shows-info" + File.separator + "tvrage-shows-info-2013-02-25.zip");
 					ZipFile zip = new ZipFile(file);
 
 					ZipEntry entry = zip.getEntry(tvRageShowId + ".xml");
@@ -213,15 +213,15 @@ public class OOTBContentLoader {
 				return classPathResource.getInputStream();
 			}
 
-			String str = settingsService.getAlternativeResourcesPath() + File.separator + path;
-			File file = new File(str);
+            String str = Environment.getInstance().getAlternativeResourcesPath() + File.separator + path;
+            File file = new File(str);
 			if (file.exists()) {
 				return new FileInputStream(file);
 			}
 
 			throw new MediaRSSException("Path '" + path + "' was not found in classpath nor in alternative resources path: '" +
-										settingsService.getAlternativeResourcesPath() + "'");
-		}
+                    Environment.getInstance().getAlternativeResourcesPath() + "'");
+        }
 
 		@Override
 		public String downloadPage(String url, Map<String, String> headers) {
@@ -234,8 +234,8 @@ public class OOTBContentLoader {
 		}
 
 		@Override
-		public List<Cookie> sendPostRequest(String url, Map<String, String> params) {
-			throw new UnsupportedOperationException();
+        public String sendPostRequest(String url, String body) {
+            throw new UnsupportedOperationException();
 		}
 	}
 }

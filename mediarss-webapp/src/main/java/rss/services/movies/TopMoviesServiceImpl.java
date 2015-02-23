@@ -5,12 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.configuration.SettingsService;
 import rss.dao.MovieDao;
 import rss.entities.Movie;
-import rss.services.SettingsService;
+import rss.log.LogService;
 import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.MovieTorrentsDownloader;
-import rss.services.log.LogService;
 import rss.services.requests.movies.MovieRequest;
 import rss.util.DurationMeter;
 

@@ -16,6 +16,8 @@
 
     <properties>
         <server.port>9065</server.port>
+        <lookup.dir>${basedir}/target/lookup</lookup.dir>
+        <tomcat.dir>${basedir}/target/tomcat</tomcat.dir>
     </properties>
 
     <dependencies>
@@ -30,6 +32,12 @@
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>deployer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -73,46 +81,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.google.code.maven-replacer-plugin</groupId>
-                        <artifactId>replacer</artifactId>
-                        <executions>
-                            <execution>
-                                <id>set-tomcat-port</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>replace</goal>
-                                </goals>
-                                <configuration>
-                                    <filesToInclude>
-                                        ${basedir}/target/tomcat/conf/server.xml,
-                                        ${basedir}/target/tomcat/webapps/ROOT/WEB-INF/classes/settings.properties
-                                    </filesToInclude>
-                                    <token>\$\{TOMCAT-PORT\}</token>
-                                    <value>${tomcat.port}</value>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>properties-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Associate the read-project-properties goal with the initialize phase, to read the properties file. -->
-                            <execution>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>read-project-properties</goal>
-                                </goals>
-                                <configuration>
-                                    <files>
-                                        <file>${basedir}/src/test/resources/database.properties</file>
-                                        <!--<file>${basedir}/src/test/resources/settings.properties</file>-->
-                                    </files>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
@@ -126,27 +94,45 @@
                                     <target>
                                         <echo message="Unzip tomcat"/>
                                         <unzip src="${basedir}/src/test/resources/tomcat.zip"
-                                               dest="${basedir}/target/tomcat"/>
+                                               dest="${tomcat.dir}"/>
+
+                                        <echo message="Copy tomcat conf files"/>
+                                        <copy todir="${tomcat.dir}/conf">
+                                            <fileset dir="${basedir}/src/test/resources" includes="server.xml"/>
+                                        </copy>
+                                        <copy todir="${tomcat.dir}/bin">
+                                            <fileset dir="${basedir}/src/test/resources" includes="setenv.bat"/>
+                                        </copy>
 
                                         <echo message="Copy external mediarss jars"/>
-                                        <copy todir="${basedir}/target/tomcat/lib-mediarss">
+                                        <copy todir="${tomcat.dir}/lib-mediarss">
                                             <fileset dir="${basedir}/src/test/resources/lib-mediarss" includes="**"/>
                                         </copy>
 
-                                        <echo message="Reset automation test database"/>
-                                        <java classname="org.h2.tools.RunScript" failonerror="true">
+                                        <echo message="Setup lookup dir"/>
+                                        <copy todir="${lookup.dir}">
+                                            <fileset dir="${basedir}/src/test/resources/lookup"
+                                                     includes="*.properties"/>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>run-deployer</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Execute deployer to reset all automation databases"/>
+                                        <java classname="rss.deployer.Deployer" failonerror="true" fork="true">
                                             <classpath>
-                                                <pathelement location="${basedir}/src/test/resources/h2.jar"/>
+                                                <pathelement path="${basedir}/src/test/resources/lib-mediarss"/>
+                                                <pathelement location="${basedir}/target/deployer.jar"/>
                                             </classpath>
-                                            <arg value="-url"/>
-                                            <arg value="${jdbc.url}"/>
-                                            <arg value="-user"/>
-                                            <arg value="${jdbc.username}"/>
-                                            <arg value="-password"/>
-                                            <arg value="${jdbc.password}"/>
-                                            <arg value="-script"/>
-                                            <arg value="${basedir}/src/test/resources/automation.sql"/>
-                                            <arg value="-showResults"/>
+                                            <jvmarg value="-Dlookup.dir=${lookup.dir}"/>
+                                            <jvmarg value="-Dlog4j.configuration=file:${basedir}/src/test/resources/stdout_log4j.properties"/>
                                         </java>
                                     </target>
                                 </configuration>
@@ -160,7 +146,7 @@
                                 <configuration>
                                     <target>
                                         <echo message="Start Tomcat"/>
-                                        <exec dir="${basedir}/target/tomcat/bin" executable="cmd">
+                                        <exec dir="${tomcat.dir}/bin" executable="cmd">
                                             <arg value="/c"/>
                                             <arg line="startup.bat"/>
                                         </exec>
@@ -176,7 +162,7 @@
                                 <configuration>
                                     <target>
                                         <echo message="Stop Tomcat"/>
-                                        <exec dir="${basedir}/target/tomcat/bin" executable="cmd">
+                                        <exec dir="${tomcat.dir}/bin" executable="cmd">
                                             <arg value="/c"/>
                                             <arg line="shutdown.bat"/>
                                         </exec>
@@ -186,27 +172,32 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
+                        <groupId>com.google.code.maven-replacer-plugin</groupId>
+                        <artifactId>replacer</artifactId>
                         <executions>
                             <execution>
-                                <id>copy-resources</id>
-                                <phase>compile</phase>
+                                <id>replace-dynamic-properties</id>
+                                <phase>generate-sources</phase>
                                 <goals>
-                                    <goal>copy-resources</goal>
+                                    <goal>replace</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${basedir}/target/tomcat/webapps/ROOT/WEB-INF/classes
-                                    </outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${basedir}/src/test/resources</directory>
-                                            <includes>
-                                                <include>database.properties</include>
-                                                <include>settings.properties</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
+                                    <regex>false</regex>
+                                    <filesToInclude>
+                                        ${lookup.dir}/settings.properties,
+                                        ${tomcat.dir}/conf/server.xml,
+                                        ${tomcat.dir}/bin/setenv.bat
+                                    </filesToInclude>
+                                    <replacements>
+                                        <replacement>
+                                            <token>$TOMCAT-PORT$</token>
+                                            <value>${server.port}</value>
+                                        </replacement>
+                                        <replacement>
+                                            <token>$LOOKUP_DIR$</token>
+                                            <value>${lookup.dir}</value>
+                                        </replacement>
+                                    </replacements>
                                 </configuration>
                             </execution>
                         </executions>
@@ -216,8 +207,30 @@
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>copy-deployer</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>mediarss</groupId>
+                                            <artifactId>deployer</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>jar</type>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                            <destFileName>deployer.jar</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/wars</outputDirectory>
+                                    <overWriteReleases>false</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>copy-war</id>
-                                <phase>generate-sources</phase>
+                                <phase>generate-resources</phase>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
@@ -230,7 +243,7 @@
                                             <type>war</type>
                                             <outputDirectory>${project.build.directory}/tomcat/webapps/ROOT
                                             </outputDirectory>
-                                            <excludes>**\/database.properties,**\/settings.properties</excludes>
+                                            <!--<excludes>**\/database.properties,**\/settings.properties</excludes>-->
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
@@ -265,7 +278,7 @@
                                     <goal>verify</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Dfile.encoding=UTF-8 -DserverPort=${server.port}</argLine>
+                                    <argLine>-Dfile.encoding=UTF-8 -Dserver.port=${server.port}</argLine>
                                     <includes>
                                         <group></group>
                                         <include>mediarss/test/**/*Test.java</include>

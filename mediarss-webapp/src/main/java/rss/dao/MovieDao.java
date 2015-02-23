@@ -1,5 +1,6 @@
 package rss.dao;
 
+import rss.ems.dao.Dao;
 import rss.entities.Movie;
 import rss.entities.Torrent;
 import rss.entities.User;

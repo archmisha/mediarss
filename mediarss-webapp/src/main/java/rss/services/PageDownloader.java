@@ -1,9 +1,7 @@
 package rss.services;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.cookie.Cookie;
 
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -23,5 +21,5 @@ public interface PageDownloader {
 
     Pair<String, String> downloadPageWithRedirect(String url);
 
-    List<Cookie> sendPostRequest(String url, Map<String, String> params);
+    String sendPostRequest(String url, String body);
 }

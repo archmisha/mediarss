@@ -9,8 +9,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.dao.UserDao;
 import rss.entities.User;
-import rss.services.UrlService;
-import rss.services.log.LogService;
+import rss.environment.UrlService;
+import rss.log.LogService;
 import rss.services.user.UserCacheService;
 
 import javax.servlet.ServletContext;

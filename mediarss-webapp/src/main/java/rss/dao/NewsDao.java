@@ -1,5 +1,6 @@
 package rss.dao;
 
+import rss.ems.dao.Dao;
 import rss.entities.News;
 
 import java.util.Collection;

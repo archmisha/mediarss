@@ -1,5 +1,6 @@
 package rss.services.subtitles;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -7,15 +8,18 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
+import rss.configuration.SettingsService;
 import rss.entities.Subtitles;
-import rss.services.EmailService;
-import rss.services.SettingsService;
+import rss.environment.Environment;
+import rss.log.LogService;
+import rss.mail.EmailClassification;
+import rss.mail.EmailService;
 import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.SubtitlesDownloader;
-import rss.services.log.LogService;
 import rss.services.requests.subtitles.SubtitlesRequest;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,7 +104,7 @@ public class SubtitlesServiceImpl implements SubtitlesService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void downloadSubtitlesAsync(final Set<SubtitlesRequest> subtitlesRequests) {
-        if (!settingsService.areSubtitlesEnabled()) {
+        if (!Environment.getInstance().areSubtitlesEnabled()) {
             return;
         }
 
@@ -121,7 +125,7 @@ public class SubtitlesServiceImpl implements SubtitlesService {
 								subtitlesRequest.getLanguages().addAll(subtitlesLanguages);
 							}*/
                             DownloadResult<Subtitles, SubtitlesRequest> downloadResult = subtitlesDownloader.download(subtitlesRequests, new DownloadConfig());
-                            emailService.notifyOfMissingSubtitles(downloadResult.getMissing());
+                            notifyOfMissingSubtitles(downloadResult.getMissing());
                         }
                     });
                 } catch (Exception e) {
@@ -130,6 +134,17 @@ public class SubtitlesServiceImpl implements SubtitlesService {
             }
         });
         executorService.shutdown();
+    }
+
+    private void notifyOfMissingSubtitles(Collection<SubtitlesRequest> missingRequests) {
+        if (missingRequests.isEmpty()) {
+            return;
+        }
+
+        emailService.notifyToAdmins(
+                EmailClassification.JOB, // not really a job but still
+                "The following subtitles were not found:\n  " + StringUtils.join(missingRequests, "\n  "),
+                "Failed sending email of missing subtitles");
     }
 
 //	private Subtitles createSubtitles(OpenSubtitlesAPI openSubtitlesAPI, String token, Map<String, Object> obj) throws OpenSubtitlesException {

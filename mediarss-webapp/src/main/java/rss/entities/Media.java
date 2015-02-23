@@ -1,6 +1,8 @@
 package rss.entities;
 
 
+import rss.ems.entities.BaseEntity;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
