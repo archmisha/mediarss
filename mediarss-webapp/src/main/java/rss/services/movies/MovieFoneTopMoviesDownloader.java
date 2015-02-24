@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.PageDownloader;
 import rss.dao.MovieDao;
 import rss.entities.Movie;
 import rss.log.LogService;
-import rss.services.PageDownloader;
 
 import java.util.*;
 

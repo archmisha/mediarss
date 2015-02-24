@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.PageDownloader;
 import rss.configuration.SettingsService;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.environment.Environment;
 import rss.log.LogService;
-import rss.services.PageDownloader;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

@@ -1,4 +1,4 @@
-package rss.services;
+package rss;
 
 import org.apache.commons.lang3.tuple.Pair;
 

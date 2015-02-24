@@ -3,8 +3,8 @@ package rss.services.searchers.composite.torrentz;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.PageDownloader;
 import rss.log.LogService;
-import rss.services.PageDownloader;
 import rss.services.shows.ShowServiceImpl;
 
 import java.util.*;

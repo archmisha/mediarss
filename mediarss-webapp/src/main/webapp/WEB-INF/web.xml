@@ -102,7 +102,7 @@
 
     <filter>
         <filter-name>TraktFilter</filter-name>
-        <filter-class>rss.services.trakt.TraktFilter</filter-class>
+        <filter-class>rss.trakt.TraktFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>TraktFilter</filter-name>

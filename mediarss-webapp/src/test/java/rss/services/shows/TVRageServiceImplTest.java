@@ -8,10 +8,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
+import rss.PageDownloader;
 import rss.dao.EpisodeDao;
 import rss.entities.Episode;
 import rss.entities.Show;
-import rss.services.PageDownloader;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

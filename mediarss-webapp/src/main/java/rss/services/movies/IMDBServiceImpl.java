@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
+import rss.PageDownloader;
 import rss.entities.Image;
 import rss.log.LogService;
 import rss.services.ImageService;
-import rss.services.PageDownloader;
 import rss.util.DurationMeter;
 
 import java.io.ByteArrayInputStream;

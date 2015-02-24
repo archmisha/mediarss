@@ -1,4 +1,4 @@
-package rss.services.trakt;
+package rss.trakt;
 
 import rss.rms.RmsResource;
 

@@ -5,11 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.MediaRSSException;
+import rss.PageDownloader;
 import rss.RecoverableConnectionException;
 import rss.entities.Episode;
 import rss.entities.Show;
 import rss.log.LogService;
-import rss.services.PageDownloader;
 import rss.util.DurationMeter;
 
 import java.text.ParseException;

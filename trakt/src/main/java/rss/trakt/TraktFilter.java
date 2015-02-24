@@ -1,4 +1,4 @@
-package rss.services.trakt;
+package rss.trakt;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -31,7 +31,7 @@ public class TraktFilter implements Filter {
             // called when we redirected the user to trakt and he authorized us and redirected back to us
             if (request.getParameter("code") != null) {
                 ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(sc);
-                applicationContext.getBean(rss.services.trakt.TraktService.class).authenticateUser(request.getParameter("code"));
+                applicationContext.getBean(TraktService.class).authenticateUser(request.getParameter("code"));
 //                <script>window.location.href=window.location.href.substring(0, window.location.href.indexOf('?')) + '#<%=request.getParameter("state")%>';</script>
                 response.sendRedirect(Environment.getInstance().getServerHostUrl() + "/main#" + request.getParameter("state"));
                 return;

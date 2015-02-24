@@ -25,9 +25,9 @@ import rss.permissions.PermissionsService;
 import rss.services.NewsService;
 import rss.services.feed.RssFeedGenerator;
 import rss.services.subtitles.SubtitleLanguage;
-import rss.services.trakt.TraktService;
 import rss.services.user.ForgotPasswordResult;
 import rss.services.user.UserService;
+import rss.trakt.TraktService;
 import rss.util.CookieUtils;
 import rss.util.DurationMeter;
 
@@ -172,8 +172,7 @@ public class UserController extends BaseController {
     @RequestMapping(value = "/trakt/disconnect", method = RequestMethod.GET)
     @ResponseBody
     public void traktDisconnect(HttpServletRequest request, HttpServletResponse response) {
-        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
-        traktService.disconnectUser(user);
+        traktService.disconnectUser(UserContextHolder.getCurrentUserContext().getUserId());
     }
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.POST)
@@ -223,7 +222,7 @@ public class UserController extends BaseController {
         result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
         result.put("news", newsService.getNews(user));
         result.put("traktClientId", traktService.getClientId());
-        result.put("isConnectedToTrakt", traktService.isConnected(user));
+        result.put("isConnectedToTrakt", traktService.isConnected(user.getId()));
         return result;
     }
 }

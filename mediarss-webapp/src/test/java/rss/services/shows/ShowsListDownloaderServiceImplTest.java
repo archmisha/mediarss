@@ -7,12 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
+import rss.PageDownloader;
 import rss.configuration.SettingsService;
 import rss.dao.ShowDao;
 import rss.entities.Show;
 import rss.environment.Environment;
 import rss.environment.EnvironmentTestUtils;
-import rss.services.PageDownloader;
 
 import java.util.Collection;
 

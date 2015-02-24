@@ -1,6 +1,4 @@
-package rss.services.trakt;
-
-import rss.entities.User;
+package rss.trakt;
 
 /**
  * User: dikmanm
@@ -10,9 +8,9 @@ public interface TraktService {
 
     void authenticateUser(String code);
 
-    boolean isConnected(User user);
+    boolean isConnected(long userId);
 
     String getClientId();
 
-    void disconnectUser(User user);
+    void disconnectUser(long userId);
 }

@@ -1,7 +1,7 @@
 package rss.services.searchers.composite.torrentz;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import rss.services.PageDownloader;
+import rss.PageDownloader;
 import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;

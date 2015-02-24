@@ -17,6 +17,16 @@
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
+            <artifactId>trakt</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>page-downloader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
             <artifactId>scheduler</artifactId>
             <version>${project.version}</version>
         </dependency>

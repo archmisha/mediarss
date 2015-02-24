@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
+import rss.PageDownloader;
 import rss.configuration.SettingsService;
 import rss.dao.ShowDao;
 import rss.entities.Episode;

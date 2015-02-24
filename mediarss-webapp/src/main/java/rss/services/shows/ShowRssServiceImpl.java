@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.services.PageDownloader;
+import rss.PageDownloader;
 import rss.services.requests.episodes.EpisodeRequest;
 import rss.util.DurationMeter;
 

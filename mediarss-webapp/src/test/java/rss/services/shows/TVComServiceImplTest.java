@@ -11,10 +11,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import rss.BaseTest;
+import rss.PageDownloader;
 import rss.dao.EpisodeDao;
 import rss.entities.Episode;
 import rss.entities.Show;
-import rss.services.PageDownloader;
 
 import java.util.*;
 

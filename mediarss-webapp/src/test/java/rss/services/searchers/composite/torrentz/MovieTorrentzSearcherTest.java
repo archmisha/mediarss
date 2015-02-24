@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
-import rss.services.PageDownloader;
+import rss.PageDownloader;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 

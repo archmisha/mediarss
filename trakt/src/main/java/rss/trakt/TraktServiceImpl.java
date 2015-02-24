@@ -1,17 +1,15 @@
-package rss.services.trakt;
+package rss.trakt;
 
 import com.google.gson.annotations.SerializedName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.PageDownloader;
 import rss.context.UserContextHolder;
-import rss.entities.User;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.log.LogService;
 import rss.rms.ResourceManagementService;
 import rss.rms.query.RmsQueryInformation;
-import rss.services.PageDownloader;
-import rss.services.user.UserCacheService;
 import rss.util.JsonTranslation;
 
 import java.util.HashMap;
@@ -31,9 +29,6 @@ public class TraktServiceImpl implements TraktService {
     public static final String CLIENT_SECRET_TEST = "907fe2dc532dd6fcfa5766e5a2d04b8a4ab3e3b911b1cec9af335b882b658589";
 
     @Autowired
-    protected UserCacheService userCacheService;
-
-    @Autowired
     private PageDownloader pageDownloader;
 
     @Autowired
@@ -48,7 +43,7 @@ public class TraktServiceImpl implements TraktService {
     }
 
     public void authenticateUser(String code) {
-        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        long userId = UserContextHolder.getCurrentUserContext().getUserId();
 
         Map<String, String> params = new HashMap<>();
         params.put("code", code);
@@ -70,10 +65,10 @@ public class TraktServiceImpl implements TraktService {
             traktAuthTokenResponse.setTokenType("bearer");
         }
 
-        TraktAuthJson traktAuthJson = getTraktAuthJson(user);
+        TraktAuthJson traktAuthJson = getTraktAuthJson(userId);
         if (traktAuthJson == null) {
             traktAuthJson = new TraktAuthJson();
-            traktAuthJson.setUserId(user.getId());
+            traktAuthJson.setUserId(userId);
         }
         traktAuthJson.setAccessToken(traktAuthTokenResponse.getAccessToken());
         traktAuthJson.setExpiresIn(traktAuthTokenResponse.getExpiresIn());
@@ -82,18 +77,18 @@ public class TraktServiceImpl implements TraktService {
     }
 
     @Override
-    public void disconnectUser(User user) {
-        rmsService.delete(rmsService.apiFactory().createDeleteResourceOperation(TraktAuthJson.class, getQueryInfoForUser(user)));
+    public void disconnectUser(long userId) {
+        rmsService.delete(rmsService.apiFactory().createDeleteResourceOperation(TraktAuthJson.class, getQueryInfoForUser(userId)));
     }
 
-    private RmsQueryInformation getQueryInfoForUser(User user) {
+    private RmsQueryInformation getQueryInfoForUser(long userId) {
         return rmsService.apiFactory().createRmsQueryBuilder()
-                .filter().equal("userId", user.getId()).done().getRmsQueryInformation();
+                .filter().equal("userId", userId).done().getRmsQueryInformation();
     }
 
     @Override
-    public boolean isConnected(User user) {
-        TraktAuthJson traktAuthJson = getTraktAuthJson(user);
+    public boolean isConnected(long userId) {
+        TraktAuthJson traktAuthJson = getTraktAuthJson(userId);
         if (traktAuthJson == null) {
             return false;
         }
@@ -104,8 +99,8 @@ public class TraktServiceImpl implements TraktService {
         return traktAuthJson.getAccessToken() != null;
     }
 
-    private TraktAuthJson getTraktAuthJson(User user) {
-        return rmsService.get(rmsService.apiFactory().createGetResourceOperation(TraktAuthJson.class, getQueryInfoForUser(user)));
+    private TraktAuthJson getTraktAuthJson(long userId) {
+        return rmsService.get(rmsService.apiFactory().createGetResourceOperation(TraktAuthJson.class, getQueryInfoForUser(userId)));
     }
 
     private class TraktAuthTokenResponse {

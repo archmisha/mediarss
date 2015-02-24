@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
-import rss.services.PageDownloader;
+import rss.PageDownloader;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.searchers.composite.torrentz.TorrentzResult;
 
