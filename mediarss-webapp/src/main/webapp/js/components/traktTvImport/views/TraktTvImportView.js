@@ -27,6 +27,7 @@ define([
 			constructor: function(options) {
 				Marionette.Layout.prototype.constructor.apply(this, arguments);
                 this.clientId = options.clientId;
+                this.isConnectedToTrakt = options.isConnectedToTrakt;
 				this.traktTvImportSection = new SectionView({
 					title: 'Trakt.tv Sync (in construction)',
 					description: 'Connect with your account on <a href=\'http://trakt.tv/\' target=\'blank\'>trakt.tv</a>. ' +

@@ -2,8 +2,8 @@ package rss.services.subtitles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rss.scheduler.QuartzJob;
 import rss.services.JobRunner;
-import rss.util.QuartzJob;
 
 /**
  * User: dikmanm

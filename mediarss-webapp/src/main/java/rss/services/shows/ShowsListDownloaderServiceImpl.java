@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import rss.scheduler.QuartzJob;
 import rss.services.JobRunner;
-import rss.util.QuartzJob;
 
 /**
  * User: dikmanm

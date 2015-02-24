@@ -18,7 +18,7 @@
 
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="jobFactory">
-            <bean class="rss.util.SpringQuartzJobFactory"/>
+            <bean class="rss.scheduler.SpringQuartzJobFactory"/>
         </property>
     </bean>
 </beans>

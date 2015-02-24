@@ -1,29 +1,22 @@
 package rss;
 
-import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.configuration.SettingsService;
-import rss.dao.EpisodeDao;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.environment.SettingsUpdateListener;
 import rss.log.LogService;
 import rss.services.OOTBContentLoader;
-import rss.util.QuartzJob;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.io.BufferedReader;
@@ -33,14 +26,9 @@ import java.io.FileReader;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -55,24 +43,12 @@ public class AppConfigListener implements ServletContextListener {
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSS");
 
     @Autowired
-    private Scheduler scheduler;
-
-    @Autowired
-    private SettingsService settingsService;
-
-    @Autowired
     private OOTBContentLoader ootbContentLoader;
 
     @Autowired
     private LogService logService;
 
     private ScheduledExecutorService logMemoryExecutorService;
-
-    @Autowired
-    private TransactionTemplate transactionTemplate;
-
-    @Autowired
-    private EpisodeDao episodeDao;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -90,7 +66,6 @@ public class AppConfigListener implements ServletContextListener {
         // debug
         WebApplicationContext springContext = WebApplicationContextUtils.getRequiredWebApplicationContext(sce.getServletContext());
         log.debug("springContext.getId()=" + springContext.getId());
-
         AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
         autowireCapableBeanFactory.autowireBean(this);
 
@@ -102,12 +77,6 @@ public class AppConfigListener implements ServletContextListener {
             } catch (Exception e) {
                 log.error("Failed loading OOTB content: " + e.getMessage(), e);
             }
-        }
-
-        try {
-            this.loadCronTriggerBeans(springContext);
-        } catch (Exception e) {
-            log.error("Failed starting quartz scheduler: " + e.getMessage(), e);
         }
 
         Environment.getInstance().setDeploymentDate(getDeploymentDate());
@@ -178,40 +147,6 @@ public class AppConfigListener implements ServletContextListener {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void loadCronTriggerBeans(ApplicationContext applicationContext) {
-        final Logger log = getLogger();
-
-        // using parent because we are here with the dispatcher context - it wont find anything on itself
-        Map<String, Object> quartzJobBeans = applicationContext.getBeansWithAnnotation(QuartzJob.class);
-        for (Map.Entry<String, Object> entry : quartzJobBeans.entrySet()) {
-            try {
-                Object job = entry.getValue();
-                QuartzJob quartzJobAnnotation = applicationContext.findAnnotationOnBean(entry.getKey(), QuartzJob.class);
-                if (!Job.class.isAssignableFrom(job.getClass())) {
-                    throw new RuntimeException(job.getClass() + " doesn't implemented " + Job.class);
-                }
-
-//                CronTriggerBean trigger = new CronTriggerBean();
-//                trigger.setCronExpression(quartzJobAnnotation.cronExp());
-//                trigger.setName(quartzJobAnnotation.name() + "_trigger");
-//                JobDetail jobDetail = new JobDetailBean();
-//                jobDetail.setName(quartzJobAnnotation.name());
-//                jobDetail.setJobClass(job.getClass());
-//                trigger.setJobDetail(jobDetail);
-
-                JobDetail jobDetail = JobBuilder.newJob((Class<? extends Job>) job.getClass()).withIdentity(quartzJobAnnotation.name()).build();
-                Trigger trigger = TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(quartzJobAnnotation.name() + "_trigger")
-                        .withSchedule(CronScheduleBuilder.cronSchedule(quartzJobAnnotation.cronExp())).build();
-
-                scheduler.scheduleJob(jobDetail, trigger);
-                log.info("Loading quartz Job: " + entry.getValue());
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-        }
-    }
-
     private Date getDeploymentDate() {
         final Logger log = getLogger();
         Date deployedDate = new Date(); // better than null, even if wrong
@@ -251,33 +186,10 @@ public class AppConfigListener implements ServletContextListener {
 
         final Logger log = getLogger();
 
-        try {
-            log.info("Shutting down quartz scheduler");
-            ServletContext servletContext = servletContextEvent.getServletContext();
-            WebApplicationContext springContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-            Scheduler scheduler = springContext.getBean(Scheduler.class);
-            scheduler.shutdown();
-        } catch (SchedulerException e) {
-            log.info(e.getMessage(), e);
-        }
-
-        // to shutdown the quartz scheduler nicely
+        // shutting spring
         BeanFactory bf = ContextLoader.getCurrentWebApplicationContext();
         if (bf instanceof ConfigurableApplicationContext) {
             ((ConfigurableApplicationContext) bf).close();
-        }
-
-        // shutdown jdbc drivers
-        // This manually unregisters JDBC driver, which prevents Tomcat 7 from complaining about memory leaks wrto this class
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) {
-            Driver driver = drivers.nextElement();
-            try {
-                DriverManager.deregisterDriver(driver);
-                log.info(String.format("De-Registering JDBC driver: %s", driver));
-            } catch (SQLException e) {
-                log.error(String.format("Error De-Registering driver %s", driver), e);
-            }
         }
 
         Environment.getInstance().shutdown();

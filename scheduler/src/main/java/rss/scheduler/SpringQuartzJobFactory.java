@@ -1,4 +1,4 @@
-package rss.util;
+package rss.scheduler;
 
 import org.quartz.Job;
 import org.quartz.spi.TriggerFiredBundle;
