@@ -2,26 +2,30 @@ package rss.services.subtitles;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.scheduler.QuartzJob;
-import rss.services.JobRunner;
+import rss.scheduler.ScheduledJob;
 
 /**
  * User: dikmanm
  * Date: 31/12/12 20:12
  */
 @Service
-@QuartzJob(name = "SubtitlesDownloadScheduleJob", cronExp = "0 0 2/6 * * ?")
-public class SubtitlesDownloadScheduleServiceImpl extends JobRunner implements SubtitlesDownloadScheduleService {
+public class SubtitlesDownloadScheduleServiceImpl implements ScheduledJob {
 
-	@Autowired
-	private SubtitlesService subtitlesService;
+    @Autowired
+    private SubtitlesService subtitlesService;
 
-	public SubtitlesDownloadScheduleServiceImpl() {
-		super(JOB_NAME);
-	}
+    @Override
+    public String getName() {
+        return "SubtitlesDownloadScheduleJob";
+    }
 
-	protected String run() {
-		subtitlesService.downloadMissingSubtitles();
-		return null;
-	}
+    @Override
+    public String getCronExp() {
+        return "0 0 2/6 * * ?";
+    }
+
+    @Override
+    public void run() {
+        subtitlesService.downloadMissingSubtitles();
+    }
 }

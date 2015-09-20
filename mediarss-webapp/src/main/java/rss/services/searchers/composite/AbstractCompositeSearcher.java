@@ -4,12 +4,12 @@ import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import rss.PageDownloadException;
-import rss.entities.Torrent;
 import rss.log.LogService;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SearcherUtils;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.torrents.Torrent;
+import rss.torrents.requests.MediaRequest;
 
 import java.util.*;
 import java.util.regex.Matcher;

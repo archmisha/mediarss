@@ -4,7 +4,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
-import rss.entities.*;
+import rss.entities.Movie;
+import rss.entities.User;
+import rss.entities.UserEpisodeTorrent;
+import rss.entities.UserMovieTorrent;
+import rss.torrents.UserTorrent;
 
 import java.util.*;
 

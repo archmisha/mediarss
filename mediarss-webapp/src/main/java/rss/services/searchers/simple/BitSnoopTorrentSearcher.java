@@ -4,10 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
-import rss.entities.Torrent;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.torrents.Torrent;
+import rss.torrents.requests.MediaRequest;
 import rss.util.StringUtils2;
 
 import java.util.ArrayList;

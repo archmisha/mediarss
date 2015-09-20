@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import rss.scheduler.QuartzJob;
-import rss.services.JobRunner;
+import org.springframework.transaction.support.TransactionTemplate;
+import rss.scheduler.ScheduledJob;
 import rss.services.user.UserCacheService;
 
 /**
@@ -14,52 +14,60 @@ import rss.services.user.UserCacheService;
  * Time: 21:38
  */
 @Service
-@QuartzJob(name = "MoviesScrabbler", cronExp = "0 0 0/6 * * ?")
-public class MoviesScrabblerImpl extends JobRunner implements MoviesScrabbler {
+public class MoviesScrabblerImpl implements ScheduledJob {
 
-	@Autowired
-	private MovieService movieService;
+    public static final String MOVIES_SCRABBLER_JOB = "MoviesScrabbler";
 
-	@Autowired
-	private TopMoviesService topMoviesService;
+    @Autowired
+    private MovieService movieService;
 
-	@Autowired
-	private UserCacheService userCacheService;
+    @Autowired
+    private TopMoviesService topMoviesService;
 
-	public MoviesScrabblerImpl() {
-		super(JOB_NAME);
-	}
+    @Autowired
+    private UserCacheService userCacheService;
 
-	@Override
-	protected String run() {
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(TransactionStatus arg0) {
-				movieService.downloadLatestMovies();
-			}
-		});
+    @Autowired
+    protected TransactionTemplate transactionTemplate;
 
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-				movieService.downloadUserMovies();
-			}
-		});
+    @Override
+    public String getName() {
+        return MOVIES_SCRABBLER_JOB;
+    }
 
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(TransactionStatus arg0) {
-				topMoviesService.downloadTopMovies();
-			}
-		});
+    @Override
+    public String getCronExp() {
+        return "0 0 0/6 * * ?";
+    }
 
-		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-			@Override
-			public void doInTransactionWithoutResult(TransactionStatus arg0) {
-				userCacheService.invalidateMovies();
-			}
-		});
+    @Override
+    public void run() {
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            public void doInTransactionWithoutResult(TransactionStatus arg0) {
+                movieService.downloadLatestMovies();
+            }
+        });
 
-		return null;
-	}
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                movieService.downloadUserMovies();
+            }
+        });
+
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            public void doInTransactionWithoutResult(TransactionStatus arg0) {
+                topMoviesService.downloadTopMovies();
+            }
+        });
+
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            public void doInTransactionWithoutResult(TransactionStatus arg0) {
+                userCacheService.invalidateMovies();
+            }
+        });
+    }
 }

@@ -10,9 +10,9 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.PageDownloadException;
 import rss.log.LogService;
-import rss.services.requests.SearchRequest;
-import rss.services.searchers.Downloadable;
 import rss.services.searchers.SearchResult;
+import rss.torrents.Downloadable;
+import rss.torrents.requests.SearchRequest;
 import rss.util.MultiThreadExecutor;
 
 import java.text.DateFormat;

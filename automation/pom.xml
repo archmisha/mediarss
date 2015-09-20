@@ -17,5 +17,6 @@
     <modules>
         <module>automation-run</module>
         <module>automation-tests</module>
+        <module>automation-pages-webapp</module>
     </modules>
 </project>

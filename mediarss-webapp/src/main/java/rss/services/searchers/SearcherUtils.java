@@ -1,6 +1,6 @@
 package rss.services.searchers;
 
-import rss.entities.MediaQuality;
+import rss.torrents.MediaQuality;
 
 /**
  * User: dikmanm

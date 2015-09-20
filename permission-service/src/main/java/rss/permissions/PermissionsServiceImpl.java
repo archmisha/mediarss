@@ -17,8 +17,6 @@ public class PermissionsServiceImpl implements PermissionsService {
 
     @Override
     public boolean isAdmin() {
-
-
         // if logged in user is admin
         if (UserContextHolder.getCurrentUserContext().isAdmin()) {
             return true;

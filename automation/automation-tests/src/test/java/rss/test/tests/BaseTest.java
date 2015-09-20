@@ -10,6 +10,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import rss.test.Reporter;
 import rss.test.services.BaseService;
+import rss.test.services.TestPagesService;
+import rss.test.services.Unique;
+import rss.test.services.UserService;
 
 /**
  * User: dikmanm
@@ -24,6 +27,15 @@ public abstract class BaseTest extends AbstractJUnit4SpringContextTests {
     @Autowired
     protected BaseService baseService;
 
+    @Autowired
+    protected UserService userService;
+
+    @Autowired
+    private TestPagesService testPagesService;
+
+    @Autowired
+    protected Unique unique;
+
     @Rule
     public TestRule rule = new StartupRule();
 
@@ -36,9 +48,15 @@ public abstract class BaseTest extends AbstractJUnit4SpringContextTests {
             return new Statement() {
                 @Override
                 public void evaluate() throws Throwable {
-                    baseService.waitForTomcatStartup();
+                    if (!baseService.waitForTomcatStartup()) {
+                        return;
+                    }
                     try {
+                        reporter.info("Reset automation-pages state");
+                        testPagesService.resetOverrides();
+
                         reporter.info("Starting test: " + description.getClassName() + ":" + description.getMethodName());
+                        userService.logout();
                         base.evaluate();
                     } catch (Throwable e) {
                         reporter.error(ExceptionUtils.getStackTrace(e));

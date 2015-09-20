@@ -4,7 +4,8 @@ import rss.entities.User;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 
 /**
  * User: dikmanm
@@ -14,13 +15,12 @@ public class CookieUtils {
 
     public static final String REMEMBER_ME_COOKIE_NAME = "media-rss";
 
-    public static void createRememberMeCookie(User user, HttpServletResponse response) {
+    public static void createRememberMeCookie(User user, Response.ResponseBuilder responseBuilder) {
         user.setLoginSeries(StringUtils2.generateUniqueHash());
         user.setLoginToken(StringUtils2.generateUniqueHash());
-        Cookie cookie = new Cookie(REMEMBER_ME_COOKIE_NAME, user.getEmail() + "," + user.getLoginSeries() + "," + user.getLoginToken());
-        cookie.setMaxAge(Integer.MAX_VALUE);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+
+        NewCookie cookie = new NewCookie(REMEMBER_ME_COOKIE_NAME, user.getEmail() + "," + user.getLoginSeries() + "," + user.getLoginToken(), "/", null, null, Integer.MAX_VALUE, false);
+        responseBuilder.cookie(new NewCookie(cookie));
     }
 
     public static Cookie getRememberMeCookie(HttpServletRequest request) {
@@ -34,15 +34,10 @@ public class CookieUtils {
         return null;
     }
 
-    public static void invalidateRememberMeCookie(HttpServletRequest request, HttpServletResponse response) {
-        // invalidate cookie
-        Cookie cookie = getRememberMeCookie(request);
-        if (cookie != null) {
-            cookie = new Cookie(REMEMBER_ME_COOKIE_NAME, null);
-            cookie.setMaxAge(0);
-            cookie.setValue(null);
-            cookie.setPath("/");
-            response.addCookie(cookie);
+    public static void invalidateRememberMeCookie(String rememberMeCookie, Response.ResponseBuilder responseBuilder) {
+        if (rememberMeCookie != null) {
+            NewCookie cookie = new NewCookie(REMEMBER_ME_COOKIE_NAME, null, "/", null, null, 0, false);
+            responseBuilder.cookie(new NewCookie(cookie));
         }
     }
 }

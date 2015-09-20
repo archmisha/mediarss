@@ -13,12 +13,12 @@ import rss.BaseTest;
 import rss.PageDownloader;
 import rss.entities.Episode;
 import rss.entities.Show;
-import rss.entities.Torrent;
 import rss.services.matching.MatchCandidate;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.subtitles.SubtitlesSingleEpisodeRequest;
 import rss.services.shows.ShowService;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.torrents.Torrent;
 
 import java.util.Collections;
 import java.util.Date;

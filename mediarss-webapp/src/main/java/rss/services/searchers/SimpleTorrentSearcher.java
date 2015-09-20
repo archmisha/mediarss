@@ -7,12 +7,12 @@ import rss.PageDownloadException;
 import rss.PageDownloader;
 import rss.RecoverableConnectionException;
 import rss.dao.SearchLogDao;
-import rss.entities.Torrent;
 import rss.log.LogService;
 import rss.services.matching.MatchCandidate;
 import rss.services.matching.MatcherVisitor;
-import rss.services.requests.MediaRequest;
 import rss.services.shows.ShowService;
+import rss.torrents.Torrent;
+import rss.torrents.requests.MediaRequest;
 import rss.util.Utils;
 
 import java.io.UnsupportedEncodingException;

@@ -3,13 +3,10 @@ package rss.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.entities.SearchLog;
-import rss.services.requests.MediaRequest;
-import rss.services.requests.episodes.DoubleEpisodeRequest;
-import rss.services.requests.episodes.FullSeasonRequest;
-import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
-import rss.services.searchers.MediaRequestVisitor;
 import rss.services.searchers.SearchResult;
+import rss.torrents.requests.MediaRequest;
+import rss.torrents.searchers.MediaRequestVisitor;
 
 /**
  * User: dikmanm

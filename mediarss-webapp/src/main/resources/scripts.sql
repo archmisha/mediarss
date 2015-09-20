@@ -21,3 +21,9 @@ indexes to be created manually:
 @org.hibernate.annotations.Table(appliesTo = "movie_torrentids", indexes = {
 		@Index(name = "movie_torrentids_torrentIds_idx", columnNames = {"torrentids"})
 })
+
+
+
+
+update user set admin=true where id=1
+update user set admin=false where id<>1

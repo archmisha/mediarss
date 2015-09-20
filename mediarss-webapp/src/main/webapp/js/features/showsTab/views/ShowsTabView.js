@@ -89,7 +89,7 @@ define([
 						that.trackedShowsSection.updateCounter();
 					}, false); // no need loading here
 					HttpUtils.get("rest/shows/schedule", function(res) {
-						that.showsScheduleView.setSchedule(res.schedule);
+						that.showsScheduleView.setSchedule(res);
 					}, false); // no need loading here
 				}
 

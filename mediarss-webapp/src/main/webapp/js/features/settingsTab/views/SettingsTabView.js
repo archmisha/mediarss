@@ -61,7 +61,7 @@ define([
 
 			onRender: function() {
 				var that = this;
-				HttpUtils.get('rest/user/initial-data', function(res) {
+				HttpUtils.get('rest/home/initial-data', function (res) {
 					$.extend(that.tabData, res);
 					var subtitleValues = [SUBTITLES_NONE].concat(that.tabData.subtitles);
 					subtitleValues.forEach(function(subtitle) {
@@ -134,7 +134,7 @@ define([
 					selectedSubtitle = null;
 				}
 
-				HttpUtils.post("rest/user/subtitles", {subtitles: selectedSubtitle}, function(res) {
+				HttpUtils.post("rest/home/subtitles", {subtitles: selectedSubtitle}, function (res) {
 					MessageBox.info('Subtitles preferences were saved');
 				});
 			},

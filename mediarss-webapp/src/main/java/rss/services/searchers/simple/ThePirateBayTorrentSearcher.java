@@ -3,11 +3,11 @@ package rss.services.searchers.simple;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.entities.Torrent;
 import rss.log.LogService;
 import rss.services.matching.MatchCandidate;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.torrents.Torrent;
+import rss.torrents.requests.MediaRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

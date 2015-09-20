@@ -2,9 +2,9 @@ package rss.services.searchers.composite.torrentz;
 
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
-import rss.entities.Torrent;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
+import rss.torrents.Torrent;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

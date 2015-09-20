@@ -2,8 +2,8 @@ package rss.entities;
 
 import org.hibernate.annotations.Index;
 import rss.ems.entities.BaseEntity;
-import rss.services.searchers.Downloadable;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.torrents.Downloadable;
 
 import javax.persistence.*;
 import java.util.Date;

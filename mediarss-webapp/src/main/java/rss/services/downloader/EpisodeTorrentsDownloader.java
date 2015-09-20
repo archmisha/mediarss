@@ -15,10 +15,7 @@ import rss.dao.ShowDao;
 import rss.dao.SubtitlesDao;
 import rss.dao.TorrentDao;
 import rss.entities.Episode;
-import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.entities.Torrent;
-import rss.services.SessionService;
 import rss.services.requests.episodes.*;
 import rss.services.requests.subtitles.SubtitlesDoubleEpisodeRequest;
 import rss.services.requests.subtitles.SubtitlesRequest;
@@ -30,6 +27,8 @@ import rss.services.shows.ShowService;
 import rss.services.subtitles.SubtitleLanguage;
 import rss.services.subtitles.SubtitlesService;
 import rss.services.user.UserCacheService;
+import rss.torrents.MediaQuality;
+import rss.torrents.Torrent;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 
@@ -61,9 +60,6 @@ public class EpisodeTorrentsDownloader extends BaseDownloader<ShowRequest, Episo
 
 	@Autowired
 	private SubtitlesService subtitlesService;
-
-	@Autowired
-	private SessionService sessionService;
 
 	@Autowired
 	private SubtitlesDao subtitlesDao;

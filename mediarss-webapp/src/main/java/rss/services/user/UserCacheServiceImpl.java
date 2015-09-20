@@ -1,18 +1,23 @@
 package rss.services.user;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.controllers.vo.ShowVO;
-import rss.controllers.vo.ShowsScheduleVO;
 import rss.controllers.vo.UserMovieVO;
 import rss.dao.UserDao;
 import rss.entities.User;
 import rss.log.LogService;
 import rss.services.movies.MovieService;
+import rss.services.shows.CachedShow;
 import rss.services.shows.ShowService;
+import rss.services.shows.ShowsCacheService;
+import rss.shows.ShowJSON;
+import rss.shows.ShowsScheduleJSON;
 import rss.util.DurationMeter;
 
 import javax.annotation.PostConstruct;
@@ -32,230 +37,252 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserCacheServiceImpl implements UserCacheService {
 
-	@Autowired
-	private LogService logService;
+    @Autowired
+    private LogService logService;
 
-	@Autowired
-	private ShowService showService;
+    @Autowired
+    private ShowService showService;
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@Autowired
-	private MovieService movieService;
+    @Autowired
+    private MovieService movieService;
 
-	@Autowired
-	private UserDao userDao;
+    @Autowired
+    private UserDao userDao;
 
-	@Autowired
-	private TransactionTemplate transactionTemplate;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
-	private Map<Long, UserCacheEntry> cache = new ConcurrentHashMap<>();
+    @Autowired
+    private ShowsCacheService showsCacheService;
 
-	private ScheduledExecutorService executorService;
+    private Map<Long, UserCacheEntry> cache = new ConcurrentHashMap<>();
 
-	@PostConstruct
-	private void postConstruct() {
-		executorService = Executors.newSingleThreadScheduledExecutor();
-		executorService.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					// need transaction template, cuz otherwise when getting user shows it throws LazyInitializationException
-					transactionTemplate.execute(new TransactionCallback<Object>() {
-						@Override
-						public Object doInTransaction(TransactionStatus transactionStatus) {
-							reloadCache();
-							return null;
-						}
-					});
-				} catch (Exception e) {
-					logService.error(getClass(), "Failed loading users cache: " + e.getMessage(), e);
-				}
-			}
-		}, 0, 1, TimeUnit.HOURS);
-	}
+    private ScheduledExecutorService executorService;
 
-	@PreDestroy
-	private void preDestroy() {
-		logService.info(getClass(), "Terminating users cache reload job");
-		executorService.shutdown();
-	}
+    @PostConstruct
+    private void postConstruct() {
+        executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // need transaction template, cuz otherwise when getting user shows it throws LazyInitializationException
+                    transactionTemplate.execute(new TransactionCallback<Object>() {
+                        @Override
+                        public Object doInTransaction(TransactionStatus transactionStatus) {
+                            reloadCache();
+                            return null;
+                        }
+                    });
+                } catch (Exception e) {
+                    logService.error(getClass(), "Failed loading users cache: " + e.getMessage(), e);
+                }
+            }
+        }, 0, 1, TimeUnit.HOURS);
+    }
 
-	private void reloadCache() {
-		DurationMeter duration = new DurationMeter();
+    @PreDestroy
+    private void preDestroy() {
+        logService.info(getClass(), "Terminating users cache reload job");
+        executorService.shutdown();
+    }
 
-		for (final User user : userDao.findAll()) {
-			if (!cache.containsKey(user.getId())) {
-				cache.put(user.getId(), new UserCacheEntry(user));
-			}
-			reloadUser(user);
-		}
+    private void reloadCache() {
+        DurationMeter duration = new DurationMeter();
 
-		duration.stop();
-		logService.info(getClass(), String.format("Loaded users cache (%d ms)", duration.getDuration()));
-	}
+        for (final User user : userDao.findAll()) {
+            if (!cache.containsKey(user.getId())) {
+                cache.put(user.getId(), new UserCacheEntry(user));
+            }
+            reloadUser(user);
+        }
 
-	private void reloadUser(final User user) {
-//		performUserUpdate(user.getId(), new AtomicUserUpdate() {
-//			@Override
-//			public void run(UserCacheEntry cacheEntry) {
-		invalidateSchedule(user);
-				invalidateTrackedShows(user);
-				invalidateUserMovies(user);
-				invalidateAvailableMovies(user);
-//			}
-//		});
-	}
+        duration.stop();
+        logService.info(getClass(), String.format("Loaded users cache (%d ms)", duration.getDuration()));
+    }
 
-	@Override
-	public ShowsScheduleVO getSchedule(User user) {
-		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return cacheEntry.getSchedule();
-	}
+    private void reloadUser(final User user) {
+        invalidateSchedule(user);
+        invalidateTrackedShows(user);
+        invalidateUserMovies(user);
+        invalidateAvailableMovies(user);
+    }
 
-	@Override
-	public void invalidateSchedule(User user) {
-		final ShowsScheduleVO schedule = showService.getSchedule(user);
-		performUserUpdate(user.getId(), new AtomicUserUpdate() {
-			@Override
-			public void run(UserCacheEntry cacheEntry) {
-				cacheEntry.setSchedule(schedule);
-			}
-		});
-	}
+    @Override
+    public ShowsScheduleJSON getSchedule(User user) {
+        UserCacheEntry cacheEntry = cache.get(user.getId());
+        return cacheEntry.getSchedule();
+    }
 
-	@Override
-	public List<ShowVO> getTrackedShows(User user) {
-		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return cacheEntry.getTrackedShows();
-	}
+    @Override
+    public void invalidateSchedule(User user) {
+        final ShowsScheduleJSON schedule = showService.getSchedule(user);
+        performUserUpdate(user.getId(), new AtomicUserUpdate() {
+            @Override
+            public void run(UserCacheEntry cacheEntry) {
+                cacheEntry.setSchedule(schedule);
+            }
+        });
+    }
 
-	@Override
-	public void invalidateTrackedShows(User user) {
-		final List<ShowVO> trackedShows = showService.getTrackedShows(user);
-		performUserUpdate(user.getId(), new AtomicUserUpdate() {
-			@Override
-			public void run(UserCacheEntry cacheEntry) {
-				cacheEntry.setTrackedShows(trackedShows);
-			}
-		});
-	}
+    @Override
+    public List<ShowJSON> getTrackedShows(User user) {
+        UserCacheEntry cacheEntry = cache.get(user.getId());
+        List<ShowJSON> shows = new ArrayList<>();
 
-	@Override
-	public void addUser(User user) {
-		cache.put(user.getId(), new UserCacheEntry(user));
-		reloadUser(user);
-	}
+        final List<Long> trackedShows = cacheEntry.getTrackedShows();
+        if (!trackedShows.isEmpty()) {
+            Map<Long, CachedShow> showsMap = Maps.uniqueIndex(showsCacheService.getAll(), new Function<CachedShow, Long>() {
+                @Override
+                public Long apply(CachedShow show) {
+                    return show.getId();
+                }
+            });
 
-	@Override
-	public User getUser(long userId) {
-		UserCacheEntry cacheEntry = cache.get(userId);
-		if (cacheEntry == null) { // can happen from register servlet
-			return null;
-		}
-		return cacheEntry.getUser();
-	}
+            for (Long id : trackedShows) {
+                CachedShow cachedShow = showsMap.get(id);
+                if (cachedShow != null) {
+                    shows.add(new ShowJSON().withId(cachedShow.getId()).withName(cachedShow.getName())
+                            .withEnded(cachedShow.isEnded()));
+                }
+            }
+        }
+        return shows;
+    }
 
-	@Override
-	public void invalidateUser(User user) {
-		final User newUser = userService.getUser(user.getId());
-		if (newUser == null) {
-			cache.remove(user.getId());
-		} else {
-			performUserUpdate(user.getId(), new AtomicUserUpdate() {
-				@Override
-				public void run(UserCacheEntry cacheEntry) {
-					cacheEntry.setUser(newUser);
-				}
-			});
-		}
-	}
+    @Override
+    public void invalidateTrackedShows(User user) {
+        final List<Long> trackedShows = Lists.transform(showService.getTrackedShows(user), new Function<ShowJSON, Long>() {
+            @Override
+            public Long apply(ShowJSON showJSON) {
+                return showJSON.getId();
+            }
+        });
+        performUserUpdate(user.getId(), new AtomicUserUpdate() {
+            @Override
+            public void run(UserCacheEntry cacheEntry) {
+                cacheEntry.setTrackedShows(trackedShows);
+            }
+        });
+    }
 
-	@Override
-	public List<UserMovieVO> getUserMovies(User user) {
-		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return levelOneCopy(cacheEntry.getUserMovies());
-	}
+    @Override
+    public void addUser(User user) {
+        cache.put(user.getId(), new UserCacheEntry(user));
+        reloadUser(user);
+    }
 
-	@Override
-	public void invalidateUserMovies(User user) {
-		final List<UserMovieVO> userMovies = movieService.getUserMovies(user);
-		performUserUpdate(user.getId(), new AtomicUserUpdate() {
-			@Override
-			public void run(UserCacheEntry cacheEntry) {
-				cacheEntry.setUserMovies(userMovies);
-			}
-		});
-	}
+    @Override
+    public User getUser(long userId) {
+        UserCacheEntry cacheEntry = cache.get(userId);
+        if (cacheEntry == null) { // can happen from register servlet
+            return null;
+        }
+        return cacheEntry.getUser();
+    }
 
-	@Override
-	public int getUserMoviesCount(User user) {
-		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return cacheEntry.getUserMovies().size();
-	}
+    @Override
+    public void invalidateUser(User user) {
+        final User newUser = userService.getUser(user.getId());
+        if (newUser == null) {
+            cache.remove(user.getId());
+        } else {
+            performUserUpdate(user.getId(), new AtomicUserUpdate() {
+                @Override
+                public void run(UserCacheEntry cacheEntry) {
+                    cacheEntry.setUser(newUser);
+                }
+            });
+        }
+    }
 
-	@Override
-	public void invalidateAvailableMovies(User user) {
-		final List<UserMovieVO> userMovies = movieService.getAvailableMovies(user);
-		performUserUpdate(user.getId(), new AtomicUserUpdate() {
-			@Override
-			public void run(UserCacheEntry cacheEntry) {
-				cacheEntry.setAvailableMovies(userMovies);
-			}
-		});
-	}
+    @Override
+    public List<UserMovieVO> getUserMovies(User user) {
+        UserCacheEntry cacheEntry = cache.get(user.getId());
+        return levelOneCopy(cacheEntry.getUserMovies());
+    }
 
-	@Override
-	public List<UserMovieVO> getAvailableMovies(User user) {
-		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return levelOneCopy(cacheEntry.getAvailableMovies());
-	}
+    @Override
+    public void invalidateUserMovies(User user) {
+        final List<UserMovieVO> userMovies = movieService.getUserMovies(user);
+        performUserUpdate(user.getId(), new AtomicUserUpdate() {
+            @Override
+            public void run(UserCacheEntry cacheEntry) {
+                cacheEntry.setUserMovies(userMovies);
+            }
+        });
+    }
 
-	@Override
-	public int getAvailableMoviesCount(User user) {
-		UserCacheEntry cacheEntry = cache.get(user.getId());
-		return cacheEntry.getAvailableMovies().size();
-	}
+    @Override
+    public int getUserMoviesCount(User user) {
+        UserCacheEntry cacheEntry = cache.get(user.getId());
+        return cacheEntry.getUserMovies().size();
+    }
 
-	@Override
-	public void invalidateMovies() {
-		for (UserCacheEntry userCacheEntry : cache.values()) {
-			User user = userCacheEntry.getUser();
-			invalidateAvailableMovies(user);
-			invalidateUserMovies(user);
-		}
-	}
+    @Override
+    public void invalidateAvailableMovies(User user) {
+        final List<UserMovieVO> userMovies = movieService.getAvailableMovies(user);
+        performUserUpdate(user.getId(), new AtomicUserUpdate() {
+            @Override
+            public void run(UserCacheEntry cacheEntry) {
+                cacheEntry.setAvailableMovies(userMovies);
+            }
+        });
+    }
 
-	private List<UserMovieVO> levelOneCopy(List<UserMovieVO> movies) {
-		List<UserMovieVO> result = new ArrayList<>();
-		for (UserMovieVO movie : movies) {
-			UserMovieVO copy = new UserMovieVO();
-			copy.setId(movie.getId());
-			copy.setTitle(movie.getTitle());
-			copy.getNotViewedTorrents().addAll(movie.getNotViewedTorrents());
-			copy.setNotViewedTorrentsCount(movie.getNotViewedTorrentsCount());
-			copy.getViewedTorrents().addAll(movie.getViewedTorrents());
-			copy.setViewedTorrentsCount(movie.getViewedTorrentsCount());
-			copy.setDownloadStatus(movie.getDownloadStatus());
-			copy.setReleaseDate(movie.getReleaseDate());
-			result.add(copy);
-		}
+    @Override
+    public List<UserMovieVO> getAvailableMovies(User user) {
+        UserCacheEntry cacheEntry = cache.get(user.getId());
+        return levelOneCopy(cacheEntry.getAvailableMovies());
+    }
 
-		return result;
-	}
+    @Override
+    public int getAvailableMoviesCount(User user) {
+        UserCacheEntry cacheEntry = cache.get(user.getId());
+        return cacheEntry.getAvailableMovies().size();
+    }
 
-	private void performUserUpdate(long userId, AtomicUserUpdate update) {
-		UserCacheEntry cacheEntry = cache.get(userId);
-		cacheEntry.lock();
-		try {
-			update.run(cacheEntry);
-		} finally {
-			cacheEntry.unlock();
-		}
-	}
+    @Override
+    public void invalidateMovies() {
+        for (UserCacheEntry userCacheEntry : cache.values()) {
+            User user = userCacheEntry.getUser();
+            invalidateAvailableMovies(user);
+            invalidateUserMovies(user);
+        }
+    }
 
-	private interface AtomicUserUpdate {
-		void run(UserCacheEntry cacheEntry);
-	}
+    private List<UserMovieVO> levelOneCopy(List<UserMovieVO> movies) {
+        List<UserMovieVO> result = new ArrayList<>();
+        for (UserMovieVO movie : movies) {
+            UserMovieVO copy = new UserMovieVO();
+            copy.setId(movie.getId());
+            copy.setTitle(movie.getTitle());
+            copy.getNotViewedTorrents().addAll(movie.getNotViewedTorrents());
+            copy.setNotViewedTorrentsCount(movie.getNotViewedTorrentsCount());
+            copy.getViewedTorrents().addAll(movie.getViewedTorrents());
+            copy.setViewedTorrentsCount(movie.getViewedTorrentsCount());
+            copy.setDownloadStatus(movie.getDownloadStatus());
+            copy.setReleaseDate(movie.getReleaseDate());
+            result.add(copy);
+        }
+
+        return result;
+    }
+
+    private void performUserUpdate(long userId, AtomicUserUpdate update) {
+        UserCacheEntry cacheEntry = cache.get(userId);
+        cacheEntry.lock();
+        try {
+            update.run(cacheEntry);
+        } finally {
+            cacheEntry.unlock();
+        }
+    }
+
+    private interface AtomicUserUpdate {
+        void run(UserCacheEntry cacheEntry);
+    }
 }

@@ -1,5 +1,6 @@
 package rss.entities;
 
+import org.hibernate.annotations.Index;
 import rss.ems.entities.BaseEntity;
 import rss.services.searchers.SearchResult;
 
@@ -36,6 +37,7 @@ public class SearchLog extends BaseEntity {
     private byte[] exception;
 
     @Column(name = "name")
+    @Index(name = "search_log_ame_idx")
     private String name;
 
     @Column(name = "season")

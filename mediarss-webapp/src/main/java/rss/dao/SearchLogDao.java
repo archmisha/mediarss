@@ -2,8 +2,8 @@ package rss.dao;
 
 import rss.ems.dao.Dao;
 import rss.entities.SearchLog;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
+import rss.torrents.requests.MediaRequest;
 
 /**
  * User: dikmanm

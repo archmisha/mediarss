@@ -16,11 +16,10 @@ import rss.rms.query.translator.MongoDbQueryTranslationResult;
 import rss.rms.query.translator.MongoDbQueryTranslator;
 import rss.util.JsonTranslation;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * User: dikmanm
@@ -32,7 +31,8 @@ public class MongoDriverImpl implements MongoDriver {
     private MongoClient mongoClient;
     private String database;
 
-    public MongoDriverImpl() {
+    @PostConstruct
+    private void postConstruct() {
         try {
             Properties props = Environment.getInstance().lookup("mongodb.properties");
 
@@ -65,6 +65,22 @@ public class MongoDriverImpl implements MongoDriver {
             return null;
         }
         return dbObjectToObject(query.getResourceClass(), dbObject);
+    }
+
+    @Override
+    public <T extends RmsResource> List<T> getCollection(GetResourcesRMSQuery<T> query) {
+        MongoDbQueryTranslator queryTranslator = new MongoDbQueryTranslator();
+        MongoDbQueryTranslationResult queryTranslationResult = queryTranslator.translateQuery(query.getQueryInfo()/*resourceQueryContainer.getDalQuery()*/);
+
+        List<T> result = new ArrayList<>();
+        DBCollection dbCollection = getDbCollection(query.getResourceClass());
+        DBCursor dbCursor = dbCollection.find(queryTranslationResult.getFilter(), queryTranslationResult.getLayout());
+        while (dbCursor.hasNext()) {
+            DBObject dbObject = dbCursor.next();
+            result.add(dbObjectToObject(query.getResourceClass(), dbObject));
+        }
+
+        return result;
     }
 
     @Override

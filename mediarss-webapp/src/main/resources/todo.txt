@@ -1,7 +1,7 @@
 session service remove
 make generic cache interface - in emory
 put in the cache service the user searcehs
-
+user cache service - everyone uses it, should use user service and this one should be internal
 
 
 timeout dilaog singleton!

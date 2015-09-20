@@ -1,14 +1,14 @@
 package rss.services.matching;
 
-import rss.entities.MediaQuality;
 import rss.services.requests.episodes.DoubleEpisodeRequest;
 import rss.services.requests.episodes.EpisodeRequest;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
-import rss.services.searchers.MediaRequestVisitor;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.shows.ShowService;
+import rss.torrents.MediaQuality;
+import rss.torrents.searchers.MediaRequestVisitor;
 import rss.util.CollectionUtils;
 
 import java.util.*;

@@ -1,11 +1,12 @@
 package rss.services.searchers;
 
 import org.apache.commons.lang3.tuple.Pair;
-import rss.entities.Torrent;
 import rss.services.requests.episodes.DoubleEpisodeRequest;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.requests.movies.MovieRequest;
+import rss.torrents.Torrent;
+import rss.torrents.searchers.MediaRequestVisitor;
 
 import java.util.List;
 

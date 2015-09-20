@@ -4,9 +4,9 @@ import rss.ems.dao.Dao;
 import rss.entities.Show;
 import rss.entities.Subtitles;
 import rss.entities.SubtitlesScanHistory;
-import rss.entities.Torrent;
 import rss.services.requests.subtitles.SubtitlesRequest;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.torrents.Torrent;
 
 import java.util.Collection;
 import java.util.List;

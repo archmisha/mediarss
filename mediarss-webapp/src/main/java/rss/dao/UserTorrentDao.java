@@ -1,7 +1,11 @@
 package rss.dao;
 
 import rss.ems.dao.Dao;
-import rss.entities.*;
+import rss.entities.Movie;
+import rss.entities.User;
+import rss.entities.UserEpisodeTorrent;
+import rss.entities.UserMovieTorrent;
+import rss.torrents.UserTorrent;
 
 import java.util.Collection;
 import java.util.Date;

@@ -12,15 +12,16 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.MediaRSSException;
-import rss.controllers.vo.DownloadStatus;
-import rss.controllers.vo.UserMovieTorrentVO;
+import rss.controllers.vo.UserMovieTorrentJSON;
 import rss.controllers.vo.UserMovieVO;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserTorrentDao;
-import rss.entities.*;
+import rss.entities.Movie;
+import rss.entities.User;
+import rss.entities.UserMovie;
+import rss.entities.UserMovieTorrent;
 import rss.log.LogService;
-import rss.services.SessionService;
 import rss.services.downloader.DownloadConfig;
 import rss.services.downloader.DownloadResult;
 import rss.services.downloader.LatestMoviesDownloader;
@@ -32,6 +33,8 @@ import rss.services.searchers.composite.torrentz.TorrentzParser;
 import rss.services.searchers.composite.torrentz.TorrentzParserImpl;
 import rss.services.searchers.composite.torrentz.TorrentzResult;
 import rss.services.subtitles.SubtitlesService;
+import rss.torrents.DownloadStatus;
+import rss.torrents.Torrent;
 import rss.util.DateUtils;
 import rss.util.DurationMeter;
 
@@ -51,9 +54,6 @@ public class MovieServiceImpl implements MovieService {
 
 	public static final int USER_MOVIES_DISPLAY_DAYS_HISTORY = 14;
 	public static final int DAYS_TORRENT_CONSIDERED_NEW = 7;
-
-	@Autowired
-	private SessionService sessionService;
 
 	@Autowired
 	private UserTorrentDao userTorrentDao;
@@ -133,7 +133,7 @@ public class MovieServiceImpl implements MovieService {
 			if (!moviesBeingSearched.containsKey(movie)) {
 				UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 				for (Torrent torrent : torrentDao.find(movie.getTorrentIds())) {
-					userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent), false);
+					userMovieVO.addUserMovieTorrent(UserMovieTorrentJSON.fromTorrent(torrent), false);
 					torrentsByIds.put(torrent.getId(), torrent);
 				}
 			}
@@ -239,7 +239,7 @@ public class MovieServiceImpl implements MovieService {
 			Movie movie = userTorrent.getUserMovie().getMovie();
 			UserMovieVO userMovieVO = userMoviesVOContainer.getUserMovie(movie);
 			boolean isViewed = !DateUtils.isWithinDaysPast(userTorrent.getTorrent().getDateUploaded(), DAYS_TORRENT_CONSIDERED_NEW);
-			userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromUserTorrent(userTorrent), isViewed);
+			userMovieVO.addUserMovieTorrent(UserMovieTorrentJSON.fromUserTorrent(userTorrent), isViewed);
 			torrentsByIds.put(userTorrent.getTorrent().getId(), userTorrent.getTorrent());
 		}
 
@@ -267,7 +267,7 @@ public class MovieServiceImpl implements MovieService {
 			for (Torrent torrent : torrentDao.find(org.apache.commons.collections.CollectionUtils.subtract(movie.getTorrentIds(), torrentsByIds.keySet()))) {
 				torrentsByIds.put(torrent.getId(), torrent);
 				boolean isViewed = !DateUtils.isWithinDaysPast(torrent.getDateUploaded(), DAYS_TORRENT_CONSIDERED_NEW);
-				userMovieVO.addUserMovieTorrent(UserMovieTorrentVO.fromTorrent(torrent), isViewed);
+				userMovieVO.addUserMovieTorrent(UserMovieTorrentJSON.fromTorrent(torrent), isViewed);
 			}
 		}
 	}
@@ -300,7 +300,7 @@ public class MovieServiceImpl implements MovieService {
 		}
 	}
 
-	public static class UserMovieStatusComparator implements Comparator<UserMovieTorrentVO>, Serializable {
+	public static class UserMovieStatusComparator implements Comparator<UserMovieTorrentJSON>, Serializable {
 		private static final long serialVersionUID = -2265824299212043336L;
 
 		private Map<Long, Torrent> torrentsByIds;
@@ -310,7 +310,7 @@ public class MovieServiceImpl implements MovieService {
 		}
 
 		@Override
-		public int compare(UserMovieTorrentVO o1, UserMovieTorrentVO o2) {
+		public int compare(UserMovieTorrentJSON o1, UserMovieTorrentJSON o2) {
 			Torrent o1Torrent = torrentsByIds.get(o1.getTorrentId());
 			Torrent o2Torrent = torrentsByIds.get(o2.getTorrentId());
 

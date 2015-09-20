@@ -2,9 +2,9 @@ package rss.dao;
 
 import rss.ems.dao.Dao;
 import rss.entities.Movie;
-import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserMovie;
+import rss.torrents.Torrent;
 
 import java.util.Collection;
 import java.util.Date;

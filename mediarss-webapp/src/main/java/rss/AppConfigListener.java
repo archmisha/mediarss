@@ -11,11 +11,10 @@ import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import rss.content.ContentLoader;
 import rss.environment.Environment;
-import rss.environment.ServerMode;
 import rss.environment.SettingsUpdateListener;
 import rss.log.LogService;
-import rss.services.OOTBContentLoader;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -43,10 +42,10 @@ public class AppConfigListener implements ServletContextListener {
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSS");
 
     @Autowired
-    private OOTBContentLoader ootbContentLoader;
+    private LogService logService;
 
     @Autowired
-    private LogService logService;
+    private ContentLoader contentLoader;
 
     private ScheduledExecutorService logMemoryExecutorService;
 
@@ -71,14 +70,6 @@ public class AppConfigListener implements ServletContextListener {
 
         log.info("Server is started in " + Environment.getInstance().getServerMode() + " mode");
 
-        if (Environment.getInstance().getServerMode() != ServerMode.TEST) {
-            try {
-                ootbContentLoader.loadTVRageShows();
-            } catch (Exception e) {
-                log.error("Failed loading OOTB content: " + e.getMessage(), e);
-            }
-        }
-
         Environment.getInstance().setDeploymentDate(getDeploymentDate());
         Environment.getInstance().setStartupDate(new Date());
 
@@ -96,6 +87,8 @@ public class AppConfigListener implements ServletContextListener {
                 }
             }
         });
+
+        contentLoader.load();
     }
 
     private void stopMemoryPrinter() {

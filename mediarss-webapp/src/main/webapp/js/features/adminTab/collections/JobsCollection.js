@@ -9,7 +9,7 @@ define([
 		return Backbone.Collection.extend({
 			model: Job,
 
-			url: 'rest/jobs',
+			url: 'rest/jobs/all',
 
 			parse: function(data) {
 				var result = [];

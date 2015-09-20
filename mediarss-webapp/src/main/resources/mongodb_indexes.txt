@@ -1,1 +1,2 @@
 db.TraktAuthJson.ensureIndex({"userId":1}, {unique:true})
+db.JobStatusJson.ensureIndex({"name":1}, {unique:true})

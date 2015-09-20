@@ -10,7 +10,10 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -19,10 +22,14 @@ import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import rss.test.Reporter;
+import rss.test.util.JsonTranslation;
 import rss.test.util.WaitUtil;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -40,16 +47,20 @@ public class BaseService {
     protected Reporter reporter;
 
     private static boolean isTomcatUp = false;
+    private static boolean isTomcatStartFailed = false;
 
     private static ThreadLocal<String> jSessionIds = new ThreadLocal<>();
 
-    public void waitForTomcatStartup() {
+    public boolean waitForTomcatStartup() {
+        if (isTomcatStartFailed) {
+            return false;
+        }
         if (isTomcatUp) {
-            return;
+            return true;
         }
 
         reporter.info("Waiting for tomcat to start");
-        WaitUtil.waitFor(WaitUtil.TIMEOUT_3_MIN, (int) TimeUnit.SECONDS.toMillis(2), new Runnable() {
+        WaitUtil.waitFor(WaitUtil.TIMEOUT_3_MIN, (int) TimeUnit.SECONDS.toMillis(5), new Runnable() {
             @Override
             public void run() {
                 try {
@@ -59,24 +70,47 @@ public class BaseService {
 //                    assertEquals("Failed generating feed. Please contact support for assistance", response);
                     isTomcatUp = true;
                 } catch (Exception e) {
+                    isTomcatStartFailed = true;
                     reporter.info("Waiting for tomcat to start: " + e.getMessage());
                     throw e;
                 }
             }
         });
         reporter.info("Tomcat is up");
+        return true;
     }
 
     protected String sendGetRequest(String url) {
+        return sendGetRequest(url, Collections.<String, String>emptyMap());
+    }
+
+    protected String sendGetRequest(String url, Map<String, String> queryParams) {
         try {
-            HttpGet httpGet = new HttpGet(getServerBaseUrl() + url);
+            URIBuilder uriBuilder = new URIBuilder(getServerBaseUrl() + url);
+            for (Map.Entry<String, String> entry : queryParams.entrySet()) {
+                uriBuilder = uriBuilder.addParameter(entry.getKey(), entry.getValue());
+            }
+            HttpGet httpGet = new HttpGet(uriBuilder.build());
             return sendRequest(httpGet);
-        } catch (Exception e) {
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    protected String sendPostRequest(String url, Map<String, Object> params) {
+    protected String sendPostRequest(String url, Object params) {
+        try {
+            HttpPost httpPost = new HttpPost(getServerBaseUrl() + url);
+            if (params != null) {
+                httpPost.setEntity(new StringEntity(JsonTranslation.object2JsonString(params)));
+            }
+            httpPost.setHeader("Content-Type", "application/json");
+            return sendRequest(httpPost);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    protected String sendFormPostRequest(String url, Map<String, Object> params) {
         try {
             HttpPost httpPost = new HttpPost(getServerBaseUrl() + url);
             List<NameValuePair> parameters = new ArrayList<>();
@@ -85,24 +119,38 @@ public class BaseService {
             }
             httpPost.setEntity(new UrlEncodedFormEntity(parameters));
             return sendRequest(httpPost);
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    private String sendRequest(HttpRequestBase httpRequest) throws IOException {
-        setJSessionId(httpRequest);
+    private String sendRequest(HttpRequestBase httpRequest) {
+        try {
+            setJSessionId(httpRequest);
 
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-        HttpClient httpClient = httpClientBuilder.build();
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+            HttpClient httpClient = httpClientBuilder.build();
 
-        HttpResponse httpResponse = httpClient.execute(httpRequest);
-        if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-            throw new RuntimeException("Request failed with status: " + httpResponse.getStatusLine());
+            HttpResponse httpResponse = httpClient.execute(httpRequest);
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+                throw new NoPermissionsException("Request '" + httpRequest.getURI().toString() + "'");
+            } else if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                throw new RuntimeException("Request failed with status: " + httpResponse.getStatusLine());
+            }
+
+            extractJSessionId(httpResponse);
+            String result = IOUtils.toString(httpResponse.getEntity().getContent());
+
+            // if was redirected to root
+            if (!httpRequest.getURI().toString().equals("/") &&
+                    result.contains("<title>Personalized Media RSS</title>")) {
+                throw new RedirectToRootException();
+            }
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
-
-        extractJSessionId(httpResponse);
-        return IOUtils.toString(httpResponse.getEntity().getContent());
     }
 
     private void setJSessionId(HttpRequestBase httpRequest) {

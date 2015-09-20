@@ -6,6 +6,8 @@ import rss.rms.driver.MongoDriver;
 import rss.rms.operation.delete.DeleteResourceRMSOperation;
 import rss.rms.operation.get.GetResourcesRMSQuery;
 
+import java.util.List;
+
 /**
  * User: dikmanm
  * Date: 16/02/2015 14:48
@@ -19,6 +21,11 @@ public class ResourceManagementServiceImpl implements ResourceManagementService 
     @Override
     public <T extends RmsResource> T get(GetResourcesRMSQuery<T> query) {
         return mongoDriver.get(query);
+    }
+
+    @Override
+    public <T extends RmsResource> List<T> getCollection(GetResourcesRMSQuery<T> query) {
+        return mongoDriver.getCollection(query);
     }
 
     @Override

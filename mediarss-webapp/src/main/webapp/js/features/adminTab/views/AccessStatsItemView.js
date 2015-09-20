@@ -49,7 +49,7 @@ define([
 
             _onImpersonateButtonClick: function () {
                 console.log('impersonating: ' + this.model.id);
-                HttpUtils.get("rest/admin/impersonate/" + this.model.id, function (res) {
+                HttpUtils.get("rest/user/impersonate/" + this.model.id, function (res) {
                     window.parent.location.reload();
                 });
             }

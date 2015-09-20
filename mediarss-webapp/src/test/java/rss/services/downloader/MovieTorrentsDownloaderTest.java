@@ -16,11 +16,11 @@ import rss.PageDownloaderImpl;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.entities.Movie;
-import rss.entities.Torrent;
 import rss.mail.EmailService;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.composite.MoviesCompositeSearcher;
+import rss.torrents.Torrent;
 
 import java.util.Calendar;
 import java.util.Collections;

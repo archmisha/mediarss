@@ -1,6 +1,7 @@
 package rss.services.searchers;
 
 import org.apache.commons.lang3.StringUtils;
+import rss.torrents.Downloadable;
 
 import java.util.*;
 

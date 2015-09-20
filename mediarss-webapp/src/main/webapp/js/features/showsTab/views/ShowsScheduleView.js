@@ -24,7 +24,7 @@ define([
             _onScheduleUpdate: function () {
                 var that = this;
                 HttpUtils.get("rest/shows/schedule", function (res) {
-                    that.setSchedule(res.schedule);
+                    that.setSchedule(res);
                 }, false); // no need loading here
             },
 

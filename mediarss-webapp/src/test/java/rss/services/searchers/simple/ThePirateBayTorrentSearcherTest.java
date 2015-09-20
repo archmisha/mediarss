@@ -9,10 +9,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import rss.BaseTest;
 import rss.PageDownloader;
 import rss.entities.SearcherConfiguration;
-import rss.entities.Torrent;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SearcherConfigurationService;
+import rss.torrents.Torrent;
 
 import java.util.Calendar;
 import java.util.Date;

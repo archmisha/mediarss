@@ -4,10 +4,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.test.entities.UserData;
 import rss.test.entities.UserLoginResult;
+import rss.test.services.RedirectToRootException;
 import rss.test.services.TraktService;
-import rss.test.services.UserService;
 
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.fail;
 import static junit.framework.TestCase.assertTrue;
 
 /**
@@ -17,21 +18,22 @@ import static junit.framework.TestCase.assertTrue;
 public class TraktTest extends BaseTest {
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private TraktService traktService;
 
     @Test
     public void testConnectAndDisconnectToTrakt() {
         reporter.info("Create admin user and login");
-        UserData adminUser = UserData.createAdminUser("user1", "user1");
-        userService.createUser(adminUser);
+        UserData adminUser = userService.createAdminUser();
         UserLoginResult userLoginResult = userService.login(adminUser);
         assertFalse(userLoginResult.isConnectedToTrakt());
 
         reporter.info("Simulate trakt redirect to webapp after authentication and verify connected to trakt");
-        traktService.redirectAfterAuth();
+        try {
+            traktService.redirectAfterAuth();
+            fail();
+        } catch (RedirectToRootException e) {
+
+        }
         userLoginResult = userService.preLogin(adminUser);
         assertTrue(userLoginResult.isConnectedToTrakt());
 

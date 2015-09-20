@@ -9,13 +9,13 @@ define([
 		return Backbone.Collection.extend({
 			model: User,
 
-			url: 'rest/admin/users',
+			url: 'rest/user/users',
 
 			parse: function(data) {
 				var result = [];
 
 				if (data.success == undefined) {
-					data.forEach(function(item) {
+					data.users.forEach(function (item) {
 						result.push(new User(item));
 					});
 				}

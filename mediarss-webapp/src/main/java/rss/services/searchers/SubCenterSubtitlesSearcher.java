@@ -15,12 +15,16 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.PageDownloader;
-import rss.entities.*;
+import rss.entities.DoubleEpisodeSubtitles;
+import rss.entities.Movie;
+import rss.entities.SingleEpisodeSubtitles;
+import rss.entities.Subtitles;
 import rss.log.LogService;
 import rss.services.matching.MatchCandidate;
 import rss.services.matching.MatchingUtils;
 import rss.services.requests.subtitles.*;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.torrents.MediaQuality;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

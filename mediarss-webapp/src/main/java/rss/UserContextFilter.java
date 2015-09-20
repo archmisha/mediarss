@@ -2,10 +2,9 @@ package rss;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.context.UserContext;
+import rss.context.SessionUserContext;
 import rss.context.UserContextHolder;
 import rss.context.UserContextImpl;
-import rss.controllers.UserController;
 import rss.dao.UserDao;
 import rss.entities.User;
 import rss.util.CookieUtils;
@@ -14,7 +13,6 @@ import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -51,7 +49,7 @@ public class UserContextFilter implements Filter {
             // if in session - restore from session
             // if in cookie - restore from cookie
             // otherwise redirect to root
-            if (isRequestInWhiteList(request) || buildUserContextFromSession(request) || buildUserContextFromCookie(request)) {
+            if (request.getRequestURI().equals("/") || isRequestInWhiteList(request) || buildUserContextFromSession(request) || buildUserContextFromCookie(request)) {
                 filterChain.doFilter(req, res);
             } else {
                 response.sendRedirect("/");
@@ -71,13 +69,7 @@ public class UserContextFilter implements Filter {
     }
 
     private boolean buildUserContextFromSession(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        Object userContext = session.getAttribute(UserController.SESSION_USER_CONTEXT_ATTR);
-        if (userContext != null) {
-            UserContextHolder.pushUserContext((UserContext) userContext);
-            return true;
-        }
-        return false;
+        return new SessionUserContext(request.getSession()).restoreFromSession();
     }
 
     private boolean buildUserContextFromCookie(HttpServletRequest request) {

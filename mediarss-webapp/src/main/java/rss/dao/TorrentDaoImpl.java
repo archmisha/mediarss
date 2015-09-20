@@ -2,7 +2,7 @@ package rss.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
-import rss.entities.Torrent;
+import rss.torrents.Torrent;
 
 import java.util.*;
 

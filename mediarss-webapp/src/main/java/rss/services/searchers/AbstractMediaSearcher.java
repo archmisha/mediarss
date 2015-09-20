@@ -1,9 +1,9 @@
 package rss.services.searchers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.composite.DefaultCompositeSearcher;
 import rss.services.searchers.composite.torrentz.TorrentzSearcher;
+import rss.torrents.requests.MediaRequest;
 
 import java.util.Map;
 

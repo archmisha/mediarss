@@ -3,9 +3,9 @@ package rss.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.entities.Movie;
-import rss.entities.Torrent;
 import rss.entities.User;
 import rss.entities.UserMovie;
+import rss.torrents.Torrent;
 import rss.util.DateUtils;
 
 import java.util.*;

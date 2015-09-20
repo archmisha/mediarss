@@ -34,7 +34,13 @@
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>deployer</artifactId>
+            <artifactId>automation-pages-webapp</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-deployer</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -216,7 +222,7 @@
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>mediarss</groupId>
-                                            <artifactId>deployer</artifactId>
+                                            <artifactId>mediarss-deployer</artifactId>
                                             <version>${project.version}</version>
                                             <type>jar</type>
                                             <outputDirectory>${project.build.directory}</outputDirectory>
@@ -229,7 +235,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>copy-war</id>
+                                <id>copy-mediarss-war</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>unpack</goal>
@@ -243,9 +249,30 @@
                                             <type>war</type>
                                             <outputDirectory>${project.build.directory}/tomcat/webapps/ROOT
                                             </outputDirectory>
-                                            <!--<excludes>**\/database.properties,**\/settings.properties</excludes>-->
                                         </artifactItem>
                                     </artifactItems>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-test-pages-war</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>mediarss</groupId>
+                                            <artifactId>automation-pages-webapp</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>war</type>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                            <destFileName>test-pages.war</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/wars</outputDirectory>
+                                    <overWriteReleases>false</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
                                 </configuration>
                             </execution>
                             <execution>
@@ -281,7 +308,7 @@
                                     <argLine>-Dfile.encoding=UTF-8 -Dserver.port=${server.port}</argLine>
                                     <includes>
                                         <group></group>
-                                        <include>mediarss/test/**/*Test.java</include>
+                                        <include>rss/test/tests/**/*Test.java</include>
                                     </includes>
                                 </configuration>
                             </execution>

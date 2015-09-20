@@ -2,10 +2,10 @@ package rss.services.searchers.composite.torrentz;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.PageDownloader;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
 import rss.services.searchers.composite.AbstractCompositeSearcher;
+import rss.torrents.requests.MediaRequest;
 
 /**
  * User: Michael Dikman

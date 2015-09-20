@@ -5,12 +5,12 @@ import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
-import rss.entities.Torrent;
 import rss.services.matching.MatchCandidate;
 import rss.services.matching.MatcherVisitor;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.shows.ShowService;
+import rss.torrents.Torrent;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

@@ -1,7 +1,7 @@
 package rss.services.requests.movies;
 
-import rss.services.requests.MediaRequest;
-import rss.services.searchers.MediaRequestVisitor;
+import rss.torrents.requests.MediaRequest;
+import rss.torrents.searchers.MediaRequestVisitor;
 
 /**
  * User: Michael Dikman

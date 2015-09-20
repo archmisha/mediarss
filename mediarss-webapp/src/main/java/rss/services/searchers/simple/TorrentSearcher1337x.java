@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import rss.PageDownloadException;
 import rss.PageDownloader;
 import rss.RecoverableConnectionException;
-import rss.entities.Torrent;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.torrents.Torrent;
+import rss.torrents.requests.MediaRequest;
 import rss.util.StringUtils2;
 
 import java.io.UnsupportedEncodingException;

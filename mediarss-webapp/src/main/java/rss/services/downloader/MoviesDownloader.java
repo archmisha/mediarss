@@ -5,12 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import rss.dao.MovieDao;
 import rss.dao.TorrentDao;
 import rss.entities.Movie;
-import rss.entities.Torrent;
 import rss.services.movies.IMDBParseResult;
 import rss.services.movies.IMDBService;
 import rss.services.movies.MovieService;
 import rss.services.requests.movies.MovieRequest;
 import rss.services.searchers.SearchResult;
+import rss.torrents.Torrent;
 import rss.util.CollectionUtils;
 
 import java.util.*;

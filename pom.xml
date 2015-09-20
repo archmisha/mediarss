@@ -10,20 +10,26 @@
 
     <modules>
         <module>automation</module>
+        <module>mediarss-webapp</module>
         <module>deployer</module>
         <module>rms</module>
-        <module>mediarss-webapp</module>
         <module>common-utils</module>
         <module>user-context</module>
-        <module>ems</module>
-        <module>logging</module>
-        <module>mail</module>
         <module>environment</module>
         <module>configuration</module>
+        <module>ems</module>
+        <module>logging</module>
+        <module>shows-api</module>
+        <module>shows-impl</module>
+        <module>mail-api</module>
+        <module>mail-impl</module>
         <module>permission-service</module>
-        <module>scheduler</module>
+        <module>scheduler-api</module>
+        <module>scheduler-impl</module>
         <module>trakt</module>
         <module>page-downloader</module>
+        <module>torrents-api</module>
+        <module>torrents-impl</module>
     </modules>
 
     <properties>
@@ -37,8 +43,9 @@
 
         <!-- 3rd party -->
         <product.version>1</product.version>
-        <spring-security.version>3.1.0.RELEASE</spring-security.version>
-        <spring-security-web.version>3.1.4.RELEASE</spring-security-web.version>
+        <spring.version>3.2.3.RELEASE</spring.version>
+        <spring-security.version>${spring.version}</spring-security.version>
+        <spring-security-web.version>${spring.version}</spring-security-web.version>
         <tomcat.version>7.0.22</tomcat.version>
         <uum.version>3.1.1</uum.version>
         <cglib.version>2.2</cglib.version>
@@ -46,7 +53,7 @@
         <h2.version>1.3.170</h2.version>
         <xtream.version>1.4.2</xtream.version>
         <commons-fileupload.version>1.2.2</commons-fileupload.version>
-        <commons-lang.version>3.1</commons-lang.version>
+        <commons-lang.version>3.3</commons-lang.version>
         <!--<commons-logging.version>1.1.3</commons-logging.version>-->
         <commons-collections.version>4.0-SNAPSHOT</commons-collections.version>
         <commons-io.version>1.3.2</commons-io.version>
@@ -56,27 +63,54 @@
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.5.10</slf4j.version>
         <lesscss-engine.version>1.3.0</lesscss-engine.version>
-        <quartz.version>2.2.1</quartz.version>
+        <commons-cli.version>1.2</commons-cli.version>
+        <quartz.version>1.8.6</quartz.version>
         <jsoup.version>1.7.2</jsoup.version>
         <gson.version>2.2.4</gson.version>
-        <guava.version>14.0</guava.version>
+        <guava.version>15.0</guava.version>
         <combinatoricslib.version>2.0</combinatoricslib.version>
         <c3p0.version>0.9.1.2</c3p0.version>
         <unirest-java.version>1.3.8</unirest-java.version>
         <guava.version>15.0</guava.version>
         <junit.version>4.12</junit.version>
-        <spring.version>3.2.1.RELEASE</spring.version>
         <jackson.version>1.9.9</jackson.version>
         <mongodb.version>2.13.0</mongodb.version>
         <antlr4-runtime.version>4.1</antlr4-runtime.version>
         <javax-mail.version>1.4</javax-mail.version>
-        <javax-servlet.version>2.5</javax-servlet.version>
-
+        <jersey.version>2.16</jersey.version>
         <maven.antlr.plugin.version>4.1</maven.antlr.plugin.version>
+        <jax.rs.version>2.0</jax.rs.version>
+        <javax.servlet-api.version>3.0.1</javax.servlet-api.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.ext</groupId>
+                <artifactId>jersey-spring3</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
@@ -86,6 +120,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring-security-web.version}</version>
             </dependency>
             <dependency>
                 <groupId>c3p0</groupId>
@@ -99,15 +138,30 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
-                <version>${spring.version}</version>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${jax.rs.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>${javax-servlet.version}</version>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet-api.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.mail</groupId>
@@ -147,11 +201,6 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-jaxrs</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
@@ -173,7 +222,17 @@
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-jaxrs</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
@@ -192,8 +251,18 @@
                 <version>${commons-io.version}</version>
             </dependency>
             <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons-collections.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
                 <version>${httpclient.version}</version>
             </dependency>
             <dependency>
@@ -306,6 +375,11 @@
                     <groupId>com.google.code.maven-replacer-plugin</groupId>
                     <artifactId>replacer</artifactId>
                     <version>1.5.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.6</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -1,19 +1,21 @@
 package rss.test.entities;
 
+import java.util.Date;
+
 /**
  * User: dikmanm
  * Date: 13/02/2015 12:53
  */
 public class News {
-    private long created;
+    private Date created;
     private long id;
     private String message;
 
-    public long getCreated() {
+    public Date getCreated() {
         return created;
     }
 
-    public void setCreated(long created) {
+    public void setCreated(Date created) {
         this.created = created;
     }
 

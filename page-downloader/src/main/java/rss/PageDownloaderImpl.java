@@ -17,7 +17,7 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import rss.log.LogService;
 import rss.util.Utils;
 
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * User: dikmanm
  * Date: 28/12/12 12:11
  */
-@Service
+@Component("PageDownloader")
 public class PageDownloaderImpl implements PageDownloader {
 
     private static final String LAST_REDIRECT_URL = "LAST_REDIRECT_URL";

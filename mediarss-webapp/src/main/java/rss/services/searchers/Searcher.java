@@ -1,6 +1,6 @@
 package rss.services.searchers;
 
-import rss.services.requests.SearchRequest;
+import rss.torrents.requests.SearchRequest;
 
 /**
  * User: Michael Dikman

@@ -9,19 +9,15 @@ public class UserData {
     private String password;
     private String firstName;
     private String lastName;
-    private boolean isAdmin;
+    private boolean admin;
+    private boolean validated;
 
-    public static UserData createUser(String username, String password) {
-        UserData user = new UserData();
-        user.setUsername(username);
-        user.setPassword(password);
-        return user;
+    public boolean isValidated() {
+        return validated;
     }
 
-    public static UserData createAdminUser(String username, String password) {
-        UserData user = UserData.createUser(username, password);
-        user.setAdmin(true);
-        return user;
+    public void setValidated(boolean isValidated) {
+        this.validated = isValidated;
     }
 
     public String getUsername() {
@@ -57,10 +53,10 @@ public class UserData {
     }
 
     public boolean isAdmin() {
-        return isAdmin;
+        return admin;
     }
 
     public void setAdmin(boolean isAdmin) {
-        this.isAdmin = isAdmin;
+        this.admin = isAdmin;
     }
 }

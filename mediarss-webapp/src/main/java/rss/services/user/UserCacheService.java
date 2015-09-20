@@ -1,9 +1,9 @@
 package rss.services.user;
 
-import rss.controllers.vo.ShowVO;
-import rss.controllers.vo.ShowsScheduleVO;
 import rss.controllers.vo.UserMovieVO;
 import rss.entities.User;
+import rss.shows.ShowJSON;
+import rss.shows.ShowsScheduleJSON;
 
 import java.util.List;
 
@@ -13,11 +13,11 @@ import java.util.List;
  */
 public interface UserCacheService {
 
-	ShowsScheduleVO getSchedule(User user);
+	ShowsScheduleJSON getSchedule(User user);
 
 	void invalidateSchedule(User user);
 
-	List<ShowVO> getTrackedShows(User user);
+	List<ShowJSON> getTrackedShows(User user);
 
 	void invalidateTrackedShows(User user);
 

@@ -1,8 +1,8 @@
 package rss.services.requests.subtitles;
 
-import rss.entities.Torrent;
-import rss.services.requests.SearchRequest;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.torrents.Torrent;
+import rss.torrents.requests.SearchRequest;
 
 import java.util.ArrayList;
 import java.util.List;

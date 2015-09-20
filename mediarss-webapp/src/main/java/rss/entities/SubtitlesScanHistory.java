@@ -3,6 +3,7 @@ package rss.entities;
 import org.hibernate.annotations.Index;
 import rss.ems.entities.BaseEntity;
 import rss.services.subtitles.SubtitleLanguage;
+import rss.torrents.Torrent;
 
 import javax.persistence.*;
 import java.util.Date;

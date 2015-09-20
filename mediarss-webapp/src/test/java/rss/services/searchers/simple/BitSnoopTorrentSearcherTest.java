@@ -11,9 +11,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import rss.BaseTest;
 import rss.PageDownloader;
-import rss.entities.MediaQuality;
 import rss.entities.Show;
-import rss.entities.Torrent;
 import rss.services.matching.MatchCandidate;
 import rss.services.requests.episodes.FullSeasonRequest;
 import rss.services.requests.episodes.ShowRequest;
@@ -21,6 +19,8 @@ import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.composite.torrentz.TorrentzParser;
 import rss.services.shows.ShowService;
+import rss.torrents.MediaQuality;
+import rss.torrents.Torrent;
 
 import java.util.List;
 

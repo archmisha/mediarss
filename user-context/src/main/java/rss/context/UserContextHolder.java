@@ -118,4 +118,9 @@ public final class UserContextHolder {
             UserContextHolder.popUserContext();
         }
     }
+
+    @SuppressWarnings("unchecked")
+    static Stack<UserContext> getContextStack() {
+        return (Stack<UserContext>) HOLDER.get().clone();
+    }
 }

@@ -1,7 +1,7 @@
 package rss.services.feed;
 
 import rss.entities.Subtitles;
-import rss.entities.Torrent;
+import rss.torrents.Torrent;
 
 import java.util.Collection;
 

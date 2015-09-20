@@ -18,6 +18,15 @@ public class UserVO {
 	private Date lastLogin;
 	private Date lastShowsFeedGenerated;
 	private Date lastMoviesFeedGenerated;
+	private String validationHash;
+
+	public String getValidationHash() {
+		return validationHash;
+	}
+
+	public void setValidationHash(String validationHash) {
+		this.validationHash = validationHash;
+	}
 
 	public String getFirstName() {
 		return firstName;

@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>mediarss</groupId>
-    <artifactId>rms</artifactId>
+    <artifactId>mediarss-rms</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
 
@@ -17,22 +17,18 @@
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>environment</artifactId>
+            <artifactId>mediarss-environment</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>commons-utils</artifactId>
+            <artifactId>mediarss-common-utils</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
@@ -52,7 +48,11 @@
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-jaxrs</artifactId>
+            <artifactId>jackson-mapper-asl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
         </dependency>
     </dependencies>
 
@@ -76,13 +76,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <finalName>mediarss-rms</finalName>
-                </configuration>
             </plugin>
         </plugins>
     </build>

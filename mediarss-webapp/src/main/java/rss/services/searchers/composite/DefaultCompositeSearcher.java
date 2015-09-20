@@ -1,9 +1,9 @@
 package rss.services.searchers.composite;
 
 import org.springframework.stereotype.Service;
-import rss.services.requests.MediaRequest;
 import rss.services.searchers.SearchResult;
 import rss.services.searchers.SimpleTorrentSearcher;
+import rss.torrents.requests.MediaRequest;
 
 /**
  * User: dikmanm

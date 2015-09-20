@@ -9,9 +9,14 @@ import rss.dao.SubtitlesDao;
 import rss.dao.TorrentDao;
 import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
-import rss.entities.*;
+import rss.entities.Subtitles;
+import rss.entities.User;
+import rss.entities.UserEpisodeTorrent;
 import rss.log.LogService;
 import rss.services.user.UserCacheService;
+import rss.torrents.MediaQuality;
+import rss.torrents.Torrent;
+import rss.torrents.UserTorrent;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 

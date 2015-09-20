@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.dao.UserDao;
 import rss.dao.UserTorrentDao;
 import rss.entities.Subtitles;
-import rss.entities.Torrent;
 import rss.entities.User;
-import rss.entities.UserTorrent;
 import rss.log.LogService;
 import rss.services.user.UserCacheService;
+import rss.torrents.Torrent;
+import rss.torrents.UserTorrent;
 import rss.util.DateUtils;
 
 import java.util.*;

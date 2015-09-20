@@ -1,15 +1,18 @@
 package rss.test.services;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import rss.test.entities.UserData;
-import rss.test.entities.UserLoginResult;
-import rss.test.entities.UserRegisterResult;
+import rss.test.entities.*;
 import rss.test.util.JsonTranslation;
 
+import java.security.InvalidParameterException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,18 +23,45 @@ import static org.junit.Assert.assertTrue;
 @Component
 public class UserService extends BaseService {
 
-    public void createUser(UserData user) {
-        reporter.info("Creating user '" + user.getUsername() + "'");
-        user.setUsername(user.getUsername() + "_" + UUID.randomUUID().toString());
-        if (StringUtils.isBlank(user.getFirstName())) {
-            user.setFirstName("firstName");
+    @Autowired
+    private Unique unique;
+
+    public UserData createUser() {
+        UserData userData = new UserData();
+        userData.setUsername(unique.unique());
+        userData.setPassword("some password");
+        return createAndValidateUser(userData);
+    }
+
+    public UserData createAdminUser() {
+        UserData userData = new UserData();
+        userData.setUsername(unique.unique());
+        userData.setPassword("some password");
+        userData.setAdmin(true);
+        return createAndValidateUser(userData);
+    }
+
+    public UserData createAndValidateUser(UserData userData) {
+        userData.setValidated(true);
+        return createUser(userData);
+    }
+
+    public UserData createUser(UserData userData) {
+        userData.setUsername(unique.appendUnique(userData.getUsername()));
+        reporter.info("Creating user '" + userData.getUsername() + "'");
+        if (StringUtils.isBlank(userData.getPassword())) {
+            userData.setPassword("some password");
         }
-        if (StringUtils.isBlank(user.getLastName())) {
-            user.setLastName("lastName");
+        if (StringUtils.isBlank(userData.getFirstName())) {
+            userData.setFirstName("firstName");
         }
-        String response = sendPostRequest("rest/user/register", entityToMap(user));
+        if (StringUtils.isBlank(userData.getLastName())) {
+            userData.setLastName("lastName");
+        }
+        String response = sendFormPostRequest("rest/user/register", entityToMap(userData));
         UserRegisterResult userRegisterResult = JsonTranslation.jsonString2Object(response, UserRegisterResult.class);
         assertTrue(userRegisterResult.isSuccess());
+        return userData;
     }
 
     public UserLoginResult login(UserData user) {
@@ -39,13 +69,71 @@ public class UserService extends BaseService {
         Map<String, Object> params = new HashMap<>();
         params.put("username", user.getUsername());
         params.put("password", user.getPassword());
-        String response = sendPostRequest("rest/user/login", params);
-        return JsonTranslation.jsonString2Object(response, UserLoginResult.class);
+        String response = sendFormPostRequest("rest/user/login", params);
+        if (response.contains("\"success\":false")) {
+            throw new InvalidParameterException(JsonTranslation.jsonString2Object(response, InvalidParametersResponse.class).getMessage());
+        } else {
+            return JsonTranslation.jsonString2Object(response, UserLoginResult.class);
+        }
     }
 
     public UserLoginResult preLogin(UserData user) {
         reporter.info("Call pre-login with user '" + user.getUsername() + "'");
         String response = sendGetRequest("rest/user/pre-login");
         return JsonTranslation.jsonString2Object(response, UserLoginResult.class);
+    }
+
+    public void logout() {
+        reporter.info("Call logout");
+        try {
+            sendGetRequest("rest/user/logout");
+        } catch (RedirectToRootException e) {
+        }
+    }
+
+    public void impersonate(UserResult userResult) {
+        reporter.info("Call impersonate with user '" + userResult.getEmail() + "'");
+        sendGetRequest("rest/user/impersonate/" + userResult.getId());
+    }
+
+    public List<UserResult> getAllUsers() {
+        reporter.info("Call get all users");
+        String response = sendGetRequest("rest/user/users");
+        return Arrays.asList(JsonTranslation.jsonString2Object(response, UsersResult.class).getUsers());
+    }
+
+    public UserResult getUser(UserData userData) {
+        List<UserResult> allUsers = getAllUsers();
+        return findUserByEmail(allUsers, userData);
+    }
+
+    public String forgotPassword(UserData user) {
+        reporter.info("Call forgot password");
+        Map<String, Object> params = new HashMap<>();
+        params.put("email", user.getUsername());
+        String response = sendPostRequest("rest/user/forgot-password", params);
+        if (response.contains("\"success\":false")) {
+            throw new InvalidParameterException(JsonTranslation.jsonString2Object(response, InvalidParametersResponse.class).getMessage());
+        } else {
+            return JsonTranslation.jsonString2Object(response, ForgotPasswordResult.class).getMessage();
+        }
+    }
+
+    public String validateUser(UserResult userResult) {
+        reporter.info("Call register to validate user '" + userResult.getEmail() + "'");
+        try {
+            return sendGetRequest("register/?user=" + userResult.getId() + "&hash=" + userResult.getValidationHash());
+        } catch (RedirectToRootException e) {
+            return "";
+        }
+    }
+
+    private UserResult findUserByEmail(List<UserResult> users, final UserData adminUser) {
+        return Collections2.filter(users, new Predicate<UserResult>() {
+            @Override
+            public boolean apply(UserResult input) {
+                return input.getEmail().equals(adminUser.getUsername());
+            }
+        }).iterator().next();
     }
 }

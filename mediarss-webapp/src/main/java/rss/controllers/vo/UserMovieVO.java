@@ -1,6 +1,7 @@
 package rss.controllers.vo;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import rss.torrents.DownloadStatus;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,8 +16,8 @@ import java.util.List;
 public class UserMovieVO {
 	private long id;
 	private String title;
-	private List<UserMovieTorrentVO> viewedTorrents;
-	private List<UserMovieTorrentVO> notViewedTorrents;
+	private List<UserMovieTorrentJSON> viewedTorrents;
+	private List<UserMovieTorrentJSON> notViewedTorrents;
 	private int viewedTorrentsCount;
 	private int notViewedTorrentsCount;
 	private DownloadStatus downloadStatus;
@@ -32,7 +33,7 @@ public class UserMovieVO {
 		notViewedTorrentsCount = 0;
 	}
 
-	public void addUserMovieTorrent(UserMovieTorrentVO userMovieTorrentVO, boolean isViewed) {
+	public void addUserMovieTorrent(UserMovieTorrentJSON userMovieTorrentVO, boolean isViewed) {
 		// make added/scheduled torrents to be on top in the sort
 		if (isViewed && userMovieTorrentVO.getScheduledDate() == null) {
 			viewedTorrents.add(userMovieTorrentVO);
@@ -76,11 +77,11 @@ public class UserMovieVO {
 		return title;
 	}
 
-	public List<UserMovieTorrentVO> getViewedTorrents() {
+	public List<UserMovieTorrentJSON> getViewedTorrents() {
 		return viewedTorrents;
 	}
 
-	public List<UserMovieTorrentVO> getNotViewedTorrents() {
+	public List<UserMovieTorrentJSON> getNotViewedTorrents() {
 		return notViewedTorrents;
 	}
 

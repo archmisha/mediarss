@@ -13,13 +13,13 @@ import rss.PageDownloader;
 import rss.dao.EpisodeDao;
 import rss.dao.TorrentDao;
 import rss.entities.Episode;
-import rss.entities.MediaQuality;
 import rss.entities.Show;
 import rss.mail.EmailService;
 import rss.services.requests.episodes.ShowRequest;
 import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.shows.ShowService;
 import rss.services.shows.ShowsProvider;
+import rss.torrents.MediaQuality;
 
 import java.util.Collection;
 import java.util.Collections;

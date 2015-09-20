@@ -10,11 +10,15 @@ import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
 import rss.context.UserContextHolder;
 import rss.controllers.vo.UserMovieVO;
-import rss.dao.JobStatusDao;
 import rss.dao.MovieDao;
 import rss.dao.UserTorrentDao;
-import rss.entities.*;
+import rss.entities.Movie;
+import rss.entities.User;
+import rss.entities.UserMovie;
+import rss.entities.UserMovieTorrent;
 import rss.permissions.PermissionsService;
+import rss.scheduler.JobStatusJson;
+import rss.scheduler.SchedulerService;
 import rss.services.movies.IMDBPreviewCacheService;
 import rss.services.movies.IMDBService;
 import rss.services.movies.MovieService;
@@ -25,7 +29,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +50,7 @@ public class MoviesController extends BaseController {
     private IMDBService imdbService;
 
     @Autowired
-    private JobStatusDao jobStatusDao;
+    private SchedulerService schedulerService;
 
     @Autowired
     private MovieService movieService;
@@ -314,8 +317,8 @@ public class MoviesController extends BaseController {
         return movies;
     }
 
-    private Date getMoviesLastUpdated() {
-        JobStatus jobStatus = jobStatusDao.find(MoviesScrabblerImpl.JOB_NAME);
+    private Long getMoviesLastUpdated() {
+        JobStatusJson jobStatus = schedulerService.getJobStatus(MoviesScrabblerImpl.MOVIES_SCRABBLER_JOB);
         if (jobStatus == null) {
             return null;
         }

@@ -86,21 +86,20 @@ define([
 				that.ui.neverRunStatus.hide();
 				that.ui.errorStatus.hide();
 				that.ui.startingStatus.show();
-				$.post("rest/jobs/start", {
-					name: this.model.get('name')
-				}).success(function(jobStatus) {
-					that.model.clear().set(jobStatus);
-					that.ui.startingStatus.hide();
-					that._markJobRunning();
-				}).error(function(res) {
-					console.log('error. data: ' + res);
-					that.ui.startingStatus.hide();
-					if (that.model.get('start') == null) {
-						that.ui.neverRunStatus.show();
-					} else {
-						that.ui.runningStatus.show();
-					}
-				});
+				$.get("rest/jobs/start/" + this.model.get('name'))
+					.success(function (jobStatus) {
+						that.model.clear().set(jobStatus);
+						that.ui.startingStatus.hide();
+						that._markJobRunning();
+					}).error(function (res) {
+						console.log('error. data: ' + res);
+						that.ui.startingStatus.hide();
+						if (that.model.get('start') == null) {
+							that.ui.neverRunStatus.show();
+						} else {
+							that.ui.runningStatus.show();
+						}
+					});
 			},
 
 			_startPollingThread: function() {
@@ -112,7 +111,7 @@ define([
 
 					that.ui.progressDuration.html(Moment.duration((new Date()).getTime() - that.model.get('start')).humanize());
 
-					$.get("rest/jobs/" + that.model.get('id'))
+					$.get("rest/jobs/" + that.model.get('name'))
 						.success(function(jobStatus) {
 							that.model.clear().set(jobStatus);
 							if (!that._isJobRunning()) {
