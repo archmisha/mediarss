@@ -3,6 +3,7 @@ package rss.torrents.searchers.config;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
+import rss.torrents.searchers.log.SearchLog;
 
 import java.util.*;
 
@@ -12,6 +13,11 @@ import java.util.*;
  */
 @Repository
 public class SearcherConfigurationDaoImpl extends BaseDaoJPA<SearcherConfigurationEntity> implements SearcherConfigurationDao {
+
+	@Override
+	protected Class<? extends SearcherConfigurationEntity> getPersistentClass() {
+		return SearcherConfigurationEntity.class;
+	}
 
 	@Override
 	public SearcherConfiguration findByName(String name) {

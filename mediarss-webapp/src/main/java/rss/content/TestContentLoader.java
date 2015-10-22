@@ -38,8 +38,8 @@ public class TestContentLoader implements ContentLoader {
             userService.register("a", "b", "archmisha@gmail.com", "Aa123456", true);
         }
 
-        logService.info(TestContentLoader.class, "Loading shows list");
-        showService.downloadShowList();
+//        logService.info(TestContentLoader.class, "Loading shows list");
+//        showService.downloadShowList();
     }
 
     @Override

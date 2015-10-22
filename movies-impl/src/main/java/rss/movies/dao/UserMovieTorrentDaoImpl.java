@@ -5,6 +5,7 @@ import com.google.common.collect.Collections2;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.movies.UserMovieTorrent;
+import rss.torrents.Episode;
 import rss.torrents.Movie;
 import rss.user.User;
 
@@ -16,6 +17,11 @@ import java.util.*;
  */
 @Repository
 public class UserMovieTorrentDaoImpl extends BaseDaoJPA<UserMovieTorrent> implements UserMovieTorrentDao {
+
+    @Override
+    protected Class<? extends UserMovieTorrent> getPersistentClass() {
+        return UserMovieTorrentImpl.class;
+    }
 
     @Override
     public List<UserMovieTorrent> findUserMovieTorrents(User user, Collection<Movie> movies) {

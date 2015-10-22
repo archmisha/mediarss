@@ -3,6 +3,7 @@ package rss.torrents.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.torrents.Torrent;
+import rss.torrents.UserTorrent;
 
 import java.util.*;
 
@@ -13,6 +14,11 @@ import java.util.*;
  */
 @Repository
 public class TorrentDaoImpl extends BaseDaoJPA<Torrent> implements TorrentDao {
+
+	@Override
+	protected Class<? extends Torrent> getPersistentClass() {
+		return TorrentImpl.class;
+	}
 
 	@Override
 	public Torrent findByHash(String hash) {

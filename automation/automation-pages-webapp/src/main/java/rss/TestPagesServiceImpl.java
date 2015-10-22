@@ -41,15 +41,6 @@ public class TestPagesServiceImpl {
         throw new RuntimeException("Show " + showId + " not found");
     }
 
-//    private void loadShowsList() {
-//        try {
-//            String str = IOUtils.toString(new ClassPathResource("showsList.json", this.getClass().getClassLoader()).getInputStream());
-//            showList = Lists.newArrayList(JsonTranslation.jsonString2Object(str, TVRageShow[].class));
-//        } catch (Exception e) {
-//            throw new RuntimeException(e.getMessage(), e);
-//        }
-//    }
-
     public List<TVRageShow> getShowsList() {
         return showList;
     }

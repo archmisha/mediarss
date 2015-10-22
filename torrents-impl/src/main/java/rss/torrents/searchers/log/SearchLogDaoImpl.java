@@ -19,6 +19,11 @@ import rss.torrents.searchers.SearcherUtils;
 public class SearchLogDaoImpl extends BaseDaoJPA<SearchLog> implements SearchLogDao {
 
     @Override
+    protected Class<? extends SearchLog> getPersistentClass() {
+        return SearchLog.class;
+    }
+
+    @Override
     public void logSearch(MediaRequest mediaRequest, String name, SearchResult.SearchStatus searchStatus, String url) {
         logSearch(mediaRequest, name, searchStatus, url, null, null);
     }

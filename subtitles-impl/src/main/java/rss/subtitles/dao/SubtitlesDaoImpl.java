@@ -5,6 +5,7 @@ import rss.ems.dao.BaseDaoJPA;
 import rss.torrents.Show;
 import rss.torrents.Subtitles;
 import rss.torrents.Torrent;
+import rss.torrents.dao.TorrentImpl;
 import rss.torrents.requests.subtitles.SubtitlesDoubleEpisodeRequest;
 import rss.torrents.requests.subtitles.SubtitlesMovieRequest;
 import rss.torrents.requests.subtitles.SubtitlesRequest;
@@ -20,6 +21,11 @@ import java.util.*;
  */
 @Repository
 public class SubtitlesDaoImpl extends BaseDaoJPA<Subtitles> implements SubtitlesDao {
+
+	@Override
+	protected Class<? extends Subtitles> getPersistentClass() {
+		return SubtitlesImpl.class;
+	}
 
 	@Override
 	public List<Subtitles> find(SubtitlesRequest subtitlesRequest, SubtitleLanguage language) {

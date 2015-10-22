@@ -3,6 +3,7 @@ package rss.movies.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.movies.UserMovie;
+import rss.movies.UserMovieTorrent;
 import rss.torrents.Movie;
 import rss.torrents.Torrent;
 import rss.user.User;
@@ -17,6 +18,11 @@ import java.util.*;
  */
 @Repository
 public class MovieDaoImpl extends BaseDaoJPA<Movie> implements MovieDao {
+
+	@Override
+	protected Class<? extends Movie> getPersistentClass() {
+		return MovieImpl.class;
+	}
 
 	@Override
 	public Collection<Movie> findUploadedSince(Date uploadedDate) {

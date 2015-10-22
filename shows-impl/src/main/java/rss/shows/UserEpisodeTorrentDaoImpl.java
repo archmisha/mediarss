@@ -3,7 +3,9 @@ package rss.shows;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.shows.dao.UserEpisodeTorrentDao;
+import rss.shows.dao.UserEpisodeTorrentImpl;
 import rss.torrents.Episode;
+import rss.torrents.Subtitles;
 import rss.torrents.UserTorrent;
 import rss.user.User;
 
@@ -15,6 +17,11 @@ import java.util.*;
  */
 @Repository
 public class UserEpisodeTorrentDaoImpl extends BaseDaoJPA<UserEpisodeTorrent> implements UserEpisodeTorrentDao {
+
+    @Override
+    protected Class<? extends UserEpisodeTorrent> getPersistentClass() {
+        return UserEpisodeTorrentImpl.class;
+    }
 
     @Override
     public UserEpisodeTorrent findUserEpisodeTorrent(User user, long torrentId) {

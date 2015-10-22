@@ -23,6 +23,11 @@ import java.util.*;
 public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 
 	@Override
+	protected Class<? extends Episode> getPersistentClass() {
+		return EpisodeImpl.class;
+	}
+
+	@Override
 	public List<Episode> find(ShowRequest episodeRequest) {
 		return findByRequests(Collections.<ShowRequest>singletonList(episodeRequest));
 	}

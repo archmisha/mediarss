@@ -3,6 +3,7 @@ package rss.shows.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.shows.CachedShow;
+import rss.shows.UserEpisodeTorrent;
 import rss.torrents.Show;
 import rss.user.User;
 
@@ -17,6 +18,11 @@ import java.util.Map;
  */
 @Repository
 public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
+
+    @Override
+    protected Class<? extends Show> getPersistentClass() {
+        return ShowImpl.class;
+    }
 
     @Override
     public Show findByName(String name) {

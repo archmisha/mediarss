@@ -19,31 +19,33 @@ import java.util.Map;
  * Date: 12/05/12
  * Time: 15:29
  */
-public class BaseDaoJPA<T> implements Dao<T> {
+public abstract class BaseDaoJPA<T> implements Dao<T> {
 
 	@PersistenceContext
 	protected EntityManager em;
 
-	protected Class<T> persistentClass;
+//	protected Class<T> persistentClass;
 
-	@SuppressWarnings("unchecked")
-	@PostConstruct
-	protected void detectPersistentClass() {
-		// the following detects the managed entity for this DAO even if the DAO class extends another DAO in which
-		// the actual parametrized type is registered
-		Class<?> c = getClass();
-		while (c != Object.class) {
-			if (c.getGenericSuperclass() instanceof ParameterizedType) {
-				persistentClass = (Class<T>) ((ParameterizedType) c.getGenericSuperclass()).getActualTypeArguments()[0];
-				break;
-			}
-			c = c.getSuperclass();
-		}
+//	@SuppressWarnings("unchecked")
+//	@PostConstruct
+//	protected void detectPersistentClass() {
+//		// the following detects the managed entity for this DAO even if the DAO class extends another DAO in which
+//		// the actual parametrized type is registered
+//		Class<?> c = getClass();
+//		while (c != Object.class) {
+//			if (c.getGenericSuperclass() instanceof ParameterizedType) {
+//				persistentClass = (Class<T>) ((ParameterizedType) c.getGenericSuperclass()).getActualTypeArguments()[0];
+//				break;
+//			}
+//			c = c.getSuperclass();
+//		}
+//
+//		if (persistentClass == null) {
+//			throw new IllegalStateException("unable to detect DAO managed entity class");
+//		}
+//	}
 
-		if (persistentClass == null) {
-			throw new IllegalStateException("unable to detect DAO managed entity class");
-		}
-	}
+	protected abstract Class<? extends T> getPersistentClass();
 
 	public final int bulkUpdate(final String queryString, final Object... values) {
 		Query q = em.createQuery(queryString);
@@ -91,7 +93,7 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		if (primaryKey == null) {
 			throw new IllegalArgumentException("primaryKey is null");
 		}
-		return em.find(persistentClass, primaryKey);
+		return em.find(getPersistentClass(), primaryKey);
 	}
 
 	@SuppressWarnings({"unchecked"})
@@ -100,7 +102,7 @@ public class BaseDaoJPA<T> implements Dao<T> {
 		if (ids.isEmpty()) {
 			return Collections.emptyList();
 		}
-		Query queryObject = em.createQuery("select e from " + persistentClass.getName() + " as e where e.id in (:ids)");
+		Query queryObject = em.createQuery("select e from " + getPersistentClass().getName() + " as e where e.id in (:ids)");
 		queryObject.setParameter("ids", ids);
 		return queryObject.getResultList();
 	}
@@ -108,7 +110,7 @@ public class BaseDaoJPA<T> implements Dao<T> {
 	@SuppressWarnings({"unchecked"})
 	@Override
 	public final List<T> findAll() {
-		Query queryObject = em.createQuery("select e from " + persistentClass.getName() + " as e");
+		Query queryObject = em.createQuery("select e from " + getPersistentClass().getName() + " as e");
 		return queryObject.getResultList();
 	}
 

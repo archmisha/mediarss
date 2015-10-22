@@ -14,6 +14,11 @@ import java.util.Map;
 @Repository
 public class SettingsDaoImpl extends BaseDaoJPA<Setting> implements SettingsDao {
 
+	@Override
+	protected Class<? extends Setting> getPersistentClass() {
+		return Setting.class;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public String getSettings(String key) {

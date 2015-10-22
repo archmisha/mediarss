@@ -3,6 +3,7 @@ package rss.torrents.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.torrents.UserTorrent;
+import rss.torrents.searchers.config.SearcherConfigurationEntity;
 import rss.user.User;
 
 import java.util.Date;
@@ -17,6 +18,11 @@ import java.util.Map;
  */
 @Repository
 public class UserTorrentDaoImpl extends BaseDaoJPA<UserTorrent> implements UserTorrentDao {
+
+    @Override
+    protected Class<? extends UserTorrent> getPersistentClass() {
+        return UserTorrentImpl.class;
+    }
 
     @Override
     public List<UserTorrent> findUserMoviesForUserFeed(Date dateUploaded, User user) {
