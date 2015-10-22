@@ -1,4 +1,4 @@
-package rss.services.shows;
+package rss.shows;
 
 import com.thoughtworks.xstream.XStream;
 import org.springframework.transaction.annotation.Propagation;
@@ -6,10 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.MediaRSSException;
 import rss.PageDownloader;
 import rss.RecoverableConnectionException;
-import rss.entities.Episode;
-import rss.entities.Show;
 import rss.log.LogService;
+import rss.shows.dao.EpisodeImpl;
+import rss.shows.dao.ShowImpl;
 import rss.shows.tvrage.*;
+import rss.torrents.Episode;
+import rss.torrents.Show;
 import rss.util.DurationMeter;
 
 import java.text.ParseException;
@@ -74,7 +76,7 @@ public class TVRageServiceImpl implements ShowsProvider {
                 Date airDate = sdf.parse(tvRageDay.getAttr());
                 for (TVRageTime tvRageTime : tvRageDay.getTimes()) {
                     for (TVRageShowSchedule tvRageShowSchedule : tvRageTime.getShows()) {
-                        Show show = new Show(tvRageShowSchedule.getName());
+                        Show show = new ShowImpl(tvRageShowSchedule.getName());
                         show.setTvRageId(tvRageShowSchedule.getSid());
 
                         String[] arr = tvRageShowSchedule.getEp().split("x");
@@ -82,7 +84,7 @@ public class TVRageServiceImpl implements ShowsProvider {
                         if (arr.length == 2) {
                             int season = Integer.parseInt(arr[0]);
                             int episodeNum = Integer.parseInt(arr[1]);
-                            Episode episode = new Episode(season, episodeNum);
+                            Episode episode = new EpisodeImpl(season, episodeNum);
                             episode.setAirDate(airDate);
                             episode.setShow(show);
 
@@ -116,7 +118,7 @@ public class TVRageServiceImpl implements ShowsProvider {
             if (tvRageShow.getStatus() == TVRageConstants.ShowListStatus.IN_DEV_STATUS) {
                 continue;
             }
-            Show show = new Show(tvRageShow.getName());
+            Show show = new ShowImpl(tvRageShow.getName());
             show.setTvRageId(tvRageShow.getId());
             show.setEnded(tvRageShow.getStatus() != TVRageConstants.ShowListStatus.RETURNING_STATUS &&
                     tvRageShow.getStatus() != TVRageConstants.ShowListStatus.NEW_SERIES_STATUS);
@@ -166,7 +168,7 @@ public class TVRageServiceImpl implements ShowsProvider {
 
                     TVRageSeason tvRageSeason = (TVRageSeason) obj;
                     for (TVRageEpisode tvRageEpisode : tvRageSeason.getEpisodes()) {
-                        Episode episode = new Episode();
+                        Episode episode = new EpisodeImpl();
                         episode.setSeason(tvRageSeason.getNo());
                         episode.setEpisode(Integer.parseInt(tvRageEpisode.getSeasonnum()));
                         // 2011-06-23

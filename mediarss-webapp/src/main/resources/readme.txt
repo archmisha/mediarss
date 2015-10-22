@@ -3,6 +3,8 @@ password: ASDqwe123
 account security code: 8958
 city born: gorkii
 
+github: archmisha@gmail.com/83m16md
+
 
 get version: lsb_release -a
 ubuntu 9.04

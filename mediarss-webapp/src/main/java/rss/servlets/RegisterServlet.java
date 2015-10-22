@@ -7,11 +7,11 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.dao.UserDao;
-import rss.entities.User;
+import rss.cache.UserCacheService;
 import rss.environment.UrlService;
 import rss.log.LogService;
-import rss.services.user.UserCacheService;
+import rss.user.User;
+import rss.user.UserService;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -43,7 +43,7 @@ public class RegisterServlet extends HttpServlet {
 	private UrlService urlService;
 
 	@Autowired
-	private UserDao userDao;
+	private UserService userService;
 
 	@Override
 	public void init() throws ServletException {
@@ -69,7 +69,7 @@ public class RegisterServlet extends HttpServlet {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 				@Override
 				protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-					User user = userDao.find(finalUserId);
+					User user = userService.find(finalUserId);
 					if (user == null) {
 						logService.error(getClass(), "Invalid user parameter: " + finalUserId);
 						out.println("Invalid url. Please contact support for assistance");

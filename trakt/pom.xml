@@ -17,12 +17,17 @@
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
+            <artifactId>mediarss-user-context</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
             <artifactId>mediarss-rms</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>mediarss-logging</artifactId>
+            <artifactId>mediarss-logging-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

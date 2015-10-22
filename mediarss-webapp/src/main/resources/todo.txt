@@ -1,3 +1,8 @@
+remove dependecnei to ems
+remove dependnecies to dao - need services
+
+
+
 session service remove
 make generic cache interface - in emory
 put in the cache service the user searcehs
@@ -60,13 +65,13 @@ java.lang.RuntimeException: excuteAPI error: DownloadSubtitles
         at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:172)
         at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:204)
         at $Proxy53.downloadEpisodeSubtitles(Unknown Source)
-        at rss.services.downloader.TVShowsTorrentEntriesDownloader.onTorrentFound(TVShowsTorrentEntriesDownloader.java:133)
-        at rss.services.downloader.TVShowsTorrentEntriesDownloader.onTorrentFound(TVShowsTorrentEntriesDownloader.java:38)
-        at rss.services.downloader.TorrentEntriesDownloader$1$1.doInTransactionWithoutResult(TorrentEntriesDownloader.java:86)
+        at rss.torrents.downloader.TVShowsTorrentEntriesDownloader.onTorrentFound(TVShowsTorrentEntriesDownloader.java:133)
+        at rss.torrents.downloader.TVShowsTorrentEntriesDownloader.onTorrentFound(TVShowsTorrentEntriesDownloader.java:38)
+        at rss.torrents.downloader.TorrentEntriesDownloader$1$1.doInTransactionWithoutResult(TorrentEntriesDownloader.java:86)
         at org.springframework.transaction.support.TransactionCallbackWithoutResult.doInTransaction(TransactionCallbackWithoutResult.java:33)
         at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:131)
-        at rss.services.downloader.TorrentEntriesDownloader$1.run(TorrentEntriesDownloader.java:63)
-        at rss.services.downloader.TorrentEntriesDownloader$1.run(TorrentEntriesDownloader.java:59)
+        at rss.torrents.downloader.TorrentEntriesDownloader$1.run(TorrentEntriesDownloader.java:63)
+        at rss.torrents.downloader.TorrentEntriesDownloader$1.run(TorrentEntriesDownloader.java:59)
         at rss.util.MultiThreadExecutor$1.run(MultiThreadExecutor.java:20)
         at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
         at java.util.concurrent.FutureTask$Sync.innerRun(Unknown Source)

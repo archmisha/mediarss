@@ -3,7 +3,7 @@ package rss.services.feed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import rss.entities.Subtitles;
+import rss.torrents.Subtitles;
 import rss.torrents.Torrent;
 
 import java.io.UnsupportedEncodingException;

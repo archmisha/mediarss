@@ -4,13 +4,11 @@ import org.springframework.stereotype.Service;
 import rss.context.UserContextHolder;
 import rss.controllers.vo.SubtitlesVO;
 import rss.controllers.vo.UserVO;
-import rss.entities.Show;
-import rss.entities.Subtitles;
-import rss.entities.User;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
-import rss.shows.ShowJSON;
+import rss.torrents.Subtitles;
 import rss.torrents.Torrent;
+import rss.user.User;
 
 import java.util.*;
 
@@ -20,20 +18,6 @@ import java.util.*;
  */
 @Service
 public class EntityConverter {
-
-    public List<ShowJSON> toThinShows(Collection<Show> shows) {
-        ArrayList<ShowJSON> result = new ArrayList<>();
-        for (Show show : shows) {
-            result.add(new ShowJSON().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()).withTvRageId(show.getTvRageId()));
-        }
-        Collections.sort(result, new Comparator<ShowJSON>() {
-            @Override
-            public int compare(ShowJSON o1, ShowJSON o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-        return result;
-    }
 
     public List<UserVO> toThinUser(Collection<User> users) {
         ArrayList<UserVO> result = new ArrayList<>();
@@ -90,10 +74,10 @@ public class EntityConverter {
 
         return result;
     }
-
-    public Show fromThinShow(ShowJSON showJSON) {
-        Show show = new Show(showJSON.getName());
-        show.setEnded(showJSON.isEnded());
-        return show;
-    }
+//
+//    public Show fromThinShow(ShowJSON showJSON) {
+//        Show show = new Show(showJSON.getName());
+//        show.setEnded(showJSON.isEnded());
+//        return show;
+//    }
 }

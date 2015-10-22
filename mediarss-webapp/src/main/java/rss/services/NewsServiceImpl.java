@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.cache.UserCacheService;
 import rss.dao.NewsDao;
-import rss.dao.UserDao;
 import rss.entities.News;
-import rss.entities.User;
-import rss.services.user.UserCacheService;
+import rss.user.User;
+import rss.user.UserService;
 import rss.util.DateUtils;
 
 import java.util.Collection;
@@ -25,7 +25,7 @@ public class NewsServiceImpl implements NewsService {
     private NewsDao newsDao;
 
     @Autowired
-    private UserDao userDao;
+    private UserService userService;
 
     @Autowired
     protected UserCacheService userCacheService;
@@ -45,7 +45,7 @@ public class NewsServiceImpl implements NewsService {
     @Transactional(propagation = Propagation.REQUIRED)
     public void dismissNews(User user) {
         user.setNewsDismiss(new Date());
-        userDao.merge(user);
+        userService.updateUser(user);
         userCacheService.invalidateUser(user);
     }
 }

@@ -32,12 +32,57 @@
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
+            <artifactId>mediarss-shows-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-cache-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-cache-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
             <artifactId>mediarss-scheduler-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
             <artifactId>mediarss-scheduler-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-movies-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-movies-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-subtitles-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-subtitles-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-user-management-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-user-management-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -60,10 +105,16 @@
             <artifactId>mediarss-environment</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>mediarss-logging</artifactId>
+            <artifactId>mediarss-logging-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-logging-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -98,7 +149,12 @@
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>mediarss-configuration</artifactId>
+            <artifactId>mediarss-configuration-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-configuration-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -201,8 +257,8 @@
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
         </dependency>
 
         <dependency>
@@ -281,7 +337,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>1.9.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

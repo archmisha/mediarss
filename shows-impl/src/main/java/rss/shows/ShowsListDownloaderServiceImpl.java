@@ -6,6 +6,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.scheduler.ScheduledJob;
+import rss.shows.ShowService;
 
 /**
  * User: dikmanm

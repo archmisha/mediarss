@@ -1,7 +1,7 @@
-package rss.services.shows;
+package rss.shows;
 
-import rss.entities.Episode;
-import rss.entities.Show;
+import rss.torrents.Episode;
+import rss.torrents.Show;
 
 import java.util.Collection;
 

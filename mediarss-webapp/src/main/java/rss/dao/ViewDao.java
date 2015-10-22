@@ -1,8 +1,8 @@
 package rss.dao;
 
 import rss.ems.dao.Dao;
-import rss.entities.User;
 import rss.entities.View;
+import rss.user.User;
 
 /**
  * User: dikmanm

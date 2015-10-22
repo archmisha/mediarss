@@ -1,7 +1,7 @@
 package rss.services.feed;
 
-import rss.entities.User;
 import rss.torrents.Torrent;
+import rss.user.User;
 
 import java.util.Set;
 

@@ -5,16 +5,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import rss.cache.UserCacheService;
 import rss.context.UserContextHolder;
 import rss.controllers.EntityConverter;
-import rss.dao.SubtitlesDao;
-import rss.entities.Subtitles;
-import rss.entities.User;
 import rss.log.LogService;
 import rss.services.feed.RssFeedGenerator;
-import rss.services.subtitles.SubtitleLanguage;
-import rss.services.user.UserCacheService;
+import rss.subtitles.SubtitlesService;
+import rss.torrents.Subtitles;
 import rss.torrents.Torrent;
+import rss.user.User;
+import rss.user.subtitles.SubtitleLanguage;
 import rss.util.DurationMeter;
 import rss.util.JsonTranslation;
 
@@ -34,7 +34,7 @@ public class HomeResource {
     private LogService logService;
 
     @Autowired
-    private SubtitlesDao subtitlesDao;
+    private SubtitlesService subtitlesService;
 
     @Autowired
     private UserCacheService userCacheService;
@@ -69,7 +69,7 @@ public class HomeResource {
         result.put("userSubtitles", user.getSubtitles() == null ? null : user.getSubtitles().toString());
 
         Set<Torrent> torrents = tvShowsRssFeedGenerator.getFeedTorrents(user);
-        Collection<Subtitles> subtitles = subtitlesDao.find(torrents, user.getSubtitles());
+        Collection<Subtitles> subtitles = subtitlesService.find(torrents, user.getSubtitles());
         result.put("recentSubtitles", entityConverter.toThinSubtitles(subtitles, torrents));
 
         duration.stop();

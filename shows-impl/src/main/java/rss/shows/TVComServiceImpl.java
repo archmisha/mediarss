@@ -1,4 +1,4 @@
-package rss.services.shows;
+package rss.shows;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -8,11 +8,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.PageDownloader;
 import rss.configuration.SettingsService;
-import rss.entities.Episode;
-import rss.entities.Show;
 import rss.environment.Environment;
 import rss.log.LogService;
-import rss.shows.dao.EpisodesMapper;
+import rss.shows.dao.EpisodeImpl;
+import rss.shows.dao.ShowImpl;
+import rss.torrents.Episode;
+import rss.torrents.Show;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -138,7 +139,7 @@ public class TVComServiceImpl implements ShowsProvider {
 
                     Episode episode = episodesMapper.get(season, episodeNum);
                     if (episode == null) {
-                        episode = new Episode(season, episodeNum);
+                        episode = new EpisodeImpl(season, episodeNum);
                         // for some reason same episode appears twice sometimes in the page,
                         // so saving it in the mapper to avoid persisting twice
                         episodesMapper.add(episode);
@@ -182,7 +183,7 @@ public class TVComServiceImpl implements ShowsProvider {
     }
 
     private Show createShow(String name, String url, boolean ended) {
-        Show show = new Show();
+        Show show = new ShowImpl();
         show.setName(name);
         show.setTvComUrl(url);
         show.setEnded(ended);

@@ -22,12 +22,12 @@
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>mediarss-configuration</artifactId>
+            <artifactId>mediarss-configuration-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>mediarss-logging</artifactId>
+            <artifactId>mediarss-logging-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

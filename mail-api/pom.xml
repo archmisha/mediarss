@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
-            <artifactId>mediarss-configuration</artifactId>
+            <artifactId>mediarss-configuration-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

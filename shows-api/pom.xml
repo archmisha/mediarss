@@ -20,5 +20,15 @@
             <artifactId>mediarss-torrents-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
+            <artifactId>mediarss-user-management-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
     </dependencies>
 </project>

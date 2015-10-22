@@ -59,7 +59,7 @@ public class BaseService {
             return true;
         }
 
-        reporter.info("Waiting for tomcat to start");
+        reporter.info("Waiting for tomcat to start for 3 mins");
         WaitUtil.waitFor(WaitUtil.TIMEOUT_3_MIN, (int) TimeUnit.SECONDS.toMillis(5), new Runnable() {
             @Override
             public void run() {

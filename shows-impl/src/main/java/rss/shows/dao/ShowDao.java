@@ -2,8 +2,9 @@ package rss.shows.dao;
 
 
 import rss.ems.dao.Dao;
-import rss.shows.cache.CachedShow;
-import rss.shows.entities.Show;
+import rss.shows.CachedShow;
+import rss.torrents.Show;
+import rss.user.User;
 
 import java.util.List;
 
@@ -23,4 +24,10 @@ public interface ShowDao extends Dao<Show> {
 	List<CachedShow> findCachedShows();
 
 	Show findByTvRageId(int tvRageId);
+
+	boolean isShowBeingTracked(Show show);
+
+	long getUsersCountTrackingShow(Show show);
+
+	List<Show> getUserShows(User user);
 }

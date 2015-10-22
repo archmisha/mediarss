@@ -18,15 +18,15 @@ public class TestPagesService extends BaseService {
         sendPostRequest("test-pages/rest/test-pages/shows/show", tvRageShow);
     }
 
+    public void createShowInfo(TVRageShowInfo tvRageShowInfo) {
+        sendPostRequest("test-pages/rest/test-pages/shows/info", tvRageShowInfo);
+    }
+
     public void setShowEnded(ShowJSON show) {
         sendPostRequest("test-pages/rest/test-pages/shows/set-ended/" + show.getTvRageId(), Collections.emptyMap());
     }
 
     public void resetOverrides() {
         sendGetRequest("test-pages/rest/test-pages/resetOverrides");
-    }
-
-    public void createShowInfo(TVRageShowInfo tvRageShowInfo) {
-        sendPostRequest("test-pages/rest/test-pages/shows/info", tvRageShowInfo);
     }
 }

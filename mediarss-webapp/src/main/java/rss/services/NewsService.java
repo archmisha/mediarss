@@ -1,7 +1,7 @@
 package rss.services;
 
 import rss.entities.News;
-import rss.entities.User;
+import rss.user.User;
 
 import java.util.Collection;
 

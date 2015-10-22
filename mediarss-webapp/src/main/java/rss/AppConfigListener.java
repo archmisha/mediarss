@@ -45,7 +45,7 @@ public class AppConfigListener implements ServletContextListener {
     private LogService logService;
 
     @Autowired
-    private ContentLoader contentLoader;
+    private List<ContentLoader> contentLoaders;
 
     private ScheduledExecutorService logMemoryExecutorService;
 
@@ -88,7 +88,11 @@ public class AppConfigListener implements ServletContextListener {
             }
         });
 
-        contentLoader.load();
+        for (ContentLoader contentLoader : contentLoaders) {
+            if (contentLoader.getSupportedModes().contains(Environment.getInstance().getServerMode())) {
+                contentLoader.load();
+            }
+        }
     }
 
     private void stopMemoryPrinter() {

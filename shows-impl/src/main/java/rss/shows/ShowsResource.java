@@ -5,24 +5,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.ShowNotFoundException;
+import rss.cache.UserActiveSearch;
+import rss.cache.UserCacheService;
+import rss.cache.UsersSearchesCache;
 import rss.context.UserContextHolder;
-import rss.dao.ShowDao;
-import rss.dao.UserDao;
-import rss.entities.User;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
+import rss.log.LogService;
 import rss.permissions.PermissionsService;
-import rss.services.requests.episodes.FullSeasonRequest;
-import rss.services.requests.episodes.FullShowRequest;
-import rss.services.requests.episodes.ShowRequest;
-import rss.services.requests.episodes.SingleEpisodeRequest;
 import rss.services.shows.ShowQuery;
-import rss.services.shows.ShowSearchService;
-import rss.services.shows.UserActiveSearch;
-import rss.shows.cache.UsersSearchesCache;
-import rss.shows.entities.Show;
+import rss.shows.dao.ShowDao;
 import rss.torrents.MediaQuality;
+import rss.torrents.Show;
+import rss.torrents.requests.shows.FullSeasonRequest;
+import rss.torrents.requests.shows.FullShowRequest;
+import rss.torrents.requests.shows.ShowRequest;
+import rss.torrents.requests.shows.SingleEpisodeRequest;
+import rss.user.User;
+import rss.user.UserService;
 import rss.util.DurationMeter;
 import rss.util.JsonTranslation;
 
@@ -33,16 +33,22 @@ import java.util.*;
 
 @Path("/shows")
 @Component
-public class ShowsResource extends BaseController {
+public class ShowsResource {
 
     @Autowired
-    private UserDao userDao;
+    private LogService logService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UsersSearchesCache usersSearchesCache;
 
     @Autowired
     private PermissionsService permissionsService;
+
+    @Autowired
+    private ShowService showService;
 
     @Autowired
     private ShowDao showDao;
@@ -75,11 +81,11 @@ public class ShowsResource extends BaseController {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
     public Response addTracked(@PathParam("showId") final long showId) {
-        User user = userDao.find(UserContextHolder.getCurrentUserContext().getUserId());
+        User user = userService.find(UserContextHolder.getCurrentUserContext().getUserId());
         final Show show = showDao.find(showId);
         // if show was not being tracked before (becoming tracked now) - download its schedule
-        boolean downloadSchedule = !userDao.isShowBeingTracked(show);
-        user.getShows().add(show);
+        boolean downloadSchedule = !showDao.isShowBeingTracked(show);
+        show.getUsers().add(user);
 
         // return the request asap to the user
         if (downloadSchedule) {
@@ -99,9 +105,9 @@ public class ShowsResource extends BaseController {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
     public Response removeTracked(@PathParam("showId") final long showId) {
-        User user = userDao.find(UserContextHolder.getCurrentUserContext().getUserId());
+        User user = userService.find(UserContextHolder.getCurrentUserContext().getUserId());
         Show show = showDao.find(showId);
-        user.getShows().remove(show);
+        show.getUsers().remove(user);
 
         // invalidate schedule to be regenerated next request
         userCacheService.invalidateUser(user);
@@ -135,22 +141,25 @@ public class ShowsResource extends BaseController {
         return Response.ok().entity(JsonTranslation.object2JsonString(showAutoCompleteJSON)).build();
     }
 
-    @RequestMapping(value = "/episode/download", method = RequestMethod.POST)
-    @ResponseBody
+    @Path("/episode/download")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
-    public void episodeDownload(@RequestParam("torrentId") long torrentId) {
+    public Response episodeDownload(@QueryParam("torrentId") long torrentId) {
         User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         showService.downloadEpisode(user, torrentId);
+        return Response.ok().build();
     }
 
-    @RequestMapping(value = "/episode/download-all", method = RequestMethod.POST)
-    @ResponseBody
+    @Path("/episode/download-all")
+    @POST
     @Transactional(propagation = Propagation.REQUIRED)
-    public void episodeDownloadAll(@RequestParam("torrentIds[]") long[] torrentIds) {
+    public Response episodeDownloadAll(@QueryParam("torrentIds") List<Long> torrentIds) {
         User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
         for (long torrentId : torrentIds) {
             showService.downloadEpisode(user, torrentId);
         }
+        return Response.ok().build();
     }
 
     @Path("/search")
@@ -204,11 +213,11 @@ public class ShowsResource extends BaseController {
         return Response.ok().entity(JsonTranslation.object2JsonString(schedule)).build();
     }
 
-    @RequestMapping(value = "/search/status", method = RequestMethod.GET)
-    @ResponseBody
+    @Path("/search/status")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
-    public Map<String, Object> getSearchStatus() {
-        Map<String, Object> result = new HashMap<>();
+    public Response getSearchStatus() {
         List<UserActiveSearch> searches = usersSearchesCache.getSearches();
         List<SearchResultJSON> searchResults = new ArrayList<>();
         for (UserActiveSearch search : searches) {
@@ -216,14 +225,16 @@ public class ShowsResource extends BaseController {
                     search.getDownloadResult(), search.getSearchResultJSON());
             searchResults.add(search.getSearchResultJSON());
         }
+        Map<String, Object> result = new HashMap<>();
         result.put("activeSearches", searchResults);
-        return result;
+        return Response.ok().entity(JsonTranslation.object2JsonString(result)).build();
     }
 
-    @RequestMapping(value = "/search/remove/{searchId}", method = RequestMethod.GET)
-    @ResponseBody
+    @Path("/search/remove/{searchId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
-    public Response removeActiveSearch(@PathVariable String searchId) {
+    public Response removeActiveSearch(@PathParam("searchId") String searchId) {
         usersSearchesCache.removeSearch(searchId);
         return Response.ok().build();
     }
@@ -248,7 +259,25 @@ public class ShowsResource extends BaseController {
             }
         }
 
-        final List<ShowJSON> thinShows = entityConverter.toThinShows(shows);
+        final List<ShowJSON> thinShows = toThinShows(shows);
         return Response.ok().entity(JsonTranslation.object2JsonString(thinShows.toArray(new ShowJSON[thinShows.size()]))).build();
+    }
+
+    public static List<ShowJSON> toThinShows(Collection<Show> shows) {
+        ArrayList<ShowJSON> result = new ArrayList<>();
+        for (Show show : shows) {
+            result.add(new ShowJSON().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()).withTvRageId(show.getTvRageId()));
+        }
+        Collections.sort(result, new Comparator<ShowJSON>() {
+            @Override
+            public int compare(ShowJSON o1, ShowJSON o2) {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        });
+        return result;
+    }
+
+    protected <T> T applyDefaultValue(T value, T defaultValue) {
+        return value == null ? defaultValue : value;
     }
 }

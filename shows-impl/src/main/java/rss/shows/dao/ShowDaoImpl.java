@@ -2,8 +2,9 @@ package rss.shows.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
-import rss.entities.Show;
-import rss.services.shows.CachedShow;
+import rss.shows.CachedShow;
+import rss.torrents.Show;
+import rss.user.User;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,15 +18,15 @@ import java.util.Map;
 @Repository
 public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 
-	@Override
-	public Show findByName(String name) {
-		Map<String, Object> params = new HashMap<>(1);
-		params.put("name", name.toLowerCase());
-		return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByName", params));
-	}
+    @Override
+    public Show findByName(String name) {
+        Map<String, Object> params = new HashMap<>(1);
+        params.put("name", name.toLowerCase());
+        return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByName", params));
+    }
 
 	/*@Override
-	public Collection<Show> findNotEnded() {
+    public Collection<Show> findNotEnded() {
 		Map<String, Object> params = new HashMap<>(0);
 		return super.findByNamedQueryAndNamedParams("Show.getNotEnded", params);
 	}*/
@@ -37,15 +38,34 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
 		return super.findByNamedQueryAndNamedParams("Show.autoCompleteShowNames", params);
 	}*/
 
-	@Override
-	public List<CachedShow> findCachedShows() {
-		return super.findByNamedQueryAndNamedParams("Show.findCachedShows", null);
-	}
+    @Override
+    public List<CachedShow> findCachedShows() {
+        return super.findByNamedQueryAndNamedParams("Show.findCachedShows", null);
+    }
 
-	@Override
-	public Show findByTvRageId(int tvRageId) {
-		Map<String, Object> params = new HashMap<>(1);
-		params.put("tvRageId", tvRageId);
-		return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByTvRageId", params));
-	}
+    @Override
+    public Show findByTvRageId(int tvRageId) {
+        Map<String, Object> params = new HashMap<>(1);
+        params.put("tvRageId", tvRageId);
+        return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByTvRageId", params));
+    }
+
+    @Override
+    public boolean isShowBeingTracked(Show show) {
+        return getUsersCountTrackingShow(show) > 0;
+    }
+
+    @Override
+    public long getUsersCountTrackingShow(Show show) {
+        Map<String, Object> params = new HashMap<>(1);
+        params.put("showId", show.getId());
+        return uniqueResult(super.<Long>findByNamedQueryAndNamedParams("Show.getUsersCountTrackingShow", params));
+    }
+
+    @Override
+    public List<Show> getUserShows(User user) {
+        Map<String, Object> params = new HashMap<>(1);
+        params.put("userId", user.getId());
+        return super.findByNamedQueryAndNamedParams("Show.getUserShows", params);
+    }
 }

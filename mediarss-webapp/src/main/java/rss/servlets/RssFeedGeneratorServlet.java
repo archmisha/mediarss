@@ -8,11 +8,11 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.entities.User;
+import rss.cache.UserCacheService;
 import rss.environment.UrlService;
 import rss.log.LogService;
 import rss.services.feed.RssFeedGenerator;
-import rss.services.user.UserCacheService;
+import rss.user.User;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;

@@ -4,23 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.EmailAlreadyRegisteredException;
-import rss.RegisterException;
+import rss.cache.UserCacheService;
 import rss.context.SessionUserContext;
 import rss.context.UserContextHolder;
 import rss.context.UserContextImpl;
 import rss.controllers.vo.UserVO;
-import rss.dao.UserDao;
-import rss.entities.User;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.log.LogService;
 import rss.permissions.PermissionsService;
 import rss.services.NewsService;
-import rss.services.user.ForgotPasswordResult;
-import rss.services.user.UserCacheService;
-import rss.services.user.UserService;
 import rss.trakt.TraktService;
+import rss.user.*;
 import rss.util.CookieUtils;
 import rss.util.JsonTranslation;
 
@@ -38,16 +33,13 @@ import java.util.*;
 public class UserResource {
 
     @Autowired
-    private UserDao userDao;
+    private UserService userService;
 
     @Autowired
     private PermissionsService permissionsService;
 
     @Autowired
     private LogService logService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private NewsService newsService;
@@ -88,7 +80,7 @@ public class UserResource {
         email = email.trim();
         password = password.trim();
 
-        User user = userDao.findByEmail(email);
+        User user = userService.findByEmail(email);
         if (user == null || !user.getPassword().equals(password)) {
             throw new InvalidParameterException("Username or password are incorrect");
         }
@@ -157,7 +149,7 @@ public class UserResource {
             result.put("message", response);
 
             if (Environment.getInstance().getServerMode() == ServerMode.TEST && isValidated) {
-                final User createdUser = userDao.findByEmail(email);
+                final User createdUser = userService.findByEmail(email);
                 createdUser.setValidationHash(null);
             }
         } catch (EmailAlreadyRegisteredException e) {
@@ -180,7 +172,7 @@ public class UserResource {
     public Response forgotPassword(String json) {
         final Map jsonMap = JsonTranslation.jsonString2Object(json, Map.class);
         String email = String.valueOf(jsonMap.get("email"));
-        User user = userDao.findByEmail(email);
+        User user = userService.findByEmail(email);
         if (user == null) {
             throw new InvalidParameterException("Email does not exist");
         }
@@ -212,7 +204,7 @@ public class UserResource {
     public Response getAllUsers() {
         permissionsService.verifyAdminPermissions();
 
-        List<UserVO> users = entityConverter.toThinUser(userDao.findAll());
+        List<UserVO> users = entityConverter.toThinUser(userService.getAllUsers());
         Collections.sort(users, new Comparator<UserVO>() {
             @Override
             public int compare(UserVO o1, UserVO o2) {

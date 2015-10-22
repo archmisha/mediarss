@@ -6,21 +6,25 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
+import rss.cache.UserCacheService;
 import rss.context.UserContextHolder;
-import rss.dao.MovieDao;
-import rss.dao.SubtitlesDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserDao;
-import rss.entities.*;
+import rss.entities.News;
+import rss.movies.MovieService;
 import rss.permissions.PermissionsService;
 import rss.services.NewsService;
-import rss.services.searchers.SearcherConfigurationService;
-import rss.services.shows.ShowService;
-import rss.services.user.UserCacheService;
-import rss.services.user.UserService;
 import rss.shows.ShowAutoCompleteItem;
 import rss.shows.ShowAutoCompleteJSON;
+import rss.shows.ShowService;
+import rss.subtitles.SubtitlesService;
+import rss.torrents.Episode;
+import rss.torrents.Movie;
+import rss.torrents.Show;
 import rss.torrents.Torrent;
+import rss.torrents.dao.TorrentDao;
+import rss.torrents.searchers.config.SearcherConfiguration;
+import rss.torrents.searchers.config.SearcherConfigurationService;
+import rss.user.User;
+import rss.user.UserService;
 import rss.util.JsonTranslation;
 
 import javax.ws.rs.*;
@@ -40,28 +44,19 @@ import java.util.Map;
 public class AdminResource {
 
     @Autowired
-    private UserDao userDao;
-
-    @Autowired
     private PermissionsService permissionsService;
 
     @Autowired
     private EntityConverter entityConverter;
 
     @Autowired
-    private ShowDao showDao;
-
-    @Autowired
-    private EpisodeDao episodeDao;
-
-    @Autowired
     private TorrentDao torrentDao;
 
     @Autowired
-    private MovieDao movieDao;
+    private MovieService movieService;
 
     @Autowired
-    private SubtitlesDao subtitlesDao;
+    private SubtitlesService subtitlesService;
 
     @Autowired
     private NewsService newsService;
@@ -94,7 +89,7 @@ public class AdminResource {
     public Response downloadSchedule(@PathVariable Long showId) {
         permissionsService.verifyAdminPermissions();
 
-        Show show = showDao.find(showId);
+        Show show = showService.find(showId);
         showService.downloadFullScheduleWithTorrents(show, false);
 
         Map<String, Object> map = new HashMap<>();
@@ -122,7 +117,7 @@ public class AdminResource {
     public Response deleteShow(@PathVariable Long showId) {
         permissionsService.verifyAdminPermissions();
 
-        Show show = showDao.find(showId);
+        Show show = showService.find(showId);
         if (show == null) {
             Map<String, Object> map = new HashMap<>();
             map.put("message", "Show with id " + showId + " is not found");
@@ -130,16 +125,16 @@ public class AdminResource {
         }
 
         // allow deletion only if no one is tracking this show
-        if (userDao.isShowBeingTracked(show)) {
+        if (showService.isShowBeingTracked(show)) {
             throw new MediaRSSException("Show is being tracked. Unable to delete").doNotLog();
         }
 
         for (Episode episode : show.getEpisodes()) {
             showService.disconnectTorrentsFromEpisode(episode);
-            episodeDao.delete(episode);
+            showService.delete(episode);
         }
 
-        showDao.delete(show);
+        showService.delete(show);
 
         Map<String, Object> map = new HashMap<>();
         map.put("message", "Show '" + show.getName() + "' (id=" + show.getId() + ") was deleted");
@@ -152,7 +147,7 @@ public class AdminResource {
     public Response deleteMovie(@PathVariable Long movieId) {
         permissionsService.verifyAdminPermissions();
 
-        Movie movie = movieDao.find(movieId);
+        Movie movie = movieService.find(movieId);
         if (movie == null) {
             Map<String, Object> map = new HashMap<>();
             map.put("message", "Movie with id " + movieId + " is not found");
@@ -160,7 +155,7 @@ public class AdminResource {
         }
 
         // allow deletion only if no one is tracking this movie
-        if (!movieDao.findUserMoviesByMovieId(movieId).isEmpty()) {
+        if (!movieService.findUserMoviesByMovieId(movieId).isEmpty()) {
             throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
         }
 
@@ -168,14 +163,12 @@ public class AdminResource {
             Torrent torrent = torrentDao.find(torrentId);
             // happens when erasing a movie that has a commons torrent with other movie that also been erased
             if (torrent != null) {
-                for (Subtitles subtitles : subtitlesDao.findByTorrent(torrent)) {
-                    subtitlesDao.delete(subtitles);
-                }
+                subtitlesService.deleteSubtitlesByTorrent(torrent);
                 torrentDao.delete(torrent);
             }
         }
         movie.getTorrentIds().clear();
-        movieDao.delete(movie);
+        movieService.delete(movie);
 
         Map<String, Object> map = new HashMap<>();
         map.put("message", "Movie '" + movie.getName() + "' (id=" + movie.getId() + ") was deleted");

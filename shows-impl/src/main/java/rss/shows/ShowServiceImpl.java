@@ -1,4 +1,4 @@
-package rss.services.shows;
+package rss.shows;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -16,34 +16,28 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.EpisodesComparator;
 import rss.PageDownloadException;
 import rss.PageDownloader;
 import rss.RecoverableConnectionException;
-import rss.configuration.SettingsService;
-import rss.controllers.EntityConverter;
+import rss.cache.ShowsCacheService;
 import rss.environment.Environment;
 import rss.log.LogService;
 import rss.mail.EmailClassification;
 import rss.mail.EmailService;
-import rss.services.downloader.DownloadConfig;
-import rss.services.downloader.DownloadResult;
-import rss.services.downloader.EpisodeTorrentsDownloader;
-import rss.services.matching.MatchCandidate;
-import rss.services.requests.episodes.EpisodeRequest;
-import rss.services.requests.episodes.FullSeasonRequest;
-import rss.services.requests.episodes.ShowRequest;
-import rss.services.requests.episodes.SingleEpisodeRequest;
-import rss.shows.ShowAutoCompleteItem;
-import rss.shows.ShowJSON;
-import rss.shows.ShowScheduleEpisodeItem;
-import rss.shows.ShowsScheduleJSON;
-import rss.shows.cache.CachedShow;
-import rss.shows.cache.ShowsCacheService;
-import rss.shows.dao.EpisodesMapper;
-import rss.torrents.MediaQuality;
-import rss.torrents.Torrent;
-import rss.torrents.UserTorrent;
+import rss.shows.dao.*;
+import rss.subtitles.SubtitlesService;
+import rss.torrents.*;
+import rss.torrents.dao.TorrentDao;
+import rss.torrents.dao.UserTorrentDao;
+import rss.torrents.downloader.DownloadConfig;
+import rss.torrents.downloader.DownloadResult;
+import rss.torrents.downloader.EpisodeTorrentsDownloader;
+import rss.torrents.matching.MatchCandidate;
+import rss.torrents.requests.shows.EpisodeRequest;
+import rss.torrents.requests.shows.FullSeasonRequest;
+import rss.torrents.requests.shows.ShowRequest;
+import rss.torrents.requests.shows.SingleEpisodeRequest;
+import rss.user.User;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.StringUtils2;
@@ -65,16 +59,15 @@ public class ShowServiceImpl implements ShowService {
 
     private static final int MAX_CONCURRENT_SHOWS = 10;
 
+    public static final Pattern RANGE_EPISODES_PATTERN = Pattern.compile("e\\d+");
+
     @Autowired
     private ShowDao showDao;
 
     @Autowired
-    private UserDao userDao;
+    private UserEpisodeTorrentDao userEpisodeTorrentDao;
 
     private TVRageServiceImpl showsProvider;
-
-    @Autowired
-    private SettingsService settingsService;
 
     @Autowired
     private EpisodeTorrentsDownloader torrentEntriesDownloader;
@@ -101,17 +94,13 @@ public class ShowServiceImpl implements ShowService {
     private ShowSearchService showSearchService;
 
     @Autowired
-    private SubtitlesDao subtitlesDao;
+    private SubtitlesService subtitlesService;
 
     @Autowired
     private TorrentDao torrentDao;
 
     @Autowired
-    protected EntityConverter entityConverter;
-
-    @Autowired
     protected UserTorrentDao userTorrentDao;
-    public static final Pattern RANGE_EPISODES_PATTERN = Pattern.compile("e\\d+");
 
     @PostConstruct
     private void postConstruct() {
@@ -127,31 +116,6 @@ public class ShowServiceImpl implements ShowService {
         showDao.persist(show);
         showsCacheService.put(show);
         downloadFullSchedule(show);
-    }
-
-    private static final Pattern NORMALIZE_TO_NOTHING_PATTERN = Pattern.compile("['\"]");
-    private static final Pattern NORMALIZE_TO_SPACE_PATTERN = Pattern.compile("[:&\\._\\+,\\(\\)!\\?/\\-]");
-    private static final Pattern NORMALIZE_SPACES_PATTERN = Pattern.compile("\\s+");
-
-    public static String normalize(String name) {
-        name = name.toLowerCase();
-        name = NORMALIZE_TO_NOTHING_PATTERN.matcher(name).replaceAll("");
-        name = NORMALIZE_TO_SPACE_PATTERN.matcher(name).replaceAll(" ");
-        // avoiding usage of regex of String.replace method
-        name = StringUtils.replace(name, "and", " ");
-        name = NORMALIZE_SPACES_PATTERN.matcher(name).replaceAll(" ");
-        name = name.trim();
-        return name;
-    }
-
-    // not normalizing: and, &
-    public static String normalizeForQueryString(String name) {
-        name = name.toLowerCase();
-        name = NORMALIZE_TO_NOTHING_PATTERN.matcher(name).replaceAll("");
-        name = NORMALIZE_TO_SPACE_PATTERN.matcher(name).replaceAll(" ");
-        name = NORMALIZE_SPACES_PATTERN.matcher(name).replaceAll(" ");
-        name = name.trim();
-        return name;
     }
 
     @Override
@@ -429,7 +393,7 @@ public class ShowServiceImpl implements ShowService {
                             if (show.getTvRageId() == -1) {
                                 show.setTvRageId(showShell.getTvRageId());
                             }
-                            processedShows.put(showShell, userDao.isShowBeingTracked(show));
+                            processedShows.put(showShell, showDao.isShowBeingTracked(show));
                             showShellToShowMap.put(showShell, show);
                         }
                     }
@@ -538,7 +502,7 @@ public class ShowServiceImpl implements ShowService {
             // running until lastEpisodeSeason-1 (including)
             for (int i = 1; i < lastEpisodeSeason; ++i) {
                 if (mapper.get(i, -1) == null) {
-                    Episode episode = new Episode(i, -1);
+                    Episode episode = new EpisodeImpl(i, -1);
                     persistEpisodeToShow(show, episode);
                     fullSeasonNewEpisodes.add(episode);
                 }
@@ -561,9 +525,7 @@ public class ShowServiceImpl implements ShowService {
                     userTorrentDao.delete(userTorrent);
                 }
 
-                for (Subtitles subtitles : subtitlesDao.findByTorrent(torrent)) {
-                    subtitlesDao.delete(subtitles);
-                }
+                subtitlesService.deleteSubtitlesByTorrent(torrent);
 
                 torrentDao.delete(torrent);
             } catch (NonUniqueResultException e) {
@@ -592,12 +554,12 @@ public class ShowServiceImpl implements ShowService {
 
         // take everything before s01e01
         // do LD on the texts
-        String requestTitle = ShowServiceImpl.normalize(mediaRequest.getTitle());
+        String requestTitle = TorrentUtils.normalize(mediaRequest.getTitle());
         Show show = mediaRequest.getShow();
 
         List<Pair<Integer, MatchCandidate>> pairs = new ArrayList<>();
         for (MatchCandidate candidate : matchCandidates) {
-            String title = ShowServiceImpl.normalize(candidate.getText());
+            String title = TorrentUtils.normalize(candidate.getText());
 
             String titlePrefix = null;
             String titleSuffix = null;
@@ -702,10 +664,10 @@ public class ShowServiceImpl implements ShowService {
     @Transactional(propagation = Propagation.REQUIRED)
     public void downloadEpisode(User user, long torrentId) {
         Torrent torrent = torrentDao.find(torrentId);
-        UserTorrent userTorrent = userTorrentDao.findUserEpisodeTorrent(user, torrentId);
+        UserTorrent userTorrent = userEpisodeTorrentDao.findUserEpisodeTorrent(user, torrentId);
         // handling case of re-downloading here
         if (userTorrent == null) {
-            userTorrent = new UserEpisodeTorrent();
+            userTorrent = new UserEpisodeTorrentImpl();
             userTorrent.setUser(user);
             userTorrent.setTorrent(torrent);
             userTorrentDao.persist(userTorrent);
@@ -714,7 +676,58 @@ public class ShowServiceImpl implements ShowService {
     }
 
     @Override
-    public List<ShowJSON> getTrackedShows(User user) {
-        return entityConverter.toThinShows(user.getShows());
+    public List<Show> getTrackedShows(User user) {
+        return showDao.getUserShows(user);
+    }
+
+    @Override
+    public Show find(long showId) {
+        return showDao.find(showId);
+    }
+
+    @Override
+    public Collection<CachedShow> findCachedShows() {
+        return showDao.findCachedShows();
+    }
+
+    @Override
+    public List<Episode> find(ShowRequest showRequest) {
+        return episodeDao.find(showRequest);
+    }
+
+    @Override
+    public void delete(Episode episode) {
+        episodeDao.delete(episode);
+    }
+
+    @Override
+    public void delete(Show show) {
+        showDao.delete(show);
+    }
+
+    @Override
+    public boolean isShowBeingTracked(Show show) {
+        return showDao.isShowBeingTracked(show);
+    }
+
+
+    @Override
+    public Collection<Episode> getEpisodesToDownload(User user) {
+        return episodeDao.getEpisodesToDownload(user);
+    }
+
+    @Override
+    public Show findByName(String name) {
+        return showDao.findByName(name);
+    }
+
+    @Override
+    public Show findByTvRageId(int tvRageId) {
+        return showDao.findByTvRageId(tvRageId);
+    }
+
+    @Override
+    public void updateShow(Show show) {
+        showDao.persist(show);
     }
 }

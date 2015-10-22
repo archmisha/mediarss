@@ -5,8 +5,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.context.SessionUserContext;
 import rss.context.UserContextHolder;
 import rss.context.UserContextImpl;
-import rss.dao.UserDao;
-import rss.entities.User;
+import rss.user.User;
+import rss.user.UserService;
 import rss.util.CookieUtils;
 
 import javax.servlet.*;
@@ -80,8 +80,8 @@ public class UserContextFilter implements Filter {
             String series = arr[1];
             String token = arr[2];
             ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(sc);
-            UserDao userDao = applicationContext.getBean(UserDao.class);
-            User user = userDao.findByEmail(email);
+            UserService userService = applicationContext.getBean(UserService.class);
+            User user = userService.findByEmail(email);
             if (user != null && user.getLoginSeries().equals(series)) {
                 if (user.getLoginToken().equals(token)) {
 //						loggedIn = true;

@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.context.UserContextHolder;
-import rss.entities.User;
 import rss.mail.EmailClassification;
 import rss.mail.EmailService;
+import rss.user.User;
 
 import javax.servlet.http.HttpServletRequest;
 

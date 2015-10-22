@@ -7,24 +7,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.EpisodesComparator;
-import rss.controllers.EntityConverter;
-import rss.dao.ShowDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserDao;
-import rss.dao.UserTorrentDao;
-import rss.entities.Episode;
-import rss.entities.Show;
+import rss.cache.*;
 import rss.log.LogService;
-import rss.services.downloader.DownloadConfig;
-import rss.services.downloader.DownloadResult;
-import rss.services.downloader.EpisodeTorrentsDownloader;
-import rss.services.requests.episodes.ShowRequest;
-import rss.shows.SearchResultJSON;
-import rss.shows.cache.*;
-import rss.torrents.Torrent;
-import rss.torrents.UserTorrent;
-import rss.torrents.UserTorrentJSON;
+import rss.shows.*;
+import rss.shows.dao.ShowDao;
+import rss.shows.dao.UserEpisodeTorrentDao;
+import rss.torrents.*;
+import rss.torrents.dao.TorrentDao;
+import rss.torrents.downloader.DownloadConfig;
+import rss.torrents.downloader.DownloadResult;
+import rss.torrents.downloader.EpisodeTorrentsDownloader;
+import rss.torrents.requests.shows.ShowRequest;
 import rss.util.DurationMeter;
 import rss.util.MultiThreadExecutor;
 
@@ -47,10 +40,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
     private TorrentDao torrentDao;
 
     @Autowired
-    private UserTorrentDao userTorrentDao;
-
-    @Autowired
-    private EntityConverter entityConverter;
+    private UserEpisodeTorrentDao userEpisodeTorrentDao;
 
     @Autowired
     private EpisodeTorrentsDownloader torrentEntriesDownloader;
@@ -65,7 +55,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
     private ShowDao showDao;
 
     @Autowired
-    private UserDao userDao;
+    private TorrentsConverter torrentsConverter;
 
     @Autowired
     private ShowsCacheService showsCacheService;
@@ -109,7 +99,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
             }
             didYouMeanShows = Collections.emptyList();
         } else {
-            return SearchResultJSON.createDidYouMean(originalSearchTerm, entityConverter.toThinShows(didYouMeanShows));
+            return SearchResultJSON.createDidYouMean(originalSearchTerm, ShowsResource.toThinShows(didYouMeanShows));
         }
 
         downloadShowScheduleBeforeSearch(episodeRequest.getShow());
@@ -120,7 +110,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
         DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Arrays.asList(episodeRequest)), downloadConfig);
 
         SearchResultJSON searchResultJSON = SearchResultJSON.createWithResult(originalSearchTerm, actualSearchTerm,
-                episodeRequest.toQueryString(), entityConverter.toThinShows(didYouMeanShows));
+                episodeRequest.toQueryString(), ShowsResource.toThinShows(didYouMeanShows));
         if (downloadResult.getCompleteDate() != null) {
             downloadResultToSearchResultVO(userId, downloadResult, searchResultJSON);
         } else {
@@ -152,14 +142,14 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
         ArrayList<UserTorrentJSON> result = new ArrayList<>();
 
         // add those containing user torrent
-        for (UserTorrent userTorrent : userTorrentDao.findUserEpisodes(userId, downloaded)) {
+        for (UserTorrent userTorrent : userEpisodeTorrentDao.findUserEpisodes(userId, downloaded)) {
             torrentIds.remove(userTorrent.getTorrent().getId());
-            result.add(UserTorrentJSON.fromUserTorrent(userTorrent));
+            result.add(torrentsConverter.populate(new UserTorrentJSON(), userTorrent));
         }
 
         // add the rest of the episodes
         for (Torrent torrent : torrentDao.find(torrentIds)) {
-            result.add(UserTorrentJSON.fromTorrent(torrent));
+            result.add(torrentsConverter.populate(new UserTorrentJSON(), torrent));
         }
 
         final EpisodesComparator episodesComparator = new EpisodesComparator();
@@ -176,7 +166,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
     }
 
     private Show findShowByName(String name) {
-        String normalizedName = ShowServiceImpl.normalize(name);
+        String normalizedName = TorrentUtils.normalize(name);
         for (CachedShow cachedShow : showsCacheService.getAll()) {
             if (cachedShow.getNormalizedName().equals(normalizedName)) {
                 return showDao.find(cachedShow.getId());
@@ -195,7 +185,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
             if (show.getScheduleDownloadDate() != null) {
                 shouldDownloadSchedule = false;
             }
-        } else if (userDao.isShowBeingTracked(show)) {
+        } else if (showDao.isShowBeingTracked(show)) {
             shouldDownloadSchedule = false;
         } else {
             if (!show.getEpisodes().isEmpty()) {
@@ -243,7 +233,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
     }
 
     private Collection<CachedShow> statisticMatchHelper(String name, int maxResults) {
-        name = ShowServiceImpl.normalize(name);
+        name = TorrentUtils.normalize(name);
         List<String> sortedNameSplit = Arrays.asList(name.split(" "));
         final int nameWords = sortedNameSplit.size();
         Collections.sort(sortedNameSplit);

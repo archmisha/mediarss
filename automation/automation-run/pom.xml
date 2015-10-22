@@ -266,11 +266,11 @@
                                             <artifactId>automation-pages-webapp</artifactId>
                                             <version>${project.version}</version>
                                             <type>war</type>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                            <outputDirectory>${project.build.directory}/tomcat/webapps</outputDirectory>
                                             <destFileName>test-pages.war</destFileName>
                                         </artifactItem>
                                     </artifactItems>
-                                    <outputDirectory>${project.build.directory}/wars</outputDirectory>
+                                    <!--<outputDirectory>${project.build.directory}/wars</outputDirectory>-->
                                     <overWriteReleases>false</overWriteReleases>
                                     <overWriteSnapshots>true</overWriteSnapshots>
                                 </configuration>

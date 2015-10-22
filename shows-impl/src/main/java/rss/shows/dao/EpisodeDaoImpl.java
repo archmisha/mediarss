@@ -2,13 +2,15 @@ package rss.shows.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
-import rss.shows.entities.Episode;
-import rss.shows.entities.Show;
+import rss.torrents.Episode;
+import rss.torrents.Show;
 import rss.torrents.Torrent;
 import rss.torrents.requests.shows.DoubleEpisodeRequest;
 import rss.torrents.requests.shows.FullSeasonRequest;
 import rss.torrents.requests.shows.ShowRequest;
 import rss.torrents.requests.shows.SingleEpisodeRequest;
+import rss.user.User;
+import rss.util.DateUtils;
 
 import java.util.*;
 
@@ -102,5 +104,15 @@ public class EpisodeDaoImpl extends BaseDaoJPA<Episode> implements EpisodeDao {
 		query.append("select count(t) from Episode as t where ");
 		generateSingleEpisodePart(query, params, "", 0, show.getId(), episode.getSeason(), episode.getEpisode());
 		return uniqueResult(super.<Long>find(query.toString(), params.toArray())) > 0;
+	}
+
+
+	@Override
+	public Collection<Episode> getEpisodesToDownload(User user) {
+		// add to feed everything aired since last feed was generated and a buffer of 14 days backwards
+		Map<String, Object> params = new HashMap<>(2);
+		params.put("userId", user.getId());
+		params.put("fromDate", DateUtils.getPastDate(user.getLastShowsFeedGenerated(), 14));
+		return super.findByNamedQueryAndNamedParams("Episode.getEpisodesToDownload", params);
 	}
 }

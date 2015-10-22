@@ -1,10 +1,11 @@
 package rss.shows.dao;
 
 import rss.ems.dao.Dao;
-import rss.shows.entities.Episode;
-import rss.shows.entities.Show;
+import rss.torrents.Episode;
+import rss.torrents.Show;
 import rss.torrents.Torrent;
 import rss.torrents.requests.shows.ShowRequest;
+import rss.user.User;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,4 +26,6 @@ public interface EpisodeDao extends Dao<Episode> {
 	Collection<Episode> getEpisodesForSchedule(User user);
 
 	boolean exists(Show show, Episode episode);
+
+	Collection<Episode> getEpisodesToDownload(User user);
 }

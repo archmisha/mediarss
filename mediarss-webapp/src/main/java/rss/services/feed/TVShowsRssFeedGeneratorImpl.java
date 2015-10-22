@@ -5,18 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.dao.SubtitlesDao;
-import rss.dao.TorrentDao;
-import rss.dao.UserDao;
-import rss.dao.UserTorrentDao;
-import rss.entities.Subtitles;
-import rss.entities.User;
-import rss.entities.UserEpisodeTorrent;
+import rss.cache.UserCacheService;
 import rss.log.LogService;
-import rss.services.user.UserCacheService;
-import rss.torrents.MediaQuality;
-import rss.torrents.Torrent;
-import rss.torrents.UserTorrent;
+import rss.shows.ShowService;
+import rss.shows.dao.UserEpisodeTorrentDao;
+import rss.shows.dao.UserEpisodeTorrentImpl;
+import rss.subtitles.SubtitlesService;
+import rss.torrents.*;
+import rss.torrents.dao.TorrentDao;
+import rss.torrents.dao.UserTorrentDao;
+import rss.user.User;
+import rss.user.UserService;
 import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 
@@ -31,7 +30,7 @@ import java.util.*;
 public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 
 	@Autowired
-	private UserDao userDao;
+	private UserService userService;
 
 	@Autowired
 	private RssFeedBuilder rssFeedBuilder;
@@ -40,16 +39,22 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 	private UserTorrentDao userTorrentDao;
 
 	@Autowired
+	private UserEpisodeTorrentDao userEpisodeTorrentDao;
+
+	@Autowired
 	private TorrentDao torrentDao;
 
 	@Autowired
-	private SubtitlesDao subtitlesDao;
+	private SubtitlesService subtitlesService;
 
 	@Autowired
 	protected UserCacheService userCacheService;
 
 	@Autowired
 	private LogService logService;
+
+	@Autowired
+	private ShowService showService;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -70,7 +75,7 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		String rssFeed = rssFeedBuilder.build("TV Shows RSS personalized feed", "TV Shows RSS feed of the shows selected by the user", torrentEntries, subtitles);
 
 		user.setLastShowsFeedGenerated(downloadDate);
-		userDao.merge(user);
+		userService.updateUser(user);
 		userCacheService.invalidateUser(user);
 
 		logService.info(getClass(), String.format("Generated shows feed for %s (%d ms)", user, System.currentTimeMillis() - from));
@@ -96,7 +101,7 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 		}
 
 		// Extract torrent entries - take best by quality
-		for (Episode episode : userDao.getEpisodesToDownload(user)) {
+		for (Episode episode : showService.getEpisodesToDownload(user)) {
 			Map<MediaQuality, List<Torrent>> qualityMap = new HashMap<>();
 			for (Long torrentId : episode.getTorrentIds()) {
 				Torrent torrent = torrentDao.find(torrentId);
@@ -108,9 +113,9 @@ public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 					List<Torrent> torrents = qualityMap.get(quality);
 					for (Torrent torrent : torrents) {
 						if (!torrentEntries.contains(torrent)) {
-							UserTorrent userTorrent = userTorrentDao.findUserEpisodeTorrent(user, torrent.getId());
+							UserTorrent userTorrent = userEpisodeTorrentDao.findUserEpisodeTorrent(user, torrent.getId());
 							if (userTorrent == null) {
-								userTorrent = new UserEpisodeTorrent();
+								userTorrent = new UserEpisodeTorrentImpl();
 								userTorrent.setUser(user);
 								userTorrent.setTorrent(torrent);
 								userTorrent.setAdded(new Date());

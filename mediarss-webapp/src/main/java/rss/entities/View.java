@@ -2,6 +2,8 @@ package rss.entities;
 
 import org.hibernate.annotations.Index;
 import rss.ems.entities.BaseEntity;
+import rss.user.User;
+import rss.user.dao.UserImpl;
 
 import javax.persistence.*;
 
@@ -9,8 +11,8 @@ import javax.persistence.*;
  * User: dikmanm
  * Date: 14/05/13 18:25
  */
-@Entity
-@Table(name = "view", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "object_id"}))
+@javax.persistence.Entity
+@javax.persistence.Table(name = "view", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "object_id"}))
 @org.hibernate.annotations.Table(appliesTo = "view",
 		indexes = {
 				@Index(name = "view_userId_objectId_idx", columnNames = {"user_id", "object_id"})
@@ -24,7 +26,7 @@ public class View extends BaseEntity {
 
 	private static final long serialVersionUID = 6293220222526358745L;
 
-	@ManyToOne(targetEntity = User.class, fetch = FetchType.LAZY)
+	@ManyToOne(targetEntity = UserImpl.class, fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
 

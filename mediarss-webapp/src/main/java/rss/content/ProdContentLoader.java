@@ -1,9 +1,12 @@
 package rss.content;
 
+import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import rss.environment.ServerMode;
 import rss.log.LogService;
-import rss.services.OOTBContentLoader;
+
+import java.util.Set;
 
 /**
  * User: dikmanm
@@ -15,18 +18,13 @@ public class ProdContentLoader implements ContentLoader {
     @Autowired
     private LogService logService;
 
-    @Autowired
-    private OOTBContentLoader ootbContentLoader;
-
     @Override
     public void load() {
         logService.info(ProdContentLoader.class, "Loading PROD mode content");
+    }
 
-        try {
-            logService.info(ProdContentLoader.class, "Loading TVRage shows");
-            ootbContentLoader.loadTVRageShows();
-        } catch (Exception e) {
-            logService.error(ProdContentLoader.class, "Failed loading OOTB content: " + e.getMessage(), e);
-        }
+    @Override
+    public Set<ServerMode> getSupportedModes() {
+        return Sets.newHashSet(ServerMode.PROD);
     }
 }

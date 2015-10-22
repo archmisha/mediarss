@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.MediaRSSException;
 import rss.UserNotLoggedInException;
+import rss.cache.UserCacheService;
 import rss.configuration.SettingsService;
 import rss.log.LogService;
 import rss.permissions.NoPermissionsException;
-import rss.services.shows.ShowService;
-import rss.services.user.UserCacheService;
+import rss.shows.ShowService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.InvalidParameterException;

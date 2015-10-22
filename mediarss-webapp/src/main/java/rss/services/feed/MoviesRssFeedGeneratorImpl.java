@@ -5,14 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import rss.dao.UserDao;
-import rss.dao.UserTorrentDao;
-import rss.entities.Subtitles;
-import rss.entities.User;
+import rss.cache.UserCacheService;
 import rss.log.LogService;
-import rss.services.user.UserCacheService;
+import rss.torrents.Subtitles;
 import rss.torrents.Torrent;
 import rss.torrents.UserTorrent;
+import rss.torrents.dao.UserTorrentDao;
+import rss.user.User;
+import rss.user.UserService;
 import rss.util.DateUtils;
 
 import java.util.*;
@@ -26,7 +26,7 @@ import java.util.*;
 public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
 	@Autowired
-	private UserDao userDao;
+	private UserService userService;
 
 	@Autowired
 	private RssFeedBuilder rssFeedBuilder;
@@ -47,7 +47,7 @@ public class MoviesRssFeedGeneratorImpl implements RssFeedGenerator {
 
 		Date downloadDate = new Date();
 		user.setLastMoviesFeedGenerated(downloadDate);
-		userDao.merge(user);
+		userService.updateUser(user);
 		userCacheService.invalidateUser(user);
 
 		Collection<Torrent> torrentEntries = new ArrayList<>();

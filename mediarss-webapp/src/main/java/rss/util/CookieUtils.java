@@ -1,6 +1,6 @@
 package rss.util;
 
-import rss.entities.User;
+import rss.user.User;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;

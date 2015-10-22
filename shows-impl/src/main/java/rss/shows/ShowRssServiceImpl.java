@@ -1,4 +1,4 @@
-package rss.services.shows;
+package rss.shows;
 
 
 import org.slf4j.Logger;
@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.PageDownloader;
-import rss.services.requests.episodes.EpisodeRequest;
+import rss.services.shows.ShowRssService;
+import rss.torrents.requests.shows.EpisodeRequest;
 import rss.util.DurationMeter;
 
 import java.util.Collection;
