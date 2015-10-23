@@ -33,7 +33,7 @@ define([
 					description: 'Connect with your account on <a href=\'http://trakt.tv/\' target=\'blank\'>trakt.tv</a>. ' +
                     'Every show you add to trakt.tv will be added automatically to your MediaRSS account as a tracked show.'
 				});
-                this.redirectUri = encodeURIComponent(window.location.href.substring(0, window.location.href.indexOf('#')));
+                this.redirectUri = encodeURIComponent(window.location.href.substring(0, window.location.href.indexOf('#')) + '/rest/trakt/auth');
 			},
 
 			onRender: function() {

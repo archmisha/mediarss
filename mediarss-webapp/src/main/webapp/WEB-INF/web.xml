@@ -75,7 +75,7 @@
 
     <filter>
         <filter-name>UserContextFilter</filter-name>
-        <filter-class>rss.UserContextFilter</filter-class>
+        <filter-class>rss.user.context.UserContextFilter</filter-class>
         <init-param>
             <param-name>urlWhiteList</param-name>
             <param-value>
@@ -94,7 +94,7 @@
     </filter>
     <filter-mapping>
         <filter-name>TraktFilter</filter-name>
-        <url-pattern>/rest/*</url-pattern>
+        <url-pattern>/rest/trakt/auth</url-pattern>
     </filter-mapping>
 
     <!-- Default page to serve -->

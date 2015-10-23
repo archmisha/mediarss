@@ -17,7 +17,7 @@ public class TraktService extends BaseService {
         Map<String, String> params = new HashMap<>();
         params.put("code", "test_code");
         params.put("state", "test_state");
-        sendGetRequest("/main", params);
+        sendGetRequest("/rest/trakt/auth", params);
     }
 
     public void disconnect() {

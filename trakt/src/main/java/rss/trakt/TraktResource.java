@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
  */
 @Path("/trakt")
 @Component
-public class TraktController {
+public class TraktResource {
 
     @Autowired
     private TraktService traktService;
