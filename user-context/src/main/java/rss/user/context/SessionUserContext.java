@@ -1,4 +1,4 @@
-package rss.context;
+package rss.user.context;
 
 import javax.servlet.http.HttpSession;
 import java.util.Stack;

@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.cache.UserCacheService;
-import rss.context.SessionUserContext;
-import rss.context.UserContextHolder;
-import rss.context.UserContextImpl;
-import rss.controllers.vo.UserVO;
+import rss.user.context.SessionUserContext;
+import rss.user.context.UserContextHolder;
+import rss.user.context.UserContextImpl;
+import rss.user.json.UserJSON;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.log.LogService;
@@ -16,7 +16,7 @@ import rss.permissions.PermissionsService;
 import rss.services.NewsService;
 import rss.trakt.TraktService;
 import rss.user.*;
-import rss.util.CookieUtils;
+import rss.user.context.CookieUtils;
 import rss.util.JsonTranslation;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,9 +49,6 @@ public class UserResource {
 
     @Autowired
     private UserCacheService userCacheService;
-
-    @Autowired
-    protected EntityConverter entityConverter;
 
     @Path("/pre-login")
     @GET
@@ -204,10 +201,10 @@ public class UserResource {
     public Response getAllUsers() {
         permissionsService.verifyAdminPermissions();
 
-        List<UserVO> users = entityConverter.toThinUser(userService.getAllUsers());
-        Collections.sort(users, new Comparator<UserVO>() {
+        List<UserJSON> users = userListToJson(userService.getAllUsers());
+        Collections.sort(users, new Comparator<UserJSON>() {
             @Override
-            public int compare(UserVO o1, UserVO o2) {
+            public int compare(UserJSON o1, UserJSON o2) {
                 if (o2.getLastLogin() == null) {
                     return -1;
                 } else if (o1.getLastLogin() == null) {
@@ -240,5 +237,35 @@ public class UserResource {
         new SessionUserContext(request.getSession()).storeInSession();
 
         return Response.ok().build();
+    }
+
+    public List<UserJSON> userListToJson(Collection<User> users) {
+        ArrayList<UserJSON> result = new ArrayList<>();
+        for (User user : users) {
+            result.add(userToJson(user));
+        }
+        return result;
+    }
+
+    public UserJSON userToJson(User user) {
+        UserJSON userJSON = new UserJSON()
+                .withId(user.getId())
+                .withLoggedIn(UserContextHolder.getCurrentUserContext().getUserId() == user.getId())
+                .withEmail(user.getEmail())
+                .withFirstName(user.getFirstName())
+                .withLastName(user.getLastName())
+                .withLastLogin(user.getLastLogin())
+                .withLastShowsFeedAccess(user.getLastShowsFeedGenerated())
+                .withLastMoviesFeedAccess(user.getLastMoviesFeedGenerated())
+                .withAdmin(Environment.getInstance().getAdministratorEmails().contains(user.getEmail()));
+        if (user.getSubtitles() == null) {
+            userJSON.setSubtitles(null);
+        } else {
+            userJSON.setSubtitles(user.getSubtitles().toString());
+        }
+        if (Environment.getInstance().getServerMode() == ServerMode.TEST) {
+            userJSON.setValidationHash(user.getValidationHash());
+        }
+        return userJSON;
     }
 }

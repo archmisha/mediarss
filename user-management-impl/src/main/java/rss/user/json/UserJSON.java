@@ -1,4 +1,4 @@
-package rss.controllers.vo;
+package rss.user.json;
 
 import java.util.Date;
 
@@ -6,7 +6,7 @@ import java.util.Date;
  * User: dikmanm
  * Date: 07/02/13 18:46
  */
-public class UserVO {
+public class UserJSON {
 
 	private long id;
 	private boolean isLoggedIn;
@@ -72,52 +72,52 @@ public class UserVO {
 		this.isLoggedIn = isLoggedIn;
 	}
 
-	public UserVO withLoggedIn(boolean isLoggedIn) {
+	public UserJSON withLoggedIn(boolean isLoggedIn) {
 		this.isLoggedIn = isLoggedIn;
 		return this;
 	}
 
-	public UserVO withId(long id) {
+	public UserJSON withId(long id) {
 		this.id = id;
 		return this;
 	}
 
-	public UserVO withEmail(String email) {
+	public UserJSON withEmail(String email) {
 		this.email = email;
 		return this;
 	}
 
-	public UserVO withAdmin(boolean isAdmin) {
+	public UserJSON withAdmin(boolean isAdmin) {
 		this.admin = isAdmin;
 		return this;
 	}
 
-	public UserVO withSubtitles(String subtitles) {
+	public UserJSON withSubtitles(String subtitles) {
 		this.subtitles = subtitles;
 		return this;
 	}
 
-	public UserVO withFirstName(String firstName) {
+	public UserJSON withFirstName(String firstName) {
 		this.firstName = firstName;
 		return this;
 	}
 
-	public UserVO withLastName(String lastName) {
+	public UserJSON withLastName(String lastName) {
 		this.lastName = lastName;
 		return this;
 	}
 
-	public UserVO withLastLogin(Date lastLogin) {
+	public UserJSON withLastLogin(Date lastLogin) {
 		this.lastLogin = lastLogin;
 		return this;
 	}
 
-	public UserVO withLastShowsFeedAccess(Date lastShowsFeedGenerated) {
+	public UserJSON withLastShowsFeedAccess(Date lastShowsFeedGenerated) {
 		this.lastShowsFeedGenerated = lastShowsFeedGenerated;
 		return this;
 	}
 
-	public UserVO withLastMoviesFeedAccess(Date lastMoviesFeedGenerated) {
+	public UserJSON withLastMoviesFeedAccess(Date lastMoviesFeedGenerated) {
 		this.lastMoviesFeedGenerated = lastMoviesFeedGenerated;
 		return this;
 	}

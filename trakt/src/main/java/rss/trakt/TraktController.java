@@ -2,7 +2,7 @@ package rss.trakt;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

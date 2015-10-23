@@ -2,7 +2,7 @@ package rss.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.log.LogService;
 
 /**

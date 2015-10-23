@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.MediaRSSException;
 import rss.cache.UserCacheService;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.shows.EpisodesComparator;
 import rss.shows.EpisodesMapper;
 import rss.shows.ShowNotFoundException;

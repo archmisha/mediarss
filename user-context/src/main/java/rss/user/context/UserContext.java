@@ -1,4 +1,4 @@
-package rss.context;
+package rss.user.context;
 
 import java.io.Serializable;
 

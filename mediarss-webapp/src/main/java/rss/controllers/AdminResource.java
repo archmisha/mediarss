@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
 import rss.cache.UserCacheService;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.entities.News;
 import rss.movies.MovieService;
 import rss.permissions.PermissionsService;

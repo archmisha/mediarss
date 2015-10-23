@@ -1,13 +1,13 @@
-package rss;
+package rss.user.context;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import rss.context.SessionUserContext;
-import rss.context.UserContextHolder;
-import rss.context.UserContextImpl;
+import rss.user.context.SessionUserContext;
+import rss.user.context.UserContextHolder;
+import rss.user.context.UserContextImpl;
 import rss.user.User;
 import rss.user.UserService;
-import rss.util.CookieUtils;
+import rss.user.context.CookieUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.Cookie;

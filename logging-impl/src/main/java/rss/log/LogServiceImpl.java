@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import rss.context.UserContext;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContext;
+import rss.user.context.UserContextHolder;
 import rss.mail.EmailService;
 
 /**

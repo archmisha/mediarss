@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.cache.UserCacheService;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.controllers.EntityConverter;
 import rss.log.LogService;
 import rss.services.feed.RssFeedGenerator;

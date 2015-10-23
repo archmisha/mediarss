@@ -1,6 +1,7 @@
-package rss.util;
+package rss.user.context;
 
 import rss.user.User;
+import rss.util.StringUtils2;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;

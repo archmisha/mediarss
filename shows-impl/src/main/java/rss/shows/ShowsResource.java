@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.cache.UserActiveSearch;
 import rss.cache.UserCacheService;
 import rss.cache.UsersSearchesCache;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.log.LogService;

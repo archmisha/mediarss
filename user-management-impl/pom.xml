@@ -14,6 +14,11 @@
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
+            <artifactId>mediarss-user-context</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>mediarss</groupId>
             <artifactId>mediarss-user-management-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -36,6 +41,19 @@
             <groupId>mediarss</groupId>
             <artifactId>mediarss-ems</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
     </dependencies>
 </project>

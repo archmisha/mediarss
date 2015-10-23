@@ -1,9 +1,9 @@
 package rss.controllers;
 
 import org.springframework.stereotype.Service;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.controllers.vo.SubtitlesVO;
-import rss.controllers.vo.UserVO;
+import rss.user.json.UserJSON;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.torrents.Subtitles;
@@ -19,35 +19,7 @@ import java.util.*;
 @Service
 public class EntityConverter {
 
-    public List<UserVO> toThinUser(Collection<User> users) {
-        ArrayList<UserVO> result = new ArrayList<>();
-        for (User user : users) {
-            result.add(toThinUser(user));
-        }
-        return result;
-    }
 
-    public UserVO toThinUser(User user) {
-        UserVO userVO = new UserVO()
-                .withId(user.getId())
-                .withLoggedIn(UserContextHolder.getCurrentUserContext().getUserId() == user.getId())
-                .withEmail(user.getEmail())
-                .withFirstName(user.getFirstName())
-                .withLastName(user.getLastName())
-                .withLastLogin(user.getLastLogin())
-                .withLastShowsFeedAccess(user.getLastShowsFeedGenerated())
-                .withLastMoviesFeedAccess(user.getLastMoviesFeedGenerated())
-                .withAdmin(Environment.getInstance().getAdministratorEmails().contains(user.getEmail()));
-        if (user.getSubtitles() == null) {
-            userVO.setSubtitles(null);
-        } else {
-            userVO.setSubtitles(user.getSubtitles().toString());
-        }
-        if (Environment.getInstance().getServerMode() == ServerMode.TEST) {
-            userVO.setValidationHash(user.getValidationHash());
-        }
-        return userVO;
-    }
 
     public List<SubtitlesVO> toThinSubtitles(Collection<Subtitles> subtitles, Collection<Torrent> torrents) {
         Map<Long, Torrent> torrentsByIds = new HashMap<>();

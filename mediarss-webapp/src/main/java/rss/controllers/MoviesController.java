@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
-import rss.context.UserContextHolder;
+import rss.user.context.UserContextHolder;
 import rss.movies.*;
 import rss.movies.dao.MovieDao;
 import rss.movies.imdb.IMDBPreviewCacheService;
