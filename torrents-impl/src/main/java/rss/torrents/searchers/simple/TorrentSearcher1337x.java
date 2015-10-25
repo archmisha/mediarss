@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentSearcher<T> {
 
 	private static final String NAME = "1337x";
-	private static final String SEARCH_URL_SUFFIX = /*"http://" + NAME +*/ "/search/%s/0/";
+	private static final String SEARCH_URL_SUFFIX = "search/%s/0/";
 
 	private static final Pattern TORRENTS_ID_PATTERN = Pattern.compile("http://1337x[^/]+/([^\"]+)");
 
@@ -59,12 +59,13 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 	}
 
 	@Override
+	public String getDefaultDomain() {
+		return "http://1337x.net/";
+	}
+
+	@Override
 	protected Collection<String> getEntryUrl() {
-		Collection<String> res = new ArrayList<>();
-		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			res.add("http://" + domain + "/");
-		}
-		return res;
+		return searcherConfigurationService.getSearcherConfiguration(getName()).getDomains();
 	}
 
 	@Override
@@ -84,7 +85,7 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 	protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
 		Collection<String> res = new ArrayList<>();
 		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			res.add(String.format("http://" + domain + SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+			res.add(String.format(domain + SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
 		}
 		return res;
 
@@ -102,7 +103,10 @@ public class TorrentSearcher1337x<T extends MediaRequest> extends SimpleTorrentS
 					// take second a tag
 					Element a = element.select("a.org").get(0);
 					String searcherTorrentsId = a.attr("href");
-					String torrentUrl = "http://" + domain + searcherTorrentsId;
+					if (searcherTorrentsId.startsWith("/")) {
+						searcherTorrentsId = searcherTorrentsId.substring(1, searcherTorrentsId.length());
+					}
+					String torrentUrl = domain + searcherTorrentsId;
 					mediaRequest.setSearcherId(NAME, torrentUrl);
 					String entryPage = pageDownloader.downloadPage(torrentUrl);
 					Torrent torrent = parseTorrentPage(mediaRequest, entryPage);

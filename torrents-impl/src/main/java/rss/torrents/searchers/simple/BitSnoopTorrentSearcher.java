@@ -11,7 +11,6 @@ import rss.torrents.searchers.SearchResult;
 import rss.torrents.searchers.SimpleTorrentSearcher;
 import rss.util.StringUtils2;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -39,12 +38,13 @@ public class BitSnoopTorrentSearcher<T extends MediaRequest> extends SimpleTorre
 	}
 
 	@Override
+	public String getDefaultDomain() {
+		return "http://bitsnoop.com/";
+	}
+
+	@Override
 	protected Collection<String> getEntryUrl() {
-		Collection<String> res = new ArrayList<>();
-		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			res.add("http://" + domain + "/");
-		}
-		return res;
+		return searcherConfigurationService.getSearcherConfiguration(getName()).getDomains();
 	}
 
 	@Override

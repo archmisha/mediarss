@@ -28,7 +28,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
     public static final String NAME = "thepiratebay";
 
     // 0/7/0 orders by seeders - this solves multiple pages problem, what is important will be on the first page
-    private static final String SEARCH_URL_PREFIX = "/search";
+    private static final String SEARCH_URL_PREFIX = "search";
     private static final String SEARCH_URL_SUFFIX = "/%s/0/7/0";
 
     private static final Pattern PIRATE_BAY_ID = Pattern.compile("https?://thepiratebay[^/]+/torrent/([^\"/]+)");
@@ -47,10 +47,15 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
     }
 
     @Override
+    public String getDefaultDomain() {
+        return "https://thepiratebay.se/";
+    }
+
+    @Override
     protected Collection<String> getEntryUrl() {
         Collection<String> res = new ArrayList<>();
         for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-            res.add("http://" + domain + "/torrent/");
+            res.add(domain + "torrent/");
         }
         return res;
     }
@@ -59,7 +64,7 @@ public class ThePirateBayTorrentSearcher<T extends MediaRequest> extends SimpleT
     protected Collection<String> getSearchUrl(T mediaRequest) throws UnsupportedEncodingException {
         Collection<String> res = new ArrayList<>();
         for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-            res.add("http://" + domain + SEARCH_URL_PREFIX + String.format(SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
+            res.add(domain + SEARCH_URL_PREFIX + String.format(SEARCH_URL_SUFFIX, URLEncoder.encode(mediaRequest.toQueryString(), "UTF-8")));
         }
         return res;
     }

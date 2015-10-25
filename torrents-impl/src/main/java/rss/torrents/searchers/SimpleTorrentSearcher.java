@@ -28,21 +28,16 @@ import java.util.regex.Pattern;
 public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements Searcher<T> {
 
 	private static final Pattern IMDB_URL_PATTERN = Pattern.compile("(www.imdb.com/title/\\w+)");
-
-	@Autowired
-	private PageDownloader pageDownloader;
-
 	@Autowired
 	protected LogService logService;
-
-	@Autowired
-	private ShowService showService;
-
-    @Autowired
-    private SearchLogDao searchLogDao;
-
 	@Autowired
 	protected SearcherConfigurationService searcherConfigurationService;
+	@Autowired
+	private PageDownloader pageDownloader;
+	@Autowired
+	private ShowService showService;
+    @Autowired
+    private SearchLogDao searchLogDao;
 
 	@Override
 	public SearchResult search(T mediaRequest) {
@@ -259,4 +254,6 @@ public abstract class SimpleTorrentSearcher<T extends MediaRequest> implements S
 		}
 		return new MatcherVisitor(showService).visit(mediaRequest, matchCandidates);
 	}
+
+	public abstract String getDefaultDomain();
 }

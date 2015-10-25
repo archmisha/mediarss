@@ -26,6 +26,7 @@ public class TestPageDownloaderImpl implements PageDownloader {
         urlReplacementMap = new HashMap<>();
         urlReplacementMap.put("http://services.tvrage.com/feeds/show_list.php", getLocalUrlPrefix() + "/rest/test-pages/shows/list");
         urlReplacementMap.put("http://services.tvrage.com/feeds/full_show_info.php", getLocalUrlPrefix() + "/rest/test-pages/shows/info");
+        urlReplacementMap.put("http://1337x.net", getLocalUrlPrefix() + "/rest/test-pages/1337x");
     }
 
     private String getLocalUrlPrefix() {

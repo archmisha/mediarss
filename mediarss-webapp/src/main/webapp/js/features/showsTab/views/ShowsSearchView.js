@@ -89,9 +89,7 @@ define([
             },
 
             onEpisodeDownload: function (userTorrent) {
-                HttpUtils.post('rest/shows/episode/download', {
-                    torrentId: userTorrent.get('torrentId')
-                }, function (res) {
+                HttpUtils.get('rest/shows/episode/download?torrentId=' + userTorrent.get('torrentId'), function (res) {
                     userTorrent.set('downloadStatus', 'SCHEDULED');
                 });
             },
@@ -115,13 +113,8 @@ define([
                 }
 
                 var that = this;
-                HttpUtils.post('rest/shows/search', {
-                    title: title,
-                    season: season,
-                    episode: episode,
-                    showId: didYouMeanShowId,
-                    forceDownload: forceDownload
-                }, function (searchResult) {
+                HttpUtils.get('rest/shows/search?title=' + title + '&season=' + season + '&episode=' + episode +
+                    '&showId=' + didYouMeanShowId + '&forceDownload=' + forceDownload, function (searchResult) {
                     if (searchResult.end == null) {
                         that.searchResultsView.$el.slideUp('slow', function () {
                             that.searchResultsView.$el.hide();
@@ -145,9 +138,7 @@ define([
                     }
                 });
 
-                HttpUtils.post('rest/shows/episode/download-all', {
-                    torrentIds: torrentIds
-                }, function (res) {
+                HttpUtils.get('rest/shows/episode/download-all?torrentIds=' + torrentIds.join(','), function (res) {
                     // set all in downloaded state in ui
                     userTorrents.forEach(function (userTorrent) {
                         if (userTorrent.get('downloadStatus') === 'NONE') {
@@ -194,9 +185,9 @@ define([
                             var allComplete = true;
 
                             // not defined if session timeout
-                            if (res.activeSearches) {
-                                that.activeSearchesCollection.reset(res.activeSearches);
-                                res.activeSearches.forEach(function (el) {
+                            if (res) {
+                                that.activeSearchesCollection.reset(res);
+                                res.forEach(function (el) {
                                     if (el.end == null) {
                                         allComplete = false;
                                     }
@@ -206,9 +197,9 @@ define([
                                 that._stopPollingThread();
                             }
                         }).error(function (res) {
-                            console.log('error. data: ' + res);
-                            that._stopPollingThread();
-                        });
+                        console.log('error. data: ' + res);
+                        that._stopPollingThread();
+                    });
 
                     that.timer = setTimeout(f, 5000);
                 };

@@ -19,7 +19,7 @@ define([
 
 				var that = this;
 				setTimeout(function() {
-					return $.post(url, params,function(data, textStatus, jqXHR) {
+					return $.post(url, params, function (data, textStatus, jqXHR) {
 						that._handleSuccess(data, success, mask);
 					}).fail(function(jqXHR, textStatus, errorThrown) {
 						that._handleError(textStatus, errorThrown, mask);
@@ -34,7 +34,7 @@ define([
 
 				var that = this;
 				setTimeout(function() {
-					return $.get(url,function(data, textStatus, jqXHR) {
+					return $.get(url, function (data, textStatus, jqXHR) {
 						that._handleSuccess(data, success, mask);
 					}).fail(function(jqXHR, textStatus, errorThrown) {
 						that._handleError(textStatus, errorThrown, mask);

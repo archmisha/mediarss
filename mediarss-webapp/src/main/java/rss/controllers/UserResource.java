@@ -5,10 +5,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.cache.UserCacheService;
-import rss.user.context.SessionUserContext;
-import rss.user.context.UserContextHolder;
-import rss.user.context.UserContextImpl;
-import rss.user.json.UserJSON;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.log.LogService;
@@ -17,6 +13,10 @@ import rss.services.NewsService;
 import rss.trakt.TraktService;
 import rss.user.*;
 import rss.user.context.CookieUtils;
+import rss.user.context.SessionUserContext;
+import rss.user.context.UserContextHolder;
+import rss.user.context.UserContextImpl;
+import rss.user.json.UserJSON;
 import rss.util.JsonTranslation;
 
 import javax.servlet.http.HttpServletRequest;
@@ -148,6 +148,7 @@ public class UserResource {
             if (Environment.getInstance().getServerMode() == ServerMode.TEST && isValidated) {
                 final User createdUser = userService.findByEmail(email);
                 createdUser.setValidationHash(null);
+                result.put("userId", createdUser.getId());
             }
         } catch (EmailAlreadyRegisteredException e) {
             // no need to write to log file in that case
@@ -180,19 +181,6 @@ public class UserResource {
         result.put("message", forgotPasswordResult.getMsg());
         result.put("success", true);
         return Response.ok().entity(JsonTranslation.object2JsonString(result)).build();
-    }
-
-    private Map<String, Object> createTabData(User user) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("isAdmin", permissionsService.isAdmin());
-        result.put("deploymentDate", Environment.getInstance().getDeploymentDate().getTime());
-        result.put("firstName", user.getFirstName());
-        result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
-        result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
-        result.put("news", newsService.getNews(user));
-        result.put("traktClientId", traktService.getClientId());
-        result.put("isConnectedToTrakt", traktService.isConnected(user.getId()));
-        return result;
     }
 
     @Path("/users")
@@ -239,7 +227,20 @@ public class UserResource {
         return Response.ok().build();
     }
 
-    public List<UserJSON> userListToJson(Collection<User> users) {
+    private Map<String, Object> createTabData(User user) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("isAdmin", permissionsService.isAdmin());
+        result.put("deploymentDate", Environment.getInstance().getDeploymentDate().getTime());
+        result.put("firstName", user.getFirstName());
+        result.put("tvShowsRssFeed", userService.getTvShowsRssFeed(user));
+        result.put("moviesRssFeed", userService.getMoviesRssFeed(user));
+        result.put("news", newsService.getNews(user));
+        result.put("traktClientId", traktService.getClientId());
+        result.put("isConnectedToTrakt", traktService.isConnected(user.getId()));
+        return result;
+    }
+
+    private List<UserJSON> userListToJson(Collection<User> users) {
         ArrayList<UserJSON> result = new ArrayList<>();
         for (User user : users) {
             result.add(userToJson(user));
@@ -247,7 +248,7 @@ public class UserResource {
         return result;
     }
 
-    public UserJSON userToJson(User user) {
+    private UserJSON userToJson(User user) {
         UserJSON userJSON = new UserJSON()
                 .withId(user.getId())
                 .withLoggedIn(UserContextHolder.getCurrentUserContext().getUserId() == user.getId())

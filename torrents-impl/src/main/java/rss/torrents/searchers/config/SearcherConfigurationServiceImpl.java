@@ -9,12 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import rss.configuration.SettingsService;
+import rss.log.LogService;
 import rss.torrents.searchers.SimpleTorrentSearcher;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,17 +24,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SearcherConfigurationServiceImpl implements SearcherConfigurationService {
 
-	private Map<String, SearcherConfiguration> searcherConfigurations = new ConcurrentHashMap<>();
-
-	@Autowired
-	private SearcherConfigurationDao searcherConfigurationDao;
-
-	@Autowired
-	private ApplicationContext applicationContext;
-
 	@Autowired
 	protected TransactionTemplate transactionTemplate;
-
+	@Autowired
+	protected LogService logService;
+	private Map<String, SearcherConfiguration> searcherConfigurations = new ConcurrentHashMap<>();
+	@Autowired
+	private SearcherConfigurationDao searcherConfigurationDao;
+	@Autowired
+	private ApplicationContext applicationContext;
     @Autowired
     private SettingsService settingsService;
 
@@ -48,15 +45,10 @@ public class SearcherConfigurationServiceImpl implements SearcherConfigurationSe
 				reloadAllConfigurations();
 
 				// verify all configurations exist, create missing
-				List<String> searcherNames = new ArrayList<>();
-				for (SimpleTorrentSearcher searcher : applicationContext.getBeansOfType(SimpleTorrentSearcher.class).values()) {
-					searcherNames.add(searcher.getName());
-				}
-
 				boolean needReload = false;
-				for (String searcherName : searcherNames) {
-					if (!searcherConfigurations.containsKey(searcherName)) {
-						createSearcherConfiguration(searcherName);
+				for (SimpleTorrentSearcher searcher : applicationContext.getBeansOfType(SimpleTorrentSearcher.class).values()) {
+					if (!searcherConfigurations.containsKey(searcher.getName())) {
+						createSearcherConfiguration(searcher);
 						needReload = true;
 					}
 				}
@@ -71,11 +63,11 @@ public class SearcherConfigurationServiceImpl implements SearcherConfigurationSe
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public SearcherConfiguration getSearcherConfiguration(String name) {
-		if (!searcherConfigurations.containsKey(name)) {
-			createSearcherConfiguration(name);
+//		if (!searcherConfigurations.containsKey(name)) {
+//			createSearcherConfiguration(name);
 			// id updated, so better to query them all again to get the new id populated
-			reloadAllConfigurations();
-		}
+//			reloadAllConfigurations();
+//		}
 
 		return searcherConfigurations.get(name);
 	}
@@ -109,13 +101,24 @@ public class SearcherConfigurationServiceImpl implements SearcherConfigurationSe
 	private void reloadAllConfigurations() {
 		searcherConfigurations.clear();
 		for (SearcherConfiguration searcherConfiguration : searcherConfigurationDao.getAll()) {
-			searcherConfigurations.put(searcherConfiguration.getName(), searcherConfiguration);
+			if (!searcherConfiguration.getDomains().isEmpty()) {
+				searcherConfigurations.put(searcherConfiguration.getName(), searcherConfiguration);
+			} else {
+				logService.info(getClass(), "Skipping loading searcher configuration for: " + searcherConfiguration.getName() + ", has no domains");
+			}
 		}
 	}
 
-	private void createSearcherConfiguration(String name) {
+//	private void createSearcherConfiguration(String name) {
+//		SearcherConfiguration searcherConfiguration = new SearcherConfiguration();
+//		searcherConfiguration.setName(name);
+//		searcherConfigurationDao.persist(searcherConfiguration);
+//	}
+
+	private void createSearcherConfiguration(SimpleTorrentSearcher searcher) {
 		SearcherConfiguration searcherConfiguration = new SearcherConfiguration();
-		searcherConfiguration.setName(name);
+		searcherConfiguration.setName(searcher.getName());
+		searcherConfiguration.getDomains().add(searcher.getDefaultDomain());
 		searcherConfigurationDao.persist(searcherConfiguration);
 	}
 

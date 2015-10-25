@@ -6,6 +6,7 @@ import rss.test.util.JsonTranslation;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: dikmanm
@@ -19,13 +20,16 @@ public class TVRageEpisodeBuilder {
     private TVRageEpisode tvRageEpisode;
 
     public TVRageEpisodeBuilder anEpisode(int number) {
-        this.tvRageEpisode = new TVRageEpisode();
-        this.tvRageEpisode.setSeasonnum(String.valueOf(number));
+        tvRageEpisode = new TVRageEpisode();
+        tvRageEpisode.setSeasonnum(String.valueOf(number));
+        Date date = new Date();
+        date.setTime(date.getTime() - TimeUnit.DAYS.toMillis(1));
+        tvRageEpisode.setAirdate(sdf.format(date));
         return this;
     }
 
     public TVRageEpisodeBuilder withAirDate(Date airDate) {
-        this.tvRageEpisode.setAirdate(sdf.format(airDate));
+        tvRageEpisode.setAirdate(sdf.format(airDate));
         return this;
     }
 

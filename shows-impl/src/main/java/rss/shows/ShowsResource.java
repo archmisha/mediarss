@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import rss.cache.UserActiveSearch;
 import rss.cache.UserCacheService;
 import rss.cache.UsersSearchesCache;
-import rss.user.context.UserContextHolder;
 import rss.environment.Environment;
 import rss.environment.ServerMode;
 import rss.log.LogService;
@@ -23,6 +22,7 @@ import rss.torrents.requests.shows.ShowRequest;
 import rss.torrents.requests.shows.SingleEpisodeRequest;
 import rss.user.User;
 import rss.user.UserService;
+import rss.user.context.UserContextHolder;
 import rss.util.DurationMeter;
 import rss.util.JsonTranslation;
 
@@ -36,28 +36,35 @@ import java.util.*;
 public class ShowsResource {
 
     @Autowired
+    protected UserCacheService userCacheService;
+    @Autowired
+    protected ShowSearchService showSearchService;
+    @Autowired
     private LogService logService;
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private UsersSearchesCache usersSearchesCache;
-
     @Autowired
     private PermissionsService permissionsService;
-
     @Autowired
     private ShowService showService;
-
     @Autowired
     private ShowDao showDao;
 
-    @Autowired
-    protected UserCacheService userCacheService;
-
-    @Autowired
-    protected ShowSearchService showSearchService;
+    public static List<ShowJSON> showListToJson(Collection<Show> shows) {
+        ArrayList<ShowJSON> result = new ArrayList<>();
+        for (Show show : shows) {
+            result.add(new ShowJSON().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()).withTvRageId(show.getTvRageId()));
+        }
+        Collections.sort(result, new Comparator<ShowJSON>() {
+            @Override
+            public int compare(ShowJSON o1, ShowJSON o2) {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        });
+        return result;
+    }
 
     @Path("/tracked-shows")
     @GET
@@ -142,7 +149,7 @@ public class ShowsResource {
     }
 
     @Path("/episode/download")
-    @POST
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
     public Response episodeDownload(@QueryParam("torrentId") long torrentId) {
@@ -152,18 +159,18 @@ public class ShowsResource {
     }
 
     @Path("/episode/download-all")
-    @POST
+    @GET
     @Transactional(propagation = Propagation.REQUIRED)
-    public Response episodeDownloadAll(@QueryParam("torrentIds") List<Long> torrentIds) {
+    public Response episodeDownloadAll(@QueryParam("torrentIds") String torrentIds) {
         User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
-        for (long torrentId : torrentIds) {
-            showService.downloadEpisode(user, torrentId);
+        for (String torrentId : torrentIds.split(",")) {
+            showService.downloadEpisode(user, Long.parseLong(torrentId));
         }
         return Response.ok().build();
     }
 
     @Path("/search")
-    @POST
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(propagation = Propagation.REQUIRED)
     public Response search(@QueryParam("title") String title,
@@ -173,7 +180,7 @@ public class ShowsResource {
                            @QueryParam("forceDownload") boolean forceDownload) {
         season = applyDefaultValue(season, -1);
         episode = applyDefaultValue(episode, -1);
-        showId = applyDefaultValue(showId, -1l);
+        showId = applyDefaultValue(showId, -1L);
         Long userId = UserContextHolder.getCurrentUserContext().getUserId();
 
         // only admin is allowed to use forceDownload option
@@ -225,9 +232,7 @@ public class ShowsResource {
                     search.getDownloadResult(), search.getSearchResultJSON());
             searchResults.add(search.getSearchResultJSON());
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("activeSearches", searchResults);
-        return Response.ok().entity(JsonTranslation.object2JsonString(result)).build();
+        return Response.ok().entity(JsonTranslation.object2JsonString(searchResults)).build();
     }
 
     @Path("/search/remove/{searchId}")
@@ -259,22 +264,8 @@ public class ShowsResource {
             }
         }
 
-        final List<ShowJSON> thinShows = toThinShows(shows);
+        final List<ShowJSON> thinShows = showListToJson(shows);
         return Response.ok().entity(JsonTranslation.object2JsonString(thinShows.toArray(new ShowJSON[thinShows.size()]))).build();
-    }
-
-    public static List<ShowJSON> toThinShows(Collection<Show> shows) {
-        ArrayList<ShowJSON> result = new ArrayList<>();
-        for (Show show : shows) {
-            result.add(new ShowJSON().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()).withTvRageId(show.getTvRageId()));
-        }
-        Collections.sort(result, new Comparator<ShowJSON>() {
-            @Override
-            public int compare(ShowJSON o1, ShowJSON o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-        return result;
     }
 
     protected <T> T applyDefaultValue(T value, T defaultValue) {

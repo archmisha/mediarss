@@ -1,26 +1,27 @@
 package rss.test.tests;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import rss.shows.ShowAutoCompleteJSON;
-import rss.shows.ShowJSON;
-import rss.shows.ShowsDaySchedule;
-import rss.shows.ShowsScheduleJSON;
+import rss.shows.*;
 import rss.shows.tvrage.TVRageShow;
 import rss.shows.tvrage.TVRageShowInfo;
 import rss.test.entities.UserData;
 import rss.test.services.AdminService;
 import rss.test.services.TestPagesService;
 import rss.test.shows.*;
+import rss.test.util.WaitUtil;
+import rss.torrents.DownloadStatus;
+import rss.torrents.UserTorrentJSON;
 import rss.util.DateUtils;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * User: dikmanm
@@ -233,11 +234,170 @@ public class ShowsTest extends BaseTest {
         assertEquals(0, showAutoCompleteJSON.getShows().size());
     }
 
-    //search
-    ///search/status
-    ///search/remove/{searchId}
-    // episodeDownload
-    //episodeDownloadAll
+    @Test
+    public void testDownloadEpisode_search_getAndRemoveStatus() {
+        reporter.info("Prepare data");
+        UserData adminUser = userService.createAdminUser();
+        userService.login(adminUser);
+        TVRageShow tvRageShow = tvRageShowBuilder.aRunningShow().build();
+        tvRageShowInfoBuilder.anInfo(tvRageShow)
+                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
+                        .withEpisodes(tvRageEpisodeBuilder.anEpisode(1).build())
+                        .build())
+                .build();
+        adminService.runDownloadShowListJob();
+        ShowJSON show = showsService.getShow(tvRageShow.getName());
+        assertNotNull(show);
+        UserData user = userService.createUser();
+        userService.login(user);
+
+        reporter.info("Search for episode not in schedule and get immediate result");
+        SearchResultJSON searchResult = showsService.search(show, 1, 2);
+        assertEquals(0, searchResult.getEpisodesCount());
+        assertNotNull(searchResult.getStart());
+        assertNotNull(searchResult.getEnd());
+
+        reporter.info("Search and get in progress status");
+        searchResult = showsService.search(show, 1, 1);
+        assertEquals(0, searchResult.getEpisodesCount());
+        assertNotNull(searchResult.getStart());
+        assertNull(searchResult.getEnd());
+
+        reporter.info("Get status of the download");
+        searchResult = showsService.getSearchStatusSingleWithPolling();
+        String heavySearchId = searchResult.getId();
+        assertEquals(1, searchResult.getEpisodesCount());
+        UserTorrentJSON userTorrent = searchResult.getEpisodes().iterator().next();
+
+        reporter.info("Check torrent was never downloaded");
+        assertEquals(DownloadStatus.NONE, userTorrent.getDownloadStatus());
+        assertNull(userTorrent.getDownloadDate());
+
+        reporter.info("Download episode for the first time");
+        showsService.downloadEpisode(userTorrent.getTorrentId());
+
+        reporter.info("Check torrent marked as scheduled");
+        searchResult = showsService.search(show, 1, 1);
+        userTorrent = searchResult.getEpisodes().iterator().next();
+        assertEquals(DownloadStatus.SCHEDULED, userTorrent.getDownloadStatus());
+        assertNull(userTorrent.getDownloadDate());
+
+        reporter.info("Download the same episode again");
+        showsService.downloadEpisode(userTorrent.getTorrentId());
+
+        reporter.info("Check torrent marked as scheduled with updated download date");
+        searchResult = showsService.search(show, 1, 1);
+        UserTorrentJSON userTorrent2 = searchResult.getEpisodes().iterator().next();
+        assertEquals(DownloadStatus.SCHEDULED, userTorrent2.getDownloadStatus());
+
+        reporter.info("Remove search status and verify its deleted");
+        showsService.removeSearchStatus(heavySearchId);
+        List<SearchResultJSON> searchStatus = showsService.getSearchStatus();
+        assertEquals(0, searchStatus.size());
+    }
+
+    @Test
+    public void testDownloadEpisode_searchWithForceDownload() {
+        reporter.info("Prepare data");
+        UserData adminUser = userService.createAdminUser();
+        userService.login(adminUser);
+        TVRageShow tvRageShow = tvRageShowBuilder.aRunningShow().build();
+        tvRageShowInfoBuilder.anInfo(tvRageShow)
+                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
+                        .withEpisodes(tvRageEpisodeBuilder.anEpisode(1).build())
+                        .build())
+                .build();
+        adminService.runDownloadShowListJob();
+        ShowJSON show = showsService.getShow(tvRageShow.getName());
+        assertNotNull(show);
+        UserData user = userService.createUser();
+        userService.login(user);
+
+        reporter.info("Search with forceDownload with non admin user");
+        try {
+            showsService.search(show, 1, 1, true);
+            fail("forceDownload should be allowed only for admin user");
+        } catch (Exception e) {
+        }
+        userService.login(adminUser);
+
+        reporter.info("Search and find episodes");
+        SearchResultJSON searchResult = showsService.search(show, 1, 1);
+        assertEquals(0, searchResult.getEpisodesCount());
+        assertNotNull(searchResult.getStart());
+        assertNull(searchResult.getEnd());
+        searchResult = showsService.getSearchStatusSingleWithPolling();
+        assertEquals(1, searchResult.getEpisodesCount());
+
+        reporter.info("Search again and get result immediate from db");
+        searchResult = showsService.search(show, 1, 1);
+        assertEquals(1, searchResult.getEpisodesCount());
+
+        reporter.info("Search with force download and get more results this time");
+        searchResult = showsService.search(show, 1, 1, true);
+        assertEquals(0, searchResult.getEpisodesCount());
+        assertNotNull(searchResult.getStart());
+        assertNull(searchResult.getEnd());
+        WaitUtil.waitFor(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                List<SearchResultJSON> searchStatus = showsService.getSearchStatus();
+                assertEquals(2, searchStatus.size());
+                return null;
+            }
+        });
+    }
+
+    @Test
+    public void testDownloadAllEpisodes() {
+        reporter.info("Prepare data");
+        UserData adminUser = userService.createAdminUser();
+        userService.login(adminUser);
+        TVRageShow tvRageShow = tvRageShowBuilder.aRunningShow().build();
+        tvRageShowInfoBuilder.anInfo(tvRageShow)
+                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
+                        .withEpisodes( // setting diff air dates to prevent search of doubl episodes
+                                tvRageEpisodeBuilder.anEpisode(1).withAirDate(getDate(-2)).build(),
+                                tvRageEpisodeBuilder.anEpisode(2).withAirDate(getDate(-1)).build())
+                        .build())
+                .build();
+        adminService.runDownloadShowListJob();
+        ShowJSON show = showsService.getShow(tvRageShow.getName());
+        assertNotNull(show);
+        UserData user = userService.createUser();
+        userService.login(user);
+
+        reporter.info("Search and get in progress status");
+        SearchResultJSON searchResult = showsService.search(show, 1, -1);
+        assertEquals(0, searchResult.getEpisodesCount());
+        assertNotNull(searchResult.getStart());
+        assertNull(searchResult.getEnd());
+
+        reporter.info("Get status of the download");
+        searchResult = showsService.getSearchStatusSingleWithPolling();
+        assertEquals(2, searchResult.getEpisodesCount());
+
+        reporter.info("Check torrent was never downloaded");
+        for (UserTorrentJSON userTorrent : searchResult.getEpisodes()) {
+            assertEquals(DownloadStatus.NONE, userTorrent.getDownloadStatus());
+            assertNull(userTorrent.getDownloadDate());
+        }
+
+        reporter.info("Download episode for the first time");
+        showsService.downloadEpisodes(Collections2.transform(searchResult.getEpisodes(), new Function<UserTorrentJSON, String>() {
+            @Override
+            public String apply(UserTorrentJSON userTorrentJSON) {
+                return String.valueOf(userTorrentJSON.getTorrentId());
+            }
+        }));
+
+        reporter.info("Check torrent marked as scheduled");
+        searchResult = showsService.search(show, 1, -1);
+        for (UserTorrentJSON userTorrent : searchResult.getEpisodes()) {
+            assertEquals(DownloadStatus.SCHEDULED, userTorrent.getDownloadStatus());
+            assertNull(userTorrent.getDownloadDate());
+        }
+    }
 
     private Date getDate(int days) {
         Calendar c = Calendar.getInstance();

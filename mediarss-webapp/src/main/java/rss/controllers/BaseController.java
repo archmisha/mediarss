@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import rss.MediaRSSException;
-import rss.UserNotLoggedInException;
 import rss.cache.UserCacheService;
 import rss.configuration.SettingsService;
 import rss.log.LogService;
@@ -63,12 +62,6 @@ public class BaseController {
     @ResponseBody
     public ExceptionResponse handleInvalidParameterException(InvalidParameterException ex) {
         return new ExceptionResponse().withMessage(ex.getMessage());
-    }
-
-    @ExceptionHandler(UserNotLoggedInException.class)
-    @ResponseBody
-    public ExceptionResponse handleUserNotLoggedInException(UserNotLoggedInException ex) {
-        return new ExceptionResponse().withMessage("User is not logged in");
     }
 
     @ExceptionHandler(MediaRSSException.class)

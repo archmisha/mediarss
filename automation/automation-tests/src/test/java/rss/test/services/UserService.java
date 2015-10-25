@@ -61,6 +61,7 @@ public class UserService extends BaseService {
         String response = sendFormPostRequest("rest/user/register", entityToMap(userData));
         UserRegisterResult userRegisterResult = JsonTranslation.jsonString2Object(response, UserRegisterResult.class);
         assertTrue(userRegisterResult.isSuccess());
+        userData.setId(userRegisterResult.getUserId());
         return userData;
     }
 

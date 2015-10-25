@@ -46,12 +46,13 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 	}
 
 	@Override
+	public String getDefaultDomain() {
+		return "https://kickass.unblocked.la/";
+	}
+
+	@Override
 	protected Collection<String> getEntryUrl() {
-		Collection<String> res = new ArrayList<>();
-		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			res.add("http://" + domain + "/");
-		}
-		return res;
+		return searcherConfigurationService.getSearcherConfiguration(getName()).getDomains();
 	}
 
 	@Override
@@ -153,7 +154,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 				Collection<String> res = new ArrayList<>();
 				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-					res.add("http://" + domain + "/usearch/" + queryPart);
+					res.add(domain + "usearch/" + queryPart);
 				}
 				return res;
 
@@ -169,7 +170,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 				Collection<String> res = new ArrayList<>();
 				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-					res.add("http://" + domain + "/usearch/" + queryPart);
+					res.add(domain + "usearch/" + queryPart);
 				}
 				return res;
 
@@ -185,7 +186,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 				Collection<String> res = new ArrayList<>();
 				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-					res.add("http://" + domain + "/usearch/" + queryPArt);
+					res.add(domain + "usearch/" + queryPArt);
 				}
 				return res;
 			} catch (UnsupportedEncodingException e) {
@@ -201,7 +202,7 @@ public class KickAssTorrentSearcher<T extends MediaRequest> extends SimpleTorren
 
 				Collection<String> res = new ArrayList<>();
 				for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-					res.add("http://" + domain + "/usearch/" + queryPart);
+					res.add(domain + "usearch/" + queryPart);
 				}
 				return res;
 			} catch (UnsupportedEncodingException e) {

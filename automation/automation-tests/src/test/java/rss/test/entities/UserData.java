@@ -11,6 +11,7 @@ public class UserData {
     private String lastName;
     private boolean admin;
     private boolean validated;
+    private long id;
 
     public boolean isValidated() {
         return validated;
@@ -58,5 +59,13 @@ public class UserData {
 
     public void setAdmin(boolean isAdmin) {
         this.admin = isAdmin;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

@@ -35,34 +35,24 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationListener<HttpSessionDestroyedEvent>*/ {
 
     private static final int MAX_DID_YOU_MEAN = 20;
-
-    @Autowired
-    private TorrentDao torrentDao;
-
-    @Autowired
-    private UserEpisodeTorrentDao userEpisodeTorrentDao;
-
-    @Autowired
-    private EpisodeTorrentsDownloader torrentEntriesDownloader;
-
-    @Autowired
-    private ShowService showService;
-
-    @Autowired
-    private LogService logService;
-
-    @Autowired
-    private ShowDao showDao;
-
-    @Autowired
-    private TorrentsConverter torrentsConverter;
-
-    @Autowired
-    private ShowsCacheService showsCacheService;
-
     @Autowired
     protected TransactionTemplate transactionTemplate;
-
+    @Autowired
+    private TorrentDao torrentDao;
+    @Autowired
+    private UserEpisodeTorrentDao userEpisodeTorrentDao;
+    @Autowired
+    private EpisodeTorrentsDownloader torrentEntriesDownloader;
+    @Autowired
+    private ShowService showService;
+    @Autowired
+    private LogService logService;
+    @Autowired
+    private ShowDao showDao;
+    @Autowired
+    private TorrentsConverter torrentsConverter;
+    @Autowired
+    private ShowsCacheService showsCacheService;
     @Autowired
     private UsersSearchesCache usersSearchesCache;
 
@@ -99,7 +89,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
             }
             didYouMeanShows = Collections.emptyList();
         } else {
-            return SearchResultJSON.createDidYouMean(originalSearchTerm, ShowsResource.toThinShows(didYouMeanShows));
+            return SearchResultJSON.createDidYouMean(originalSearchTerm, ShowsResource.showListToJson(didYouMeanShows));
         }
 
         downloadShowScheduleBeforeSearch(episodeRequest.getShow());
@@ -110,7 +100,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
         DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Arrays.asList(episodeRequest)), downloadConfig);
 
         SearchResultJSON searchResultJSON = SearchResultJSON.createWithResult(originalSearchTerm, actualSearchTerm,
-                episodeRequest.toQueryString(), ShowsResource.toThinShows(didYouMeanShows));
+                episodeRequest.toQueryString(), ShowsResource.showListToJson(didYouMeanShows));
         if (downloadResult.getCompleteDate() != null) {
             downloadResultToSearchResultVO(userId, downloadResult, searchResultJSON);
         } else {

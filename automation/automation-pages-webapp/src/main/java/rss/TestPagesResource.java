@@ -1,6 +1,9 @@
 package rss;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import rss.shows.tvrage.TVRageEpisode;
 import rss.shows.tvrage.TVRageSeason;
@@ -106,5 +109,37 @@ public class TestPagesResource {
         sb.append("</shows>");
 
         return Response.ok().entity(sb.toString()).build();
+    }
+
+    @Path("/1337x/search/{query}/0/")
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public Response search(@PathParam("query") String query) {
+        try {
+            String page = IOUtils.toString(new ClassPathResource("1337x-1-search-results.html", getClass().getClassLoader()).getInputStream());
+            page = page.replace("${torrentId}", unique());
+            page = page.replace("${torrentName}", query);
+            return Response.ok().entity(page).build();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Path("/1337x/torrent/{torrentId}/{query}")
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public Response search(@PathParam("torrentId") String torrentId, @PathParam("query") String query) {
+        try {
+            String page = IOUtils.toString(new ClassPathResource("1337x-torrent-page.html", getClass().getClassLoader()).getInputStream());
+            page = page.replace("${torrentName}", query);
+            page = page.replace("${hash}", unique());
+            return Response.ok().entity(page).build();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private String unique() {
+        return RandomStringUtils.randomAlphanumeric(5).toLowerCase();
     }
 }

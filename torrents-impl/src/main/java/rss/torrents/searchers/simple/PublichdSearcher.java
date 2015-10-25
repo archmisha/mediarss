@@ -41,10 +41,15 @@ public class PublichdSearcher<T extends MediaRequest> extends SimpleTorrentSearc
 	}
 
 	@Override
+	public String getDefaultDomain() {
+		return "https://privatehd.to/";
+	}
+
+	@Override
 	protected Collection<String> getEntryUrl() {
 		Collection<String> res = new ArrayList<>();
 		for (String domain : searcherConfigurationService.getSearcherConfiguration(getName()).getDomains()) {
-			res.add("http://" + domain + "/index.php?page=torrent-details&id=");
+			res.add(domain + "/index.php?page=torrent-details&id=");
 		}
 		return res;
 	}

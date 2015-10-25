@@ -7,6 +7,7 @@ package rss.test.entities;
 public class UserRegisterResult {
     private boolean success;
     private String message;
+    private long userId;
 
     public boolean isSuccess() {
         return success;
@@ -22,5 +23,13 @@ public class UserRegisterResult {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 }

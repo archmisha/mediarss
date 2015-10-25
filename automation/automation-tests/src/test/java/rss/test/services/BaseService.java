@@ -43,13 +43,11 @@ import static org.junit.Assert.assertTrue;
 @Component
 public class BaseService {
 
-    @Autowired
-    protected Reporter reporter;
-
     private static boolean isTomcatUp = false;
     private static boolean isTomcatStartFailed = false;
-
     private static ThreadLocal<String> jSessionIds = new ThreadLocal<>();
+    @Autowired
+    protected Reporter reporter;
 
     public boolean waitForTomcatStartup() {
         if (isTomcatStartFailed) {
@@ -126,10 +124,9 @@ public class BaseService {
 
     private String sendRequest(HttpRequestBase httpRequest) {
         try {
-            setJSessionId(httpRequest);
-
             HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
             httpClientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+            setJSessionId(httpRequest, httpClientBuilder);
             HttpClient httpClient = httpClientBuilder.build();
 
             HttpResponse httpResponse = httpClient.execute(httpRequest);
@@ -153,9 +150,14 @@ public class BaseService {
         }
     }
 
-    private void setJSessionId(HttpRequestBase httpRequest) {
+    private void setJSessionId(HttpRequestBase httpRequest, HttpClientBuilder httpClientBuilder) {
         if (jSessionIds.get() != null) {
             httpRequest.setHeader(new BasicHeader("Cookie", "JSESSIONID=" + jSessionIds.get() + ";"));
+//            CookieStore cookieStore = new BasicCookieStore();
+//            BasicClientCookie cookie = new BasicClientCookie("JSESSIONID", jSessionIds.get());
+//            cookieStore.addCookie(cookie);
+//            cookie.setPath("/");
+//            httpClientBuilder.setDefaultCookieStore(cookieStore);
         }
     }
 
