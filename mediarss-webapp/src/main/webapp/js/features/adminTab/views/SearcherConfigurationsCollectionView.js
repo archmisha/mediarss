@@ -33,7 +33,7 @@ define([
             onToggleTorrentzSearcherCheckboxClick: function () {
                 var value = this.ui.torrentzSearcherToggle.is(':checked') ? true : false;
                 var that = this;
-                HttpUtils.post('rest/admin/searcher-configuration/torrentz/enable',
+                HttpUtils.post('rest/torrents/searcher-configuration/torrentz/enable',
                     {isEnabled: value},
                     function () {
                     });

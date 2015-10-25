@@ -399,6 +399,11 @@ public class ShowsTest extends BaseTest {
         }
     }
 
+
+    // todo: /shows/delete/{showId}
+    // /shows/autocomplete admin
+    //downloadSchedule/{showId}
+
     private Date getDate(int days) {
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());

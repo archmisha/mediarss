@@ -9,7 +9,7 @@ define([
 		return Backbone.Collection.extend({
 			model: SearcherConfiguration,
 
-			url: 'rest/admin/searcher-configurations',
+			url: 'rest/torrents/searcher-configurations',
 
 			parse: function(data) {
 				var result = [];

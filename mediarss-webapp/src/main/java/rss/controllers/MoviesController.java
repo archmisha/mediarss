@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
-import rss.user.context.UserContextHolder;
 import rss.movies.*;
 import rss.movies.dao.MovieDao;
 import rss.movies.imdb.IMDBPreviewCacheService;
@@ -16,13 +15,19 @@ import rss.movies.imdb.IMDBService;
 import rss.permissions.PermissionsService;
 import rss.scheduler.JobStatusJson;
 import rss.scheduler.SchedulerService;
+import rss.subtitles.SubtitlesService;
 import rss.torrents.Movie;
+import rss.torrents.Torrent;
+import rss.torrents.dao.TorrentDao;
 import rss.torrents.dao.UserTorrentDao;
 import rss.user.User;
+import rss.user.context.UserContextHolder;
 import rss.util.DurationMeter;
+import rss.util.JsonTranslation;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -34,25 +39,24 @@ import java.util.Map;
 public class MoviesController extends BaseController {
 
     @Autowired
+    protected UserTorrentDao userTorrentDao;
+    @Autowired
     private PermissionsService permissionsService;
-
     @Autowired
     private MovieDao movieDao;
-
     @Autowired
     private IMDBPreviewCacheService imdbPreviewCacheService;
-
     @Autowired
     private IMDBService imdbService;
-
     @Autowired
     private SchedulerService schedulerService;
-
     @Autowired
     private MovieService movieService;
+    @Autowired
+    private TorrentDao torrentDao;
 
     @Autowired
-    protected UserTorrentDao userTorrentDao;
+    private SubtitlesService subtitlesService;
 
     @RequestMapping(value = "/imdb/{movieId}", method = RequestMethod.GET)
     @ResponseBody
@@ -301,6 +305,40 @@ public class MoviesController extends BaseController {
         duration.stop();
         logService.info(getClass(), "movies [torrents] " + duration.getDuration() + " ms");
         return result;
+    }
+
+    @RequestMapping(value = "/delete/{movieId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Response deleteMovie(@PathVariable Long movieId) {
+        permissionsService.verifyAdminPermissions();
+
+        Movie movie = movieService.find(movieId);
+        if (movie == null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("message", "Movie with id " + movieId + " is not found");
+            return Response.ok().entity(JsonTranslation.object2JsonString(map)).build();
+        }
+
+        // allow deletion only if no one is tracking this movie
+        if (!movieService.findUserMoviesByMovieId(movieId).isEmpty()) {
+            throw new MediaRSSException("Movie is being tracked. Unable to delete").doNotLog();
+        }
+
+        for (Long torrentId : movie.getTorrentIds()) {
+            Torrent torrent = torrentDao.find(torrentId);
+            // happens when erasing a movie that has a commons torrent with other movie that also been erased
+            if (torrent != null) {
+                subtitlesService.deleteSubtitlesByTorrent(torrent);
+                torrentDao.delete(torrent);
+            }
+        }
+        movie.getTorrentIds().clear();
+        movieService.delete(movie);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", "Movie '" + movie.getName() + "' (id=" + movie.getId() + ") was deleted");
+        return Response.ok().entity(JsonTranslation.object2JsonString(map)).build();
     }
 
     private List<UserMovieVO> trimMovieTorrents(List<UserMovieVO> movies) {

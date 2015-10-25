@@ -43,7 +43,7 @@ define([
 			_onAddButtonClick: function() {
 				var domain = this.ui.domainInput.val();
 				var that = this;
-				HttpUtils.post('rest/admin/searcher-configuration/' + this.model.get('name') + '/domain/add',
+				HttpUtils.post('rest/torrents/searcher-configuration/' + this.model.get('name') + '/domain/add',
 					{domain: domain},
 					function(res) {
 						that._addDomainToList(domain);
@@ -86,7 +86,7 @@ define([
 				var domain = event.currentTarget.getAttribute('_domain');
 				console.log('clicked on: ' + domain);
 				var that = this;
-				HttpUtils.get('rest/admin/searcher-configuration/' + this.model.get('name') + '/domain/remove/' + domain, function(res) {
+				HttpUtils.get('rest/torrents/searcher-configuration/' + this.model.get('name') + '/domain/remove/' + domain, function (res) {
 					that._removeDomainFromList(domain);
 				});
 			}

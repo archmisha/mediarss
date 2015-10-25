@@ -9,10 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class TorrentsConverter {
 
-    public UserTorrentJSON fromUserTorrent(UserTorrent userTorrent) {
-        return populate(new UserTorrentJSON(), userTorrent);
-    }
-
     public <T extends UserTorrentJSON> T populate(T userTorrentVO, UserTorrent userTorrent) {
         Torrent torrent = userTorrent.getTorrent();
 
@@ -32,10 +28,6 @@ public class TorrentsConverter {
                 .withScheduledOn(userTorrent.getAdded());
 
         return userTorrentVO;
-    }
-
-    public UserTorrentJSON fromTorrent(Torrent torrent) {
-        return populate(new UserTorrentJSON(), torrent);
     }
 
     public <T extends UserTorrentJSON> T populate(T userTorrentVO, Torrent torrent) {

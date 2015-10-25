@@ -114,7 +114,7 @@ define([
                     placeholder: "Select a Show",
                     minimumInputLength: 3,
                     ajax: {
-                        url: 'rest/admin/shows/autocomplete',
+                        url: 'rest/shows/autocomplete',
                         dataType: 'jsonp',
                         transport: function (queryParams) {
                             return HttpUtils.get(queryParams.url + '?term=' + encodeURIComponent(queryParams.data.term), queryParams.success, false);
@@ -145,7 +145,7 @@ define([
                 }
 
                 var that = this;
-                HttpUtils.get("rest/admin/downloadSchedule/" + showId, function (res) {
+                HttpUtils.get("rest/shows/downloadSchedule/" + showId, function (res) {
                     that.ui.showsComboBox.select2('data', '');
                     MessageBox.info(res);
                 });
@@ -159,7 +159,7 @@ define([
                 }
 
                 var that = this;
-                HttpUtils.get("rest/admin/shows/delete/" + showId, function (res) {
+                HttpUtils.get("rest/shows/delete/" + showId, function (res) {
                     that.ui.deleteShowIdInput.val('');
                     MessageBox.info(res);
                 });
@@ -173,7 +173,7 @@ define([
                 }
 
                 var that = this;
-                HttpUtils.get("rest/admin/movies/delete/" + movieId, function (res) {
+                HttpUtils.get("rest/movies/delete/" + movieId, function (res) {
                     that.ui.deleteMovieIdInput.val('');
                     MessageBox.info(res);
                 });

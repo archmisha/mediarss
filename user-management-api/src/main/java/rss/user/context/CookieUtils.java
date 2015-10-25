@@ -16,12 +16,10 @@ public class CookieUtils {
 
     public static final String REMEMBER_ME_COOKIE_NAME = "media-rss";
 
-    public static void createRememberMeCookie(User user, Response.ResponseBuilder responseBuilder) {
+    public static NewCookie createRememberMeCookie(User user) {
         user.setLoginSeries(StringUtils2.generateUniqueHash());
         user.setLoginToken(StringUtils2.generateUniqueHash());
-
-        NewCookie cookie = new NewCookie(REMEMBER_ME_COOKIE_NAME, user.getEmail() + "," + user.getLoginSeries() + "," + user.getLoginToken(), "/", null, null, Integer.MAX_VALUE, false);
-        responseBuilder.cookie(new NewCookie(cookie));
+        return new NewCookie(REMEMBER_ME_COOKIE_NAME, user.getEmail() + "," + user.getLoginSeries() + "," + user.getLoginToken(), "/", null, null, Integer.MAX_VALUE, false);
     }
 
     public static Cookie getRememberMeCookie(HttpServletRequest request) {

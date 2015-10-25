@@ -93,14 +93,13 @@ public class UserResource {
         UserContextHolder.pushUserContext(new UserContextImpl(user.getId(), user.getEmail(), user.isAdmin()));
         new SessionUserContext(request.getSession()).storeInSession();
 
-        Response.ResponseBuilder responseBuilder = Response.ok();
-        if (rememberMe) {
-            CookieUtils.createRememberMeCookie(user, responseBuilder);
-        }
         user.setLastLogin(new Date());
-
         userCacheService.invalidateUser(user);
 
+        Response.ResponseBuilder responseBuilder = Response.ok();
+        if (rememberMe) {
+            responseBuilder.cookie(CookieUtils.createRememberMeCookie(user));
+        }
         Map<String, Object> tabData = createTabData(user);
         return responseBuilder.entity(JsonTranslation.object2JsonString(tabData)).build();
     }

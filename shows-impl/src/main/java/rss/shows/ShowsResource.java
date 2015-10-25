@@ -5,6 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import rss.MediaRSSException;
 import rss.cache.UserActiveSearch;
 import rss.cache.UserCacheService;
 import rss.cache.UsersSearchesCache;
@@ -14,6 +19,7 @@ import rss.log.LogService;
 import rss.permissions.PermissionsService;
 import rss.services.shows.ShowQuery;
 import rss.shows.dao.ShowDao;
+import rss.torrents.Episode;
 import rss.torrents.MediaQuality;
 import rss.torrents.Show;
 import rss.torrents.requests.shows.FullSeasonRequest;
@@ -266,6 +272,64 @@ public class ShowsResource {
 
         final List<ShowJSON> thinShows = showListToJson(shows);
         return Response.ok().entity(JsonTranslation.object2JsonString(thinShows.toArray(new ShowJSON[thinShows.size()]))).build();
+    }
+
+    @RequestMapping(value = "/downloadSchedule/{showId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Response downloadSchedule(@PathVariable Long showId) {
+        permissionsService.verifyAdminPermissions();
+
+        Show show = showService.find(showId);
+        showService.downloadFullScheduleWithTorrents(show, false);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", "Downloaded schedule for '" + show.getName() + "'");
+        return Response.ok().entity(JsonTranslation.object2JsonString(map)).build();
+    }
+
+    @Path("/autocomplete")
+    @GET
+    @Produces("text/javascript")
+    public Response autoCompleteShows(@QueryParam("term") String term) {
+        permissionsService.verifyAdminPermissions();
+
+        List<ShowAutoCompleteItem> result = showService.autoCompleteShowNames(term, true, null);
+
+        ShowAutoCompleteJSON showAutoCompleteJSON = new ShowAutoCompleteJSON();
+        showAutoCompleteJSON.setTotal(result.size());
+        showAutoCompleteJSON.setShows(result);
+        return Response.ok().entity(JsonTranslation.object2JsonString(showAutoCompleteJSON)).build();
+    }
+
+    @RequestMapping(value = "/delete/{showId}", method = RequestMethod.GET)
+    @ResponseBody
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Response deleteShow(@PathVariable Long showId) {
+        permissionsService.verifyAdminPermissions();
+
+        Show show = showService.find(showId);
+        if (show == null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("message", "Show with id " + showId + " is not found");
+            return Response.ok().entity(JsonTranslation.object2JsonString(map)).build();
+        }
+
+        // allow deletion only if no one is tracking this show
+        if (showService.isShowBeingTracked(show)) {
+            throw new MediaRSSException("Show is being tracked. Unable to delete").doNotLog();
+        }
+
+        for (Episode episode : show.getEpisodes()) {
+            showService.disconnectTorrentsFromEpisode(episode);
+            showService.delete(episode);
+        }
+
+        showService.delete(show);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", "Show '" + show.getName() + "' (id=" + show.getId() + ") was deleted");
+        return Response.ok().entity(JsonTranslation.object2JsonString(map)).build();
     }
 
     protected <T> T applyDefaultValue(T value, T defaultValue) {
