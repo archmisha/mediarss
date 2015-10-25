@@ -134,7 +134,7 @@ define([
 					selectedSubtitle = null;
 				}
 
-				HttpUtils.post("rest/home/subtitles", {subtitles: selectedSubtitle}, function (res) {
+				HttpUtils.post("rest/user/subtitles", {subtitles: selectedSubtitle}, function (res) {
 					MessageBox.info('Subtitles preferences were saved');
 				});
 			},

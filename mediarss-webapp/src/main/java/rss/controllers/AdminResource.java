@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import rss.MediaRSSException;
 import rss.cache.UserCacheService;
-import rss.user.context.UserContextHolder;
 import rss.entities.News;
 import rss.movies.MovieService;
 import rss.permissions.PermissionsService;
@@ -25,6 +24,7 @@ import rss.torrents.searchers.config.SearcherConfiguration;
 import rss.torrents.searchers.config.SearcherConfigurationService;
 import rss.user.User;
 import rss.user.UserService;
+import rss.user.context.UserContextHolder;
 import rss.util.JsonTranslation;
 
 import javax.ws.rs.*;
@@ -45,9 +45,6 @@ public class AdminResource {
 
     @Autowired
     private PermissionsService permissionsService;
-
-    @Autowired
-    private EntityConverter entityConverter;
 
     @Autowired
     private TorrentDao torrentDao;

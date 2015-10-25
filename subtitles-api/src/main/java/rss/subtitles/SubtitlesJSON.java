@@ -1,10 +1,10 @@
-package rss.controllers.vo;
+package rss.subtitles;
 
 /**
  * User: dikmanm
  * Date: 06/01/14 01:18
  */
-public class SubtitlesVO {
+public class SubtitlesJSON {
 	private long id;
 	private String type;
 	private String name;

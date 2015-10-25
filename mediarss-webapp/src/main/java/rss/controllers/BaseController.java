@@ -36,9 +36,6 @@ public class BaseController {
     protected SettingsService settingsService;
 
     @Autowired
-    protected EntityConverter entityConverter;
-
-    @Autowired
     protected ShowService showService;
 
     protected <T> T applyDefaultValue(T value, T defaultValue) {

@@ -29,4 +29,9 @@ public class SubtitlesServiceFactoryImpl implements SubtitlesServiceFactory {
     public SubtitlesScanHistory createSubtitlesScanHistory() {
         return new SubtitlesScanHistoryImpl();
     }
+
+    @Override
+    public SubtitlesConverter getConverter() {
+        return new SubtitlesConverter();
+    }
 }

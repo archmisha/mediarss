@@ -17,6 +17,7 @@ import rss.user.context.SessionUserContext;
 import rss.user.context.UserContextHolder;
 import rss.user.context.UserContextImpl;
 import rss.user.json.UserJSON;
+import rss.user.subtitles.SubtitleLanguage;
 import rss.util.JsonTranslation;
 
 import javax.servlet.http.HttpServletRequest;
@@ -224,6 +225,16 @@ public class UserResource {
         }
         new SessionUserContext(request.getSession()).storeInSession();
 
+        return Response.ok().build();
+    }
+
+    @Path("/subtitles")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Response subtitles(@QueryParam("subtitles") String subtitles) {
+        User user = userCacheService.getUser(UserContextHolder.getCurrentUserContext().getUserId());
+        user.setSubtitles(SubtitleLanguage.fromString(subtitles));
         return Response.ok().build();
     }
 

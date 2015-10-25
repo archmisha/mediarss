@@ -14,4 +14,6 @@ public interface SubtitlesServiceFactory {
     Subtitles createDoubleEpisodeSubtitles(int season, int episode1, int episode2);
 
     SubtitlesScanHistory createSubtitlesScanHistory();
+
+    SubtitlesConverter getConverter();
 }
