@@ -37,7 +37,7 @@ define([
             onDismissButtonClick: function () {
                 var that = this;
 
-                HttpUtils.get("rest/admin/news/dismiss", function () {
+                HttpUtils.get("rest/news/dismiss", function () {
                     that.$el.hide();
                     MessageBox.info('News have been dismissed');
                 });

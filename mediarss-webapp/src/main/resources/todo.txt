@@ -1,6 +1,6 @@
-remove dependecnei to ems
-remove dependnecies to dao - need services
-
+create news service
+create email resource
+why user cache service is exponed and not internal
 
 
 session service remove

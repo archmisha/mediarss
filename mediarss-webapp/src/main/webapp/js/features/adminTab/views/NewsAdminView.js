@@ -31,7 +31,7 @@ define([
                 var that = this;
                 var text = this.ui.newsField.val();
 
-                HttpUtils.post("rest/admin/news", {
+                HttpUtils.post("rest/news", {
                     text: text
                 }, function (res) {
                     that.ui.newsField.val('');

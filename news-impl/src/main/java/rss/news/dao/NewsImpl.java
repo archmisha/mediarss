@@ -1,22 +1,22 @@
-package rss.entities;
+package rss.news.dao;
 
 import rss.ems.entities.BaseEntity;
+import rss.news.News;
 
 import javax.persistence.Column;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
 /**
- * User: dikmanm
- * Date: 13/02/2015 12:24
+ * Created by dikmanm on 26/10/2015.
  */
-@javax.persistence.Entity
+@javax.persistence.Entity(name = "News")
 @javax.persistence.Table(name = "news")
 @NamedQueries({
         @NamedQuery(name = "News.findByCreated",
                 query = "select n from News as n where created >= :created")
 })
-public class News extends BaseEntity {
+public class NewsImpl extends BaseEntity implements News {
 
     private static final long serialVersionUID = -5441424391001104073L;
 

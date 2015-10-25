@@ -1,12 +1,11 @@
-package rss.services;
+package rss.news;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import rss.cache.UserCacheService;
-import rss.dao.NewsDao;
-import rss.entities.News;
+import rss.news.dao.NewsDao;
 import rss.user.User;
 import rss.user.UserService;
 import rss.util.DateUtils;
@@ -22,13 +21,11 @@ import java.util.Date;
 public class NewsServiceImpl implements NewsService {
 
     @Autowired
+    protected UserCacheService userCacheService;
+    @Autowired
     private NewsDao newsDao;
-
     @Autowired
     private UserService userService;
-
-    @Autowired
-    protected UserCacheService userCacheService;
 
     @Override
     public Collection<News> getNews(User user) {

@@ -1,7 +1,7 @@
-package rss.dao;
+package rss.news.dao;
 
 import rss.ems.dao.Dao;
-import rss.entities.News;
+import rss.news.News;
 
 import java.util.Collection;
 import java.util.Date;

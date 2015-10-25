@@ -1,10 +1,8 @@
-package rss.dao;
+package rss.news.dao;
 
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
-import rss.entities.News;
-import rss.movies.dao.MovieImpl;
-import rss.torrents.Movie;
+import rss.news.News;
 
 import java.util.Collection;
 import java.util.Date;

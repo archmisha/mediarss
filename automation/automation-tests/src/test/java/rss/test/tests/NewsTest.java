@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.test.entities.News;
 import rss.test.entities.UserData;
-import rss.test.services.AdminService;
+import rss.test.services.NewsService;
 import rss.test.util.AssertUtils;
 
 import java.util.Arrays;
@@ -19,7 +19,7 @@ import static junit.framework.TestCase.assertTrue;
 public class NewsTest extends BaseTest {
 
     @Autowired
-    private AdminService adminService;
+    private NewsService newsService;
 
     @Test
     public void testCreateNews() {
@@ -28,16 +28,16 @@ public class NewsTest extends BaseTest {
         userService.login(adminUser);
 
         reporter.info("Create news entity, login twice and see news on both times");
-        long news1 = adminService.createNews("news1");
+        long news1 = newsService.createNews("news1");
         assertTrue(AssertUtils.contains(Arrays.asList(userService.login(adminUser).getNews()), newsToIdFunc(), news1));
         assertTrue(AssertUtils.contains(Arrays.asList(userService.login(adminUser).getNews()), newsToIdFunc(), news1));
 
         reporter.info("Create another news entity, login and see both news sorted by date");
-        long news2 = adminService.createNews("news2");
+        long news2 = newsService.createNews("news2");
         assertTrue(AssertUtils.contains(Arrays.asList(userService.login(adminUser).getNews()), newsToIdFunc(), news1, news2));
 
         reporter.info("Dismiss all news entities, login and have no news");
-        adminService.dismissNews();
+        newsService.dismissNews();
         assertTrue(userService.login(adminUser).getNews().length == 0);
     }
 
