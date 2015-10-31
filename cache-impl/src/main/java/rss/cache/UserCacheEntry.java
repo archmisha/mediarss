@@ -1,7 +1,7 @@
 package rss.cache;
 
 import rss.movies.UserMovieVO;
-import rss.shows.ShowsScheduleJSON;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.user.User;
 
 import java.util.List;
@@ -50,12 +50,12 @@ public class UserCacheEntry {
         this.trackedShows = trackedShows;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     public User getUser() {
         return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public List<UserMovieVO> getUserMovies() {

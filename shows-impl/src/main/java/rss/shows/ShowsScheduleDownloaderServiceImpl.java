@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.scheduler.ScheduledJob;
 import rss.shows.DownloadScheduleResult;
-import rss.shows.ShowService;
+import rss.shows.ShowServiceInternal;
 
 /**
  * User: dikmanm
@@ -15,7 +15,7 @@ import rss.shows.ShowService;
 public class ShowsScheduleDownloaderServiceImpl implements ScheduledJob {
 
     @Autowired
-    private ShowService showService;
+    private ShowServiceInternal showService;
 
     @Override
     public String getName() {

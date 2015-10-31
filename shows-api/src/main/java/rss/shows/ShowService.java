@@ -1,6 +1,7 @@
 package rss.shows;
 
 import com.google.common.base.Predicate;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.torrents.Episode;
 import rss.torrents.Show;
 import rss.torrents.matching.MatchCandidate;
@@ -22,12 +23,6 @@ public interface ShowService {
     void transformEpisodeRequest(ShowRequest episodeRequest);
 
     void downloadShowList();
-
-    DownloadScheduleResult downloadLatestScheduleWithTorrents();
-
-    void downloadFullScheduleWithTorrents(Show show, boolean torrentsDownloadAsync);
-
-    DownloadScheduleResult downloadFullSchedule(final Show show);
 
     List<ShowAutoCompleteItem> autoCompleteShowNames(String term, boolean includeEnded, Predicate<? super ShowAutoCompleteItem> predicate);
 
@@ -64,4 +59,8 @@ public interface ShowService {
     Show findByTvRageId(int tvRageId);
 
     void updateShow(Show show);
+
+    void downloadSchedule(Show show);
+
+    void addTrackedShow(User user, long showId);
 }

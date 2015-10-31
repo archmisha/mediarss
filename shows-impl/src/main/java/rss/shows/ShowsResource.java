@@ -19,6 +19,7 @@ import rss.log.LogService;
 import rss.permissions.PermissionsService;
 import rss.services.shows.ShowQuery;
 import rss.shows.dao.ShowDao;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.torrents.Episode;
 import rss.torrents.MediaQuality;
 import rss.torrents.Show;
@@ -95,21 +96,7 @@ public class ShowsResource {
     @Transactional(propagation = Propagation.REQUIRED)
     public Response addTracked(@PathParam("showId") final long showId) {
         User user = userService.find(UserContextHolder.getCurrentUserContext().getUserId());
-        final Show show = showDao.find(showId);
-        // if show was not being tracked before (becoming tracked now) - download its schedule
-        boolean downloadSchedule = !showDao.isShowBeingTracked(show);
-        show.getUsers().add(user);
-
-        // return the request asap to the user
-        if (downloadSchedule) {
-            showService.downloadFullScheduleWithTorrents(show, true);
-        }
-
-        // invalidate schedule to be regenerated next request
-        userCacheService.invalidateUser(user);
-        userCacheService.invalidateSchedule(user);
-        userCacheService.invalidateTrackedShows(user);
-
+        showService.addTrackedShow(user, showId);
         return Response.ok().build();
     }
 
@@ -281,11 +268,9 @@ public class ShowsResource {
         permissionsService.verifyAdminPermissions();
 
         Show show = showService.find(showId);
-        showService.downloadFullScheduleWithTorrents(show, false);
+        showService.downloadSchedule(show);
 
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", "Downloaded schedule for '" + show.getName() + "'");
-        return Response.ok().entity(JsonTranslation.object2JsonString(map)).build();
+        return Response.ok().build();
     }
 
     @Path("/autocomplete")

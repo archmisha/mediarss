@@ -10,8 +10,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.cache.UserCacheService;
 import rss.environment.UrlService;
+import rss.feed.RssFeedGenerator;
 import rss.log.LogService;
-import rss.services.feed.RssFeedGenerator;
 import rss.user.User;
 
 import javax.servlet.ServletContext;

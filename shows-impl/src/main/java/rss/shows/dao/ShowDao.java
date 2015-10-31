@@ -25,9 +25,13 @@ public interface ShowDao extends Dao<Show> {
 
 	Show findByTvRageId(int tvRageId);
 
+	Show findByTheTvDbId(long theTvDbId);
+
 	boolean isShowBeingTracked(Show show);
 
 	long getUsersCountTrackingShow(Show show);
 
 	List<Show> getUserShows(User user);
+
+	List<Show> getShowsWithoutTheTvDbId();
 }

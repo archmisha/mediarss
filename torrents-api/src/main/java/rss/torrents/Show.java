@@ -13,35 +13,49 @@ import java.util.Set;
 
 public interface Show extends Media {
 
+    void setId(long id);
+
     boolean isEnded();
 
     void setEnded(boolean ended);
 
     void setName(String name);
 
+    @Deprecated
     String getTvComUrl();
 
+    @Deprecated
     void setTvComUrl(String tvComUrl);
 
     Set<Episode> getEpisodes();
 
     String toString();
 
-    void setTvRageId(int tvRageId);
-
+    @Deprecated
     int getTvRageId();
+
+    @Deprecated
+    void setTvRageId(int tvRageId);
 
     Date getScheduleDownloadDate();
 
     void setScheduleDownloadDate(Date scheduleDownloadDate);
 
+    @Deprecated
     String getSubCenterUrl();
 
+    @Deprecated
     void setSubCenterUrl(String subCenterUrl);
 
+    @Deprecated
     Date getSubCenterUrlScanDate();
 
+    @Deprecated
     void setSubCenterUrlScanDate(Date subCenterUrlScanDate);
+
+    long getTheTvDbId();
+
+    void setTheTvDbId(long theTvDbId);
 
     Set<User> getUsers();
 

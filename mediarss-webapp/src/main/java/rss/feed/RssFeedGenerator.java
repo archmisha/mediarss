@@ -1,4 +1,4 @@
-package rss.services.feed;
+package rss.feed;
 
 import rss.torrents.Torrent;
 import rss.user.User;

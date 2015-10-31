@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import rss.shows.SearchResultJSON;
 import rss.shows.ShowAutoCompleteJSON;
 import rss.shows.ShowJSON;
-import rss.shows.ShowsScheduleJSON;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.test.entities.TrackedShowsResult;
 import rss.test.services.BaseService;
 import rss.test.util.JsonTranslation;

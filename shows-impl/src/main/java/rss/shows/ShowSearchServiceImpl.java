@@ -198,7 +198,7 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
                         @Override
                         protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
                             Show persistedShow = showDao.find(show.getId());
-                            showService.downloadFullSchedule(persistedShow);
+                            showService.downloadSchedule(persistedShow);
                         }
                     });
                 }

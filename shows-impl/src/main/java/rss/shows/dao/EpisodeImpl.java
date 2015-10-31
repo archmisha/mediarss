@@ -70,6 +70,9 @@ public class EpisodeImpl extends MediaImpl implements Episode {
     @Column(name = "last_updated")
     private Date lastUpdated;
 
+    @Column(name = "thetvdb_id")
+    private long theTvDbId;
+
     @SuppressWarnings("UnusedDeclaration")
     public EpisodeImpl() {
         lastUpdated = new Date();
@@ -90,12 +93,12 @@ public class EpisodeImpl extends MediaImpl implements Episode {
         return season;
     }
 
-    public int getEpisode() {
-        return episode;
-    }
-
     public void setSeason(int season) {
         this.season = season;
+    }
+
+    public int getEpisode() {
+        return episode;
     }
 
     public void setEpisode(int episode) {
@@ -108,6 +111,14 @@ public class EpisodeImpl extends MediaImpl implements Episode {
 
     public void setLastUpdated(Date lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public long getTheTvDbId() {
+        return theTvDbId;
+    }
+
+    public void setTheTvDbId(long theTvDbId) {
+        this.theTvDbId = theTvDbId;
     }
 
     @Override
@@ -149,10 +160,6 @@ public class EpisodeImpl extends MediaImpl implements Episode {
         return result;
     }
 
-    public void setShow(Show show) {
-        this.show = show;
-    }
-
     public Date getAirDate() {
         return airDate;
     }
@@ -185,6 +192,10 @@ public class EpisodeImpl extends MediaImpl implements Episode {
 
     public Show getShow() {
         return show;
+    }
+
+    public void setShow(Show show) {
+        this.show = show;
     }
 
     public boolean isUnAired() {

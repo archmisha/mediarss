@@ -2,7 +2,7 @@ package rss.cache;
 
 import rss.movies.UserMovieVO;
 import rss.shows.ShowJSON;
-import rss.shows.ShowsScheduleJSON;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.user.User;
 
 import java.util.List;

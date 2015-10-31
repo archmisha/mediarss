@@ -14,7 +14,7 @@ import rss.movies.UserMovieVO;
 import rss.shows.CachedShow;
 import rss.shows.ShowJSON;
 import rss.shows.ShowService;
-import rss.shows.ShowsScheduleJSON;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.torrents.Show;
 import rss.user.User;
 import rss.user.UserService;

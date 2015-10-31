@@ -12,9 +12,9 @@ public interface Episode extends Media {
 
     int getSeason();
 
-    int getEpisode();
-
     void setSeason(int season);
+
+    int getEpisode();
 
     void setEpisode(int episode);
 
@@ -30,8 +30,6 @@ public interface Episode extends Media {
 
     int hashCode();
 
-    void setShow(Show show);
-
     Date getAirDate();
 
     void setAirDate(Date airDate);
@@ -42,7 +40,13 @@ public interface Episode extends Media {
 
     Show getShow();
 
+    void setShow(Show show);
+
     boolean isUnAired();
 
     Set<Long> getTorrentIds();
+
+    long getTheTvDbId();
+
+    void setTheTvDbId(long theTvDbEpisodeId);
 }

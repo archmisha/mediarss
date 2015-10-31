@@ -1,4 +1,4 @@
-package rss.services.feed;
+package rss.feed;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,26 +30,19 @@ import java.util.*;
 public class TVShowsRssFeedGeneratorImpl implements RssFeedGenerator {
 
 	@Autowired
+	protected UserCacheService userCacheService;
+	@Autowired
 	private UserService userService;
-
 	@Autowired
 	private RssFeedBuilder rssFeedBuilder;
-
 	@Autowired
 	private UserTorrentDao userTorrentDao;
-
 	@Autowired
 	private UserEpisodeTorrentDao userEpisodeTorrentDao;
-
 	@Autowired
 	private TorrentDao torrentDao;
-
 	@Autowired
 	private SubtitlesService subtitlesService;
-
-	@Autowired
-	protected UserCacheService userCacheService;
-
 	@Autowired
 	private LogService logService;
 

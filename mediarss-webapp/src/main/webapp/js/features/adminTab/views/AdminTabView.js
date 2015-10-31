@@ -138,16 +138,17 @@ define([
             },
 
             _onDownloadShowScheduleButtonClick: function () {
-                var showId = this.ui.showsComboBox.select2('data').id;
+                var show = this.ui.showsComboBox.select2('data');
+                var showId = show.id;
                 // nothing is selected
                 if (showId == undefined) {
                     return;
                 }
 
                 var that = this;
-                HttpUtils.get("rest/shows/downloadSchedule/" + showId, function (res) {
+                HttpUtils.get("rest/shows/downloadSchedule/" + showId, function () {
                     that.ui.showsComboBox.select2('data', '');
-                    MessageBox.info(res);
+                    MessageBox.info('Downloaded schedule for \'' + show.text + '\'');
                 });
             },
 

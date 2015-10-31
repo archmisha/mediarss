@@ -3,10 +3,10 @@ package rss.shows.dao;
 import org.springframework.stereotype.Repository;
 import rss.ems.dao.BaseDaoJPA;
 import rss.shows.CachedShow;
-import rss.shows.UserEpisodeTorrent;
 import rss.torrents.Show;
 import rss.user.User;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +57,13 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
     }
 
     @Override
+    public Show findByTheTvDbId(long theTvDbId) {
+        Map<String, Object> params = new HashMap<>(1);
+        params.put("theTvDbId", theTvDbId);
+        return uniqueResult(super.<Show>findByNamedQueryAndNamedParams("Show.findByTheTvDbId", params));
+    }
+
+    @Override
     public boolean isShowBeingTracked(Show show) {
         return getUsersCountTrackingShow(show) > 0;
     }
@@ -73,5 +80,10 @@ public class ShowDaoImpl extends BaseDaoJPA<Show> implements ShowDao {
         Map<String, Object> params = new HashMap<>(1);
         params.put("userId", user.getId());
         return super.findByNamedQueryAndNamedParams("Show.getUserShows", params);
+    }
+
+    @Override
+    public List<Show> getShowsWithoutTheTvDbId() {
+        return super.findByNamedQueryAndNamedParams("Show.getShowsWithoutTheTvDbId", Collections.<String, Object>emptyMap());
     }
 }

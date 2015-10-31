@@ -24,6 +24,8 @@ import java.util.Set;
                 query = "select b from Show as b where lower(b.name) = :name"),
         @NamedQuery(name = "Show.findByTvRageId",
                 query = "select b from Show as b where b.tvRageId = :tvRageId"),
+        @NamedQuery(name = "Show.findByTheTvDbId",
+                query = "select b from Show as b where b.theTvDbId = :theTvDbId"),
 //		@NamedQuery(name = "Show.autoCompleteShowNames",
 //				query = "select b from Show as b where lower(b.name) like :term"),
 //		@NamedQuery(name = "Show.getNotEnded",
@@ -33,7 +35,9 @@ import java.util.Set;
         @NamedQuery(name = "Show.getUserShows",
                 query = "select s from Show as s inner join s.users as u where u.id = :userId"),
         @NamedQuery(name = "Show.findCachedShows",
-                query = "select new rss.shows.CachedShow(b.id, b.name, b.ended) from Show as b")
+                query = "select new rss.shows.CachedShow(s.id, s.name, s.ended) from Show as s"),
+        @NamedQuery(name = "Show.getShowsWithoutTheTvDbId",
+                query = "select s from Show as s where s.theTvDbId = null")
 })
 public class ShowImpl extends BaseEntity implements Show {
 
@@ -64,6 +68,9 @@ public class ShowImpl extends BaseEntity implements Show {
 
     @Column(name = "subcenter_url_scan_date")
     private Date subCenterUrlScanDate;
+
+    @Column(name = "thetvdb_id")
+    private long theTvDbId;
 
     @ManyToMany(cascade = CascadeType.ALL, targetEntity = UserImpl.class)
     @JoinTable(name = "user_shows",
@@ -115,12 +122,12 @@ public class ShowImpl extends BaseEntity implements Show {
         return name + " (id=" + id + ", tvrage_id=" + tvRageId + ")";
     }
 
-    public void setTvRageId(int tvRageId) {
-        this.tvRageId = tvRageId;
-    }
-
     public int getTvRageId() {
         return tvRageId;
+    }
+
+    public void setTvRageId(int tvRageId) {
+        this.tvRageId = tvRageId;
     }
 
     public Date getScheduleDownloadDate() {
@@ -145,6 +152,14 @@ public class ShowImpl extends BaseEntity implements Show {
 
     public void setSubCenterUrlScanDate(Date subCenterUrlScanDate) {
         this.subCenterUrlScanDate = subCenterUrlScanDate;
+    }
+
+    public long getTheTvDbId() {
+        return theTvDbId;
+    }
+
+    public void setTheTvDbId(long theTvDbId) {
+        this.theTvDbId = theTvDbId;
     }
 
     @Override

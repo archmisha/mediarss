@@ -16,15 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
-import rss.PageDownloadException;
-import rss.PageDownloader;
 import rss.RecoverableConnectionException;
 import rss.cache.ShowsCacheService;
+import rss.cache.UserCacheService;
 import rss.environment.Environment;
 import rss.log.LogService;
 import rss.mail.EmailClassification;
 import rss.mail.EmailService;
 import rss.shows.dao.*;
+import rss.shows.providers.ShowData;
+import rss.shows.providers.ShowsProvider;
+import rss.shows.providers.SyncData;
+import rss.shows.schedule.ShowScheduleEpisodeItem;
+import rss.shows.schedule.ShowsScheduleJSON;
 import rss.subtitles.SubtitlesService;
 import rss.torrents.*;
 import rss.torrents.dao.TorrentDao;
@@ -42,7 +46,6 @@ import rss.util.CollectionUtils;
 import rss.util.DateUtils;
 import rss.util.StringUtils2;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,67 +58,47 @@ import java.util.regex.Pattern;
  * Date: 05/01/13 18:01
  */
 @Service
-public class ShowServiceImpl implements ShowService {
-
-    private static final int MAX_CONCURRENT_SHOWS = 10;
+public class ShowServiceImpl implements ShowService, ShowServiceInternal {
 
     public static final Pattern RANGE_EPISODES_PATTERN = Pattern.compile("e\\d+");
+    private static final int MAX_CONCURRENT_SHOWS = 10;
 
     @Autowired
-    private ShowDao showDao;
-
-    @Autowired
-    private UserEpisodeTorrentDao userEpisodeTorrentDao;
-
-    private TVRageServiceImpl showsProvider;
-
-    @Autowired
-    private EpisodeTorrentsDownloader torrentEntriesDownloader;
-
-    @Autowired
-    private TransactionTemplate transactionTemplate;
-
-    @Autowired
-    private EpisodeDao episodeDao;
-
-    @Autowired
-    private LogService logService;
-
-    @Autowired
-    private PageDownloader pageDownloader;
-
-    @Autowired
-    private ShowsCacheService showsCacheService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private ShowSearchService showSearchService;
-
-    @Autowired
-    private SubtitlesService subtitlesService;
-
-    @Autowired
-    private TorrentDao torrentDao;
-
+    protected UserCacheService userCacheService;
     @Autowired
     protected UserTorrentDao userTorrentDao;
-
-    @PostConstruct
-    private void postConstruct() {
-        showsProvider = new TVRageServiceImpl();
-        showsProvider.setLogService(logService);
-        showsProvider.setPageDownloader(pageDownloader);
-    }
+    @Autowired
+    private ShowDao showDao;
+    @Autowired
+    private UserEpisodeTorrentDao userEpisodeTorrentDao;
+    @Autowired
+    private ShowsProvider showsProvider;
+    @Autowired
+    private EpisodeTorrentsDownloader torrentEntriesDownloader;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+    @Autowired
+    private EpisodeDao episodeDao;
+    @Autowired
+    private LogService logService;
+    @Autowired
+    private ShowsCacheService showsCacheService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private ShowSearchService showSearchService;
+    @Autowired
+    private SubtitlesService subtitlesService;
+    @Autowired
+    private TorrentDao torrentDao;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public void saveNewShow(Show show) {
-        logService.info(getClass(), String.format("It is a new show! - Persisting '%s' (tvrage_id=%d)", show.getName(), show.getTvRageId()));
+        logService.info(getClass(), String.format("It is a new show! - Persisting '%s' (theTvDb_id=%d)", show.getName(), show.getTheTvDbId()));
         showDao.persist(show);
         showsCacheService.put(show);
-        downloadFullSchedule(show);
+        downloadSchedule(show);
     }
 
     @Override
@@ -147,22 +130,23 @@ public class ShowServiceImpl implements ShowService {
                         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                             @Override
                             protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-                                Show show = showDao.findByTvRageId(downloadedShow.getTvRageId());
-                                if (show == null) {
-                                    show = showDao.findByName(downloadedShow.getName());
-                                }
+                                Show show = findShow(downloadedShow);
 
                                 if (show == null) {
                                     saveNewShow(downloadedShow);
                                 } else {
-                                    // update existing shows with tvrage id
-                                    show.setTvRageId(downloadedShow.getTvRageId());
+                                    // update existing shows with TheTvDb id
+                                    show.setTheTvDbId(downloadedShow.getTheTvDbId());
 
                                     // update show status that might have changed
                                     if (show.isEnded() != downloadedShow.isEnded()) {
                                         show.setEnded(downloadedShow.isEnded());
                                         // since show becomes ended, download its episodes schedule one last time
-                                        downloadFullSchedule(show);
+                                        downloadSchedule(show);
+                                    } else {
+                                        // download full schedule anyway, since we are here only if we had no thetvdb id
+                                        // and we get here once, then we store thetvdb id and not get here anymore
+                                        downloadSchedule(show);
                                     }
                                 }
                             }
@@ -171,14 +155,8 @@ public class ShowServiceImpl implements ShowService {
                         // don't want to send email of 'Connection timeout out' errors, cuz tvrage is slow sometimes
                         // will retry to update show status in the next job run - warn level not send to email
                         logService.warn(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
-                    } catch (PageDownloadException e) {
-                        logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()));
                     } catch (Exception e) {
-//						if (Utils.isRootCauseMessageContains(e, "Connection timed out")) {
-//							logService.warn(aClass, String.format("Failed downloading info for show '%s' because connection has timed out", downloadedShow.getName()));
-//						} else {
                         logService.error(aClass, String.format("Failed downloading info for show '%s': %s", downloadedShow.getName(), e.getMessage()), e);
-//						}
                     }
                 }
             });
@@ -192,59 +170,88 @@ public class ShowServiceImpl implements ShowService {
         }
     }
 
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void downloadFullScheduleWithTorrents(final Show nonTransactionShow, boolean torrentsDownloadAsync) {
-        // must separate schedule download and torrent download into separate transactions
-        // cuz in the first creating episodes which must be available (committed) in the second part
-        // and the second part spawns separate threads and transactions
-        final DownloadScheduleResult downloadScheduleResult = transactionTemplate.execute(new TransactionCallback<DownloadScheduleResult>() {
-            @Override
-            public DownloadScheduleResult doInTransaction(TransactionStatus arg0) {
-                Show show = showDao.find(nonTransactionShow.getId());
-                return downloadFullSchedule(show);
-            }
-        });
+    // todo: should move to showDao?
+    private Show findShow(Show downloadedShow) {
+        Show show = showDao.find(downloadedShow.getId());
+        if (show == null) {
+            show = showDao.findByTheTvDbId(downloadedShow.getTheTvDbId());
+        }
+        if (show == null) {
+            show = showDao.findByName(downloadedShow.getName());
+        }
+        return show;
+    }
 
-        if (torrentsDownloadAsync) {
+    @Override
+    public void addTrackedShow(User user, final long showId) {
+        final Show show = showDao.find(showId);
+        show.getUsers().add(user);
+
+        // if show was not being tracked before (becoming tracked now) - download its schedule
+        boolean downloadSchedule = !showDao.isShowBeingTracked(show);
+        if (downloadSchedule) {
+            // must separate schedule download and torrent download into separate transactions
+            // cuz in the first creating episodes which must be available (committed) in the second part
+            // and the second part spawns separate threads and transactions
+            final Collection<Episode> newEpisodesToDownload = transactionTemplate.execute(new TransactionCallback<Collection<Episode>>() {
+                @Override
+                public Collection<Episode> doInTransaction(TransactionStatus arg0) {
+                    // re-query so show will be in this transaction
+                    Show show = showDao.find(showId);
+                    Collection<Episode> episodes = downloadScheduleHelper(show);
+
+                    DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
+                    downloadScheduleResultHelper(show, episodes, downloadScheduleResult);
+                    return downloadScheduleResult.getNewEpisodes();
+                }
+            });
+
+            // return the request asap to the user, so download torrent async
             final Class aClass = getClass();
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        downloadScheduleHelper(downloadScheduleResult);
+                        downloadScheduleHelper(newEpisodesToDownload);
                     } catch (Exception e) {
-                        logService.error(aClass, String.format("Failed downloading schedule of show '%s': %s", nonTransactionShow, e.getMessage()), e);
+                        logService.error(aClass, String.format("Failed downloading schedule of show '%s': %s", show, e.getMessage()), e);
                     }
                 }
             });
             executorService.shutdown();
         }
+
+        // invalidate schedule to be regenerated next request
+//        userCacheService.invalidateUser(user); user didnt change
+        userCacheService.invalidateSchedule(user);
+        userCacheService.invalidateTrackedShows(user);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public DownloadScheduleResult downloadFullSchedule(final Show show) {
-        logService.info(getClass(), String.format("Downloading full schedule for '%s'", show));
-        // need to re-query so it will be in this transaction
-        Collection<Episode> episodes = showsProvider.downloadSchedule(show);
-        DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
-        downloadScheduleResultHelper(show, episodes, downloadScheduleResult);
-        show.setScheduleDownloadDate(new Date());
-        showsCacheService.updateShowEnded(show);
-        return downloadScheduleResult;
+    public void downloadSchedule(final Show show) {
+        downloadScheduleHelper(show);
     }
 
-    private void downloadScheduleHelper(DownloadScheduleResult downloadScheduleResult) {
+    private Collection<Episode> downloadScheduleHelper(final Show show) {
+        logService.info(getClass(), String.format("Downloading full schedule for '%s'", show));
+        ShowData showData = showsProvider.getShowData(show);
+        show.setEnded(showData.getShow().isEnded());
+        show.setScheduleDownloadDate(new Date());
+        showsCacheService.updateShowEnded(show);
+        return showData.getEpisodes();
+    }
+
+    private void downloadScheduleHelper(Collection<Episode> episodesToDownload) {
         // download torrents for the new episodes
-        final Set<ShowRequest> episodesToDownload = new HashSet<>();
-        for (Episode episode : downloadScheduleResult.getNewEpisodes()) {
+        final Set<ShowRequest> episodeRequests = new HashSet<>();
+        for (Episode episode : episodesToDownload) {
             Show show = episode.getShow();
             if (episode.getEpisode() == -1) {
-                episodesToDownload.add(new FullSeasonRequest(null, show.getName(), show, MediaQuality.HD720P, episode.getSeason()));
+                episodeRequests.add(new FullSeasonRequest(null, show.getName(), show, MediaQuality.HD720P, episode.getSeason()));
             } else {
-                episodesToDownload.add(new SingleEpisodeRequest(null, show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
+                episodeRequests.add(new SingleEpisodeRequest(null, show.getName(), show, MediaQuality.HD720P, episode.getSeason(), episode.getEpisode()));
             }
             logService.debug(getClass(), "Will try to download torrents of " + episode);
         }
@@ -253,7 +260,7 @@ public class ShowServiceImpl implements ShowService {
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-                DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(episodesToDownload, new DownloadConfig());
+                DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(episodeRequests, new DownloadConfig());
                 missing.addAll(downloadResult.getMissing());
             }
         });
@@ -368,7 +375,23 @@ public class ShowServiceImpl implements ShowService {
             public DownloadScheduleResult doInTransaction(TransactionStatus arg0) {
                 DownloadScheduleResult downloadScheduleResult = new DownloadScheduleResult();
 
-                Collection<Episode> episodes = showsProvider.downloadSchedule();
+                SyncData syncData = showsProvider.getSyncData();
+                for (Show showShell : syncData.getShows()) {
+                    Show show = findShow(showShell);
+                    if (show == null) {
+                        saveNewShow(showShell);
+                    } else {
+                        show.setTheTvDbId(showShell.getTheTvDbId());
+                        if (show.isEnded() != showShell.isEnded()) {
+                            show.setEnded(showShell.isEnded());
+                            // since show becomes ended, download its episodes schedule one last time
+                            downloadSchedule(show);
+                        }
+                    }
+                }
+
+
+                Collection<Episode> episodes = syncData.getEpisodes();
 
                 // collect all future episode schedules as given by the showsProvider
                 Map<Show, List<Episode>> map = new HashMap<>();
@@ -379,10 +402,7 @@ public class ShowServiceImpl implements ShowService {
                 for (Episode episode : episodes) {
                     Show showShell = episode.getShow();
                     if (!processedShows.containsKey(showShell)) {
-                        Show show = showDao.findByTvRageId(showShell.getTvRageId());
-                        if (show == null) {
-                            show = showDao.findByName(showShell.getName());
-                        }
+                        Show show = findShow(showShell);
 
                         // don't save new shows in the map, only save the show to db
                         // if show is not found, it is not being tracked
@@ -390,8 +410,8 @@ public class ShowServiceImpl implements ShowService {
                             saveNewShow(showShell);
                             processedShows.put(showShell, false);
                         } else {
-                            if (show.getTvRageId() == -1) {
-                                show.setTvRageId(showShell.getTvRageId());
+                            if (show.getTheTvDbId() == -1) {
+                                show.setTheTvDbId(showShell.getTheTvDbId());
                             }
                             processedShows.put(showShell, showDao.isShowBeingTracked(show));
                             showShellToShowMap.put(showShell, show);
@@ -413,7 +433,7 @@ public class ShowServiceImpl implements ShowService {
                     logService.info(getClass(), "Detected that there is an episode schedule gap, " +
                             "will download full schedules for tracked shows");
                     for (Show show : map.keySet()) {
-                        downloadFullSchedule(show);
+                        downloadSchedule(show);
                     }
                 } else {
                     for (Map.Entry<Show, List<Episode>> entry : map.entrySet()) {
@@ -435,7 +455,7 @@ public class ShowServiceImpl implements ShowService {
             }
         });
 
-        downloadScheduleHelper(downloadScheduleResult);
+        downloadScheduleHelper(downloadScheduleResult.getNewEpisodes());
         return downloadScheduleResult;
     }
 
@@ -472,7 +492,7 @@ public class ShowServiceImpl implements ShowService {
                 persistedEpisode = episode;
             }
             persistedEpisode.setAirDate(episode.getAirDate());
-            persistedEpisode.setLastUpdated(Calendar.getInstance().getTime());
+            persistedEpisode.setLastUpdated(new Date());
         }
 
         // create full season episode if needed. Take all episodes, sort them and look at the last one

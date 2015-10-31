@@ -1,4 +1,4 @@
-package rss.services.feed;
+package rss.feed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +22,8 @@ import java.util.regex.Pattern;
 @Service
 public class RssFeedBuilderImpl implements RssFeedBuilder {
 
-    private static Logger log = LoggerFactory.getLogger(RssFeedBuilderImpl.class);
-
 	public static final Pattern MAGNET_LINK_PATTERN = Pattern.compile("(magnet:\\?xt=urn:btih:[^&]+)(&dn=([^&]+))?");
+	private static Logger log = LoggerFactory.getLogger(RssFeedBuilderImpl.class);
 
 //	@Autowired
 //	private SubtitlesTrackerService subtitlesTrackerService;

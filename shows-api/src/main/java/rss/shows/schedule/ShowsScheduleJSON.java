@@ -1,4 +1,4 @@
-package rss.shows;
+package rss.shows.schedule;
 
 import java.util.ArrayList;
 import java.util.List;

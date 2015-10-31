@@ -60,7 +60,7 @@
 //			doReturn(page).when(pageDownloader).downloadPage(anyString());
 //			Show show = new Show();
 //			show.setTvRageId(3628);
-//			Collection<Episode> episodes = tvRageService.downloadSchedule(show);
+//			Collection<Episode> episodes = tvRageService.getShowData(show);
 //
 //			Assert.assertEquals(111, episodes.size());
 //
@@ -82,7 +82,7 @@
 //		doReturn(page).when(pageDownloader).downloadPage(anyString());
 //		Show show = new Show();
 //		show.setTvRageId(1);
-//		Collection<Episode> episodes = tvRageService.downloadSchedule(show);
+//		Collection<Episode> episodes = tvRageService.getShowData(show);
 //
 //		Assert.assertEquals(65, episodes.size());
 //	}
@@ -93,7 +93,7 @@
 //		doReturn(page).when(pageDownloader).downloadPage(anyString());
 //		Show show = new Show();
 //		show.setTvRageId(1);
-//		Collection<Episode> episodes = tvRageService.downloadSchedule(show);
+//		Collection<Episode> episodes = tvRageService.getShowData(show);
 //
 //		Assert.assertEquals(44 - 4, episodes.size()); // minus 4 for special
 //	}
@@ -104,7 +104,7 @@
 //		doReturn(page).when(pageDownloader).downloadPage(anyString());
 //		Show show = new Show();
 //		show.setTvRageId(1);
-//		Collection<Episode> episodes = tvRageService.downloadSchedule(show);
+//		Collection<Episode> episodes = tvRageService.getShowData(show);
 //
 //		Assert.assertEquals(71, episodes.size());
 //	}
@@ -113,7 +113,7 @@
 //	public void testDownloadSchedule() {
 //		String page = loadPage("tvrage-schedule-2013-02-25.xml");
 //		doReturn(page).when(pageDownloader).downloadPage(anyString());
-//		Collection<Episode> episodes = tvRageService.downloadSchedule();
+//		Collection<Episode> episodes = tvRageService.getShowData();
 //		Assert.assertEquals(1632 - 8, episodes.size()); // minus special
 //	}
 //}
