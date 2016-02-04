@@ -37,7 +37,7 @@ import java.util.Set;
         @NamedQuery(name = "Show.findCachedShows",
                 query = "select new rss.shows.CachedShow(s.id, s.name, s.ended) from Show as s"),
         @NamedQuery(name = "Show.getShowsWithoutTheTvDbId",
-                query = "select s from Show as s where s.theTvDbId = null")
+                query = "select s from Show as s where s.theTvDbId = null and theTvDbScanDate = null")
 })
 public class ShowImpl extends BaseEntity implements Show {
 
@@ -59,7 +59,7 @@ public class ShowImpl extends BaseEntity implements Show {
     @OneToMany(mappedBy = "show", targetEntity = EpisodeImpl.class)
     private Set<Episode> episodes;
 
-    @Column(name = "tvrage_id", unique = true)
+    @Column(name = "tvrage_id")
     private int tvRageId;
 
     //, unique = true
@@ -70,7 +70,10 @@ public class ShowImpl extends BaseEntity implements Show {
     private Date subCenterUrlScanDate;
 
     @Column(name = "thetvdb_id")
-    private long theTvDbId;
+    private Long theTvDbId;
+
+    @Column(name = "thetvdb_scan_date")
+    private Date theTvDbScanDate;
 
     @ManyToMany(cascade = CascadeType.ALL, targetEntity = UserImpl.class)
     @JoinTable(name = "user_shows",
@@ -119,7 +122,7 @@ public class ShowImpl extends BaseEntity implements Show {
 
     @Override
     public String toString() {
-        return name + " (id=" + id + ", tvrage_id=" + tvRageId + ")";
+        return name + " (id=" + id + ", thetvdb_id=" + theTvDbId + ")";
     }
 
     public int getTvRageId() {
@@ -154,7 +157,11 @@ public class ShowImpl extends BaseEntity implements Show {
         this.subCenterUrlScanDate = subCenterUrlScanDate;
     }
 
-    public long getTheTvDbId() {
+    public void setTheTvDbScanDate(Date theTvDbScanDate) {
+        this.theTvDbScanDate = theTvDbScanDate;
+    }
+
+    public Long getTheTvDbId() {
         return theTvDbId;
     }
 

@@ -176,7 +176,7 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
         if (show == null) {
             show = showDao.findByTheTvDbId(downloadedShow.getTheTvDbId());
         }
-        if (show == null) {
+        if (show == null && downloadedShow.getName() != null) {
             show = showDao.findByName(downloadedShow.getName());
         }
         return show;
@@ -185,10 +185,13 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
     @Override
     public void addTrackedShow(User user, final long showId) {
         final Show show = showDao.find(showId);
-        show.getUsers().add(user);
 
         // if show was not being tracked before (becoming tracked now) - download its schedule
         boolean downloadSchedule = !showDao.isShowBeingTracked(show);
+
+        // now add the user as tracking the show
+        show.getUsers().add(user);
+
         if (downloadSchedule) {
             // must separate schedule download and torrent download into separate transactions
             // cuz in the first creating episodes which must be available (committed) in the second part
@@ -231,7 +234,8 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public void downloadSchedule(final Show show) {
-        downloadScheduleHelper(show);
+        Collection<Episode> episodes = downloadScheduleHelper(show);
+        downloadScheduleResultHelper(show, episodes, new DownloadScheduleResult());
     }
 
     private Collection<Episode> downloadScheduleHelper(final Show show) {
@@ -343,7 +347,6 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
         // sort the dates, oldest at beginning
         List<Date> dates = new ArrayList<>(map.keySet());
         Collections.sort(dates);
-//		Collections.reverse(dates);
 
         ShowsScheduleJSON schedule = new ShowsScheduleJSON();
         for (Date date : dates) {
@@ -390,7 +393,6 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
                     }
                 }
 
-
                 Collection<Episode> episodes = syncData.getEpisodes();
 
                 // collect all future episode schedules as given by the showsProvider
@@ -410,7 +412,7 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
                             saveNewShow(showShell);
                             processedShows.put(showShell, false);
                         } else {
-                            if (show.getTheTvDbId() == -1) {
+                            if (show.getTheTvDbId() == null) {
                                 show.setTheTvDbId(showShell.getTheTvDbId());
                             }
                             processedShows.put(showShell, showDao.isShowBeingTracked(show));
@@ -419,11 +421,13 @@ public class ShowServiceImpl implements ShowService, ShowServiceInternal {
                     }
 
                     // save only tracked shows in the map (also here show != null)
-                    if (processedShows.get(showShell)) {
+                    // changing this now, since there is no job that downloads the whole shows list.
+                    // there is a single job now that downloads all new updates
+//                    if (processedShows.get(showShell)) {
                         Show show = showShellToShowMap.get(showShell);
                         CollectionUtils.safeListPut(map, show, episode);
                         episode.setShow(show); // replacing showShell with real show
-                    }
+//                    }
                 }
 
                 // handle the case, where the job didn't run for a long time, and there is a gap between

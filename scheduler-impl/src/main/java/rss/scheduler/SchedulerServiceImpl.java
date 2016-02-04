@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import rss.environment.Environment;
+import rss.environment.ServerMode;
 import rss.log.LogService;
 import rss.mail.EmailService;
 import rss.rms.ResourceManagementService;
@@ -16,6 +17,7 @@ import java.io.StringWriter;
 import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: dikmanm
@@ -25,11 +27,9 @@ import java.util.concurrent.Executors;
 public class SchedulerServiceImpl implements SchedulerService {
 
     @Autowired
-    private ResourceManagementService rmsService;
-
-    @Autowired
     protected LogService logService;
-
+    @Autowired
+    private ResourceManagementService rmsService;
     @Autowired
     private EmailService emailService;
 
@@ -126,7 +126,14 @@ public class SchedulerServiceImpl implements SchedulerService {
     }
 
     private boolean isJobRunning(JobStatusJson jobStatus) {
-        return jobStatus.getEnd() == null && jobStatus.getStart() != null;
+        if (jobStatus.getEnd() == null && jobStatus.getStart() != null) {
+            // in test mode job can run only for 10 seconds, otherwise something went wrong
+            if (Environment.getInstance().getServerMode() == ServerMode.TEST) {
+                return jobStatus.getStart() < TimeUnit.SECONDS.toMillis(10);
+            }
+            return true;
+        }
+        return false;
     }
 
     private ScheduledJob getJob(String name) {

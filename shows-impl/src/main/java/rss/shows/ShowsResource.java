@@ -59,10 +59,14 @@ public class ShowsResource {
     @Autowired
     private ShowDao showDao;
 
+    public static ShowJSON showToJson(Show show) {
+        return new ShowJSON().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded());
+    }
+
     public static List<ShowJSON> showListToJson(Collection<Show> shows) {
         ArrayList<ShowJSON> result = new ArrayList<>();
         for (Show show : shows) {
-            result.add(new ShowJSON().withId(show.getId()).withName(show.getName()).withEnded(show.isEnded()).withTvRageId(show.getTvRageId()));
+            result.add(showToJson(show));
         }
         Collections.sort(result, new Comparator<ShowJSON>() {
             @Override
@@ -237,6 +241,7 @@ public class ShowsResource {
         return Response.ok().build();
     }
 
+    // todo: remove this
     @Path("/get")
     @POST
     @Produces(MediaType.APPLICATION_JSON)

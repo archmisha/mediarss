@@ -34,8 +34,8 @@ import static org.junit.Assert.*;
  */
 public class TheTVDbServiceImplTest {
 
-    public static final long MOCK_THETVDB_SHOW_ID = 73255;
-    public static final long MOCK_THETVDB_EPISODE_ID = 110996;
+    public static final Long MOCK_THETVDB_SHOW_ID = 73255L;
+    public static final Long MOCK_THETVDB_EPISODE_ID = 110996L;
     public static final int MOCK_EPISODE_SEASON_NUMBER = 1;
     public static final int MOCK_EPISODE_EPISODE_NUMBER = 3;
 
@@ -103,7 +103,7 @@ public class TheTVDbServiceImplTest {
     @Test
     public void testDownloadShowList_syncTimeNotExists() {
         final long time = 123;
-        String serverSyncTimeResult = "<Update><Time>" + time + "</Time></Update>";
+        String serverSyncTimeResult = "<Items><Time>" + time + "</Time></Items>";
         expect(pageDownloaderMock.downloadPage(TheTVDbServiceImpl.SERVER_TIME_URL)).andReturn(serverSyncTimeResult);
         mockRmsGetOperation(TheTvDbSyncTime.class, null);
         mockRmsSaveSyncTime(time);
@@ -132,7 +132,27 @@ public class TheTVDbServiceImplTest {
         assertEquals(1, shows.size());
         Show showResult = shows.iterator().next();
         assertEquals(show, showResult);
+    }
 
+    @Test
+    public void testDownloadShowList_showNotFound() {
+        TheTvDbSyncTime syncTime = new TheTvDbSyncTime();
+        mockRmsGetOperation(TheTvDbSyncTime.class, syncTime);
+
+        logServiceMock.warn(eq(TheTVDbServiceImpl.class), anyObject(String.class));
+        expectLastCall();
+
+        Show show = new ShowImpl("House");
+        show.setTheTvDbId(MOCK_THETVDB_SHOW_ID);
+        expect(showDaoMock.getShowsWithoutTheTvDbId()).andReturn(Arrays.asList(show));
+        String page = getNoShowsDataString();
+        expect(pageDownloaderMock.downloadPage(TheTVDbServiceImpl.SEARCH_URL + show.getName())).andReturn(page);
+
+        mocksControl.replay();
+        Collection<Show> shows = service.downloadShowList();
+        mocksControl.verify();
+
+        assertEquals(0, shows.size());
     }
 
     @Test
@@ -273,6 +293,11 @@ public class TheTVDbServiceImplTest {
                 "<SeasonNumber>" + episode.getSeason() + "</SeasonNumber>\n" +
                 "<Language>en</Language>\n" +
                 "</Episode>\n" +
+                "</Data>";
+    }
+
+    private String getNoShowsDataString() {
+        return "<Data>" +
                 "</Data>";
     }
 

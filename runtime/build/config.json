@@ -1,0 +1,12 @@
+{
+  "auths": {
+    "https://index.docker.io": {
+      "auth": "YXJjaG1pc2hhOkFhMTIzNDU2",
+      "email": "archmisha@gmail.com"
+    },
+    "https://registry-win-tp3.docker.io/v1/": {
+      "auth": "YXJjaG1pc2hhOkFhMTIzNDU2",
+      "email": "archmisha@gmail.com"
+    }
+  }
+}

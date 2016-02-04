@@ -45,6 +45,10 @@
     </modules>
 
     <properties>
+        <prod.server>50.62.57.127</prod.server>
+        <prod.username>mediarss</prod.username>
+        <prod.password>Aa123456!</prod.password>
+
         <!--macros-->
         <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
         <rss-feed-war>media-rss</rss-feed-war>

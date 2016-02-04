@@ -12,6 +12,7 @@ import rss.log.LogService;
 import rss.shows.*;
 import rss.shows.dao.ShowDao;
 import rss.shows.dao.UserEpisodeTorrentDao;
+import rss.shows.providers.ShowsProvider;
 import rss.torrents.*;
 import rss.torrents.dao.TorrentDao;
 import rss.torrents.downloader.DownloadConfig;
@@ -55,6 +56,8 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
     private ShowsCacheService showsCacheService;
     @Autowired
     private UsersSearchesCache usersSearchesCache;
+    @Autowired
+    private ShowsProvider showsProvider;
 
     @Override
     public SearchResultJSON search(ShowRequest episodeRequest, long userId, boolean forceDownload) {
@@ -69,6 +72,15 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
 
         // first check which show we need
         Show show = findShowByName(originalSearchTerm);
+
+        // if not found, try searching it in thetvdb
+        if (show == null) {
+            show = showsProvider.search(originalSearchTerm);
+            if (show != null) {
+                showService.saveNewShow(show);
+            }
+        }
+
         if (show != null) {
             episodeRequest.setShow(show);
             episodeRequest.setTitle(show.getName());
@@ -97,9 +109,9 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
         DownloadConfig downloadConfig = new DownloadConfig();
         downloadConfig.setForceDownload(forceDownload);
         downloadConfig.setAsyncHeavy(true);
-        DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Arrays.asList(episodeRequest)), downloadConfig);
+        DownloadResult<Episode, ShowRequest> downloadResult = torrentEntriesDownloader.download(new HashSet<>(Collections.singletonList(episodeRequest)), downloadConfig);
 
-        SearchResultJSON searchResultJSON = SearchResultJSON.createWithResult(originalSearchTerm, actualSearchTerm,
+        SearchResultJSON searchResultJSON = SearchResultJSON.createWithResult(originalSearchTerm, actualSearchTerm, ShowsResource.showToJson(show),
                 episodeRequest.toQueryString(), ShowsResource.showListToJson(didYouMeanShows));
         if (downloadResult.getCompleteDate() != null) {
             downloadResultToSearchResultVO(userId, downloadResult, searchResultJSON);
@@ -288,9 +300,4 @@ public class ShowSearchServiceImpl implements ShowSearchService/*, ApplicationLi
         logService.debug(getClass(), String.format("Show statistic match end for: %s found: %s", name, StringUtils.join(result.toArray(), ",")));
         return result;
     }
-
-//	@Override
-//	public void onApplicationEvent(HttpSessionDestroyedEvent httpSessionDestroyedEvent) {
-//		httpSessionDestroyedEvent.
-//	}
 }

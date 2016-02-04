@@ -14,15 +14,19 @@ import static junit.framework.Assert.assertTrue;
 @Component
 public class AdminService extends BaseService {
 
-    public void runDownloadShowListJob() {
+    public void runDownloadShowsScheduleJob() {
+        triggerJob("ShowsScheduleDownloaderJob");
+    }
+
+    private void triggerJob(final String jobName) {
         reporter.info("Start download shows list job");
-        sendGetRequest("rest/jobs/start/" + "ShowsListDownloader");
+        sendGetRequest("rest/jobs/start/" + jobName);
 
         reporter.info("Wait for job to finish");
         WaitUtil.waitFor(new Runnable() {
             @Override
             public void run() {
-                String response = sendGetRequest("rest/jobs/" + "ShowsListDownloader");
+                String response = sendGetRequest("rest/jobs/" + jobName);
                 JobStatusJson jobStatus = JsonTranslation.jsonString2Object(response, JobStatusJson.class);
                 assertTrue(jobStatus.getEnd() != null && jobStatus.getEnd() > jobStatus.getStart());
             }

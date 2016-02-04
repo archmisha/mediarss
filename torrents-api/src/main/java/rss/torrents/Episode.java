@@ -46,7 +46,7 @@ public interface Episode extends Media {
 
     Set<Long> getTorrentIds();
 
-    long getTheTvDbId();
+    Long getTheTvDbId();
 
     void setTheTvDbId(long theTvDbEpisodeId);
 }

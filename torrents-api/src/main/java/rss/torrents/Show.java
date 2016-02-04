@@ -53,7 +53,9 @@ public interface Show extends Media {
     @Deprecated
     void setSubCenterUrlScanDate(Date subCenterUrlScanDate);
 
-    long getTheTvDbId();
+    void setTheTvDbScanDate(Date theTvDbScanDate);
+
+    Long getTheTvDbId();
 
     void setTheTvDbId(long theTvDbId);
 

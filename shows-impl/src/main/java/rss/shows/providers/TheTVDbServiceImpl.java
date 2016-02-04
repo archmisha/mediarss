@@ -7,6 +7,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import rss.MediaRSSException;
 import rss.PageDownloader;
 import rss.log.LogService;
@@ -14,6 +17,7 @@ import rss.rms.ResourceManagementService;
 import rss.shows.dao.EpisodeImpl;
 import rss.shows.dao.ShowDao;
 import rss.shows.dao.ShowImpl;
+import rss.shows.thetvdb.TheTvDbConstants;
 import rss.shows.thetvdb.TheTvDbEpisode;
 import rss.shows.thetvdb.TheTvDbShow;
 import rss.shows.thetvdb.TheTvDbSyncTime;
@@ -32,6 +36,7 @@ import java.util.zip.ZipInputStream;
  * User: dikmanm
  * Date: 16/10/2015 08:39
  */
+@Component
 public class TheTVDbServiceImpl implements ShowsProvider {
 
     private static final String API_KEY = "EB8D0878240F2DD7";
@@ -75,6 +80,7 @@ public class TheTVDbServiceImpl implements ShowsProvider {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Collection<Show> downloadShowList() {
         updateLastSyncTime();
 
@@ -82,8 +88,13 @@ public class TheTVDbServiceImpl implements ShowsProvider {
         List<Show> shows = showDao.getShowsWithoutTheTvDbId();
         for (Show show : shows) {
             Show showResult = search(show.getName());
-            showResult.setId(show.getId());
-            result.add(showResult);
+            if (showResult == null) {
+                logService.warn(getClass(), "Didn't find show '" + show.getName() + "' in TheTVDB");
+                show.setTheTvDbScanDate(new Date());
+            } else {
+                showResult.setId(show.getId());
+                result.add(showResult);
+            }
         }
         return result;
     }
@@ -116,7 +127,6 @@ public class TheTVDbServiceImpl implements ShowsProvider {
                 ShowData showData = getShowData(theTvDbShowId);
                 result.addShow(showData.getShow());
                 result.addEpisodes(showData.getEpisodes());
-
             }
         }
 
@@ -148,7 +158,9 @@ public class TheTVDbServiceImpl implements ShowsProvider {
         xstream.processAnnotations(TheTvDbEpisode.class);
         xstream.alias("Data", TheTvDbEpisode.class);
         TheTvDbEpisode theTvDbEpisode = (TheTvDbEpisode) xstream.fromXML(xml);
-        return toEpisode(theTvDbEpisode);
+        Episode episode = toEpisode(theTvDbEpisode);
+        episode.setShow(showDao.findByTheTvDbId(theTvDbEpisode.getShowId()));
+        return episode;
     }
 
     @Override
@@ -181,6 +193,7 @@ public class TheTVDbServiceImpl implements ShowsProvider {
                 ShowData showData = new ShowData(resultShow);
                 for (TheTvDbEpisode theTvDbEpisode : episodes) {
                     Episode episode = toEpisode(theTvDbEpisode);
+                    episode.setShow(resultShow);
                     showData.addEpisode(episode);
                 }
 
@@ -194,7 +207,8 @@ public class TheTVDbServiceImpl implements ShowsProvider {
     private Show toShow(TheTvDbShow theTvDbShow) {
         Show resultShow = new ShowImpl();
         resultShow.setTheTvDbId(theTvDbShow.getId());
-        if ("Ended".equals(theTvDbShow.getStatus())) { // might be null
+        resultShow.setName(theTvDbShow.getName());
+        if (TheTvDbConstants.ENDED_STATUS.equals(theTvDbShow.getStatus())) { // might be null
             resultShow.setEnded(true);
         }
         return resultShow;
@@ -228,7 +242,7 @@ public class TheTVDbServiceImpl implements ShowsProvider {
             XStream xstream = new XStream();
             xstream.ignoreUnknownElements();
             xstream.processAnnotations(UpdateItem.class);
-            xstream.alias("Update", UpdateItem.class);
+            xstream.alias("Items", UpdateItem.class);
             UpdateItem updateItem = (UpdateItem) xstream.fromXML(page);
             syncTime = new TheTvDbSyncTime();
             syncTime.setTime(updateItem.getTime());

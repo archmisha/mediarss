@@ -71,7 +71,7 @@ public class EpisodeImpl extends MediaImpl implements Episode {
     private Date lastUpdated;
 
     @Column(name = "thetvdb_id")
-    private long theTvDbId;
+    private Long theTvDbId;
 
     @SuppressWarnings("UnusedDeclaration")
     public EpisodeImpl() {
@@ -113,7 +113,7 @@ public class EpisodeImpl extends MediaImpl implements Episode {
         this.lastUpdated = lastUpdated;
     }
 
-    public long getTheTvDbId() {
+    public Long getTheTvDbId() {
         return theTvDbId;
     }
 

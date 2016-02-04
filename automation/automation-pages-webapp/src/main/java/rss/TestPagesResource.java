@@ -2,19 +2,24 @@ package rss;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-import rss.shows.tvrage.TVRageEpisode;
-import rss.shows.tvrage.TVRageSeason;
-import rss.shows.tvrage.TVRageShow;
-import rss.shows.tvrage.TVRageShowInfo;
+import rss.shows.thetvdb.TheTvDbEpisode;
+import rss.shows.thetvdb.TheTvDbShow;
 import rss.util.JsonTranslation;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * User: dikmanm
@@ -23,6 +28,8 @@ import java.util.List;
 @Path("/test-pages")
 @Component
 public class TestPagesResource {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestPagesResource.class);
 
     @Autowired
     private TestPagesServiceImpl testPagesService;
@@ -40,18 +47,32 @@ public class TestPagesResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createShow(String json) {
-        TVRageShow show = JsonTranslation.jsonString2Object(json, TVRageShow.class);
+        TheTvDbShow show = JsonTranslation.jsonString2Object(json, TheTvDbShow.class);
         testPagesService.createShow(show);
         return Response.ok().build();
     }
 
-    @Path("/shows/info")
+    @Path("/shows/episode")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createShowInfo(String json) {
-        TVRageShowInfo showInfo = JsonTranslation.jsonString2Object(json, TVRageShowInfo.class);
-        testPagesService.createShowInfo(showInfo);
+    public Response createEpisode(String json) {
+        TheTvDbEpisode episode = JsonTranslation.jsonString2Object(json, TheTvDbEpisode.class);
+        testPagesService.createEpisode(episode);
+        return Response.ok().build();
+    }
+
+    @Path("/torrents")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createTorrent(String json) {
+        Map<String, String> params = JsonTranslation.jsonString2Object(json, Map.class);
+        String showName = params.get("show");
+        String season = params.get("season");
+        String episode = params.get("episode");
+        LOGGER.info("Adding torrent " + showName + " " + season + " " + episode);
+        testPagesService.createTorrent(showName, season, episode);
         return Response.ok().build();
     }
 
@@ -63,51 +84,20 @@ public class TestPagesResource {
         return Response.ok().build();
     }
 
-    @Path("/shows/info")
+    @Path("/shows/search")
     @GET
     @Produces(MediaType.APPLICATION_XML)
-    public Response getShowsList(@QueryParam("sid") String showId) {
-        TVRageShowInfo showInfo = testPagesService.getShowInfo(Integer.parseInt(showId));
-
+    public Response searchShow(@QueryParam("name") String name) {
+        TheTvDbShow show = testPagesService.getShow(name);
         StringBuilder sb = new StringBuilder();
-        sb.append("<Show>");
-        if (showInfo != null) {
-            sb.append("<Episodelist>");
-            for (TVRageSeason tvRageSeason : showInfo.getEpisodelist().getSeasons()) {
-                sb.append("<Season no=\"").append(tvRageSeason.getNo()).append("\">");
-                for (TVRageEpisode tvRageEpisode : tvRageSeason.getEpisodes()) {
-                    sb.append("<episode>");
-                    sb.append("<seasonnum>").append(tvRageEpisode.getSeasonnum()).append("</seasonnum>");
-                    sb.append("<airdate>").append(tvRageEpisode.getAirdate()).append("</airdate>");
-                    sb.append("</episode>");
-                }
-                sb.append("</Season>");
-            }
-            sb.append("</Episodelist>");
-        }
-        sb.append("</Show>");
-        return Response.ok().entity(sb.toString()).build();
-    }
-
-    @Path("/shows/list")
-    @GET
-    @Produces(MediaType.APPLICATION_XML)
-    public Response getShowsList() {
-        List<TVRageShow> shows = testPagesService.getShowsList();
-
-        // convert to TVRage style xml
-        StringBuilder sb = new StringBuilder();
-        sb.append("<shows>");
-        for (TVRageShow show : shows) {
-            sb.append("<show>");
+        sb.append("<Data>");
+        if (show != null) {
+            sb.append("<Series>");
             sb.append("<id>").append(show.getId()).append("</id>");
-            sb.append("<name>").append(show.getName()).append("</name>");
-            sb.append("<country>").append(show.getCountry()).append("</country>");
-            sb.append("<status>").append(show.getStatus()).append("</status>");
-            sb.append("</show>");
+            sb.append("<SeriesName>").append(show.getName()).append("</SeriesName>");
+            sb.append("</Series>");
         }
-        sb.append("</shows>");
-
+        sb.append("</Data>");
         return Response.ok().entity(sb.toString()).build();
     }
 
@@ -116,9 +106,13 @@ public class TestPagesResource {
     @Produces(MediaType.APPLICATION_XML)
     public Response search(@PathParam("query") String query) {
         try {
+            LOGGER.info("Searching 1337x for " + query + ". Returning " + (testPagesService.hasTorrentId(query) ? "found" : "not found"));
+
+            // only of torrentId is mapped, return it in the search results
+            String torrentName = testPagesService.hasTorrentId(query) ? query : unique();
             String page = IOUtils.toString(new ClassPathResource("1337x-1-search-results.html", getClass().getClassLoader()).getInputStream());
             page = page.replace("${torrentId}", unique());
-            page = page.replace("${torrentName}", query);
+            page = page.replace("${torrentName}", torrentName);
             return Response.ok().entity(page).build();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -130,6 +124,8 @@ public class TestPagesResource {
     @Produces(MediaType.APPLICATION_XML)
     public Response search(@PathParam("torrentId") String torrentId, @PathParam("query") String query) {
         try {
+            LOGGER.info("Searching 1337x for torrentId " + torrentId + " and query " + query + ". Returning " + (testPagesService.hasTorrentId(query) ? "found" : "not found"));
+
             String page = IOUtils.toString(new ClassPathResource("1337x-torrent-page.html", getClass().getClassLoader()).getInputStream());
             page = page.replace("${torrentName}", query);
             page = page.replace("${hash}", unique());
@@ -137,6 +133,111 @@ public class TestPagesResource {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    @Path("/thetvdb/episodes/info/{episodeId}/en.xml")
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public Response getEpisode(@PathParam("episodeId") Long episodeId) {
+        TheTvDbEpisode episode = testPagesService.getEpisode(episodeId);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<Data>");
+        if (episode != null) {
+            sb.append(toXml(episode));
+        }
+        sb.append("</Data>");
+        return Response.ok().entity(sb.toString()).build();
+    }
+
+    @Path("/thetvdb/shows/info/{showId}/all/en.zip")
+    @GET
+    @Produces("application/zip")
+    public Response getShow(@PathParam("showId") Long showId) {
+        try {
+            TheTvDbShow show = testPagesService.getShow(showId);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("<Data>");
+            if (show != null) {
+                sb.append("<Series>");
+                sb.append("<id>").append(show.getId()).append("</id>");
+                sb.append("<SeriesName>").append(show.getName()).append("</SeriesName>");
+                sb.append("<Status>").append(show.getStatus()).append("</Status>");
+                sb.append("</Series>");
+
+                for (TheTvDbEpisode episode : testPagesService.getEpisodesByShow(showId)) {
+                    sb.append("<Episode>");
+                    sb.append(toXml(episode));
+                    sb.append("</Episode>");
+                }
+            }
+            sb.append("</Data>");
+
+            LOGGER.info("show info: " + sb.toString());
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ZipOutputStream zos = new ZipOutputStream(baos);
+            zos.putNextEntry(new ZipEntry("en.xml"));
+            zos.write(sb.toString().getBytes());
+            zos.closeEntry();
+            zos.close();
+            baos.close();
+
+            CacheControl cacheControl = new CacheControl();
+            cacheControl.setNoCache(true);
+            return Response.ok(baos.toByteArray()).cacheControl(cacheControl).build();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Path("/thetvdb/server-time")
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public Response getServerTime() {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<Update>");
+            sb.append("<Time>").append(System.currentTimeMillis()).append("</Time>");
+            sb.append("</Update>");
+            return Response.ok().entity(sb.toString()).build();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    @Path("/thetvdb/updates/{serverTime}")
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public Response getUpdates(@PathParam("serverTime") Long serverTime) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<Items>");
+            sb.append("<Time>").append(System.currentTimeMillis()).append("</Time>");
+            for (TheTvDbEpisode episode : testPagesService.getEpisodes(serverTime)) {
+                sb.append("<Episode>").append(episode.getId()).append("</Episode>");
+            }
+            for (TheTvDbShow show : testPagesService.getShows(serverTime)) {
+                sb.append("<Series>").append(show.getId()).append("</Series>");
+            }
+            sb.append("</Items>");
+
+            LOGGER.info("updates: " + sb.toString());
+
+            return Response.ok().entity(sb.toString()).build();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private String toXml(TheTvDbEpisode episode) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<id>").append(episode.getId()).append("</id>");
+        sb.append("<SeasonNumber>").append(episode.getSeason()).append("</SeasonNumber>");
+        sb.append("<EpisodeNumber>").append(episode.getEpisode()).append("</EpisodeNumber>");
+        sb.append("<FirstAired>").append(episode.getAirDate()).append("</FirstAired>");
+        sb.append("<seriesid>").append(episode.getShowId()).append("</seriesid>");
+        return sb.toString();
     }
 
     private String unique() {

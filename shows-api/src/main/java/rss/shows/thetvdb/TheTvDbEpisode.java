@@ -19,6 +19,9 @@ public class TheTvDbEpisode {
     @XStreamAlias("FirstAired")
     private String airDate;
 
+    @XStreamAlias("seriesid")
+    private long showId;
+
     public long getId() {
         return id;
     }
@@ -49,5 +52,13 @@ public class TheTvDbEpisode {
 
     public void setAirDate(String airDate) {
         this.airDate = airDate;
+    }
+
+    public long getShowId() {
+        return showId;
+    }
+
+    public void setShowId(long showId) {
+        this.showId = showId;
     }
 }

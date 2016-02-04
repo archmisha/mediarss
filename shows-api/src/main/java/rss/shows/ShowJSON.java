@@ -9,7 +9,6 @@ public class ShowJSON {
 	private long id;
 	private String name;
 	private boolean ended;
-	private int tvRageId;
 
 	public long getId() {
 		return id;
@@ -36,14 +35,5 @@ public class ShowJSON {
 
 	public boolean isEnded() {
 		return ended;
-	}
-
-	public int getTvRageId() {
-		return tvRageId;
-	}
-
-	public ShowJSON withTvRageId(int tvRageId) {
-		this.tvRageId = tvRageId;
-		return this;
 	}
 }

@@ -9,12 +9,13 @@ import rss.shows.ShowAutoCompleteJSON;
 import rss.shows.ShowJSON;
 import rss.shows.schedule.ShowsDaySchedule;
 import rss.shows.schedule.ShowsScheduleJSON;
-import rss.shows.tvrage.TVRageShow;
-import rss.shows.tvrage.TVRageShowInfo;
+import rss.shows.thetvdb.TheTvDbShow;
 import rss.test.entities.UserData;
 import rss.test.services.AdminService;
 import rss.test.services.TestPagesService;
-import rss.test.shows.*;
+import rss.test.shows.ShowsService;
+import rss.test.shows.TheTvDbEpisodeBuilder;
+import rss.test.shows.TheTvDbShowBuilder;
 import rss.test.util.WaitUtil;
 import rss.torrents.DownloadStatus;
 import rss.torrents.UserTorrentJSON;
@@ -40,16 +41,10 @@ public class ShowsTest extends BaseTest {
     private TestPagesService testPagesService;
 
     @Autowired
-    private TVRageShowBuilder tvRageShowBuilder;
+    private TheTvDbShowBuilder theTvDbShowBuilder;
 
     @Autowired
-    private TVRageShowInfoBuilder tvRageShowInfoBuilder;
-
-    @Autowired
-    private TVRageSeasonBuilder tvRageSeasonBuilder;
-
-    @Autowired
-    private TVRageEpisodeBuilder tvRageEpisodeBuilder;
+    private TheTvDbEpisodeBuilder theTvDbEpisodeBuilder;
 
     @Autowired
     private AdminService adminService;
@@ -60,12 +55,12 @@ public class ShowsTest extends BaseTest {
         UserData adminUser = userService.createAdminUser();
         userService.login(adminUser);
         reporter.info("Create 2 shows, 1 ended and 1 not");
-        TVRageShow notEndedTVRageShow = tvRageShowBuilder.aRunningShow().build();
-        TVRageShow endedTVRageShow = tvRageShowBuilder.anEndedShow().build();
-        adminService.runDownloadShowListJob();
+        TheTvDbShow notEndedTheTvDbShow = theTvDbShowBuilder.aRunningShow().build();
+        TheTvDbShow endedTheTvDbShow = theTvDbShowBuilder.anEndedShow().build();
+        adminService.runDownloadShowsScheduleJob();
 
-        ShowJSON nonEndedShow = showsService.getShow(notEndedTVRageShow.getName());
-        ShowJSON endedShow = showsService.getShow(endedTVRageShow.getName());
+        ShowJSON nonEndedShow = showsService.search(notEndedTheTvDbShow.getName()).getShow();
+        ShowJSON endedShow = showsService.search(endedTheTvDbShow.getName()).getShow();
         assertNotNull(nonEndedShow);
         assertNotNull(endedShow);
 
@@ -96,54 +91,42 @@ public class ShowsTest extends BaseTest {
         assertEquals(1, shows.size());
 
         reporter.info("Simulate show has ended");
-        testPagesService.setShowEnded(nonEndedShow);
-        adminService.runDownloadShowListJob();
+        testPagesService.setShowEnded(notEndedTheTvDbShow);
+        adminService.runDownloadShowsScheduleJob();
 
         reporter.info("Get tracked shows and verify not ended show is now ended");
         shows = showsService.getTrackedShows();
         assertEquals(1, shows.size());
-        assertEquals(true, shows.get(0).isEnded());
+        assertEquals("Show '" + shows.get(0).getName() + "' is not marked ended", true, shows.get(0).isEnded());
     }
 
     @Test
     public void testSchedule() {
+        // episodes schedule is downloaded either with the schedule job or when a tracked show is added
+        // so add one show with episodes and one show without episodes and call schedule job
+        // then add episodes to the second show and add it as tracked show, this will trigger the download of its episodes as well
+
         reporter.info("Prepare data");
         UserData adminUser = userService.createAdminUser();
         userService.login(adminUser);
-        TVRageShow tvRageShow1 = tvRageShowBuilder.aRunningShow().withName("show1").build();
-        TVRageShow tvRageShow2 = tvRageShowBuilder.aRunningShow().withName("show2").build();
-        TVRageShowInfo tvRageShowInfo1 = tvRageShowInfoBuilder.anInfo(tvRageShow1)
-                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
-                        .withEpisodes(
-                                tvRageEpisodeBuilder.anEpisode(1).withAirDate(getDate(-20)).build(), // should not return
-                                tvRageEpisodeBuilder.anEpisode(2).withAirDate(getDate(-12)).build(),
-                                tvRageEpisodeBuilder.anEpisode(3).withAirDate(getDate(-11)).build(),
-                                tvRageEpisodeBuilder.anEpisode(4).withAirDate(getDate(-10)).build(),
-                                tvRageEpisodeBuilder.anEpisode(5).withAirDate(getDate(-10)).build(),
-                                tvRageEpisodeBuilder.anEpisode(6).withAirDate(getDate(-9)).build(),
-                                tvRageEpisodeBuilder.anEpisode(7).withAirDate(getDate(-8)).build(),
-                                tvRageEpisodeBuilder.anEpisode(8).withAirDate(getDate(-1)).build(),
-                                tvRageEpisodeBuilder.anEpisode(9).withAirDate(getDate(0)).build()
-                        ).build())
-                .build();
-        TVRageShowInfo tvRageShowInfo2 = tvRageShowInfoBuilder.anInfo(tvRageShow2)
-                .withEpisodes(tvRageSeasonBuilder.aSeason(2)
-                        .withEpisodes(
-                                tvRageEpisodeBuilder.anEpisode(1).withAirDate(getDate(-1)).build(),
-                                tvRageEpisodeBuilder.anEpisode(2).withAirDate(getDate(0)).build(),
-                                tvRageEpisodeBuilder.anEpisode(3).withAirDate(getDate(+1)).build(),
-                                tvRageEpisodeBuilder.anEpisode(4).withAirDate(getDate(+1)).build(),
-                                tvRageEpisodeBuilder.anEpisode(5).withAirDate(getDate(+1)).build(),
-                                tvRageEpisodeBuilder.anEpisode(6).withAirDate(getDate(+8)).build(),
-                                tvRageEpisodeBuilder.anEpisode(7).withAirDate(getDate(+9)).build(),
-                                tvRageEpisodeBuilder.anEpisode(8).withAirDate(getDate(+10)).build(),
-                                tvRageEpisodeBuilder.anEpisode(9).withAirDate(getDate(+11)).build(),
-                                tvRageEpisodeBuilder.anEpisode(10).withAirDate(getDate(+12)).build() // should not return
-                        ).build())
-                .build();
-        adminService.runDownloadShowListJob();
-        ShowJSON show1 = showsService.getShow(tvRageShow1.getName());
-        ShowJSON show2 = showsService.getShow(tvRageShow2.getName());
+        TheTvDbShow theTvDbShow1 = theTvDbShowBuilder.aRunningShow().withName("show1").build();
+        TheTvDbShow theTvDbShow2 = theTvDbShowBuilder.aRunningShow().withName("show2").build();
+
+        reporter.info("Add episodes to first show");
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 1).withAirDate(getDate(-20)).build(); // should not return
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 2).withAirDate(getDate(-12)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 3).withAirDate(getDate(-11)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 4).withAirDate(getDate(-10)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 5).withAirDate(getDate(-10)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 6).withAirDate(getDate(-9)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 7).withAirDate(getDate(-8)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 8).withAirDate(getDate(-1)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow1, 1, 9).withAirDate(getDate(0)).build();
+
+        adminService.runDownloadShowsScheduleJob();
+
+        ShowJSON show1 = showsService.getShow(theTvDbShow1.getName());
+        ShowJSON show2 = showsService.getShow(theTvDbShow2.getName());
         assertNotNull(show1);
         assertNotNull(show2);
 
@@ -152,6 +135,18 @@ public class ShowsTest extends BaseTest {
         assertEquals(1, schedule.getSchedules().size());
         assertTrue(DateUtils.isSameDay(System.currentTimeMillis(), schedule.getSchedules().get(0).getDate()));
         assertEquals(0, schedule.getSchedules().get(0).getShows().size());
+
+        reporter.info("Add episodes of second show");
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 1).withAirDate(getDate(-1)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 2).withAirDate(getDate(0)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 3).withAirDate(getDate(+1)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 4).withAirDate(getDate(+1)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 5).withAirDate(getDate(+1)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 6).withAirDate(getDate(+8)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 7).withAirDate(getDate(+9)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 8).withAirDate(getDate(+10)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 9).withAirDate(getDate(+11)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow2, 2, 10).withAirDate(getDate(+12)).build(); // should not return
 
         reporter.info("Add tracked shows to user");
         showsService.addTrackedShow(show1);
@@ -169,20 +164,20 @@ public class ShowsTest extends BaseTest {
         ShowsDaySchedule curDaySchedule = schedule.getSchedules().get(6);
         assertTrue(DateUtils.isSameDay(System.currentTimeMillis(), curDaySchedule.getDate()));
         assertEquals(2, curDaySchedule.getShows().size());
-        assertEquals(tvRageShow1.getName(), curDaySchedule.getShows().get(0).getShowName());
+        assertEquals(theTvDbShow1.getName(), curDaySchedule.getShows().get(0).getShowName());
         assertEquals("S01E09", curDaySchedule.getShows().get(0).getSequence());
-        assertEquals(tvRageShow2.getName(), curDaySchedule.getShows().get(1).getShowName());
+        assertEquals(theTvDbShow2.getName(), curDaySchedule.getShows().get(1).getShowName());
         assertEquals("S02E02", curDaySchedule.getShows().get(1).getSequence());
 
         // multiple episodes of the same show on the same day, sorted by episode
         ShowsDaySchedule nextDaySchedule = schedule.getSchedules().get(7);
         assertTrue(DateUtils.isSameDay(getDate(+1).getTime(), nextDaySchedule.getDate()));
         assertEquals(3, nextDaySchedule.getShows().size());
-        assertEquals(tvRageShow2.getName(), nextDaySchedule.getShows().get(0).getShowName());
+        assertEquals(theTvDbShow2.getName(), nextDaySchedule.getShows().get(0).getShowName());
         assertEquals("S02E03", nextDaySchedule.getShows().get(0).getSequence());
-        assertEquals(tvRageShow2.getName(), nextDaySchedule.getShows().get(1).getShowName());
+        assertEquals(theTvDbShow2.getName(), nextDaySchedule.getShows().get(1).getShowName());
         assertEquals("S02E04", nextDaySchedule.getShows().get(1).getSequence());
-        assertEquals(tvRageShow2.getName(), nextDaySchedule.getShows().get(2).getShowName());
+        assertEquals(theTvDbShow2.getName(), nextDaySchedule.getShows().get(2).getShowName());
         assertEquals("S02E05", nextDaySchedule.getShows().get(2).getSequence());
 
         reporter.info("Remove tracked show from user");
@@ -202,17 +197,17 @@ public class ShowsTest extends BaseTest {
         UserData adminUser = userService.createAdminUser();
         userService.login(adminUser);
         String unique = this.unique.unique();
-        TVRageShow trackedByUserTVRageShow = tvRageShowBuilder.aRunningShow().withName(unique + "show1").build();
-        TVRageShow endedTVRageShow = tvRageShowBuilder.anEndedShow().withName(unique + "show3").build();
-        TVRageShow notTracked1TVRageShow = tvRageShowBuilder.aRunningShow().withName(unique + "show2").build();
-        TVRageShow notTracked2TVRageShow = tvRageShowBuilder.aRunningShow().withName(unique + "sho").build();
-        TVRageShow notTracked3TVRageShow = tvRageShowBuilder.aRunningShow().withName(unique + "shot").build();
-        adminService.runDownloadShowListJob();
-        ShowJSON trackedByUser = showsService.getShow(trackedByUserTVRageShow.getName());
-        ShowJSON ended = showsService.getShow(endedTVRageShow.getName());
-        ShowJSON notTracked1 = showsService.getShow(notTracked1TVRageShow.getName());
-        ShowJSON notTracked2 = showsService.getShow(notTracked2TVRageShow.getName());
-        ShowJSON notTracked3 = showsService.getShow(notTracked3TVRageShow.getName());
+        TheTvDbShow trackedByUserTheTvDbShow = theTvDbShowBuilder.aRunningShow().withName(unique + "show1").build();
+        TheTvDbShow endedTheTvDbShow = theTvDbShowBuilder.anEndedShow().withName(unique + "show3").build();
+        TheTvDbShow notTracked1TheTvDbShow = theTvDbShowBuilder.aRunningShow().withName(unique + "show2").build();
+        TheTvDbShow notTracked2TheTvDbShow = theTvDbShowBuilder.aRunningShow().withName(unique + "sho").build();
+        TheTvDbShow notTracked3TheTvDbShow = theTvDbShowBuilder.aRunningShow().withName(unique + "shot").build();
+        adminService.runDownloadShowsScheduleJob();
+        ShowJSON trackedByUser = showsService.getShow(trackedByUserTheTvDbShow.getName());
+        ShowJSON ended = showsService.getShow(endedTheTvDbShow.getName());
+        ShowJSON notTracked1 = showsService.getShow(notTracked1TheTvDbShow.getName());
+        ShowJSON notTracked2 = showsService.getShow(notTracked2TheTvDbShow.getName());
+        ShowJSON notTracked3 = showsService.getShow(notTracked3TheTvDbShow.getName());
         assertNotNull(trackedByUser);
         assertNotNull(ended);
         assertNotNull(notTracked1);
@@ -223,14 +218,14 @@ public class ShowsTest extends BaseTest {
         reporter.info("Test auto-complete not returns shows already tracked by user and ended shows");
         ShowAutoCompleteJSON showAutoCompleteJSON = showsService.autoCompleteTracked(unique + "show");
         assertEquals(1, showAutoCompleteJSON.getTotal());
-        assertEquals(notTracked1TVRageShow.getName(), showAutoCompleteJSON.getShows().get(0).getText());
+        assertEquals(notTracked1TheTvDbShow.getName(), showAutoCompleteJSON.getShows().get(0).getText());
 
         reporter.info("Test auto-complete returns multiple items sorted by name");
         showAutoCompleteJSON = showsService.autoCompleteTracked(unique + "sho");
         assertEquals(3, showAutoCompleteJSON.getTotal());
-        assertEquals(notTracked2TVRageShow.getName(), showAutoCompleteJSON.getShows().get(0).getText());
-        assertEquals(notTracked3TVRageShow.getName(), showAutoCompleteJSON.getShows().get(1).getText());
-        assertEquals(notTracked1TVRageShow.getName(), showAutoCompleteJSON.getShows().get(2).getText());
+        assertEquals(notTracked2TheTvDbShow.getName(), showAutoCompleteJSON.getShows().get(0).getText());
+        assertEquals(notTracked3TheTvDbShow.getName(), showAutoCompleteJSON.getShows().get(1).getText());
+        assertEquals(notTracked1TheTvDbShow.getName(), showAutoCompleteJSON.getShows().get(2).getText());
 
         reporter.info("Test auto-complete returns no results");
         showAutoCompleteJSON = showsService.autoCompleteTracked(unique + "shoz");
@@ -243,14 +238,9 @@ public class ShowsTest extends BaseTest {
         reporter.info("Prepare data");
         UserData adminUser = userService.createAdminUser();
         userService.login(adminUser);
-        TVRageShow tvRageShow = tvRageShowBuilder.aRunningShow().build();
-        tvRageShowInfoBuilder.anInfo(tvRageShow)
-                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
-                        .withEpisodes(tvRageEpisodeBuilder.anEpisode(1).build())
-                        .build())
-                .build();
-        adminService.runDownloadShowListJob();
-        ShowJSON show = showsService.getShow(tvRageShow.getName());
+        TheTvDbShow theTvDbShow = theTvDbShowBuilder.aRunningShow().build();
+        adminService.runDownloadShowsScheduleJob();
+        ShowJSON show = showsService.getShow(theTvDbShow.getName());
         assertNotNull(show);
         UserData user = userService.createUser();
         userService.login(user);
@@ -260,6 +250,12 @@ public class ShowsTest extends BaseTest {
         assertEquals(0, searchResult.getEpisodesCount());
         assertNotNull(searchResult.getStart());
         assertNotNull(searchResult.getEnd());
+
+        reporter.info("Add an episode and a torrent for the episode to be searched next and appear in progress");
+        userService.login(adminUser);
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow, 1, 1).build();
+        testPagesService.addTorrent(show, 1, 1);
+        userService.login(user);
 
         reporter.info("Search and get in progress status");
         searchResult = showsService.search(show, 1, 1);
@@ -305,14 +301,9 @@ public class ShowsTest extends BaseTest {
         reporter.info("Prepare data");
         UserData adminUser = userService.createAdminUser();
         userService.login(adminUser);
-        TVRageShow tvRageShow = tvRageShowBuilder.aRunningShow().build();
-        tvRageShowInfoBuilder.anInfo(tvRageShow)
-                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
-                        .withEpisodes(tvRageEpisodeBuilder.anEpisode(1).build())
-                        .build())
-                .build();
-        adminService.runDownloadShowListJob();
-        ShowJSON show = showsService.getShow(tvRageShow.getName());
+        TheTvDbShow theTvDbShow = theTvDbShowBuilder.aRunningShow().build();
+        adminService.runDownloadShowsScheduleJob();
+        ShowJSON show = showsService.getShow(theTvDbShow.getName());
         assertNotNull(show);
         UserData user = userService.createUser();
         userService.login(user);
@@ -324,6 +315,11 @@ public class ShowsTest extends BaseTest {
         } catch (Exception e) {
         }
         userService.login(adminUser);
+
+        reporter.info("Add an episode and a torrent for the episode to be searched next and appear in progress");
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow, 1, 1).build();
+        testPagesService.addTorrent(show, 1, 1);
+        adminService.runDownloadShowsScheduleJob();
 
         reporter.info("Search and find episodes");
         SearchResultJSON searchResult = showsService.search(show, 1, 1);
@@ -357,17 +353,19 @@ public class ShowsTest extends BaseTest {
         reporter.info("Prepare data");
         UserData adminUser = userService.createAdminUser();
         userService.login(adminUser);
-        TVRageShow tvRageShow = tvRageShowBuilder.aRunningShow().build();
-        tvRageShowInfoBuilder.anInfo(tvRageShow)
-                .withEpisodes(tvRageSeasonBuilder.aSeason(1)
-                        .withEpisodes( // setting diff air dates to prevent search of doubl episodes
-                                tvRageEpisodeBuilder.anEpisode(1).withAirDate(getDate(-2)).build(),
-                                tvRageEpisodeBuilder.anEpisode(2).withAirDate(getDate(-1)).build())
-                        .build())
-                .build();
-        adminService.runDownloadShowListJob();
-        ShowJSON show = showsService.getShow(tvRageShow.getName());
+        TheTvDbShow theTvDbShow = theTvDbShowBuilder.aRunningShow().build();
+        // setting diff air dates to prevent search of double episodes
+        adminService.runDownloadShowsScheduleJob();
+        ShowJSON show = showsService.getShow(theTvDbShow.getName());
         assertNotNull(show);
+
+        // setting diff air dates to prevent search of double episodes
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow, 1, 1).withAirDate(getDate(-2)).build();
+        theTvDbEpisodeBuilder.anEpisode(theTvDbShow, 1, 2).withAirDate(getDate(-1)).build();
+        testPagesService.addTorrent(show, 1, 1);
+        testPagesService.addTorrent(show, 1, 2);
+        adminService.runDownloadShowsScheduleJob();
+
         UserData user = userService.createUser();
         userService.login(user);
 
@@ -402,7 +400,6 @@ public class ShowsTest extends BaseTest {
             assertNull(userTorrent.getDownloadDate());
         }
     }
-
 
     // todo: /shows/delete/{showId}
     // /shows/autocomplete admin

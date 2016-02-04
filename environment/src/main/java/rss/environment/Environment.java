@@ -20,11 +20,9 @@ import java.util.concurrent.Executors;
  */
 public class Environment {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
-
     public static final String SETTINGS_FILENAME = "settings.properties";
     public static final String ADMIN_DEFAULT_EMAIL = "archmisha@gmail.com";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
     private static Environment instance;
 
     private Date deploymentDate;
@@ -37,18 +35,6 @@ public class Environment {
 
     private Collection<SettingsUpdateListener> updateListeners = new ArrayList<>();
     private String lookupDir;
-
-    public static Environment getInstance() {
-        if (instance == null) {
-            instance = new Environment();
-        }
-        return instance;
-    }
-
-    /* package for tests */
-    static void setInstance(Environment environment) {
-        instance = environment;
-    }
 
     private Environment() {
         shouldRun = true;
@@ -70,6 +56,18 @@ public class Environment {
             }
         });
         LOGGER.info("Environment init complete");
+    }
+
+    public static Environment getInstance() {
+        if (instance == null) {
+            instance = new Environment();
+        }
+        return instance;
+    }
+
+    /* package for tests */
+    static void setInstance(Environment environment) {
+        instance = environment;
     }
 
     public void shutdown() {
@@ -155,20 +153,20 @@ public class Environment {
         }
     }
 
-    public void setDeploymentDate(Date deploymentDate) {
-        this.deploymentDate = deploymentDate;
-    }
-
     public Date getDeploymentDate() {
         return deploymentDate;
     }
 
-    public void setStartupDate(Date startupDate) {
-        this.startupDate = startupDate;
+    public void setDeploymentDate(Date deploymentDate) {
+        this.deploymentDate = deploymentDate;
     }
 
     public Date getStartupDate() {
         return startupDate;
+    }
+
+    public void setStartupDate(Date startupDate) {
+        this.startupDate = startupDate;
     }
 
     public boolean useWebProxy() {
@@ -255,6 +253,16 @@ public class Environment {
 
     public void removeUpdateListener(SettingsUpdateListener listener) {
         this.updateListeners.remove(listener);
+    }
+
+    public Properties lookup(String filename) {
+        try {
+            Properties props = new Properties();
+            props.load(new FileReader(lookupDir + File.separator + filename));
+            return props;
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     private class SettingsBean {
@@ -352,8 +360,8 @@ public class Environment {
         public String getWebHostName() {
             try {
                 String value = prop.getProperty("web.host");
-                if (StringUtils.isBlank(value)) {
-                    value = InetAddress.getLocalHost().getHostAddress();
+                if (StringUtils.isBlank(value) || value.equals("localhost")) {
+                    value = InetAddress.getLocalHost().getCanonicalHostName();
                 }
                 return value;
             } catch (UnknownHostException e) {
@@ -385,16 +393,6 @@ public class Environment {
                 value = "dev";
             }
             return ServerMode.valueOf(value.toUpperCase());
-        }
-    }
-
-    public Properties lookup(String filename) {
-        try {
-            Properties props = new Properties();
-            props.load(new FileReader(lookupDir + File.separator + filename));
-            return props;
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
         }
     }
 }

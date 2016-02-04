@@ -2,10 +2,12 @@ package rss.test.services;
 
 import org.springframework.stereotype.Component;
 import rss.shows.ShowJSON;
-import rss.shows.tvrage.TVRageShow;
-import rss.shows.tvrage.TVRageShowInfo;
+import rss.shows.thetvdb.TheTvDbEpisode;
+import rss.shows.thetvdb.TheTvDbShow;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * User: dikmanm
@@ -14,19 +16,28 @@ import java.util.Collections;
 @Component
 public class TestPagesService extends BaseService {
 
-    public void createShow(TVRageShow tvRageShow) {
-        sendPostRequest("test-pages/rest/test-pages/shows/show", tvRageShow);
+    public void createShow(TheTvDbShow theTvDbShow) {
+        sendPostRequest("test-pages/rest/test-pages/shows/show", theTvDbShow);
     }
 
-    public void createShowInfo(TVRageShowInfo tvRageShowInfo) {
-        sendPostRequest("test-pages/rest/test-pages/shows/info", tvRageShowInfo);
+    public void createEpisode(TheTvDbEpisode theTvDbEpisode) {
+        sendPostRequest("test-pages/rest/test-pages/shows/episode", theTvDbEpisode);
     }
 
-    public void setShowEnded(ShowJSON show) {
-        sendPostRequest("test-pages/rest/test-pages/shows/set-ended/" + show.getTvRageId(), Collections.emptyMap());
+    public void setShowEnded(TheTvDbShow show) {
+        reporter.info("Calling set show ended for show '" + show.getName() + "'");
+        sendPostRequest("test-pages/rest/test-pages/shows/set-ended/" + show.getId(), Collections.emptyMap());
     }
 
     public void resetOverrides() {
         sendGetRequest("test-pages/rest/test-pages/resetOverrides");
+    }
+
+    public void addTorrent(ShowJSON show, int season, int episode) {
+        Map<String, String> params = new HashMap<>();
+        params.put("show", show.getName());
+        params.put("season", String.valueOf(season));
+        params.put("episode", String.valueOf(episode));
+        sendPostRequest("test-pages/rest/test-pages/torrents", params);
     }
 }

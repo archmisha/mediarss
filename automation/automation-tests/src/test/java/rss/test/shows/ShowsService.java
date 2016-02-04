@@ -63,13 +63,23 @@ public class ShowsService extends BaseService {
         return search(show, season, episode, false);
     }
 
-    public SearchResultJSON search(ShowJSON show, int season, int episode, boolean forceDownload) {
+    public SearchResultJSON search(String name) {
+        ShowJSON showJSON = new ShowJSON();
+        showJSON.withName(name);
+        return search(showJSON, null, null, false);
+    }
+
+    public SearchResultJSON search(ShowJSON show, Integer season, Integer episode, boolean forceDownload) {
         reporter.info(String.format("Call search for show %s (%d) season %d episode %d", show.getName(), show.getId(), season, episode));
         Map<String, String> params = new HashMap<>();
         params.put("showId", String.valueOf(show.getId()));
         params.put("title", String.valueOf(show.getName()));
-        params.put("season", String.valueOf(season));
-        params.put("episode", String.valueOf(episode));
+        if (season != null) {
+            params.put("season", String.valueOf(season));
+        }
+        if (episode != null) {
+            params.put("episode", String.valueOf(episode));
+        }
         params.put("forceDownload", String.valueOf(forceDownload));
         String response = sendGetRequest("rest/shows/search", params);
         return JsonTranslation.jsonString2Object(response, SearchResultJSON.class);

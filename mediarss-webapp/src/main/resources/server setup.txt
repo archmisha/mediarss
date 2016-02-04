@@ -1,3 +1,6 @@
+to run tomcat in intellij:
+-Dserver.mode=TEST -Dlookup.dir=C:\Misha\Dev\mediarss\runtime\lookup -XX:MaxPermSize=256m
+
 0. to make locate work:
 >sudo updatedb 
 1. For ubuntu setup shell:
@@ -21,6 +24,7 @@ installed at /var/lib/tomcat7
 > cd /usr/local
 > mv ~/installations/h2 .
 copy /etc/init.d/h2 script and chmod and to all rc*.d
+change version of h2 inside the h2 script and h2_home to desired folder
 to start and stop:
 > sudo service h2 start|stop
 
@@ -56,3 +60,24 @@ ProxyPassReverseCookieDomain localhost 50.62.57.127
 #Allow from all
 #</Location>
 and restart the apache2 server: sudo /etc/init.d/apache2 restart
+
+
+make window in virtualbox larger:
+http://linuxbsdos.com/2014/10/31/solutions-for-low-screen-resolution-in-ubuntu-14-0414-10-and-virtualbox/
+and
+I did sudo apt-get remove libcheese-gtk23, then sudo apt-get install xserver-xorg-core and finally sudo apt-get install -f virtualbox-guest-x11. It solved problems for me
+
+when have bad keys do
+Try deleting the key: sudo apt-key del 16126D3A3E5C1192
+then updating the repository: sudo apt-get update
+You should get a NO_PUBKEY error instead of a BADSIG error and
+sudo apt-key finger should not find the key (called "Ubuntu Extras Archive Automatic Signing Key")
+Now add the key
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
+The result of apt-key finger should have
+
+also helps for has sum:
+sudo apt-get update -o Acquire::http::No-Cache=true
+
+install docker:
+https://docs.docker.com/engine/installation/ubuntulinux/

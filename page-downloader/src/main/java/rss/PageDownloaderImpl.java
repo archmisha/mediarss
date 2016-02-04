@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -12,10 +13,12 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.*;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import rss.log.LogService;
@@ -51,7 +54,7 @@ public class PageDownloaderImpl implements PageDownloader {
         ResponseStreamExtractor<String> streamExtractor = new ResponseStreamExtractor<String>() {
             @Override
             public String extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
-                InputStream is = extractInputStreamFromResponse(httpResponse);
+                InputStream is = httpResponse.getEntity().getContent();
                 BufferedInputStream bis = new BufferedInputStream(is);
                 byte[] arr = new byte[1000];
                 int read = bis.read(arr);
@@ -82,7 +85,7 @@ public class PageDownloaderImpl implements PageDownloader {
             @SuppressWarnings("UnnecessaryLocalVariable")
             @Override
             public byte[] extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
-                byte[] res = IOUtils.toByteArray(httpResponse.getEntity().getContent());
+                byte[] res = EntityUtils.toByteArray(httpResponse.getEntity());
                 return res;
             }
         });
@@ -100,7 +103,7 @@ public class PageDownloaderImpl implements PageDownloader {
                 return downloadPage(url, headers, new ResponseStreamExtractor<String>() {
                     @Override
                     public String extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
-                        return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
+                        return IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8");
                     }
                 });
             } catch (PageDownloadException e) {
@@ -120,18 +123,9 @@ public class PageDownloaderImpl implements PageDownloader {
             @Override
             public Pair<String, String> extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
                 String lastRedirectUrl = (String) context.getAttribute(LAST_REDIRECT_URL);
-                return new ImmutablePair<>(IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8"), lastRedirectUrl);
+                return new ImmutablePair<>(IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8"), lastRedirectUrl);
             }
         });
-    }
-
-    private InputStream extractInputStreamFromResponse(HttpResponse httpResponse) throws IOException {
-        InputStream is = httpResponse.getEntity().getContent();
-//		Header contentEncoding = httpResponse.getEntity().getContentEncoding();
-//		if (contentEncoding != null && contentEncoding.toString().contains("gzip")) {
-//			is = new GZIPInputStream(is);
-//		}
-        return is;
     }
 
     private <T> T downloadPage(String url, Map<String, String> headers, ResponseStreamExtractor<T> streamExtractor) {
@@ -143,35 +137,14 @@ public class PageDownloaderImpl implements PageDownloader {
     }
 
     public String sendPostRequest(String url, String body) {
-//		try {
-//			List<NameValuePair> parameters = new ArrayList<>();
-//			for (Map.Entry<String, String> entry : params.entrySet()) {
-//				parameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-//			}
-
         HttpPost httpPost = new HttpPost(url);
-
-//			if (url.contains("?")) {
-//                for (String str : url.substring(url.indexOf("?") + 1).split("&")) {
-//					String[] arr = str.split("=");
-//                    parameters.add(new BasicNameValuePair(arr[0], arr[1]));
-//                }
-//            }
-
-//            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(parameters);
-
-        StringEntity entity = new StringEntity(body, ContentType.APPLICATION_JSON);
-        httpPost.setEntity(entity);
+        httpPost.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
         return sendRequest(httpPost, new ResponseStreamExtractor<String>() {
             @Override
             public String extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception {
-                return IOUtils.toString(extractInputStreamFromResponse(httpResponse), "UTF-8");
-//                    return context.getCookieStore().getCookies();
+                return IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8");
             }
         });
-//		} catch (UnsupportedEncodingException e) {
-//			throw new RuntimeException(e.getMessage(), e);
-//		}
     }
 
     private <T> T sendRequest(HttpRequestBase httpRequest, ResponseStreamExtractor<T> streamExtractor) {
@@ -216,14 +189,20 @@ public class PageDownloaderImpl implements PageDownloader {
                 httpClientBuilder.setRoutePlanner(routePlanner);
             }
 
-            httpClient = httpClientBuilder.build(); //new DefaultHttpClient();
-//			httpClient = new DecompressingHttpClient(defaultHttpClient); // ContentEncodingHttpClient
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setSocketTimeout(30 * 1000) // 30 secs
+                    .setConnectTimeout(30 * 1000) // 30 secs
+                    .setConnectionRequestTimeout(30 * 1000) // 30 secs
+                    .build();
 
-            HttpConnectionParams.setSoTimeout(httpRequest.getParams(), 30 * 1000); // 130 secs
-            HttpConnectionParams.setConnectionTimeout(httpRequest.getParams(), 30 * 1000); // 30 secs
-            AutoRetryHttpClient retryClient = new AutoRetryHttpClient(httpClient, new DefaultServiceUnavailableRetryStrategy(3, 100));
+            httpClientBuilder.setDefaultRequestConfig(requestConfig);
+            httpClient = httpClientBuilder.build();
 
-            HttpResponse httpResponse = retryClient.execute(httpRequest, context);
+
+//            AutoRetryHttpClient retryClient = new AutoRetryHttpClient(httpClient, new DefaultServiceUnavailableRetryStrategy(3, 100));
+
+//            HttpResponse httpResponse = retryClient.execute(httpRequest, context);
+            HttpResponse httpResponse = httpClient.execute(httpRequest, context);
 
             if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK /*&&
                 httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY &&
@@ -267,6 +246,6 @@ public class PageDownloaderImpl implements PageDownloader {
     }
 
     private interface ResponseStreamExtractor<T> {
-        public T extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception;
+        T extractResponseStream(HttpClient httpClient, HttpResponse httpResponse, HttpClientContext context) throws Exception;
     }
 }
