@@ -342,16 +342,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>http://mydtnex01.isr.hp.com:8081/nexus/content/groups/public</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <pluginRepositories>
         <pluginRepository>
             <id>apache.snapshots</id>
