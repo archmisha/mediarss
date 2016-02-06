@@ -30,3 +30,5 @@ Java HotSpot(TM) Client VM warning: Try increasing the code cache size using -XX
 Code Cache  [0xb5326000, 0xb5a7e000, 0xb7326000)
  total_blobs=3911 nmethods=3719 adapters=124 free_code_cache=25254Kb largest_free_block=25854656
 
+ 1
+
