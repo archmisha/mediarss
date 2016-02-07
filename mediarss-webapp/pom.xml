@@ -400,11 +400,32 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+
+        <plugins>
+
+
+            <!--<plugin>-->
+            <!--<groupId>com.keyboardsamurais.maven</groupId>-->
+            <!--<artifactId>maven-timestamp-plugin</artifactId>-->
+            <!--<version>1.0</version>-->
+            <!--<configuration>-->
+            <!--<propertyName>timestamp</propertyName>-->
+            <!--<timestampPattern>yyyy-MM-dd_HH-mm</timestampPattern>-->
+            <!--</configuration>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<goals>-->
+            <!--<goal>create</goal>-->
+            <!--</goals>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
+        </plugins>
     </build>
 
     <profiles>
         <profile>
-            <id>prod</id>
+            <id>package-war</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -414,23 +435,6 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>versions-maven-plugin</artifactId>
                         <version>1.0</version>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>com.keyboardsamurais.maven</groupId>
-                        <artifactId>maven-timestamp-plugin</artifactId>
-                        <version>1.0</version>
-                        <configuration>
-                            <propertyName>timestamp</propertyName>
-                            <timestampPattern>yyyy-MM-dd_HH-mm</timestampPattern>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>create</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
 
                     <plugin>
@@ -483,19 +487,19 @@
                                     <goal>run</goal>
                                 </goals>
                             </execution>
-                            <execution>
-                                <id>copy-war-to-deploy-folder</id>
-                                <phase>install</phase>
-                                <configuration>
-                                    <target>
-                                        <copy file="${project.build.directory}/${rss-feed-war}.war"
-                                              tofile="${project.build.directory}/../deploy/${rss-feed-war}-${timestamp}.war"/>
-                                    </target>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
+                            <!--<execution>-->
+                            <!--<id>copy-war-to-deploy-folder</id>-->
+                            <!--<phase>install</phase>-->
+                            <!--<configuration>-->
+                            <!--<target>-->
+                            <!--<copy file="${project.build.directory}/${rss-feed-war}.war"-->
+                            <!--tofile="${project.build.directory}/../deploy/${rss-feed-war}-${timestamp}.war"/>-->
+                            <!--</target>-->
+                            <!--</configuration>-->
+                            <!--<goals>-->
+                            <!--<goal>run</goal>-->
+                            <!--</goals>-->
+                            <!--</execution>-->
                         </executions>
                     </plugin>
 
@@ -562,12 +566,17 @@
                                 </manifestEntries>
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
-                            <warSourceExcludes>
-                                js/components/**,js/controllers/**,js/features/**,js/routers/**,js/utils/**,style/*.less,*_*.jsp
-                            </warSourceExcludes>
-                            <!-- only leaving ttorent in the folder, cuz using its stuff with package permissions -->
-                            <packagingExcludes>%regex[WEB-INF/lib/(?!mediarss).*.jar]</packagingExcludes>
-                            <!--<packagingExcludes>%regex[WEB-INF/lib/.*.jar]</packagingExcludes>-->
+                            <packagingExcludes>
+                                js/components/**,
+                                js/controllers/**,
+                                js/features/**,
+                                js/routers/**,
+                                js/utils/**,
+                                style/**/*.less,
+                                style/3rd-party
+                                *_*.jsp,
+                                %regex[WEB-INF/lib/(?!mediarss).*.jar]
+                            </packagingExcludes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -658,7 +667,7 @@
         <profile>
             <id>dev</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -711,7 +720,6 @@
                                 </manifestEntries>
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
-                            <!--<packagingExcludes>lesscss-engine-*.jar,commons-cli-*.jar</packagingExcludes>-->
                             <packagingExcludes>%regex[WEB-INF/lib/(?!mediarss).*.jar]</packagingExcludes>
                         </configuration>
                     </plugin>
