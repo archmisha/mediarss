@@ -1,2 +1,2 @@
-call docker-env.bat
+call %~dp0\docker-env.bat
 start docker-compose down
