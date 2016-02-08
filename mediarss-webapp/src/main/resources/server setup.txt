@@ -81,3 +81,6 @@ sudo apt-get update -o Acquire::http::No-Cache=true
 
 install docker:
 https://docs.docker.com/engine/installation/ubuntulinux/
+
+to run docker from windows cmd first run in docker file to create env
+docker-machine env -shell cmd dev > docker-env.bat
