@@ -1,0 +1,21 @@
+<component name="ProjectRunConfigurationManager">
+	<!--<configuration default="false"-->
+	               <!--name="UI Dev"-->
+	               <!--type="NodeJSConfigurationType"-->
+	               <!--factoryName="Node.js"-->
+	               <!--path-to-node="C:/Program Files/nodejs/node"-->
+	               <!--path-to-js-file="node_modules/webpack-dev-server/bin/webpack-dev-server.js"-->
+	               <!--application-parameters="&#45;&#45;hot &#45;&#45;inline &#45;&#45;progress &#45;&#45;color &#45;&#45;port 8081"-->
+	               <!--working-dir="$PROJECT_DIR$/mediarss-webapp/src/main/webapp">-->
+		<!--<method />-->
+	<!--</configuration>-->
+	<configuration default="false" name="UI Dev" type="js.build_tools.npm" factoryName="npm">
+		<package-json value="$PROJECT_DIR$/mediarss-webapp/src/main/webapp/package.json" />
+		<command value="run-script" />
+		<scripts>
+			<script value="dev" />
+		</scripts>
+		<envs />
+		<method />
+	</configuration>
+</component>
