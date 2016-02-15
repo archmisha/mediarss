@@ -9,3 +9,5 @@
   run mvn --version to verify installation  
 - install git + git extensions
 - checkout code using git extensions - https://github.com/mediarss/mediarss.git
+- install nodejs
+- run npm --save install react react-dom react-router webpack-dev-server extract-text-webpack-plugin css-loader style-loader less-loader react-hot-loader

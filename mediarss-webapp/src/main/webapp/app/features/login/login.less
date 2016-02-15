@@ -1,0 +1,142 @@
+@import '../../consts.less';
+
+.login-header-description {
+  color: #6E6D6D;
+  //  font-size: @font-size-body;
+}
+
+.login-form {
+  margin-top: 30px;
+  margin-left: 90px;
+}
+
+.login-form-row {
+  margin-bottom: 15px;
+}
+
+.login-form-label {
+  //  font-size: @font-size-body;
+  display: block;
+  width: 70px;
+}
+
+.login-remember-me-input {
+  vertical-align: top;
+}
+
+.login-form-input {
+  display: block;
+  width: 196px;
+}
+
+.login-status {
+  color: red;
+  margin-top: 25px;
+  font-size: 15px;
+  display: none;
+  margin-left: 90px;
+}
+
+.login-buttons-container {
+  vertical-align: middle;
+  margin-top: 25px;
+  height: 30px;
+}
+
+.login-btn {
+  float: left;
+}
+
+.login-register-link {
+  color: @theme-color;
+  text-decoration: none;
+  cursor: pointer;
+  //  font-size: @font-size-body;
+  margin-left: 15px;
+  float: left;
+  margin-top: 7px;
+}
+
+.login-forgot-password {
+  color: @theme-color;
+  text-decoration: none;
+  cursor: pointer;
+  //  font-size: @font-size-body;
+  margin-top: 15px;
+}
+
+.login-forgot-password:hover,
+.login-register-link:hover {
+  text-decoration: underline;
+}
+
+.login-forgot-password-box-title {
+  font-weight: bold;
+  font-size: 15px;
+  text-decoration: underline;
+}
+
+.login-forgot-password-box-content {
+  display: none;
+  //  font-size: @font-size-body;
+}
+
+.login-forgot-password-email-label {
+  margin-top: 15px;
+}
+
+.login-forgot-password-email-input {
+  margin-top: 10px;
+  width: 200px;
+}
+
+.login-forgot-password-btn {
+  float: right;
+  margin-top: 20px;
+}
+
+@media screen and (max-width: 1090px) {
+  .login-register-link {
+    margin-top: 0px;
+  }
+
+  .login-form-container {
+    font-size: 17px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .login-form {
+    margin-left: 60px;
+  }
+
+  .login-register-link {
+    margin-top: 5px;
+  }
+
+  .login-header .header-container {
+    margin-top: 10px;
+  }
+
+  .login-header .header-description {
+    margin-top: 10px;
+    margin-right: 35px;
+  }
+
+  .login-form-container {
+    font-size: 13px;
+    font-weight: bold;
+
+    #login-remember-me-label {
+      font-weight: normal;
+    }
+  }
+
+  .login-form-row {
+    margin-bottom: 10px;
+  }
+
+  .login-buttons-container {
+    margin-top: 15px;
+  }
+}
