@@ -2,6 +2,7 @@ package rss.rms.driver;
 
 import com.mongodb.*;
 import com.mongodb.util.JSON;
+import org.apache.commons.lang3.*;
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -42,8 +43,12 @@ public class MongoDriverImpl implements MongoDriver {
             String username = props.getProperty("mongodb.username");
             String password = props.getProperty("mongodb.password");
 
-            MongoCredential credential = MongoCredential.createMongoCRCredential(username, "admin", password.toCharArray());
-            mongoClient = new MongoClient(new ServerAddress(hostname, port), Arrays.asList(credential));
+            if (StringUtils.isBlank(username)) {
+                mongoClient = new MongoClient(new ServerAddress(hostname, port));
+            } else {
+                MongoCredential credential = MongoCredential.createMongoCRCredential(username, "admin", password.toCharArray());
+                mongoClient = new MongoClient(new ServerAddress(hostname, port), Collections.singletonList(credential));
+            }
         } catch (UnknownHostException e) {
             throw new RuntimeException("Failed initializing a connection to the mongodb server: " + e.getMessage(), e);
         }
