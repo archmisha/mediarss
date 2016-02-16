@@ -1,7 +1,8 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
-var Router = require('react-router').Router;
-var routes = require('./config/routes');
+import React from 'react';
+import ReactDOM from 'react-dom';
+var Router = require('react-router').Router; // todo: how to remove the required
+import routes from './config/routes';
+import '../style/3rd-party/bootstrap.lite.less';
 
 ReactDOM.render(
     <Router>{routes}</Router>,

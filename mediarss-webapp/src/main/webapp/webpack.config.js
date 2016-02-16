@@ -1,36 +1,36 @@
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
 module.exports = {
     entry: {
         home: "./app/App.js"
     },
+    devtool: 'source-map',
     output: {
         filename: "public/[name].js"
     },
-    plugins: [
-        new ExtractTextPlugin('public/[name].css', {
-            allChunks: true
-        })
-    ],
     module: {
         loaders: [
             {
                 test: /\.jsx?$/,
-                //loaders: ['react-hot', 'jsx', 'babel'],
-                loader: 'babel',
                 exclude: /(node_modules|bower_components)/,
-                query: {
-                    presets: ['react', 'es2015']
-                }
+                loaders: ["react-hot", 'babel?'+JSON.stringify(
+                    {
+                        presets: ['react', 'es2015'],
+                        "plugins": [
+                        ]
+                    }
+                )]
             },
             {
                 test: /\.css$/,
-                loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+                loader: 'style!css'
+            },
+            {
+                test: /\.scss$/,
+                loader: 'style!css!sass'
             },
             {
                 test: /\.less$/,
-                loader: ExtractTextPlugin.extract("style-loader", "css-loader!less-loader")
+                loader: 'style!css!less'
             }
         ]
     }
-}
+};

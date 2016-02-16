@@ -40,11 +40,7 @@ $(function() {
 			}
 		});
 
-//            if ($.browser.mozilla) {
 		return false;
-//            } else {
-//                return true;
-//            }
 	}
 
 	function onForgotPasswordButtonClick() {

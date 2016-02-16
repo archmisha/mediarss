@@ -1,7 +1,6 @@
-var React = require('react');
-var Router = require('react-router');
-var Route = Router.Route;
-var Login = require('../features/login/Login');
+import React from 'react';
+import { default as Router, Route } from 'react-router'
+import Login from '../features/login/Login.jsx';
 
 module.exports = (
     <Route path="/" component={Login}>
