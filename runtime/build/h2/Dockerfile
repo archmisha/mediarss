@@ -21,5 +21,7 @@ RUN mkdir -p /data/h2-data
 #   -   81: H2 Console
 EXPOSE 1521 81
 
+VOLUME /data/h2-data
+
 # Define default command
 ENTRYPOINT ["java -Xms16m -Xmx80m -cp /opt/h2/bin/h2*.jar org.h2.tools.Server -web -webAllowOthers -webPort 81 -tcp -tcpAllowOthers -tcpPort 1521 -baseDir /data/h2-data"]
