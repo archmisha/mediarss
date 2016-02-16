@@ -12,32 +12,34 @@ var Login = React.createClass({
 //var passwordRecoverySubmitButton = $('.login-forgot-password-btn');
 
     getInitialState: function() {
-        return {username: '', password: ''};
+        return {username: '', password: '', rememberMe: false};
     },
 
     showStatusMessage: function(msg) {
-        this._status.text(msg);
-        this._status.fadeIn('slow');
+        this.setState({status: msg});
+        ReactDom.findDOMNode(this._status).fadeIn('slow');
+        //this._status.fadeIn('slow');
     },
 
     hideStatusMessage: function() {
-        this._status.fadeOut('slow');
-        this._status.val('');
+        ReactDom.findDOMNode(this._status).fadeOut('slow');
+        //this._status.fadeOut('slow');
+        this.setState({status: ''});
     },
 
     login: function(e) {
         e.preventDefault();
-        this.hideStatusMessage();
+        //this.hideStatusMessage();
         var username = this.state.username.trim();
         var password = this.state.password.trim();
-        var rememberMe = this._rememberMeInput.is(':checked');
+        var rememberMe = this.state.rememberMe;
 
         if (!username || username.length == 0 || !password || password.length == 0) {
             this.showStatusMessage('Invalid email or password');
             return false;
         }
 
-        $.post("rest/user/login", {
+        $.post("/rest/user/login", {
             username: username,
             password: password,
             rememberMe: rememberMe
@@ -50,7 +52,7 @@ var Login = React.createClass({
             }
         });
 
-        return false;
+        //return false;
     },
 
     //onForgotPasswordButtonClick: function() {
@@ -85,10 +87,6 @@ var Login = React.createClass({
 //    });
 //});
 
-//$('.login-form').submit(function() {
-//    return login();
-//});
-//
 //$('.login-forgot-password').click(function() {
 //    hideStatusMessage();
 //    passwordRecoveryDialog.click();
@@ -122,6 +120,10 @@ var Login = React.createClass({
         this.setState({username: e.target.value});
     },
 
+    onRememberMeChange: function(e) {
+        this.setState({rememberMe: !this.state.rememberMe});
+    },
+
     onPasswordChange: function(e) {
         this.setState({password: e.target.value});
     },
@@ -144,7 +146,7 @@ var Login = React.createClass({
                         </div>
                         <div className='login-form-row'>
                             <input type="checkbox" tabIndex="0" name="rememberMe" id="login-remember-me"
-                                   className='login-remember-me-input' ref={(c) => this._rememberMeInput = c}/>
+                                   className='login-remember-me-input' onClick={this.onRememberMeChange}/>
                             <label htmlFor="login-remember-me" id="login-remember-me-label" className=''>Remember me</label>
                         </div>
                         <div className='login-buttons-container'>
@@ -155,7 +157,7 @@ var Login = React.createClass({
                     </form>
                     <iframe src="../ablankpage.html" id="temp" name="temp" style={{display:'none'}}></iframe>
                 </div>
-                <div className='login-status' ref={(c) => this._status = c}></div>
+                <div className='login-status' ref={(c) => this._status = c}>{this.state.status}</div>
                 <a className='login-forgot-password-box' href="#login-forgot-password-box-content"></a>
 
                 <div className='login-forgot-password-box-content' id='login-forgot-password-box-content'>
