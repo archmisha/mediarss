@@ -26,6 +26,12 @@ module.exports = {
                     {
                         presets: ['react', 'es2015'],
                         "plugins": [
+                            "syntax-class-properties",
+                            "syntax-decorators",
+                            "syntax-object-rest-spread",
+
+                            "transform-class-properties",
+                            "transform-object-rest-spread"
                         ]
                     }
                 )]

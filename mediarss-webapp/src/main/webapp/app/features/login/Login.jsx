@@ -1,91 +1,70 @@
-import React from 'react';
+import React, {Component, PropTypes} from 'react';
 import ReactDom from 'react-dom';
+import { browserHistory } from 'react-router'
+import { reduxForm } from 'redux-form';
+import { connect } from 'react-redux';
 import './login.less';
 import Header from '../../components/header/Header.jsx';
 
-var Login = React.createClass({
-    //var status = $('.login-status');
-//var usernameInput = $('input[name=username]');
-//var passwordInput = $('input[name=password]');
-//var rememberMeInput = $('input[name=rememberMe]');
+export const loginReducer = (state = {}, action) => {
+    switch (action.type) {
+        case 'LOGIN':
+            browserHistory.push("home");
+            return state;
+        default:
+            return state;
+    }
+};
+
+const validate = values => {
+    const errors = {};
+    if (!values.username || values.username.trim().length == 0) {
+        errors.username = 'Required';
+    }
+    if (!values.password || values.password.trim().length == 0) {
+        errors.password = 'Required';
+    }
+    return errors;
+};
+
+class LoginForm extends Component {
+    static propTypes = {
+        fields: PropTypes.object.isRequired,
+        error: PropTypes.string,
+        handleSubmit: PropTypes.func.isRequired
+    };
 //var passwordRecoveryEmailField = $('.login-forgot-password-email-input');
 //var passwordRecoverySubmitButton = $('.login-forgot-password-btn');
+    componentDidMount() {
+        ReactDom.findDOMNode(this._usernameInput).focus();
+    }
 
-    getInitialState: function() {
-        return {username: '', password: '', rememberMe: false};
-    },
+    render() {
+        const {fields: {username, password, rememberMe}, error, handleSubmit} = this.props;
 
-    showStatusMessage: function(msg) {
-        this.setState({status: msg});
-        ReactDom.findDOMNode(this._status).fadeIn('slow');
-        //this._status.fadeIn('slow');
-    },
+             //onForgotPasswordButtonClick: function() {
+        //    var email = passwordRecoveryEmailField.val();
+        //
+        //    if (!email || email.trim().length == 0) {
+        //        return;
+        //    }
+        //
+        //    $.fancybox.close();
+        //
+        //    $.post("rest/user/forgot-password", {
+        //        email: email
+        //    }, function(res) {
+        //        this.showStatusMessage(res.message);
+        //    }, false);
+        //},
 
-    hideStatusMessage: function() {
-        ReactDom.findDOMNode(this._status).fadeOut('slow');
-        //this._status.fadeOut('slow');
-        this.setState({status: ''});
-    },
+        //onForgotPasswordInputKeyPress: function(event) {
+        //    var ENTER_KEY = 13;
+        //    if (event.which === ENTER_KEY) {
+        //        this.onForgotPasswordButtonClick();
+        //    }
+        //},
 
-    login: function(e) {
-        e.preventDefault();
-        //this.hideStatusMessage();
-        var username = this.state.username.trim();
-        var password = this.state.password.trim();
-        var rememberMe = this.state.rememberMe;
-
-        if (!username || username.length == 0 || !password || password.length == 0) {
-            this.showStatusMessage('Invalid email or password');
-            return false;
-        }
-
-        $.post("/rest/user/login", {
-            username: username,
-            password: password,
-            rememberMe: rememberMe
-        }, function(res) {
-            if (res.success === undefined) {
-                var str = window.location.href;
-                window.location.href = str.substring(0, str.lastIndexOf('/') + 1) + 'main';
-            } else {
-                this.showStatusMessage(res.message);
-            }
-        });
-
-        //return false;
-    },
-
-    //onForgotPasswordButtonClick: function() {
-    //    var email = passwordRecoveryEmailField.val();
-    //
-    //    if (!email || email.trim().length == 0) {
-    //        return;
-    //    }
-    //
-    //    $.fancybox.close();
-    //
-    //    $.post("rest/user/forgot-password", {
-    //        email: email
-    //    }, function(res) {
-    //        this.showStatusMessage(res.message);
-    //    }, false);
-    //},
-
-    //onForgotPasswordInputKeyPress: function(event) {
-    //    var ENTER_KEY = 13;
-    //    if (event.which === ENTER_KEY) {
-    //        this.onForgotPasswordButtonClick();
-    //    }
-    //},
-
-//[usernameInput, passwordInput].forEach(function(inputEl) {
-//    inputEl.keypress(function(event) {
-//        var ENTER_KEY = 13;
-//        if (event.which === ENTER_KEY) {
-//            login();
-//        }
-//    });
-//});
 
 //$('.login-forgot-password').click(function() {
 //    hideStatusMessage();
@@ -112,42 +91,28 @@ var Login = React.createClass({
 //    }
 //});
 
-    componentDidMount: function() {
-        ReactDom.findDOMNode(this._usernameInput).focus();
-    },
-
-    onUsernameChange: function(e) {
-        this.setState({username: e.target.value});
-    },
-
-    onRememberMeChange: function(e) {
-        this.setState({rememberMe: !this.state.rememberMe});
-    },
-
-    onPasswordChange: function(e) {
-        this.setState({password: e.target.value});
-    },
-
-    render: function(){
         return (
             <div>
-                <Header/>
                 <div className='login-form-container'>
-                    <form id="login-form" action="#" className='login-form' target="temp" onSubmit={this.login}>
+                    <form id="login-form" action="#" className='login-form' target="temp" onSubmit={handleSubmit}>
                         <div className='login-form-row'>
-                            <label htmlFor="login-username" id="login-username-label" className='login-form-label'>Email</label>
-                            <input type="text" tabIndex="0" name="username" id="login-username" className='login-form-input'
-                                   onChange={this.onUsernameChange} ref={(c) => this._usernameInput = c}/>
+                            <label htmlFor="login-username" id="login-username-label"
+                                   className='login-form-label'>Email</label>
+                            <input type="text" tabIndex="0" name="username" id="login-username"
+                                   className='login-form-input' {...username} ref={(c) => this._usernameInput = c}/>
+                            {username.touched && username.error && <div className='login-field-error'>{username.error}</div>}
                         </div>
                         <div className='login-form-row'>
                             <label htmlFor="login-password" id="login-password-label" className='login-form-label'>Password</label>
-                            <input type="password" tabIndex="0" name="password" id="login-password" className='login-form-input'
-                                   onChange={this.onPasswordChange}/>
+                            <input type="password" tabIndex="0" name="password" id="login-password"
+                                   className='login-form-input' {...password}/>
+                            {password.touched && password.error && <div className='login-field-error'>{password.error}</div>}
                         </div>
                         <div className='login-form-row'>
                             <input type="checkbox" tabIndex="0" name="rememberMe" id="login-remember-me"
-                                   className='login-remember-me-input' onClick={this.onRememberMeChange}/>
-                            <label htmlFor="login-remember-me" id="login-remember-me-label" className=''>Remember me</label>
+                                   className='login-remember-me-input' {...rememberMe}/>
+                            <label htmlFor="login-remember-me" id="login-remember-me-label" className=''>Remember
+                                me</label>
                         </div>
                         <div className='login-buttons-container'>
                             <input id="login-submit" type="submit" className='btn login-btn' value='Login'/>
@@ -157,7 +122,7 @@ var Login = React.createClass({
                     </form>
                     <iframe src="../ablankpage.html" id="temp" name="temp" style={{display:'none'}}></iframe>
                 </div>
-                <div className='login-status' ref={(c) => this._status = c}>{this.state.status}</div>
+                <div className='login-status'>{this.props.error}</div>
                 <a className='login-forgot-password-box' href="#login-forgot-password-box-content"></a>
 
                 <div className='login-forgot-password-box-content' id='login-forgot-password-box-content'>
@@ -169,6 +134,50 @@ var Login = React.createClass({
             </div>
         )
     }
-});
+}
 
-export default Login;
+const mapStateToProps = (state) => {
+    return {
+        error: state.login.error
+    }
+};
+
+var LoginReduxForm = reduxForm({
+    form: 'loginForm',
+    fields: ['username', 'password', 'rememberMe'],
+    validate
+})(LoginForm);
+
+var Login = ({username, password, rememberMe, dispatch}) => {
+    function handleLogin() {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: 'POST',
+                url: '/rest/user/login',
+                data: $.param({
+                    username: username,
+                    password: password,
+                    rememberMe: rememberMe
+                })
+            }).done(function (res) {
+                if (res.success === undefined) {
+                    dispatch({type: 'LOGIN'});
+                    resolve();
+                } else {
+                    reject({_error: res.message});
+                }
+            }).fail(function (jqXHR, textStatus) {
+                reject({_error: textStatus});
+            });
+        });
+    }
+
+    return (
+        <div className='login-header'>
+            <Header/>
+            <LoginReduxForm username={username} password={password} rememberMe={rememberMe}
+                            onSubmit={handleLogin}/>
+        </div>
+    );
+};
+export default connect(mapStateToProps)(Login);
