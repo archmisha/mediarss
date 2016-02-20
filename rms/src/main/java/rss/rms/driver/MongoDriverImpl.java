@@ -60,6 +60,16 @@ public class MongoDriverImpl implements MongoDriver {
     }
 
     @Override
+    public void createDatabase() {
+        mongoClient.getDB(database);
+    }
+
+    @Override
+    public void dropDatabase() {
+        mongoClient.dropDatabase(database);
+    }
+
+    @Override
     public <T extends RmsResource> T get(GetResourcesRMSQuery<T> query) {
         MongoDbQueryTranslator queryTranslator = new MongoDbQueryTranslator();
         MongoDbQueryTranslationResult queryTranslationResult = queryTranslator.translateQuery(query.getQueryInfo()/*resourceQueryContainer.getDalQuery()*/);
