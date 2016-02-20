@@ -75,7 +75,9 @@ public class Environment {
         shouldRun = false;
         executorService.shutdown();
         try {
-            watchService.close();
+            if (watchService != null) {
+                watchService.close();
+            }
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }

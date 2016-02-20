@@ -1,7 +1,7 @@
 package rss;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +16,7 @@ public class CacheControlFilter implements Filter {
 
     public static final String ACCEPT_HEADER = "Accept";
     public static final String JSON_CONTENT_TYPE = "application/json";
-    private static Log log = LogFactory.getLog(CacheControlFilter.class);
+    private static Logger log = LogManager.getLogger(CacheControlFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

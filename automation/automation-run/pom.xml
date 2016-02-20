@@ -139,7 +139,7 @@
                                                 <pathelement location="${basedir}/target/deployer.jar"/>
                                             </classpath>
                                             <jvmarg value="-Dlookup.dir=${lookup.dir}"/>
-                                            <jvmarg value="-Dlog4j.configuration=file:${basedir}/src/test/resources/stdout_log4j.properties"/>
+                                            <jvmarg value="-Dlog4j.configurationFile=file:${basedir}/src/test/resources/log4j2.xml"/>
                                         </java>
                                     </target>
                                 </configuration>

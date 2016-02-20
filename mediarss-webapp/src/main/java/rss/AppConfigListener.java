@@ -1,13 +1,12 @@
 package rss;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.Log4jConfigurer;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -38,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * Time: 13:58
  */
 public class AppConfigListener implements ServletContextListener {
-
+    private static Logger LOGGER = LogManager.getLogger(AppConfigListener.class);
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSS");
 
     @Autowired
@@ -51,24 +50,13 @@ public class AppConfigListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        final Logger log = getLogger();
-        try {
-            // no need for /WEB-INF/classes/ prefix
-            File log4jPropsFile = new ClassPathResource("log4j.properties", AppConfigListener.class.getClassLoader()).getFile();
-            String path = log4jPropsFile.getAbsolutePath();
-            Log4jConfigurer.initLogging(path, 30);
-            log.info("Log4j system initialized from " + path);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
         // debug
         WebApplicationContext springContext = WebApplicationContextUtils.getRequiredWebApplicationContext(sce.getServletContext());
-        log.debug("springContext.getId()=" + springContext.getId());
+        LOGGER.debug("springContext.getId()=" + springContext.getId());
         AutowireCapableBeanFactory autowireCapableBeanFactory = springContext.getAutowireCapableBeanFactory();
         autowireCapableBeanFactory.autowireBean(this);
 
-        log.info("Server is started in " + Environment.getInstance().getServerMode() + " mode");
+        LOGGER.info("Server is started in " + Environment.getInstance().getServerMode() + " mode");
 
         Environment.getInstance().setDeploymentDate(getDeploymentDate());
         Environment.getInstance().setStartupDate(new Date());
@@ -96,19 +84,13 @@ public class AppConfigListener implements ServletContextListener {
     }
 
     private void stopMemoryPrinter() {
-        final Logger log = getLogger();
-        log.info("Stopping memory printer task");
+        LOGGER.info("Stopping memory printer task");
         logMemoryExecutorService.shutdown();
         logMemoryExecutorService = null;
     }
 
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(AppConfigListener.class);
-    }
-
     private void startMemoryPrinter() {
-        final Logger log = getLogger();
-        log.info("Starting memory printer task");
+        LOGGER.info("Starting memory printer task");
         logMemoryExecutorService = Executors.newSingleThreadScheduledExecutor();
         logMemoryExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -145,7 +127,6 @@ public class AppConfigListener implements ServletContextListener {
     }
 
     private Date getDeploymentDate() {
-        final Logger log = getLogger();
         Date deployedDate = new Date(); // better than null, even if wrong
         try {
             String databaseProperties = System.getProperty("path-locator.txt");
@@ -170,7 +151,7 @@ public class AppConfigListener implements ServletContextListener {
                 fos.close();
             }
         } catch (Throwable e) {
-            log.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return deployedDate;
     }
@@ -181,8 +162,6 @@ public class AppConfigListener implements ServletContextListener {
             stopMemoryPrinter();
         }
 
-        final Logger log = getLogger();
-
         // shutting spring
         BeanFactory bf = ContextLoader.getCurrentWebApplicationContext();
         if (bf instanceof ConfigurableApplicationContext) {
@@ -192,12 +171,10 @@ public class AppConfigListener implements ServletContextListener {
         Environment.getInstance().shutdown();
 
         try {
-            log.info("Sleeping 1000ms to finish shutting down");
+            LOGGER.info("Sleeping 1000ms to finish shutting down");
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            log.info(e.getMessage(), e);
+            LOGGER.info(e.getMessage(), e);
         }
-
-        Log4jConfigurer.shutdownLogging();
     }
 }

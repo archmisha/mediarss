@@ -1,5 +1,6 @@
 package rss.user.context;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import rss.user.User;
@@ -26,8 +27,10 @@ public class UserContextFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         sc = filterConfig.getServletContext();
-        whiteList = new HashSet<>(Arrays.asList(filterConfig.getInitParameter("urlWhiteList").split(",")));
-    }
+        whiteList = new HashSet<>();
+        if (!StringUtils.isBlank(filterConfig.getInitParameter("urlWhiteList"))) {
+            whiteList.addAll(Arrays.asList(filterConfig.getInitParameter("urlWhiteList").split(",")));
+        }    }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws IOException, ServletException {

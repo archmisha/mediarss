@@ -1,8 +1,8 @@
 package rss.log;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.user.context.UserContext;
@@ -22,25 +22,25 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public void info(Class<?> aClass, String msg) {
-        Logger log = LoggerFactory.getLogger(aClass);
+        Logger log = LogManager.getLogger(aClass);
         log.info(prepareMessage(msg));
     }
 
     @Override
     public void warn(Class<?> aClass, String msg) {
-        Logger log = LoggerFactory.getLogger(aClass);
+        Logger log = LogManager.getLogger(aClass);
         log.warn(prepareMessage(msg));
     }
 
     @Override
     public void warn(Class<?> aClass, String msg, Exception ex) {
-        Logger log = LoggerFactory.getLogger(aClass);
+        Logger log = LogManager.getLogger(aClass);
         log.warn(prepareMessage(msg), ex);
     }
 
     @Override
     public void error(Class<?> aClass, String msg) {
-        Logger log = LoggerFactory.getLogger(aClass);
+        Logger log = LogManager.getLogger(aClass);
         String message = prepareMessage(msg);
         log.error(message);
 
@@ -53,7 +53,7 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public void error(Class<?> aClass, String msg, Exception ex) {
-        Logger log = LoggerFactory.getLogger(aClass);
+        Logger log = LogManager.getLogger(aClass);
         String message = prepareMessage(msg);
         log.error(message, ex);
 
@@ -67,7 +67,7 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public void debug(Class<?> aClass, String msg) {
-        Logger log = LoggerFactory.getLogger(aClass);
+        Logger log = LogManager.getLogger(aClass);
         log.debug(prepareMessage(msg));
     }
 

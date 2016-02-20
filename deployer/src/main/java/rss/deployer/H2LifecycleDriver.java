@@ -1,7 +1,9 @@
 package rss.deployer;
 
+import org.springframework.stereotype.Component;
 import rss.environment.Environment;
 
+import javax.annotation.PostConstruct;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,13 +14,15 @@ import java.util.Properties;
  * User: dikmanm
  * Date: 22/02/2015 10:18
  */
+@Component
 public class H2LifecycleDriver implements LifecycleDriver {
 
-    private final String url;
-    private final String username;
-    private final String password;
+    private String url;
+    private String username;
+    private String password;
 
-    public H2LifecycleDriver() {
+    @PostConstruct
+    public void init() {
         try {
             Properties props = Environment.getInstance().lookup("database.properties");
             String driverClassname = props.getProperty("jdbc.driverClassName");
@@ -34,7 +38,6 @@ public class H2LifecycleDriver implements LifecycleDriver {
 
     @Override
     public void create() {
-
     }
 
     @Override
