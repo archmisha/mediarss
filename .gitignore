@@ -17,3 +17,5 @@ logs/
 
 #ignore thumbnails created by windows
 Thumbs.db
+
+.vagrant

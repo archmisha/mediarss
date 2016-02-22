@@ -107,36 +107,11 @@
                                             <fileset dir="${basedir}/src/test/resources" includes="setenv.bat"/>
                                         </copy>
 
-                                        <echo message="Copy external mediarss jars"/>
-                                        <copy todir="${tomcat.dir}/lib-mediarss">
-                                            <fileset dir="${basedir}/src/test/resources/lib-mediarss" includes="**"/>
-                                        </copy>
-
                                         <echo message="Setup lookup dir"/>
                                         <copy todir="${lookup.dir}">
                                             <fileset dir="${basedir}/src/test/resources/lookup"
                                                      includes="*.properties"/>
                                         </copy>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>run-deployer</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo message="Execute deployer to reset all automation databases"/>
-                                        <java classname="rss.deployer.Deployer" failonerror="true" fork="true">
-                                            <classpath>
-                                                <pathelement path="${basedir}/src/test/resources/lib-mediarss"/>
-                                                <pathelement location="${basedir}/target/deployer.jar"/>
-                                            </classpath>
-                                            <jvmarg value="-Dlookup.dir=${lookup.dir}"/>
-                                            <jvmarg value="-Dlog4j.configurationFile=file:${basedir}/src/test/resources/log4j2.xml"/>
-                                        </java>
                                     </target>
                                 </configuration>
                             </execution>
@@ -209,27 +184,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>copy-deployer</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>copy</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>mediarss</groupId>
-                                            <artifactId>mediarss-deployer</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>jar</type>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
-                                            <destFileName>deployer.jar</destFileName>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <overWriteReleases>false</overWriteReleases>
-                                    <overWriteSnapshots>true</overWriteSnapshots>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>copy-tomcat</id>
                                 <phase>initialize</phase>
