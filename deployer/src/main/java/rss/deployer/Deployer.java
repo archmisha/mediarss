@@ -37,7 +37,9 @@ public class Deployer {
             ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/deployer-context.xml");
             LOGGER.info("Starting executing lifecycle drivers");
             Deployer deployer = context.getBean(Deployer.class);
-            deployer.createEnvironment();
+            if (System.getProperties().containsKey("createEnvironment")) {
+                deployer.createEnvironment();
+            }
             terminate();
             LOGGER.info("Finished executing lifecycle drivers");
         } catch (Exception e) {

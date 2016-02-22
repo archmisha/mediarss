@@ -5,8 +5,8 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.misc.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import rss.commons.query.api.model.*;
 import rss.commons.query.generated.QueryLexer;
 import rss.commons.query.generated.QueryParser;
@@ -22,7 +22,7 @@ import java.util.BitSet;
  */
 class QueryParserImpl implements rss.commons.query.api.QueryParser {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueryParserImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(QueryParserImpl.class);
     private boolean antlrTrace = false;
 
     /**

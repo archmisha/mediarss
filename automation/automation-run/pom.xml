@@ -99,10 +99,6 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <!--<echo message="Unzip tomcat"/>-->
-                                        <!--<unzip src="${basedir}/src/test/resources/tomcat.zip" dest="${tomcat.dir}"/>-->
-                                        <!--<unzip src="${basedir}/target/tomcat.zip" dest="${tomcat.dir}"/>-->
-
                                         <echo message="Copy tomcat conf files"/>
                                         <copy todir="${tomcat.dir}/conf">
                                             <fileset dir="${basedir}/src/test/resources" includes="server.xml"/>

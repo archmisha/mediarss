@@ -1,11 +1,8 @@
 package rss.scheduler;
 
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.FactoryBean;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
@@ -23,7 +20,7 @@ import java.util.Map;
 @Service
 class SchedulerLifecycleManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerLifecycleManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(SchedulerLifecycleManager.class);
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -60,24 +57,14 @@ class SchedulerLifecycleManager {
         for (ScheduledJob job : quartzJobBeans.values()) {
             try {
                 String jobName = job.getName();
+                JobDetail jobDetail = JobBuilder.newJob(ScheduledJobRunner.class)
+                        .withIdentity(jobName)
+                        .usingJobData("jobName", jobName)
+                        .build();
+                Trigger trigger = TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(jobName + "_trigger")
+                        .withSchedule(CronScheduleBuilder.cronSchedule(job.getCronExp())).build();
 
-                CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
-                trigger.setCronExpression(job.getCronExp());
-                trigger.setName(jobName + "_trigger");
-                JobDetailFactoryBean jobDetail = new JobDetailFactoryBean();
-                jobDetail.setName(jobName);
-                jobDetail.setJobClass(ScheduledJobRunner.class);
-                jobDetail.getJobDataMap().put(ScheduledJobRunner.JOB_NAME_PARAMETER, jobName);
-                trigger.setJobDetail(jobDetail.getObject());
-
-//                JobDetail jobDetail = JobBuilder.newJob(ScheduledJobRunner.class)
-//                        .withIdentity(jobName)
-//                        .usingJobData("jobName", jobName)
-//                        .build();
-//                Trigger trigger = TriggerBuilder.newTrigger().forJob(jobDetail).withIdentity(jobName + "_trigger")
-//                        .withSchedule(CronScheduleBuilder.cronSchedule(job.getCronExp())).build();
-
-                scheduler.scheduleJob(jobDetail.getObject(), trigger.getObject());
+                scheduler.scheduleJob(jobDetail, trigger);
                 schedulerService.createJob(jobName);
                 LOGGER.info("Loading scheduled job: " + jobName);
             } catch (Exception e) {

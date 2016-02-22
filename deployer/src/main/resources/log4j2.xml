@@ -9,7 +9,7 @@
         <Root level="error">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="com.perfecto" level="all" additivity="false">
+        <Logger name="rss" level="all" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
     </Loggers>

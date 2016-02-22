@@ -25,12 +25,11 @@ public class H2LifecycleDriver implements LifecycleDriver {
     public void init() {
         try {
             Properties props = Environment.getInstance().lookup("database.properties");
-            String driverClassname = props.getProperty("jdbc.driverClassName");
             url = props.getProperty("jdbc.url");
             username = props.getProperty("jdbc.username");
             password = props.getProperty("jdbc.password");
 
-            Class.forName(driverClassname);
+            Class.forName("org.h2.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
         }

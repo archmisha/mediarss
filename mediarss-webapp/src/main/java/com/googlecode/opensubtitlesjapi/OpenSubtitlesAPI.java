@@ -17,7 +17,8 @@
 
 package com.googlecode.opensubtitlesjapi;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.ws.commons.util.Base64;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -33,7 +34,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class OpenSubtitlesAPI {
 
-	private static final Logger log = Logger.getLogger(OpenSubtitlesAPI.class);
+	private static final Logger log = LogManager.getLogger(OpenSubtitlesAPI.class);
 	private static final String USER_AGENT = "jOSAPI 1.0";
 	//private static final String USER_AGENT = "OS Test User Agent";
 	private static final String END_POINT = "http://api.opensubtitles.org/xml-rpc";

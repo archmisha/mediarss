@@ -1,7 +1,7 @@
 package rss.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MultiThreadExecutor {
 
-    private static final Logger log = LoggerFactory.getLogger(MultiThreadExecutor.class);
+    private static final Logger log = LogManager.getLogger(MultiThreadExecutor.class);
 
     public static <T> void execute(ExecutorService executorService, Collection<T> list, final MultiThreadExecutorTask<T> task) {
         for (final T element : list) {

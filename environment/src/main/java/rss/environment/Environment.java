@@ -1,8 +1,9 @@
 package rss.environment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileReader;
@@ -22,7 +23,7 @@ public class Environment {
 
     public static final String SETTINGS_FILENAME = "settings.properties";
     public static final String ADMIN_DEFAULT_EMAIL = "archmisha@gmail.com";
-    private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
+    private static final Logger LOGGER = LogManager.getLogger(Environment.class);
     private static Environment instance;
 
     private Date deploymentDate;
@@ -294,7 +295,7 @@ public class Environment {
             }
             logMemory = "true".equals(prop.getProperty("log.memory"));
             tvComPagesToDownload = Integer.parseInt(prop.getProperty("tvcom.pages.to.download"));
-            webPort = Integer.parseInt(prop.getProperty("web.port"));
+            webPort = NumberUtils.toInt(prop.getProperty("web.port"), 8080);
             areSubtitlesEnabled = "true".equals(prop.getProperty("subtitles"));
             useWebProxy = "true".equals(prop.getProperty("webproxy"));
             trackerUrl = prop.getProperty("tracker.url");

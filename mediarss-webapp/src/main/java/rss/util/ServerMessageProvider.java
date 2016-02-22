@@ -1,6 +1,7 @@
 package rss.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -14,7 +15,7 @@ import java.util.ResourceBundle;
  */
 public class ServerMessageProvider {
 	private static final String PROPS_NAME = "rss.ServerMessages";
-	private static Logger LOG = Logger.getLogger(ServerMessageProvider.class.getName());
+	private static Logger LOG = LogManager.getLogger(ServerMessageProvider.class.getName());
 
 	private static ServerMessageProvider _instance = null;
 	private static HashMap<Locale, ResourceBundle> rbMap = new HashMap<Locale, ResourceBundle>();

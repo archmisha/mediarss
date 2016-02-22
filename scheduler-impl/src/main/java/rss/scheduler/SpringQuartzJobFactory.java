@@ -22,7 +22,7 @@ class SpringQuartzJobFactory extends SpringBeanJobFactory {
     @Override
     protected Object createJobInstance(TriggerFiredBundle bundle) throws Exception {
         @SuppressWarnings("unchecked")
-        Job job = ctx.<Job>getBean(bundle.getJobDetail().getJobClass());
+        Job job = ctx.<Job>getBean(bundle.getJobDetail().getJobClass().getName(), Job.class);
 //        Job job = ctx.getBean(bundle.getJobDetail().getJobClass());
         BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(job);
         MutablePropertyValues pvs = new MutablePropertyValues();

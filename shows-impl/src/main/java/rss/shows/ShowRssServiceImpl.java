@@ -1,8 +1,7 @@
 package rss.shows;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.PageDownloader;
@@ -23,7 +22,7 @@ import java.util.regex.Pattern;
 @Service
 public class ShowRssServiceImpl implements ShowRssService {
 
-    private static Logger log = LoggerFactory.getLogger(ShowRssServiceImpl.class);
+    private static Logger log = LogManager.getLogger(ShowRssServiceImpl.class);
 
     public static final String SHOWRSS_HOSTNAME = "showrss.karmorra.info";
     public static final Pattern SHOW_ENTRY = Pattern.compile("<div class=\"showentry\">.*?\">([^>]*?)</a></div>");

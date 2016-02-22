@@ -2,7 +2,9 @@ package rss.environment;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
 
@@ -12,11 +14,10 @@ import javax.servlet.ServletContext;
  * Time: 22:30
  */
 @Service
-public class UrlServiceImpl implements UrlService {
+public class UrlServiceImpl implements UrlService, ServletContextAware {
 
     public static final String APP_URL = "http://%s:%d/%s";
 
-    @Autowired
     private ServletContext servletContext;
 
     @Override
@@ -40,5 +41,10 @@ public class UrlServiceImpl implements UrlService {
 
     private String getRootContext() {
         return servletContext.getContextPath();
+    }
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
     }
 }

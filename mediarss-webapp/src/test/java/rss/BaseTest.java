@@ -1,10 +1,9 @@
 package rss;
 
+import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
 import org.mockito.Mock;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.Log4jConfigurer;
 import rss.log.LogService;
 
 import java.io.File;
@@ -33,8 +32,7 @@ public class BaseTest {
             // no need for /WEB-INF/classes/ prefix
             File log4jPropsFile = new ClassPathResource("test-log4j.properties", BaseTest.class.getClassLoader()).getFile();
             String path = log4jPropsFile.getAbsolutePath();
-            Log4jConfigurer.initLogging(path, 30);
-            LoggerFactory.getLogger(AppConfigListener.class).info("Log4j system initialized from " + path);
+            LogManager.getLogger(AppConfigListener.class).info("Log4j system initialized from " + path);
         } catch (Throwable e) {
             e.printStackTrace();
         }

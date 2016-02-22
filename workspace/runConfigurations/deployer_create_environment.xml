@@ -1,0 +1,29 @@
+<component name="ProjectRunConfigurationManager">
+	<configuration default="false" name="Deployer - crete environment" type="MavenRunConfiguration" factoryName="Maven">
+		<MavenSettings>
+			<option name="myGeneralSettings" />
+			<option name="myRunnerSettings" />
+			<option name="myRunnerParameters">
+				<MavenRunnerParameters>
+					<option name="profiles">
+						<set />
+					</option>
+					<option name="goals">
+						<list>
+							<option value="-Dlookup.dir=../automation/automation-run/src/test/resources/lookup" />
+							<option value="verify" />
+						</list>
+					</option>
+					<option name="profilesMap">
+						<map>
+							<entry key="create-environment" value="true" />
+						</map>
+					</option>
+					<option name="resolveToWorkspace" value="false" />
+					<option name="workingDirPath" value="$PROJECT_DIR$/deployer" />
+				</MavenRunnerParameters>
+			</option>
+		</MavenSettings>
+		<method />
+	</configuration>
+</component>
