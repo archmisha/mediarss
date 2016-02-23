@@ -271,6 +271,12 @@
                 <artifactId>log4j-core</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-web</artifactId>
+                <version>${log4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <!-- bridge from log4j2 to slf4j-->
             <!--<dependency>-->
                 <!--<groupId>org.slf4j</groupId>-->
