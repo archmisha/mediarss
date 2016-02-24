@@ -13,3 +13,15 @@ services:
      - "27017:27017"
     volumes:
      - /docker_data/mongodb-data:/data/db
+  tomcat:
+    image: archmisha/mediarss_tomcat
+	ports:
+	 - "80:8080"
+	expose:
+	 - "80"
+	volumes:
+	 - /docker_data/tomcat-data:/usr/local/tomcat/logs
+	links:
+	 - mongodb:mongohost
+	 - h2:h2host
+	
