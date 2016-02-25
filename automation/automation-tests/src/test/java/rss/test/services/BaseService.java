@@ -133,7 +133,7 @@ public class BaseService {
             if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN) {
                 throw new NoPermissionsException("Request '" + httpRequest.getURI().toString() + "'");
             } else if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new RuntimeException("Request failed with status: " + httpResponse.getStatusLine());
+                throw new RuntimeException("Request " + httpRequest.getURI().toString() + " failed with status: " + httpResponse.getStatusLine());
             }
 
             extractJSessionId(httpResponse);
