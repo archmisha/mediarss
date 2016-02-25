@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>mediarss</groupId>
+    <artifactId>mediarss-backend</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <parent>
+        <groupId>mediarss</groupId>
+        <artifactId>mediarss</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <modules>
+        <module>automation</module>
+        <module>mediarss-webapp</module>
+        <module>deployer</module>
+        <module>rms</module>
+        <module>common-utils</module>
+        <module>user-context</module>
+        <module>environment</module>
+        <module>ems</module>
+        <module>shows-api</module>
+        <module>shows-impl</module>
+        <module>mail-api</module>
+        <module>mail-impl</module>
+        <module>permission-service</module>
+        <module>scheduler-api</module>
+        <module>scheduler-impl</module>
+        <module>trakt</module>
+        <module>page-downloader</module>
+        <module>torrents-api</module>
+        <module>torrents-impl</module>
+        <module>movies-impl</module>
+        <module>movies-api</module>
+        <module>user-management-api</module>
+        <module>subtitles-api</module>
+        <module>subtitles-impl</module>
+        <module>user-management-impl</module>
+        <module>cache-api</module>
+        <module>cache-impl</module>
+        <module>configuration-api</module>
+        <module>configuration-impl</module>
+        <module>logging-api</module>
+        <module>logging-impl</module>
+        <module>news-api</module>
+        <module>news-impl</module>
+    </modules>
+
+</project>
