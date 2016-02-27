@@ -382,7 +382,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.6</version>
                         <executions>
-                            <execution>
+                            <!--<execution>
                                 <id>optimize</id>
                                 <phase>compile</phase>
                                 <goals>
@@ -404,7 +404,7 @@
                                         </java>
                                     </target>
                                 </configuration>
-                            </execution>
+                            </execution>-->
                             <execution>
                                 <id>copy</id>
                                 <phase>compile</phase>
@@ -419,8 +419,8 @@
                                               tofile="${webappDirectory}/jsp/main.jsp"/>
                                         <copy file="${basedir}/src/main/webapp/js/lib/require.js"
                                               tofile="${webappDirectory}/require.js"/>
-                                        <copy file="${project.build.directory}/require-web-1.0/scripts/js/main.js"
-                                              tofile="${webappDirectory}/main.js"/>
+                                        <!--<copy file="${project.build.directory}/require-web-1.0/scripts/js/main.js"
+                                              tofile="${webappDirectory}/main.js"/>-->
                                     </target>
                                 </configuration>
                                 <goals>

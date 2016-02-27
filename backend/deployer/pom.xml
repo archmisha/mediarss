@@ -10,7 +10,7 @@
 
     <parent>
         <groupId>mediarss</groupId>
-        <artifactId>mediarss</artifactId>
+        <artifactId>mediarss-backend</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
