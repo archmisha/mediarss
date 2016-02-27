@@ -367,25 +367,6 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-
-        <plugins>
-            <!--<plugin>-->
-            <!--<groupId>com.keyboardsamurais.maven</groupId>-->
-            <!--<artifactId>maven-timestamp-plugin</artifactId>-->
-            <!--<version>1.0</version>-->
-            <!--<configuration>-->
-            <!--<propertyName>timestamp</propertyName>-->
-            <!--<timestampPattern>yyyy-MM-dd_HH-mm</timestampPattern>-->
-            <!--</configuration>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<goals>-->
-            <!--<goal>create</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
-        </plugins>
     </build>
 
     <profiles>
@@ -657,6 +638,9 @@
                                 </manifestEntries>
                             </archive>
                             <webappDirectory>${webappDirectory}</webappDirectory>
+                            <packagingExcludes>
+                                node_modules/**
+                            </packagingExcludes>
                         </configuration>
                     </plugin>
                 </plugins>

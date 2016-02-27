@@ -48,7 +48,7 @@ public class Environment {
             @Override
             public void run() {
                 try {
-                    watchFile(new File(System.getProperty("lookup.dir")).getAbsolutePath(), SETTINGS_FILENAME);
+                    watchFile(new File(lookupDir).getAbsolutePath(), SETTINGS_FILENAME);
                 } catch (Exception e) {
                     if (shouldRun) {
                         LOGGER.error(String.format("Failed setting up file watcher for %s: %s", SETTINGS_FILENAME, e.getMessage()), e);
@@ -88,6 +88,8 @@ public class Environment {
         LOGGER.info("Loading " + SETTINGS_FILENAME + " file");
         try {
             Properties prop = lookup(SETTINGS_FILENAME);
+            Properties envProps = lookup("settings." + getServerMode().name().toLowerCase() + ".properties");
+            prop.putAll(envProps);
             settingsBean = new SettingsBean(prop);
         } catch (Exception e) {
             LOGGER.error("Failed loading " + SETTINGS_FILENAME + ": " + e.getMessage(), e);
@@ -197,17 +199,16 @@ public class Environment {
     }
 
     public ServerMode getServerMode() {
-        // if there is a system property use it, fallback to settings
+        ServerMode result = ServerMode.PROD;
         String value = System.getProperty("server.mode");
         try {
-            if (value == null) {
-                return settingsBean.getServerMode();
-            } else {
-                return ServerMode.valueOf(value);
+            if (value != null) {
+                result = ServerMode.valueOf(value);
             }
         } catch (IllegalArgumentException e) {
-            return settingsBean.getServerMode();
+            // nothing
         }
+        return result;
     }
 
     public String getServerHostUrl() {
@@ -300,7 +301,7 @@ public class Environment {
             useWebProxy = "true".equals(prop.getProperty("webproxy"));
             trackerUrl = prop.getProperty("tracker.url");
             torrentDownloadedPath = prop.getProperty("torrent.downloaded.path");
-            webRootContext = prop.getProperty("web.root.context");
+            webRootContext = prop.getProperty("web.root.context", "");
             torrentWatchPath = prop.getProperty("torrent.watch.path");
             alternativeResourcesPath = prop.getProperty("alternative.resources.path");
             imagesPath = prop.getProperty("images.path");
@@ -388,14 +389,6 @@ public class Environment {
 
         public String getImagesPath() {
             return imagesPath;
-        }
-
-        public ServerMode getServerMode() {
-            String value = prop.getProperty("server.mode");
-            if (StringUtils.isBlank(value)) {
-                value = "dev";
-            }
-            return ServerMode.valueOf(value.toUpperCase());
         }
     }
 }
