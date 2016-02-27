@@ -401,7 +401,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.6</version>
                         <executions>
-                            <execution>
+                            <!--<execution>
                                 <id>optimize</id>
                                 <phase>compile</phase>
                                 <goals>
@@ -423,7 +423,7 @@
                                         </java>
                                     </target>
                                 </configuration>
-                            </execution>
+                            </execution>-->
                             <execution>
                                 <id>copy</id>
                                 <phase>compile</phase>
