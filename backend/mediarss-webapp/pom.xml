@@ -438,8 +438,8 @@
                                               tofile="${webappDirectory}/jsp/main.jsp"/>
                                         <copy file="${basedir}/src/main/webapp/js/lib/require.js"
                                               tofile="${webappDirectory}/require.js"/>
-                                        <copy file="${project.build.directory}/require-web-1.0/scripts/js/main.js"
-                                              tofile="${webappDirectory}/main.js"/>
+                                        <!--<copy file="${project.build.directory}/require-web-1.0/scripts/js/main.js"
+                                              tofile="${webappDirectory}/main.js"/>-->
                                     </target>
                                 </configuration>
                                 <goals>
