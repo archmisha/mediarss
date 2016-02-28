@@ -446,6 +446,11 @@
                     <version>2.7</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.5.1</version>
+                </plugin>
+                <plugin>
                     <groupId>com.google.code.maven-replacer-plugin</groupId>
                     <artifactId>replacer</artifactId>
                     <version>1.5.3</version>
