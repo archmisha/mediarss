@@ -11,4 +11,3 @@
         - h2:h2host
       environmant:
         - CATALINA_OPTS=%CATALINA_OPTS% "-Dlookup.dir=/usr/local/lookup -Dserver.mode=%SERVER_MODE%" -XX:MaxPermSize=256m
-	
