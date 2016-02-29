@@ -1,14 +1,14 @@
   tomcat:
     image: archmisha/mediarss_tomcat
-	ports:
-	 - "80:8080"
-	expose:
-	 - "80"
-	volumes:
-	 - /docker_data/tomcat-data:/usr/local/tomcat/logs
-	links:
-	 - mongodb:mongohost
-	 - h2:h2host
-	environmant:
-	 - CATALINA_OPTS=%CATALINA_OPTS% "-Dlookup.dir=/usr/local/lookup -Dserver.mode=%SERVER_MODE%" -XX:MaxPermSize=256m
+      ports:
+        - "80:8080"
+      expose:
+        - "80"
+      volumes:
+        - /docker_data/tomcat-data:/usr/local/tomcat/logs
+      links:
+        - mongodb:mongohost
+        - h2:h2host
+      environmant:
+        - CATALINA_OPTS=%CATALINA_OPTS% "-Dlookup.dir=/usr/local/lookup -Dserver.mode=%SERVER_MODE%" -XX:MaxPermSize=256m
 	
