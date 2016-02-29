@@ -13,4 +13,3 @@ services:
      - "27017:27017"
     volumes:
      - /docker_data/mongodb-data:/data/db
-	
