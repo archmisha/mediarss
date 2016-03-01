@@ -1,3 +1,5 @@
+version: "2"
+services:
   tomcat:
     image: archmisha/mediarss_tomcat
       ports:
