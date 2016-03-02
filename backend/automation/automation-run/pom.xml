@@ -115,9 +115,8 @@
                                 <configuration>
                                     <target>
                                         <echo message="Start Tomcat"/>
-                                        <exec dir="${tomcat.dir}/bin" executable="cmd">
-                                            <arg value="/c"/>
-                                            <arg line="startup.bat"/>
+                                        <exec dir="${tomcat.dir}/bin" executable="bash">
+                                            <arg line="startup.sh"/>
                                         </exec>
                                     </target>
                                 </configuration>
@@ -131,9 +130,8 @@
                                 <configuration>
                                     <target>
                                         <echo message="Stop Tomcat"/>
-                                        <exec dir="${tomcat.dir}/bin" executable="cmd">
-                                            <arg value="/c"/>
-                                            <arg line="shutdown.bat"/>
+                                        <exec dir="${tomcat.dir}/bin" executable="bash">
+                                            <arg line="shutdown.sh"/>
                                         </exec>
                                     </target>
                                 </configuration>
