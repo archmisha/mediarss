@@ -15,8 +15,8 @@
     </parent>
 
     <properties>
-        <server.port>9065</server.port>
-        <lookup.dir>${basedir}/target/lookup</lookup.dir>
+        <server.port>80</server.port>
+        <server.automation.port>9065</server.automation.port>
         <tomcat.version>8.0.30</tomcat.version>
         <tomcat.dir>${basedir}/target/apache-tomcat-${tomcat.version}</tomcat.dir>
     </properties>
@@ -103,15 +103,6 @@
                                         <copy todir="${tomcat.dir}/conf">
                                             <fileset dir="${basedir}/src/test/resources" includes="server.xml"/>
                                         </copy>
-                                        <copy todir="${tomcat.dir}/bin">
-                                            <fileset dir="${basedir}/src/test/resources" includes="setenv.bat"/>
-                                        </copy>
-
-                                        <echo message="Setup lookup dir"/>
-                                        <copy todir="${lookup.dir}">
-                                            <fileset dir="${basedir}/src/test/resources/lookup"
-                                                     includes="*.properties"/>
-                                        </copy>
                                     </target>
                                 </configuration>
                             </execution>
@@ -162,18 +153,12 @@
                                 <configuration>
                                     <regex>false</regex>
                                     <filesToInclude>
-                                        ${lookup.dir}/settings.properties,
                                         ${tomcat.dir}/conf/server.xml,
-                                        ${tomcat.dir}/bin/setenv.bat
                                     </filesToInclude>
                                     <replacements>
                                         <replacement>
                                             <token>$TOMCAT-PORT$</token>
                                             <value>${server.port}</value>
-                                        </replacement>
-                                        <replacement>
-                                            <token>$LOOKUP_DIR$</token>
-                                            <value>${lookup.dir}</value>
                                         </replacement>
                                     </replacements>
                                 </configuration>
@@ -198,25 +183,6 @@
                                             <version>${tomcat.version}</version>
                                             <type>zip</type>
                                             <outputDirectory>${project.build.directory}</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>copy-mediarss-war</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>mediarss</groupId>
-                                            <artifactId>mediarss-webapp</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>war</type>
-                                            <outputDirectory>${tomcat.dir}/webapps/ROOT
-                                            </outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
@@ -272,7 +238,7 @@
                                     <goal>verify</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Dfile.encoding=UTF-8 -Dserver.port=${server.port}</argLine>
+                                    <argLine>-Dfile.encoding=UTF-8 -Dserver.port=${server.port} -Dserver.automation.port=${server.automation.port}</argLine>
                                     <includes>
                                         <group></group>
                                         <include>rss/test/tests/**/*Test.java</include>
