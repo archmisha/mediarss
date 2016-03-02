@@ -7,20 +7,20 @@ MAINTAINER Docker
 
 # Installation:
 # Import MongoDB public GPG key AND create a MongoDB list file
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-RUN echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 &&
+ echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.0.list &&
 
 # Update apt-get sources AND install MongoDB
-RUN apt-get update -o Acquire::http::No-Cache=true
-RUN apt-key del 16126D3A3E5C1192
-RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
-RUN apt-get upgrade -y --force-yes -qq
-RUN apt-get update -o Acquire::http::No-Cache=true
+ apt-get update -o Acquire::http::No-Cache=true &&
+ apt-key del 16126D3A3E5C1192 &&
+ apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192 &&
+ apt-get upgrade -y --force-yes -qq &&
+ apt-get update -o Acquire::http::No-Cache=true &&
 
-RUN apt-get install -y mongodb-org
+ apt-get install -y mongodb-org &&
 
 # Create the MongoDB data directory
-RUN mkdir -p /data/db
+ mkdir -p /data/db
 
 # Expose port #27017 from the container to the host
 EXPOSE 27017
