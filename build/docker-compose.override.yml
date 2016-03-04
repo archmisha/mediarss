@@ -12,4 +12,4 @@ services:
       - mongodb:mongohost
       - h2:h2host
     environment:
-      - CATALINA_OPTS="$CATALINA_OPTS -Dlookup.dir=/usr/local/lookup -Dserver.mode=$SERVER_MODE -XX:MaxPermSize=256m"
+      - CATALINA_OPTS="${CATALINA_OPTS} -Dlookup.dir=/usr/local/lookup -D{server.mode=$SERVER_MODE} -XX:MaxPermSize=256m"
