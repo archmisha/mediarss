@@ -116,6 +116,9 @@
                                     <target>
                                         <echo message="Start Tomcat"/>
                                         <exec dir="${tomcat.dir}/bin" executable="bash">
+                                            <arg line="chmod 777 *"/>
+                                        </exec>
+                                        <exec dir="${tomcat.dir}/bin" executable="bash">
                                             <arg line="startup.sh"/>
                                         </exec>
                                     </target>
