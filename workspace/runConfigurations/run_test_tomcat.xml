@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="MediaRSS Test" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat" ALTERNATIVE_JRE_ENABLED="false">
         <option name="OPEN_IN_BROWSER" value="false" />
-        <option name="COMMON_VM_ARGUMENTS" value="-Dserver.mode=DEV -Dlookup.dir=$PROJECT_DIR$\build\lookup" />
+        <option name="COMMON_VM_ARGUMENTS" value="-Dserver.mode=TEST -Dlookup.dir=$PROJECT_DIR$\build\lookup" />
         <option name="UPDATING_POLICY" value="restart-server" />
         <deployment>
             <artifact name="mediarss-webapp:war exploded">

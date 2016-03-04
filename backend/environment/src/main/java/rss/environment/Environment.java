@@ -85,11 +85,15 @@ public class Environment {
     }
 
     private void loadSettingsFile() {
-        LOGGER.info("Loading " + SETTINGS_FILENAME + " file");
         try {
+            LOGGER.info("Loading " + SETTINGS_FILENAME + " file");
             Properties prop = lookup(SETTINGS_FILENAME);
-            Properties envProps = lookup("settings." + getServerMode().name().toLowerCase() + ".properties");
+
+            String serverModeSettingsFilename = "settings." + getServerMode().name().toLowerCase() + ".properties";
+            LOGGER.info("Loading " + serverModeSettingsFilename + " file");
+            Properties envProps = lookup(serverModeSettingsFilename);
             prop.putAll(envProps);
+
             settingsBean = new SettingsBean(prop);
         } catch (Exception e) {
             LOGGER.error("Failed loading " + SETTINGS_FILENAME + ": " + e.getMessage(), e);
@@ -208,6 +212,7 @@ public class Environment {
         } catch (IllegalArgumentException e) {
             // nothing
         }
+        LOGGER.info("Server mode {} detected", result);
         return result;
     }
 
