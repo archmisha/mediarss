@@ -33,18 +33,14 @@ public class Deployer {
     }
 
     public static void main(String[] args) {
-        try {
-            ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/deployer-context.xml");
-            LOGGER.info("Starting executing lifecycle drivers");
-            Deployer deployer = context.getBean(Deployer.class);
-            if (System.getProperties().containsKey("createEnvironment")) {
-                deployer.createEnvironment();
-            }
-            terminate();
-            LOGGER.info("Finished executing lifecycle drivers");
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage() + ": " + ExceptionUtils.getStackTrace(e));
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/deployer-context.xml");
+        LOGGER.info("Starting executing lifecycle drivers");
+        Deployer deployer = context.getBean(Deployer.class);
+        if (System.getProperties().containsKey("createEnvironment")) {
+            deployer.createEnvironment();
         }
+        terminate();
+        LOGGER.info("Finished executing lifecycle drivers");
     }
 
     // copied form AppConfigListener
