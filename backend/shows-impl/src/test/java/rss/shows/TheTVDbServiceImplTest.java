@@ -13,7 +13,7 @@ import rss.rms.RmsOperationsFactory;
 import rss.rms.RmsResource;
 import rss.rms.operation.get.GetResourcesRMSQuery;
 import rss.rms.query.RmsQueryInformation;
-import rss.rms.query.builder.RmsQueryBuilder;
+import rss.rms.query.RmsQueryBuilder;
 import rss.shows.dao.ShowDao;
 import rss.shows.dao.ShowImpl;
 import rss.shows.providers.ShowData;
@@ -232,7 +232,7 @@ public class TheTVDbServiceImplTest {
         RmsQueryBuilder rmsQueryBuilder = mocksControl.createMock(RmsQueryBuilder.class);
         expect(rmsQueryBuilder.getRmsQueryInformation()).andReturn(mocksControl.createMock(RmsQueryInformation.class));
         expect(factoryMock.createRmsQueryBuilder()).andReturn(rmsQueryBuilder);
-        expect(rmsServiceMock.apiFactory()).andReturn(factoryMock).anyTimes();
+        expect(rmsServiceMock.factory()).andReturn(factoryMock).anyTimes();
         expect(rmsServiceMock.get(getResourcesRmsQueryMock)).andReturn(result);
     }
 

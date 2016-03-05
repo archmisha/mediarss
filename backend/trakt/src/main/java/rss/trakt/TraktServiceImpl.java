@@ -1,6 +1,7 @@
 package rss.trakt;
 
 import com.google.gson.annotations.SerializedName;
+import com.mongodb.client.model.Filters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rss.PageDownloader;
@@ -78,12 +79,12 @@ public class TraktServiceImpl implements TraktService {
 
     @Override
     public void disconnectUser(long userId) {
-        rmsService.delete(rmsService.apiFactory().createDeleteResourceOperation(TraktAuthJson.class, getQueryInfoForUser(userId)));
+        rmsService.delete(rmsService.factory().createDeleteResourceOperation(TraktAuthJson.class, getQueryInfoForUser(userId)));
     }
 
     private RmsQueryInformation getQueryInfoForUser(long userId) {
-        return rmsService.apiFactory().createRmsQueryBuilder()
-                .filter().equal("userId", userId).done().getRmsQueryInformation();
+        return rmsService.factory().createRmsQueryBuilder()
+                .filter(Filters.eq("userId", userId)).getRmsQueryInformation();
     }
 
     @Override
@@ -100,7 +101,8 @@ public class TraktServiceImpl implements TraktService {
     }
 
     private TraktAuthJson getTraktAuthJson(long userId) {
-        return rmsService.get(rmsService.apiFactory().createGetResourceOperation(TraktAuthJson.class, getQueryInfoForUser(userId)));
+        return rmsService.get(rmsService.factory()
+                .createGetResourceOperation(TraktAuthJson.class, getQueryInfoForUser(userId)));
     }
 
     private class TraktAuthTokenResponse {

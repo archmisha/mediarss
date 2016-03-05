@@ -1,26 +1,32 @@
 package rss.rms.driver;
 
-import com.mongodb.*;
+import com.mongodb.Block;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.util.JSON;
-import org.apache.commons.lang3.*;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import rss.environment.Environment;
 import rss.rms.RmsResource;
 import rss.rms.driver.transformer.MongoObjectTransformerProvider;
 import rss.rms.operation.delete.DeleteResourceRMSOperation;
 import rss.rms.operation.get.GetResourcesRMSQuery;
-import rss.rms.query.translator.MongoDbQueryTranslationResult;
-import rss.rms.query.translator.MongoDbQueryTranslator;
+import rss.rms.query.FilterInformation;
+import rss.rms.query.RmsQueryInformation;
 import rss.util.JsonTranslation;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User: dikmanm
@@ -29,39 +35,15 @@ import java.util.*;
 @Service
 public class MongoDriverImpl implements MongoDriver {
 
+    @Autowired
     private MongoClient mongoClient;
+
+    @Value("${mongodb.database}")
     private String database;
-
-    @PostConstruct
-    private void postConstruct() {
-        try {
-            Properties props = Environment.getInstance().lookup("mongodb.properties");
-
-            String hostname = props.getProperty("mongodb.host");
-            Integer port = Integer.valueOf(props.getProperty("mongodb.port"));
-            database = props.getProperty("mongodb.database");
-            String username = props.getProperty("mongodb.username");
-            String password = props.getProperty("mongodb.password");
-
-            if (StringUtils.isBlank(username)) {
-                mongoClient = new MongoClient(new ServerAddress(hostname, port));
-            } else {
-                MongoCredential credential = MongoCredential.createMongoCRCredential(username, "admin", password.toCharArray());
-                mongoClient = new MongoClient(new ServerAddress(hostname, port), Collections.singletonList(credential));
-            }
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Failed initializing a connection to the mongodb server: " + e.getMessage(), e);
-        }
-    }
-
-    @PreDestroy
-    private void preDestroy() {
-        mongoClient.close();
-    }
 
     @Override
     public void createDatabase() {
-        mongoClient.getDB(database);
+        mongoClient.getDatabase(database);
     }
 
     @Override
@@ -71,76 +53,84 @@ public class MongoDriverImpl implements MongoDriver {
 
     @Override
     public <T extends RmsResource> T get(GetResourcesRMSQuery<T> query) {
-        MongoDbQueryTranslator queryTranslator = new MongoDbQueryTranslator();
-        MongoDbQueryTranslationResult queryTranslationResult = queryTranslator.translateQuery(query.getQueryInfo()/*resourceQueryContainer.getDalQuery()*/);
-
-        DBCollection dbCollection = getDbCollection(query.getResourceClass());
-        DBObject dbObject = dbCollection.findOne(queryTranslationResult.getFilter(), queryTranslationResult.getLayout(), queryTranslationResult.getOrder());
-        if (dbObject == null) {
+        RmsQueryInformation queryInfo = query.getQueryInfo();
+        MongoCollection<Document> dbCollection = getDbCollection(query.getResourceClass());
+        FindIterable<Document> dbCursor = dbCollection.find(queryInfo.getFilterInformation().getFilterDescriptor());
+//        dbCursor.projection(queryInfo.getLayout());
+        if (queryInfo.getOrderInformation() != null) {
+            dbCursor.sort(Sorts.orderBy(queryInfo.getOrderInformation().getOrderDescriptors()));
+        }
+        final List<Document> result = new ArrayList<>();
+        dbCursor.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                result.add(document);
+            }
+        });
+        if (result.isEmpty()) {
             return null;
         }
-        return dbObjectToObject(query.getResourceClass(), dbObject);
+        return dbObjectToObject(query.getResourceClass(), result.get(0));
     }
 
     @Override
-    public <T extends RmsResource> List<T> getCollection(GetResourcesRMSQuery<T> query) {
-        MongoDbQueryTranslator queryTranslator = new MongoDbQueryTranslator();
-        MongoDbQueryTranslationResult queryTranslationResult = queryTranslator.translateQuery(query.getQueryInfo()/*resourceQueryContainer.getDalQuery()*/);
+    public <T extends RmsResource> List<T> getCollection(final GetResourcesRMSQuery<T> query) {
+        RmsQueryInformation queryInfo = query.getQueryInfo();
+        MongoCollection<Document> dbCollection = getDbCollection(query.getResourceClass());
+        FindIterable<Document> dbCursor = dbCollection.find(queryInfo.getFilterInformation().getFilterDescriptor());
+//        dbCursor.projection(queryInfo.getLayout());
 
-        List<T> result = new ArrayList<>();
-        DBCollection dbCollection = getDbCollection(query.getResourceClass());
-        DBCursor dbCursor = dbCollection.find(queryTranslationResult.getFilter(), queryTranslationResult.getLayout());
-        while (dbCursor.hasNext()) {
-            DBObject dbObject = dbCursor.next();
-            result.add(dbObjectToObject(query.getResourceClass(), dbObject));
-        }
-
+        final List<T> result = new ArrayList<>();
+        dbCursor.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                result.add(dbObjectToObject(query.getResourceClass(), document));
+            }
+        });
         return result;
     }
 
     @Override
     public <T extends RmsResource> String insert(T rmsResource, Class<T> clazz) {
-        DBCollection dbCollection = getDbCollection(clazz);
-        DBObject dbObject = objectToDbObject(rmsResource);
-        dbCollection.insert(dbObject);
+        MongoCollection<Document> dbCollection = getDbCollection(clazz);
+        Document dbObject = objectToDbObject(rmsResource);
+        dbCollection.insertOne(dbObject);
         return dbObject.get(MongoDriver.MONGO_RESOURCE_ID).toString();
     }
 
     @Override
     public <T extends RmsResource> void update(T rmsResource, Class<T> clazz) {
-        DBCollection dbCollection = getDbCollection(clazz);
-        DBObject dbObject = objectToDbObject(rmsResource);
-        dbCollection.update(queryById(getObjectId(dbObject)), dbObject);
+        MongoCollection<Document> dbCollection = getDbCollection(clazz);
+        Document dbObject = objectToDbObject(rmsResource);
+        dbCollection.replaceOne(queryById(getObjectId(dbObject)), dbObject);
     }
 
     @Override
     public <T extends RmsResource> void delete(DeleteResourceRMSOperation<T> operation) {
-        MongoDbQueryTranslator queryTranslator = new MongoDbQueryTranslator();
-        DBObject filterTranslationResult = queryTranslator.translateFilter(operation.getFilterInformation());
-
-        DBCollection dbCollection = getDbCollection(operation.getResourceClass());
-        dbCollection.remove(filterTranslationResult);
+        FilterInformation filterInfo = operation.getFilterInformation();
+        MongoCollection<Document> dbCollection = getDbCollection(operation.getResourceClass());
+        dbCollection.deleteMany(filterInfo.getFilterDescriptor());
     }
 
-    private <T extends RmsResource> DBObject objectToDbObject(T rmsResource) {
-        DBObject dbObject = new BasicDBObject(objectToMap(rmsResource));
+    private <T extends RmsResource> Document objectToDbObject(T rmsResource) {
+        Document dbObject = new Document(objectToMap(rmsResource));
         dbObject = MongoObjectTransformerProvider.INSTANCE.getResourceIdToMongoIdObjectTransformer().transform(dbObject);
         return dbObject;
     }
 
-    private <T extends RmsResource> T dbObjectToObject(Class<T> traktAuthJsonClass, DBObject dbObject) {
+    private <T extends RmsResource> T dbObjectToObject(Class<T> clazz, Document dbObject) {
         dbObject = MongoObjectTransformerProvider.INSTANCE.getMongoIdToResourceIdObjectTransformer().transform(dbObject);
         String dbObjectJson = JSON.serialize(dbObject);
-        return JsonTranslation.jsonString2Object(dbObjectJson, traktAuthJsonClass);
+        return JsonTranslation.jsonString2Object(dbObjectJson, clazz);
     }
 
-    private <T extends RmsResource> DBCollection getDbCollection(Class<T> traktAuthJsonClass) {
-        DB db = getDb();
-        return db.getCollection(traktAuthJsonClass.getSimpleName());
+    private <T extends RmsResource> MongoCollection<Document> getDbCollection(Class<T> clazz) {
+        MongoDatabase db = getDb();
+        return db.getCollection(clazz.getSimpleName());
     }
 
-    private DB getDb() {
-        return mongoClient.getDB(database);
+    private MongoDatabase getDb() {
+        return mongoClient.getDatabase(database);
     }
 
     private <T extends RmsResource> Map objectToMap(T obj) {
@@ -156,11 +146,11 @@ public class MongoDriverImpl implements MongoDriver {
      * @param objectId The id of the resource to query by
      * @return A {@link DBObject} representing a query by id
      */
-    private DBObject queryById(ObjectId objectId) {
-        return new BasicDBObject(MongoDriver.MONGO_RESOURCE_ID, objectId);
+    private Document queryById(ObjectId objectId) {
+        return new Document(MongoDriver.MONGO_RESOURCE_ID, objectId);
     }
 
-    private ObjectId getObjectId(DBObject object) {
+    private ObjectId getObjectId(Document object) {
         return (ObjectId) object.get(MongoDriver.MONGO_RESOURCE_ID);
     }
 }

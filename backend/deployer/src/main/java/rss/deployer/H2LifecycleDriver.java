@@ -1,14 +1,13 @@
 package rss.deployer;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import rss.environment.Environment;
 
 import javax.annotation.PostConstruct;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 
 /**
  * User: dikmanm
@@ -17,18 +16,18 @@ import java.util.Properties;
 @Component
 public class H2LifecycleDriver implements LifecycleDriver {
 
+    @Value("${jdbc.url}")
     private String url;
+
+    @Value("${jdbc.username}")
     private String username;
+
+    @Value("${jdbc.password}")
     private String password;
 
     @PostConstruct
     public void init() {
         try {
-            Properties props = Environment.getInstance().lookup("database.properties");
-            url = props.getProperty("jdbc.url");
-            username = props.getProperty("jdbc.username");
-            password = props.getProperty("jdbc.password");
-
             Class.forName("org.h2.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);

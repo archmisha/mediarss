@@ -3,7 +3,7 @@ package rss.rms;
 import rss.rms.operation.delete.DeleteResourceRMSOperation;
 import rss.rms.operation.get.GetResourcesRMSQuery;
 import rss.rms.query.RmsQueryInformation;
-import rss.rms.query.builder.RmsQueryBuilder;
+import rss.rms.query.RmsQueryBuilder;
 
 /**
  * Factory for generating parameters for use in {@link RmsService}, obtained by calling {@link RmsService#apiFactory()}.

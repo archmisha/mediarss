@@ -36,11 +36,16 @@ public class Environment {
 
     private Collection<SettingsUpdateListener> updateListeners = new ArrayList<>();
     private String lookupDir;
+    private ServerMode serverMode;
 
     private Environment() {
         shouldRun = true;
         lookupDir = System.getProperty("lookup.dir");
         LOGGER.info("Lookup dir set to '{}'", lookupDir);
+
+        loadServerMode();
+        LOGGER.info("Server mode {} detected", getServerMode());
+
         loadSettingsFile();
 
         executorService = Executors.newSingleThreadExecutor();
@@ -203,17 +208,19 @@ public class Environment {
     }
 
     public ServerMode getServerMode() {
-        ServerMode result = ServerMode.PROD;
+        return serverMode;
+    }
+
+    private void loadServerMode() {
+        serverMode = ServerMode.PROD;
         String value = System.getProperty("server.mode");
         try {
             if (value != null) {
-                result = ServerMode.valueOf(value);
+                serverMode = ServerMode.valueOf(value);
             }
         } catch (IllegalArgumentException e) {
             // nothing
         }
-        LOGGER.info("Server mode {} detected", result);
-        return result;
     }
 
     public String getServerHostUrl() {
@@ -264,7 +271,7 @@ public class Environment {
         this.updateListeners.remove(listener);
     }
 
-    public Properties lookup(String filename) {
+    private Properties lookup(String filename) {
         try {
             Properties props = new Properties();
             props.load(new FileReader(lookupDir + File.separator + filename));

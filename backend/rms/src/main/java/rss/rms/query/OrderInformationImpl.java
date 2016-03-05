@@ -1,6 +1,9 @@
 package rss.rms.query;
 
+import org.bson.conversions.Bson;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,40 +15,19 @@ import java.util.List;
  */
 public class OrderInformationImpl implements OrderInformation {
 
-    public static class OrderDescImpl implements OrderDesc {
-        private String path;
-        private Order order;
+    private List<Bson> orderDescriptorsList;
 
-        public OrderDescImpl(String path, Order order) {
-            this.path = path;
-            this.order = order;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
-        }
-
-        @Override
-        public Order getOrder() {
-            return order;
-        }
-    }
-
-    private List<OrderDesc> orderDescriptorsList;
-
-    public OrderInformationImpl() {
+    public OrderInformationImpl(Bson ... orderDescriptors) {
         this.orderDescriptorsList = new ArrayList<>();
+        this.orderDescriptorsList.addAll(Arrays.asList(orderDescriptors));
     }
 
-
-    public void addOrderDescriptor(OrderDesc orderDescriptor) {
-
+    public void addOrderDescriptor(Bson orderDescriptor) {
         this.orderDescriptorsList.add(orderDescriptor);
     }
 
     @Override
-    public List<OrderDesc> getOrderDescriptors() {
+    public List<Bson> getOrderDescriptors() {
         return orderDescriptorsList;
     }
 }

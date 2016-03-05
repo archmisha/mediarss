@@ -10,7 +10,7 @@ public interface RmsQueryInformation {
     OrderInformation getOrderInformation();
 
     //    PageInformation getPageInformation();
-//    LayoutInformation getLayoutInformation();
+//    Bson getLayout();
     FilterInformation getFilterInformation();
 //    MetadataInformation getMetadataInformation();
 }

@@ -4,11 +4,12 @@
          version="3.0">
 
     <context-param>
+        <param-name>contextClass</param-name>
+        <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+    </context-param>
+    <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>
-            /WEB-INF/*-context.xml
-            classpath*:META-INF/spring/*-context.xml
-        </param-value>
+        <param-value>rss</param-value>
     </context-param>
 
     <session-config>

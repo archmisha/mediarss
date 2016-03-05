@@ -1,5 +1,7 @@
 package rss.rms.query;
 
+import org.bson.conversions.Bson;
+
 import java.util.List;
 
 /**
@@ -9,15 +11,6 @@ import java.util.List;
  * @since 1.0.0-9999
  */
 public interface OrderInformation {
-    static enum Order {
-        ASC, DESC
-    }
 
-    static interface OrderDesc {
-        String getPath();
-
-        Order getOrder();
-    }
-
-    List<OrderDesc> getOrderDescriptors();
+    List<Bson> getOrderDescriptors();
 }

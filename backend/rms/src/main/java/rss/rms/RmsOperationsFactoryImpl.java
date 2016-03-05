@@ -5,8 +5,8 @@ import rss.rms.operation.delete.DeleteResourceRMSOperationImpl;
 import rss.rms.operation.get.GetResourcesRMSQuery;
 import rss.rms.operation.get.GetResourcesRMSQueryImpl;
 import rss.rms.query.RmsQueryInformation;
-import rss.rms.query.builder.RmsQueryBuilder;
-import rss.rms.query.builder.RmsQueryBuilderImpl;
+import rss.rms.query.RmsQueryBuilder;
+import rss.rms.query.RmsQueryBuilderImpl;
 
 /**
  * @author Mark Bramnik

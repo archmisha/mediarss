@@ -18,5 +18,5 @@ public interface ResourceManagementService {
 
     <T extends RmsResource> void delete(DeleteResourceRMSOperation<T> query);
 
-    RmsOperationsFactory apiFactory();
+    RmsOperationsFactory factory();
 }

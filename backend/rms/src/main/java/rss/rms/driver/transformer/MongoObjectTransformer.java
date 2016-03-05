@@ -1,6 +1,6 @@
 package rss.rms.driver.transformer;
 
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 /**
  * Defines a contract for transformation of db objects at the mongo driver level
@@ -11,5 +11,5 @@ import com.mongodb.DBObject;
  * @since 1.0.0-9999
  */
 public interface MongoObjectTransformer {
-    DBObject transform(DBObject inObject);
+    Document transform(Document inObject);
 }

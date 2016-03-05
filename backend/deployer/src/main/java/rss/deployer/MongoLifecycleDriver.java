@@ -1,8 +1,13 @@
 package rss.deployer;
 
+import com.mongodb.MongoClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import rss.rms.driver.MongoDriver;
+import rss.environment.Environment;
+
+import javax.annotation.PostConstruct;
+import java.util.Properties;
 
 /**
  * User: dikmanm
@@ -12,15 +17,18 @@ import rss.rms.driver.MongoDriver;
 public class MongoLifecycleDriver implements LifecycleDriver {
 
     @Autowired
-    private MongoDriver mongoDriver;
+    private MongoClient mongoClient;
+
+    @Value("${mongodb.database}")
+    private String database;
 
     @Override
     public void create() {
-        mongoDriver.createDatabase();
+        mongoClient.getDatabase(database);
     }
 
     @Override
     public void tearDown() {
-        mongoDriver.dropDatabase();
+        mongoClient.dropDatabase(database);
     }
 }

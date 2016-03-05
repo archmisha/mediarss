@@ -1,6 +1,6 @@
 package rss.rms.query;
 
-import rss.rms.query.expression.RmsQueryExpression;
+import org.bson.conversions.Bson;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,14 +11,14 @@ import rss.rms.query.expression.RmsQueryExpression;
  */
 public class FilterInformationImpl implements FilterInformation {
 
-    private RmsQueryExpression expression;
+    private Bson filterDescriptor;
 
-    public FilterInformationImpl(RmsQueryExpression expression) {
-        this.expression = expression;
+    public FilterInformationImpl(Bson filterDescriptor) {
+        this.filterDescriptor = filterDescriptor;
     }
 
     @Override
-    public RmsQueryExpression getExpression() {
-        return expression;
+    public Bson getFilterDescriptor() {
+        return filterDescriptor;
     }
 }

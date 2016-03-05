@@ -1,5 +1,6 @@
 package rss.scheduler;
 
+import com.mongodb.client.model.Filters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -98,14 +99,15 @@ public class SchedulerServiceImpl implements SchedulerService {
 
     @Override
     public JobStatusJson getJobStatus(final String name) {
-        RmsQueryInformation queryInformation = rmsService.apiFactory().createRmsQueryBuilder().filter().equal("name", name).done().getRmsQueryInformation();
-        return rmsService.get(rmsService.apiFactory().createGetResourceOperation(JobStatusJson.class, queryInformation));
+        RmsQueryInformation queryInformation = rmsService.factory().createRmsQueryBuilder()
+                .filter(Filters.eq("name", name)).getRmsQueryInformation();
+        return rmsService.get(rmsService.factory().createGetResourceOperation(JobStatusJson.class, queryInformation));
     }
 
     @Override
     public List<JobStatusJson> getAllJobs() {
-        RmsQueryInformation queryInformation = rmsService.apiFactory().createRmsQueryBuilder().getRmsQueryInformation();
-        List<JobStatusJson> jobs = rmsService.getCollection(rmsService.apiFactory().createGetResourceOperation(JobStatusJson.class, queryInformation));
+        RmsQueryInformation queryInformation = rmsService.factory().createRmsQueryBuilder().getRmsQueryInformation();
+        List<JobStatusJson> jobs = rmsService.getCollection(rmsService.factory().createGetResourceOperation(JobStatusJson.class, queryInformation));
 
         // if a job started before the server was up, then was a problem with a job and should mark it as stopped
         for (JobStatusJson job : jobs) {

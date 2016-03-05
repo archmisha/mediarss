@@ -1,6 +1,6 @@
 package rss.rms.query;
 
-import rss.rms.query.expression.RmsQueryExpression;
+import org.bson.conversions.Bson;
 
 /**
  * @author Mark Bramnik
@@ -9,5 +9,5 @@ import rss.rms.query.expression.RmsQueryExpression;
  * @since 1.0.0-9999
  */
 public interface FilterInformation {
-    RmsQueryExpression getExpression();
+    Bson getFilterDescriptor();
 }

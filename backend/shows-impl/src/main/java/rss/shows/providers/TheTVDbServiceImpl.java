@@ -232,7 +232,7 @@ public class TheTVDbServiceImpl implements ShowsProvider {
     }
 
     private TheTvDbSyncTime getTheTvDbSyncTime() {
-        return rmsService.get(rmsService.apiFactory().createGetResourceOperation(TheTvDbSyncTime.class, rmsService.apiFactory().createRmsQueryBuilder().getRmsQueryInformation()));
+        return rmsService.get(rmsService.factory().createGetResourceOperation(TheTvDbSyncTime.class, rmsService.factory().createRmsQueryBuilder().getRmsQueryInformation()));
     }
 
     private void updateLastSyncTime() {

@@ -44,7 +44,7 @@ public class ResourceManagementServiceImpl implements ResourceManagementService 
     }
 
     @Override
-    public RmsOperationsFactory apiFactory() {
+    public RmsOperationsFactory factory() {
         return new RmsOperationsFactoryImpl();
     }
 }

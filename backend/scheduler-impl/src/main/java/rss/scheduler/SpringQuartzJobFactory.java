@@ -8,13 +8,15 @@ import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * User: Michael Dikman
  * Date: 09/12/12
  * Time: 20:53
  */
-class SpringQuartzJobFactory extends SpringBeanJobFactory {
+@Component
+public class SpringQuartzJobFactory extends SpringBeanJobFactory {
 
     @Autowired
     private ApplicationContext ctx;

@@ -1,6 +1,6 @@
 package rss.rms.driver.transformer;
 
-import com.mongodb.DBObject;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import rss.rms.RmsConstants;
 import rss.rms.driver.MongoDriver;
@@ -19,9 +19,9 @@ public class ResourceIdToMongoIdObjectTransformer implements MongoObjectTransfor
     }
 
     @Override
-    public DBObject transform(DBObject inObject) throws InvalidObjectIdException {
-        boolean idExists = inObject.containsField(RmsConstants.RESOURCE_ID_PROPERTY_NAME);
-        String objectId = (String) inObject.removeField(RmsConstants.RESOURCE_ID_PROPERTY_NAME);
+    public Document transform(Document inObject) throws InvalidObjectIdException {
+        boolean idExists = inObject.containsKey(RmsConstants.RESOURCE_ID_PROPERTY_NAME);
+        String objectId = (String) inObject.remove(RmsConstants.RESOURCE_ID_PROPERTY_NAME);
         if (idExists) {
             if (ObjectId.isValid(objectId)) {
                 inObject.put(MongoDriver.MONGO_RESOURCE_ID, new ObjectId(objectId));
