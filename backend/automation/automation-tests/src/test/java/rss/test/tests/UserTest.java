@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import rss.test.entities.UserData;
 import rss.test.entities.UserLoginResult;
 import rss.test.entities.UserResult;
-import rss.test.services.EmailService;
+import rss.test.services.EmailClient;
 import rss.test.services.NoPermissionsException;
 import rss.test.services.RedirectToRootException;
 import rss.test.util.AssertUtils;
@@ -23,7 +23,7 @@ import static junit.framework.Assert.*;
 public class UserTest extends BaseTest {
 
     @Autowired
-    private EmailService emailService;
+    private EmailClient emailService;
 
     @Test
     public void testLoginPreLoginLogout() {

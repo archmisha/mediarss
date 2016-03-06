@@ -11,9 +11,9 @@ import rss.shows.schedule.ShowsDaySchedule;
 import rss.shows.schedule.ShowsScheduleJSON;
 import rss.shows.thetvdb.TheTvDbShow;
 import rss.test.entities.UserData;
-import rss.test.services.AdminService;
-import rss.test.services.TestPagesService;
-import rss.test.shows.ShowsService;
+import rss.test.services.AdminClient;
+import rss.test.services.TestPagesClient;
+import rss.test.shows.ShowsClient;
 import rss.test.shows.TheTvDbEpisodeBuilder;
 import rss.test.shows.TheTvDbShowBuilder;
 import rss.test.util.WaitUtil;
@@ -35,10 +35,10 @@ import static org.junit.Assert.*;
 public class ShowsTest extends BaseTest {
 
     @Autowired
-    private ShowsService showsService;
+    private ShowsClient showsService;
 
     @Autowired
-    private TestPagesService testPagesService;
+    private TestPagesClient testPagesService;
 
     @Autowired
     private TheTvDbShowBuilder theTvDbShowBuilder;
@@ -47,7 +47,7 @@ public class ShowsTest extends BaseTest {
     private TheTvDbEpisodeBuilder theTvDbEpisodeBuilder;
 
     @Autowired
-    private AdminService adminService;
+    private AdminClient adminService;
 
     @Test
     public void testTrackedShows() {

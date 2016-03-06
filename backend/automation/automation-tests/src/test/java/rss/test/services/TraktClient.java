@@ -10,18 +10,23 @@ import java.util.Map;
  * Date: 23/02/2015 18:17
  */
 @Component
-public class TraktService extends BaseService {
+public class TraktClient extends BaseClient {
+
+    @Override
+    protected String getServiceName() {
+        return "trakt";
+    }
 
     public void redirectAfterAuth() {
         reporter.info("Simulating trakt redirect to app after auth");
         Map<String, String> params = new HashMap<>();
         params.put("code", "test_code");
         params.put("state", "test_state");
-        sendGetRequest("/rest/trakt/auth", params);
+        httpUtils.sendGetRequest(getBasePath() + "/auth", params);
     }
 
     public void disconnect() {
         reporter.info("Simulating trakt redirect to app after auth");
-        sendGetRequest("/rest/trakt/disconnect");
+        httpUtils.sendGetRequest(getBasePath() + "/disconnect");
     }
 }

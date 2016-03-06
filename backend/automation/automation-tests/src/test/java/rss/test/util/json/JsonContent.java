@@ -1,4 +1,4 @@
-package rss.test.util;
+package rss.test.util.json;
 
 /**
  * User: dikmanm

@@ -54,8 +54,8 @@ public class UserServiceImpl implements UserService {
 
     // no need for a transaction here, but inside creating a new transaction
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public String register(String firstName, String lastName, final String email, final String password, boolean isAdmin) {
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserRegisterResult register(String firstName, String lastName, final String email, final String password, boolean isAdmin) {
         User userOnServer = userDao.findByEmail(email);
         if (userOnServer != null) {
             throw new EmailAlreadyRegisteredException("Email already registered");
@@ -66,17 +66,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String registerHelper(final String firstName, final String lastName, final String email, final String password, final boolean isAdmin) {
-        final User user = transactionTemplate.execute(new TransactionCallback<User>() {
-            @Override
-            public User doInTransaction(TransactionStatus arg0) {
+    private UserRegisterResult registerHelper(final String firstName, final String lastName, final String email, final String password, final boolean isAdmin) {
+//        final User user = transactionTemplate.execute(new TransactionCallback<User>() {
+//            @Override
+//            public User doInTransaction(TransactionStatus arg0) {
                 // double checking inside the lock
                 User userOnServer = userDao.findByEmail(email);
                 if (userOnServer != null) {
                     throw new EmailAlreadyRegisteredException("Email already registered");
                 }
 
-                User user = new UserImpl();
+        final User user = new UserImpl();
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
                 user.setEmail(email);
@@ -89,9 +89,9 @@ public class UserServiceImpl implements UserService {
                 user.setFeedHash(StringUtils2.generateUniqueHash());
                 user.setAdmin(isAdmin);
                 userDao.persist(user);
-                return user;
-            }
-        });
+//                return user;
+//            }
+//        });
 
         userCacheService.addUser(user);
 
@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
                         "New user subscribed: " + user.getEmail(),
                         "Failed sending email about a new user");
                 sendAccountValidationLink(user);
-                return ACCOUNT_VALIDATION_LINK_SENT_MESSAGE;
+                return new UserRegisterResult(user, ACCOUNT_VALIDATION_LINK_SENT_MESSAGE);
             } catch (Exception e) {
                 transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                     @Override
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("Failed sending emails on user registration: " + e.getMessage(), e);
             }
         } else {
-            return USER_CREATED_WITHOUT_VALIDATION_MESSAGE;
+            return new UserRegisterResult(user, USER_CREATED_WITHOUT_VALIDATION_MESSAGE);
         }
     }
 

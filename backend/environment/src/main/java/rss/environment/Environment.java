@@ -281,6 +281,18 @@ public class Environment {
         }
     }
 
+    public String getServerAutomationHostName() {
+        return settingsBean.getServerAutomationHost();
+    }
+
+    public String getServerAutomationPort() {
+        return settingsBean.getServerAutomationPort();
+    }
+
+    public String getServerAutomationContext() {
+        return settingsBean.getServerAutomationContext();
+    }
+
     private class SettingsBean {
         private Properties prop;
 
@@ -296,6 +308,10 @@ public class Environment {
         private String torrentWatchPath;
         private String alternativeResourcesPath;
         private String imagesPath;
+
+        private String serverAutomationHost;
+        private String serverAutomationPort;
+        private String serverAutomationContext;
 
         public SettingsBean(Properties prop) {
             this.prop = prop;
@@ -317,6 +333,22 @@ public class Environment {
             torrentWatchPath = prop.getProperty("torrent.watch.path");
             alternativeResourcesPath = prop.getProperty("alternative.resources.path");
             imagesPath = prop.getProperty("images.path");
+
+            serverAutomationHost = prop.getProperty("server.automation.host");
+            serverAutomationPort = prop.getProperty("server.automation.port");
+            serverAutomationContext = prop.getProperty("server.automation.context");
+        }
+
+        public String getServerAutomationHost() {
+            return serverAutomationHost;
+        }
+
+        public String getServerAutomationPort() {
+            return serverAutomationPort;
+        }
+
+        public String getServerAutomationContext() {
+            return serverAutomationContext;
         }
 
         public Set<String> getAdminEmails() {

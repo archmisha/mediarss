@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import rss.test.entities.News;
 import rss.test.entities.UserData;
-import rss.test.services.NewsService;
+import rss.test.services.NewsClient;
 import rss.test.util.AssertUtils;
 
 import java.util.Arrays;
@@ -19,7 +19,7 @@ import static junit.framework.TestCase.assertTrue;
 public class NewsTest extends BaseTest {
 
     @Autowired
-    private NewsService newsService;
+    private NewsClient newsService;
 
     @Test
     public void testCreateNews() {

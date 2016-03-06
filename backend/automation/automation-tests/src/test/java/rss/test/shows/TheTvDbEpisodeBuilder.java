@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import rss.shows.thetvdb.TheTvDbEpisode;
 import rss.shows.thetvdb.TheTvDbShow;
-import rss.test.services.TestPagesService;
-import rss.test.services.Unique;
-import rss.test.util.JsonTranslation;
+import rss.test.services.TestPagesClient;
+import rss.test.util.Unique;
+import rss.test.util.json.JsonTranslation;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,7 +25,7 @@ public class TheTvDbEpisodeBuilder {
     private Unique unique;
 
     @Autowired
-    private TestPagesService testPagesService;
+    private TestPagesClient testPagesService;
 
     private TheTvDbEpisode theTvDbEpisode;
 

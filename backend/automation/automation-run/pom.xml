@@ -14,13 +14,6 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <server.port>80</server.port>
-        <server.automation.port>9065</server.automation.port>
-        <tomcat.version>8.0.30</tomcat.version>
-        <tomcat.dir>${basedir}/target/apache-tomcat-${tomcat.version}</tomcat.dir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>mediarss</groupId>
@@ -56,21 +49,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>src/test/resources</directory>
-            </resource>
-        </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -89,126 +67,8 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>setup</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo message="Copy tomcat conf files"/>
-                                        <copy todir="${tomcat.dir}/conf">
-                                            <fileset dir="${basedir}/src/test/resources" includes="server.xml"/>
-                                        </copy>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>start-tomcat</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo message="Start Tomcat"/>
-                                        <exec dir="${tomcat.dir}/bin" executable="bash">
-                                            <arg line="chmod 777 *"/>
-                                        </exec>
-                                        <exec dir="${tomcat.dir}/bin" executable="bash">
-                                            <arg line="startup.sh"/>
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>stop-tomcat</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <echo message="Stop Tomcat"/>
-                                        <exec dir="${tomcat.dir}/bin" executable="bash">
-                                            <arg line="shutdown.sh"/>
-                                        </exec>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.google.code.maven-replacer-plugin</groupId>
-                        <artifactId>replacer</artifactId>
-                        <executions>
-                            <execution>
-                                <id>replace-dynamic-properties</id>
-                                <phase>process-sources</phase>
-                                <goals>
-                                    <goal>replace</goal>
-                                </goals>
-                                <configuration>
-                                    <regex>false</regex>
-                                    <filesToInclude>
-                                        ${tomcat.dir}/conf/server.xml,
-                                    </filesToInclude>
-                                    <replacements>
-                                        <replacement>
-                                            <token>$TOMCAT-PORT$</token>
-                                            <value>${server.port}</value>
-                                        </replacement>
-                                    </replacements>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>copy-tomcat</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.apache.tomcat</groupId>
-                                            <artifactId>tomcat</artifactId>
-                                            <version>${tomcat.version}</version>
-                                            <type>zip</type>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>copy-test-pages-war</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>mediarss</groupId>
-                                            <artifactId>automation-pages-webapp</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>war</type>
-                                            <outputDirectory>${tomcat.dir}/webapps</outputDirectory>
-                                            <destFileName>test-pages.war</destFileName>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <overWriteReleases>false</overWriteReleases>
-                                    <overWriteSnapshots>true</overWriteSnapshots>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>unpack-tests</id>
                                 <phase>pre-integration-test</phase>
@@ -239,7 +99,7 @@
                                     <goal>verify</goal>
                                 </goals>
                                 <configuration>
-                                    <argLine>-Dfile.encoding=UTF-8 -Dserver.port=${server.port} -Dserver.automation.port=${server.automation.port}</argLine>
+                                    <argLine>-Dfile.encoding=UTF-8 -Dserver.port=${server.port} -Dserver.context=${server.context} -Dserver.automation.port=${server.automation.port} -Dserver.automation.context=${server.automation.context}</argLine>
                                     <includes>
                                         <group></group>
                                         <include>rss/test/tests/**/*Test.java</include>

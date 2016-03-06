@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import rss.test.entities.UserData;
 import rss.test.entities.UserLoginResult;
 import rss.test.services.RedirectToRootException;
-import rss.test.services.TraktService;
+import rss.test.services.TraktClient;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.fail;
@@ -18,7 +18,7 @@ import static junit.framework.TestCase.assertTrue;
 public class TraktTest extends BaseTest {
 
     @Autowired
-    private TraktService traktService;
+    private TraktClient traktService;
 
     @Test
     public void testConnectAndDisconnectToTrakt() {

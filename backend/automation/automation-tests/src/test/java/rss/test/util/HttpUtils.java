@@ -1,6 +1,7 @@
-package rss.test.services;
+package rss.test.util;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -19,11 +20,10 @@ import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.type.TypeReference;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import rss.test.Reporter;
-import rss.test.util.JsonTranslation;
-import rss.test.util.WaitUtil;
+import rss.test.services.NoPermissionsException;
+import rss.test.services.RedirectToRootException;
+import rss.test.util.json.JsonTranslation;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -32,59 +32,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
 
 /**
- * User: dikmanm
- * Date: 12/02/2015 22:43
+ * Created by michaeld on 05/03/2016.
  */
 @Component
-public class BaseService {
+public class HttpUtils {
 
-    private static boolean isTomcatUp = false;
-    private static boolean isTomcatStartFailed = false;
     private static ThreadLocal<String> jSessionIds = new ThreadLocal<>();
-    @Autowired
-    protected Reporter reporter;
 
-    public boolean waitForTomcatStartup() {
-        if (isTomcatStartFailed) {
-            return false;
-        }
-        if (isTomcatUp) {
-            return true;
-        }
-
-        reporter.info("Waiting for tomcat to start for 3 mins");
-        WaitUtil.waitFor(WaitUtil.TIMEOUT_3_MIN, (int) TimeUnit.SECONDS.toMillis(5), new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String response = sendGetRequest("generate/?user=1&type=shows&feedId=1");
-                    reporter.info("...");
-                    assertTrue(response.length() > 0);
-//                    assertEquals("Failed generating feed. Please contact support for assistance", response);
-                    isTomcatUp = true;
-                } catch (Exception e) {
-                    isTomcatStartFailed = true;
-                    reporter.info("Waiting for tomcat to start: " + e.getMessage());
-                    throw e;
-                }
-            }
-        });
-        reporter.info("Tomcat is up");
-        return true;
-    }
-
-    protected String sendGetRequest(String url) {
+    public String sendGetRequest(String url) {
         return sendGetRequest(url, Collections.<String, String>emptyMap());
     }
 
-    protected String sendGetRequest(String url, Map<String, String> queryParams) {
+    public String sendGetRequest(String url, Map<String, String> queryParams) {
         try {
-            URIBuilder uriBuilder = new URIBuilder(getServerBaseUrl() + url);
+            URIBuilder uriBuilder = new URIBuilder(buildUrl(url));
             for (Map.Entry<String, String> entry : queryParams.entrySet()) {
                 uriBuilder = uriBuilder.addParameter(entry.getKey(), entry.getValue());
             }
@@ -95,9 +58,9 @@ public class BaseService {
         }
     }
 
-    protected String sendPostRequest(String url, Object params) {
+    public String sendPostRequest(String url, Object params) {
         try {
-            HttpPost httpPost = new HttpPost(getServerBaseUrl() + url);
+            HttpPost httpPost = new HttpPost(buildUrl(url));
             if (params != null) {
                 httpPost.setEntity(new StringEntity(JsonTranslation.object2JsonString(params)));
             }
@@ -108,9 +71,9 @@ public class BaseService {
         }
     }
 
-    protected String sendFormPostRequest(String url, Map<String, Object> params) {
+    public String sendFormPostRequest(String url, Map<String, Object> params) {
         try {
-            HttpPost httpPost = new HttpPost(getServerBaseUrl() + url);
+            HttpPost httpPost = new HttpPost(buildUrl(url));
             List<NameValuePair> parameters = new ArrayList<>();
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 parameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue().toString()));
@@ -174,22 +137,37 @@ public class BaseService {
                 break;
             }
         }
+    }
 
+    private String buildUrl(String url) {
+        String result = "";
+        if (!url.startsWith("http")) {
+            result += getServerBaseUrl();
+        }
+        return result + url;
     }
 
     private String getServerBaseUrl() {
-        return "http://" + getServerHost() + ":" + getServerPort() + "/";
+        String result = "http://" + getServerHost() + ":" + getServerPort() + "/";
+        if (!StringUtils.isBlank(getServerContext())) {
+            result += (getServerContext() + "/");
+        }
+        return result;
     }
 
     private int getServerPort() {
-        return Integer.parseInt(System.getProperty("server.port", "9066"));
+        return Integer.parseInt(System.getProperty("server.port", "80"));
     }
 
     private String getServerHost() {
-        return "localhost";
+        return System.getProperty("server.host", "localhost");
     }
 
-    protected Map<String, Object> entityToMap(Object entity) {
+    private String getServerContext() {
+        return System.getProperty("server.context", "mediarss");
+    }
+
+    public Map<String, Object> entityToMap(Object entity) {
         return new ObjectMapper().setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL)
                 .convertValue(entity, new TypeReference<Map<String, Object>>() {
                 });

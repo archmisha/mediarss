@@ -141,13 +141,14 @@ public class UserResource {
 
         Map<String, Object> result = new HashMap<>();
         try {
-            String response = userService.register(firstName, lastName, email, password, isAdmin);
+            UserRegisterResult response = userService.register(firstName, lastName, email, password, isAdmin);
             result.put("success", true);
-            result.put("message", response);
+            result.put("message", response.getStatus());
 
             if (Environment.getInstance().getServerMode() == ServerMode.TEST && isValidated) {
-                final User createdUser = userService.findByEmail(email);
+                final User createdUser = userService.findByEmail(email); //response.getUser(); // todo: replace?
                 createdUser.setValidationHash(null);
+                userService.updateUser(createdUser);
                 result.put("userId", createdUser.getId());
             }
         } catch (EmailAlreadyRegisteredException e) {

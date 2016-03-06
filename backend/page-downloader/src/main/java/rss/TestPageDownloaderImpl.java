@@ -45,7 +45,9 @@ public class TestPageDownloaderImpl implements PageDownloader {
     }
 
     private String getLocalUrlPrefix() {
-        return "http://" + Environment.getInstance().getWebHostName() + ":" + Environment.getInstance().getWebPort() + "/test-pages";
+        return "http://" + Environment.getInstance().getServerAutomationHostName() + ":" +
+                Environment.getInstance().getServerAutomationPort() + "/" +
+                Environment.getInstance().getServerAutomationContext();
     }
 
     @Override
