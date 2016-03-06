@@ -67,9 +67,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserRegisterResult registerHelper(final String firstName, final String lastName, final String email, final String password, final boolean isAdmin) {
-//        final User user = transactionTemplate.execute(new TransactionCallback<User>() {
-//            @Override
-//            public User doInTransaction(TransactionStatus arg0) {
+        final User user = transactionTemplate.execute(new TransactionCallback<User>() {
+            @Override
+            public User doInTransaction(TransactionStatus arg0) {
                 // double checking inside the lock
                 User userOnServer = userDao.findByEmail(email);
                 if (userOnServer != null) {
@@ -89,9 +89,9 @@ public class UserServiceImpl implements UserService {
                 user.setFeedHash(StringUtils2.generateUniqueHash());
                 user.setAdmin(isAdmin);
                 userDao.persist(user);
-//                return user;
-//            }
-//        });
+                return user;
+            }
+        });
 
         userCacheService.addUser(user);
 
@@ -173,8 +173,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(User user) {
-        userDao.merge(user);
+    public void updateUser(final User user) {transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+        @Override
+        protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+        userDao.merge(user);}});
     }
 
     @Override

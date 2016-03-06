@@ -94,6 +94,7 @@ public class UserResource {
         new SessionUserContext(request.getSession()).storeInSession();
 
         user.setLastLogin(new Date());
+        userService.updateUser(user);
         userCacheService.invalidateUser(user);
 
         Response.ResponseBuilder responseBuilder = Response.ok();
@@ -146,7 +147,7 @@ public class UserResource {
             result.put("message", response.getStatus());
 
             if (Environment.getInstance().getServerMode() == ServerMode.TEST && isValidated) {
-                final User createdUser = userService.findByEmail(email); //response.getUser(); // todo: replace?
+                final User createdUser = response.getUser();
                 createdUser.setValidationHash(null);
                 userService.updateUser(createdUser);
                 result.put("userId", createdUser.getId());
