@@ -55,7 +55,12 @@ public class MongoDriverImpl implements MongoDriver {
     public <T extends RmsResource> T get(GetResourcesRMSQuery<T> query) {
         RmsQueryInformation queryInfo = query.getQueryInfo();
         MongoCollection<Document> dbCollection = getDbCollection(query.getResourceClass());
-        FindIterable<Document> dbCursor = dbCollection.find(queryInfo.getFilterInformation().getFilterDescriptor());
+        FindIterable<Document> dbCursor;
+        if (queryInfo.getFilterInformation() == null) {
+            dbCursor = dbCollection.find();
+        } else {
+            dbCursor = dbCollection.find(queryInfo.getFilterInformation().getFilterDescriptor());
+        }
 //        dbCursor.projection(queryInfo.getLayout());
         if (queryInfo.getOrderInformation() != null) {
             dbCursor.sort(Sorts.orderBy(queryInfo.getOrderInformation().getOrderDescriptors()));

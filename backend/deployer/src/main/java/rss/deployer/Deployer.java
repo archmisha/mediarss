@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 import rss.environment.Environment;
@@ -33,7 +34,7 @@ public class Deployer {
     }
 
     public static void main(String[] args) {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("META-INF/spring/deployer-context.xml");
+        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
         LOGGER.info("Starting executing lifecycle drivers");
         Deployer deployer = context.getBean(Deployer.class);
         if (System.getProperties().containsKey("createEnvironment")) {

@@ -10,8 +10,8 @@
 					</option>
 					<option name="goals">
 						<list>
-							<option value="-Dlookup.dir=../automation/automation-run/src/test/resources/lookup" />
 							<option value="verify" />
+							<option value="-Dlookup.dir=$PROJECT_DIR$\build\lookup" />
 						</list>
 					</option>
 					<option name="profilesMap">
@@ -20,7 +20,7 @@
 						</map>
 					</option>
 					<option name="resolveToWorkspace" value="false" />
-					<option name="workingDirPath" value="$PROJECT_DIR$/deployer" />
+					<option name="workingDirPath" value="$PROJECT_DIR$/backend/deployer" />
 				</MavenRunnerParameters>
 			</option>
 		</MavenSettings>
