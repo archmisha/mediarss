@@ -13,4 +13,4 @@ services:
       - h2:h2host
       - automation:automationhost
     environment:
-      - CATALINA_OPTS="-Dlookup.dir=/usr/local/lookup -D{server.mode=$SERVER_MODE} -XX:MaxPermSize=256m"
+      - CATALINA_OPTS="-Dlookup.dir=/usr/local/lookup -Dserver.mode=$SERVER_MODE -XX:MaxPermSize=256m"
