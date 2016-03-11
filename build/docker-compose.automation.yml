@@ -5,4 +5,4 @@ services:
     ports:
       - "8081:8080"
     volumes:
-      - /docker_data/tomcat-data:/usr/local/tomcat/logs
+      - /docker_data/automation-data:/usr/local/tomcat/logs
