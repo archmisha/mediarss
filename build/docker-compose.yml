@@ -1,7 +1,7 @@
 version: "2"
 services:
   h2:
-    image: zhilvis/h2-db
+    image: archmisha/mediarss_h2
     ports:
      - "1521:1521"
      - "81:81"
