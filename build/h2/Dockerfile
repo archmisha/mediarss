@@ -11,7 +11,7 @@ RUN curl ${DOWNLOAD} -o h2.zip \
 EXPOSE 81 1521
 VOLUME ${DATA_DIR} /opt/h2
 
-CMD java -cp /opt/h2/bin/* org.h2.tools.Server \
+CMD java -cp /opt/h2/bin/*.jar org.h2.tools.Server \
  	-web -webAllowOthers -webPort 81 \
  	-tcp -tcpAllowOthers -tcpPort 1521 \
  	-baseDir ${DATA_DIR}
