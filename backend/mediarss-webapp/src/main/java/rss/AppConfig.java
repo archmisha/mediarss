@@ -12,8 +12,7 @@ import rss.scheduler.SpringQuartzJobFactory;
 @Configuration
 @ComponentScan(basePackages = "rss")
 @PropertySources({
-        @PropertySource("file:${lookup.dir}/database.properties"),
-        @PropertySource("file:${lookup.dir}/mongodb.properties"),
+        @PropertySource("file:${lookup.dir}/database.properties")
 })
 @ImportResource({"classpath*:META-INF/spring/*-context.xml"})
 public class AppConfig {

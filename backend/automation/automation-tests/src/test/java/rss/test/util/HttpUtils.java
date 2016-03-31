@@ -140,11 +140,12 @@ public class HttpUtils {
     }
 
     private String buildUrl(String url) {
-        String result = "";
+        StringBuilder sb = new StringBuilder();
         if (!url.startsWith("http")) {
-            result += getServerBaseUrl();
+            sb.append(getServerBaseUrl());
         }
-        return result + url;
+        sb.append(url);
+        return sb.toString();
     }
 
     private String getServerBaseUrl() {

@@ -6,9 +6,11 @@ import { connect } from 'react-redux';
 import './login.less';
 import Header from '../../components/header/Header.jsx';
 
+const LOGIN_ACTION = 'LOGIN';
+
 export const loginReducer = (state = {}, action) => {
     switch (action.type) {
-        case 'LOGIN':
+        case [LOGIN_ACTION]:
             browserHistory.push("home");
             return state;
         default:
@@ -161,7 +163,7 @@ var Login = ({username, password, rememberMe, dispatch}) => {
                 })
             }).done(function (res) {
                 if (res.success === undefined) {
-                    dispatch({type: 'LOGIN'});
+                    dispatch({type: LOGIN_ACTION});
                     resolve();
                 } else {
                     reject({_error: res.message});

@@ -11,7 +11,7 @@
             </artifact>
             <artifact name="automation-pages-webapp:war exploded">
                 <settings>
-                    <option name="CONTEXT_PATH" value="/test-pages" />
+                    <option name="CONTEXT_PATH" value="/automation" />
                 </settings>
             </artifact>
         </deployment>

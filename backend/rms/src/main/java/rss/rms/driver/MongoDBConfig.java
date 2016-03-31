@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.util.Collections;
 
@@ -14,6 +16,7 @@ import java.util.Collections;
  * Created by michaeld on 04/03/2016.
  */
 @Configuration
+@PropertySource("file:${lookup.dir}/mongodb.properties")
 public class MongoDBConfig {
 
     @Value("${mongodb.host}")
@@ -38,5 +41,10 @@ public class MongoDBConfig {
             mongoClient = new MongoClient(new ServerAddress(mongodbHost, mongodbPort), Collections.singletonList(credential));
         }
         return mongoClient;
+    }
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer properties() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }
