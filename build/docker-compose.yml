@@ -7,7 +7,7 @@ services:
      - "81:81"
     volumes:
      - /docker_data/h2-data:/opt/h2-data
-     - /docker_data/h2:/opt/h2
+     #- /docker_data/h2:/opt/h2
   mongodb:
     image: mongo
     ports:
